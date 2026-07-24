@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-inter: 'Inter', sans-serif;
+  --font-outfit: 'Outfit', sans-serif;
+  --font-poppins: 'Inter', sans-serif; /* fallback mapping to prevent breaks */
+  
+  --color-primary: #3B82F6;       /* Blue 500 */
+  --color-primary-dark: #2563EB;  /* Blue 600 */
+  --color-primary-darker: #1D4ED8;/* Blue 700 */
+  --color-primary-light: #EFF6FF; /* Blue 50 */
+  
+  --color-cta: #F97316;
+  --color-cta-dark: #EA6C0A;
+  
+  --color-surface: #FFFFFF;
+  --color-surface-muted: #FAFAFA;
+  
+  --color-border: #F4F4F5;
+  
+  --color-text-primary: #09090B; /* High contrast Zinc 950 */
+  --color-text-secondary: #71717A; /* Balanced Zinc 500 */
+  --color-text-hint: #A1A1AA; /* Zinc 400 */
+  
+  --color-info-light: #F8FAFC;
+  --color-success: #10B981;
+  --color-error: #EF4444;
+  --color-warning: #F59E0B;
+}
+
+* {
+  font-family: 'Inter', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2, h3, h4, h5, h6, .heading-font {
+  font-family: 'Outfit', sans-serif;
+}
+
+body {
+  background-color: #FAFAFA;
+  margin: 0;
+  color: #09090B;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+.glass-header {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.glass-nav {
+  background: rgba(255, 255, 255, 0.90);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+.premium-shadow {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03), 0 0 3px rgba(0,0,0,0.02);
+}
+
+.premium-btn-shadow {
+  box-shadow: 0 8px 16px -4px rgba(59, 130, 246, 0.25);
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
