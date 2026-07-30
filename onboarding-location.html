@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Your Location - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .back-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--fg);
+    }
+
+    .back-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .header-text {
+      flex: 1;
+    }
+
+    .header-text h1 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .header-text p {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .progress {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .content {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .location-detect {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      background: #e6f0ff;
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      margin-bottom: 24px;
+      cursor: pointer;
+    }
+
+    .location-detect svg {
+      width: 20px;
+      height: 20px;
+      color: var(--accent);
+    }
+
+    .location-detect-text {
+      flex: 1;
+    }
+
+    .location-detect-text strong {
+      font-size: 14px;
+      display: block;
+      color: var(--accent);
+    }
+
+    .location-detect-text span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .state-select {
+      margin-bottom: 24px;
+    }
+
+    .select-wrapper {
+      position: relative;
+    }
+
+    .select-btn {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      font-size: 15px;
+      font-family: inherit;
+    }
+
+    .select-btn svg {
+      width: 18px;
+      height: 18px;
+      color: var(--muted);
+    }
+
+    .city-input {
+      margin-bottom: 24px;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--fg);
+      outline: none;
+    }
+
+    .input-field:focus {
+      border-color: var(--accent);
+      background: var(--bg);
+    }
+
+    .input-field::placeholder {
+      color: var(--muted);
+    }
+
+    .popular-cities {
+      margin-bottom: 24px;
+    }
+
+    .city-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .city-chip {
+      padding: 10px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .city-chip:active {
+      background: var(--border);
+    }
+
+    .city-chip.selected {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .footer {
+      padding: 16px 20px;
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      border-top: 1px solid var(--border);
+    }
+
+    .continue-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .continue-btn:active {
+      background: #0d47a1;
+    }
+
+    .continue-btn:disabled {
+      background: var(--border);
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="back-btn" onclick="window.history.back()">
+      <i data-lucide="arrow-left"></i>
+    </div>
+    <div class="header-text">
+      <h1>Your Location</h1>
+      <p>Step 2 of 2</p>
+    </div>
+    <div class="progress">2</div>
+  </header>
+
+  <div class="content">
+    <div class="location-detect" onclick="detectLocation()">
+      <i data-lucide="satellite"></i>
+      <div class="location-detect-text">
+        <strong>Detect my location</strong>
+        <span>Use GPS for accurate results</span>
+      </div>
+      <i data-lucide="chevron-right"></i>
+    </div>
+
+    <div class="state-select">
+      <div class="section-title">Select your state</div>
+      <div class="select-wrapper">
+        <button class="select-btn" onclick="toggleStateDropdown()">
+          <span id="stateLabel">Choose state</span>
+          <i data-lucide="chevron-down"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="city-input">
+      <div class="section-title">Or enter your city</div>
+      <input type="text" class="input-field" id="cityInput" placeholder="Enter city name" oninput="checkCity()">
+    </div>
+
+    <div class="popular-cities">
+      <div class="section-title">Popular cities</div>
+      <div class="city-chips">
+        <div class="city-chip" onclick="selectCity(this, 'Mumbai')">Mumbai</div>
+        <div class="city-chip" onclick="selectCity(this, 'Delhi')">Delhi</div>
+        <div class="city-chip" onclick="selectCity(this, 'Bangalore')">Bangalore</div>
+        <div class="city-chip" onclick="selectCity(this, 'Hyderabad')">Hyderabad</div>
+        <div class="city-chip" onclick="selectCity(this, 'Chennai')">Chennai</div>
+        <div class="city-chip" onclick="selectCity(this, 'Kolkata')">Kolkata</div>
+        <div class="city-chip" onclick="selectCity(this, 'Ahmedabad')">Ahmedabad</div>
+        <div class="city-chip" onclick="selectCity(this, 'Pune')">Pune</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <button class="continue-btn" id="continueBtn" disabled onclick="continueFlow()">Continue</button>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    let selectedCity = null;
+
+    function detectLocation() {
+      document.getElementById('stateLabel').textContent = 'Gujarat';
+      document.getElementById('cityInput').value = 'Ahmedabad';
+      selectedCity = 'Ahmedabad';
+      document.getElementById('continueBtn').disabled = false;
+    }
+
+    function toggleStateDropdown() {
+      document.getElementById('stateLabel').textContent = 'Gujarat';
+      checkCity();
+    }
+
+    function selectCity(chip, city) {
+      document.querySelectorAll('.city-chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+      document.getElementById('cityInput').value = city;
+      selectedCity = city;
+      document.getElementById('continueBtn').disabled = false;
+    }
+
+    function checkCity() {
+      const city = document.getElementById('cityInput').value.trim();
+      if (city.length > 0) {
+        document.querySelectorAll('.city-chip').forEach(c => c.classList.remove('selected'));
+        selectedCity = city;
+        document.getElementById('continueBtn').disabled = false;
+      } else {
+        selectedCity = null;
+        document.getElementById('continueBtn').disabled = true;
+      }
+    }
+
+    function continueFlow() {
+      if (selectedCity) {
+        window.location.href = 'home-dashboard.html';
+      }
+    }
+  </script>
+</body>
+</html>

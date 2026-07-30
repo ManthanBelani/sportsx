@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Help & Support - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 10;
+    }
+
+    .back-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--fg);
+    }
+
+    .back-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .header h1 {
+      flex: 1;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .hero {
+      padding: 32px 20px;
+      text-align: center;
+      background: linear-gradient(135deg, #f0f7ff 0%, #e6f0ff 100%);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero-icon {
+      width: 64px;
+      height: 64px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      color: #fff;
+    }
+
+    .hero-icon svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .hero h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--fg);
+      margin-bottom: 8px;
+    }
+
+    .hero p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .section {
+      padding: 20px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title svg {
+      width: 18px;
+      height: 18px;
+      color: var(--accent);
+    }
+
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+
+    .faq-question {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--fg);
+      cursor: pointer;
+      background: var(--bg);
+    }
+
+    .faq-question svg {
+      width: 18px;
+      height: 18px;
+      color: var(--muted);
+      transition: transform 0.2s ease;
+    }
+
+    .faq-item.open .faq-question svg {
+      transform: rotate(180deg);
+    }
+
+    .faq-answer {
+      padding: 0 16px;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+    }
+
+    .faq-item.open .faq-answer {
+      max-height: 200px;
+      padding: 0 16px 16px;
+    }
+
+    .contact-cards {
+      display: grid;
+      gap: 12px;
+    }
+
+    .contact-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+
+    .contact-card:active {
+      background: var(--border);
+    }
+
+    .contact-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .contact-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .contact-info {
+      flex: 1;
+    }
+
+    .contact-info .label {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .contact-info .value {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--fg);
+    }
+
+    .contact-arrow {
+      color: var(--muted);
+    }
+
+    .contact-arrow svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      padding-bottom: max(8px, env(safe-area-inset-bottom));
+      z-index: 100;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 8px 16px;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+    }
+
+    .nav-item svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .nav-item span {
+      font-size: 11px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="back-btn" onclick="window.history.back()">
+      <i data-lucide="arrow-left"></i>
+    </div>
+    <h1>Help & Support</h1>
+  </header>
+
+  <div class="hero">
+    <div class="hero-icon">
+      <i data-lucide="message-circle"></i>
+    </div>
+    <h2>How can we help?</h2>
+    <p>Search our help center or contact us directly for any queries about trials, registrations, or your account.</p>
+  </div>
+
+  <section class="section">
+    <h3 class="section-title">
+      <i data-lucide="help-circle"></i>
+      Frequently Asked Questions
+    </h3>
+
+    <div class="faq-item">
+      <div class="faq-question">
+        How do I register for a trial?
+        <i data-lucide="chevron-down"></i>
+      </div>
+      <div class="faq-answer">
+        Browse trials in the Trials section, select one that interests you, and tap "Register for Trial". Fill in your details, upload required documents, and pay the entry fee to confirm your registration.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">
+        How do I save items for later?
+        <i data-lucide="chevron-down"></i>
+      </div>
+      <div class="faq-answer">
+        Tap the heart icon on any academy, coach, trial, or tournament to save it to your Saved Items. Access all your saved content from the Saved tab in the bottom navigation.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">
+        Can I edit my profile after signing up?
+        <i data-lucide="chevron-down"></i>
+      </div>
+      <div class="faq-answer">
+        Yes! Go to your Profile and tap "Edit Profile" to update your name, sport preferences, skill level, achievements, and profile photo.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">
+        How do I report a listing?
+        <i data-lucide="chevron-down"></i>
+      </div>
+      <div class="faq-answer">
+        If you find inappropriate or incorrect content, tap the "Report" link on the listing detail page. Our team reviews all reports within 24-48 hours.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question">
+        What payment methods are accepted?
+        <i data-lucide="chevron-down"></i>
+      </div>
+      <div class="faq-answer">
+        We accept all major credit/debit cards, UPI, net banking, and digital wallets. All payments are secured with industry-standard encryption.
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h3 class="section-title">
+      <i data-lucide="headphones"></i>
+      Contact Us
+    </h3>
+
+    <div class="contact-cards">
+      <div class="contact-card">
+        <div class="contact-icon">
+          <i data-lucide="mail"></i>
+        </div>
+        <div class="contact-info">
+          <div class="label">Email us at</div>
+          <div class="value">support@sportx.in</div>
+        </div>
+        <div class="contact-arrow">
+          <i data-lucide="chevron-right"></i>
+        </div>
+      </div>
+
+      <div class="contact-card">
+        <div class="contact-icon">
+          <i data-lucide="message-circle"></i>
+        </div>
+        <div class="contact-info">
+          <div class="label">Chat with us</div>
+          <div class="value">Mon-Sat, 9AM-7PM</div>
+        </div>
+        <div class="contact-arrow">
+          <i data-lucide="chevron-right"></i>
+        </div>
+      </div>
+
+      <div class="contact-card">
+        <div class="contact-icon">
+          <i data-lucide="phone"></i>
+        </div>
+        <div class="contact-info">
+          <div class="label">Call us at</div>
+          <div class="value">+91 1800-XXX-XXXX (Toll Free)</div>
+        </div>
+        <div class="contact-arrow">
+          <i data-lucide="chevron-right"></i>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="bottom-nav">
+    <div class="nav-item" onclick="window.location.href='home-dashboard.html'">
+      <i data-lucide="home"></i>
+      <span>Home</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='universal-search.html'">
+      <i data-lucide="search"></i>
+      <span>Search</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='saved-items.html'">
+      <i data-lucide="heart"></i>
+      <span>Saved</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='activity-hub.html'">
+      <i data-lucide="layout-list"></i>
+      <span>Activity</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='profile-view.html'">
+      <i data-lucide="user"></i>
+      <span>Profile</span>
+    </div>
+  </nav>
+
+  <script>
+    lucide.createIcons();
+
+    document.querySelectorAll('.faq-question').forEach(function(question) {
+      question.addEventListener('click', function() {
+        this.parentElement.classList.toggle('open');
+      });
+    });
+  </script>
+</body>
+</html>

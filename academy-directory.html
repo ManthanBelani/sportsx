@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Academies - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 10;
+    }
+
+    .back-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--fg);
+    }
+
+    .back-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .header h1 {
+      flex: 1;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .filter-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface);
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--muted);
+    }
+
+    .filter-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .search-bar {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-input {
+      display: flex;
+      align-items: center;
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 10px 16px;
+      gap: 10px;
+    }
+
+    .search-input svg {
+      width: 18px;
+      height: 18px;
+      color: var(--muted);
+    }
+
+    .search-input input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--fg);
+      outline: none;
+    }
+
+    .search-input input::placeholder {
+      color: var(--muted);
+    }
+
+    .chips {
+      padding: 12px 20px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .chips::-webkit-scrollbar {
+      display: none;
+    }
+
+    .chip {
+      padding: 8px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--fg);
+      white-space: nowrap;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chip svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .chip.active {
+      background: #e6f0ff;
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .results {
+      padding: 16px 20px;
+    }
+
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .results-count {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .list-card {
+      display: flex;
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: 12px;
+      gap: 12px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .list-card:active {
+      background: var(--surface);
+    }
+
+    .list-card-image {
+      width: 80px;
+      height: 80px;
+      background: var(--surface);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .list-card-image svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .list-card-body {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .list-card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 4px;
+    }
+
+    .list-card-meta {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .list-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .list-card-price {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .list-card-rating {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .list-card-rating svg {
+      width: 14px;
+      height: 14px;
+      color: #f59e0b;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      padding-bottom: max(8px, env(safe-area-inset-bottom));
+      z-index: 100;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 8px 16px;
+      color: var(--muted);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+    }
+
+    .nav-item svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .nav-item span {
+      font-size: 11px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="back-btn" onclick="window.history.back()">
+      <i data-lucide="arrow-left"></i>
+    </div>
+    <h1>Academies</h1>
+    <div class="filter-btn">
+      <i data-lucide="sliders-horizontal"></i>
+    </div>
+  </header>
+
+  <div class="search-bar">
+    <div class="search-input">
+      <i data-lucide="search"></i>
+      <input type="text" placeholder="Search academies...">
+    </div>
+  </div>
+
+  <div class="chips">
+    <div class="chip active">All Sports</div>
+    <div class="chip">
+      <i data-lucide="circle-dot"></i>
+      Cricket
+    </div>
+    <div class="chip">
+      <i data-lucide="goal"></i>
+      Football
+    </div>
+    <div class="chip">
+      <i data-lucide="shuttlecock"></i>
+      Badminton
+    </div>
+    <div class="chip">
+      <i data-lucide="waves"></i>
+      Swimming
+    </div>
+    <div class="chip">
+      <i data-lucide="footprints"></i>
+      Athletics
+    </div>
+  </div>
+
+  <div class="results">
+    <div class="results-header">
+      <span class="results-count">24 academies found</span>
+    </div>
+
+    <div class="list-card" onclick="window.location.href='academy-detail.html'">
+      <div class="list-card-image">
+        <i data-lucide="circle-dot"></i>
+      </div>
+      <div class="list-card-body">
+        <div class="list-card-title">Elite Cricket Academy</div>
+        <div class="list-card-meta">Cricket · Ahmedabad, Gujarat</div>
+        <div class="list-card-footer">
+          <span class="list-card-price">₹2,000 – ₹5,000/mo</span>
+          <span class="list-card-rating">
+            <i data-lucide="star"></i>
+            4.8 (124)
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="list-card">
+      <div class="list-card-image">
+        <i data-lucide="goal"></i>
+      </div>
+      <div class="list-card-body">
+        <div class="list-card-title">Ahmedabad Football Academy</div>
+        <div class="list-card-meta">Football · Ahmedabad, Gujarat</div>
+        <div class="list-card-footer">
+          <span class="list-card-price">₹1,500 – ₹3,000/mo</span>
+          <span class="list-card-rating">
+            <i data-lucide="star"></i>
+            4.6 (89)
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="list-card">
+      <div class="list-card-image">
+        <i data-lucide="shuttlecock"></i>
+      </div>
+      <div class="list-card-body">
+        <div class="list-card-title">Smash Badminton Centre</div>
+        <div class="list-card-meta">Badminton · Ahmedabad, Gujarat</div>
+        <div class="list-card-footer">
+          <span class="list-card-price">₹1,200 – ₹2,500/mo</span>
+          <span class="list-card-rating">
+            <i data-lucide="star"></i>
+            4.9 (201)
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="list-card">
+      <div class="list-card-image">
+        <i data-lucide="circle-dot"></i>
+      </div>
+      <div class="list-card-body">
+        <div class="list-card-title">Gujarat Cricket Academy</div>
+        <div class="list-card-meta">Cricket · Gandhinagar, Gujarat</div>
+        <div class="list-card-footer">
+          <span class="list-card-price">₹2,500 – ₹6,000/mo</span>
+          <span class="list-card-rating">
+            <i data-lucide="star"></i>
+            4.7 (156)
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="list-card">
+      <div class="list-card-image">
+        <i data-lucide="waves"></i>
+      </div>
+      <div class="list-card-body">
+        <div class="list-card-title">Aqua Swim Academy</div>
+        <div class="list-card-meta">Swimming · Ahmedabad, Gujarat</div>
+        <div class="list-card-footer">
+          <span class="list-card-price">₹2,000 – ₹4,000/mo</span>
+          <span class="list-card-rating">
+            <i data-lucide="star"></i>
+            4.5 (67)
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <div class="nav-item" onclick="window.location.href='home-dashboard.html'">
+      <i data-lucide="home"></i>
+      <span>Home</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='universal-search.html'">
+      <i data-lucide="search"></i>
+      <span>Search</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='saved-items.html'">
+      <i data-lucide="heart"></i>
+      <span>Saved</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='activity-hub.html'">
+      <i data-lucide="layout-list"></i>
+      <span>Activity</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='profile-view.html'">
+      <i data-lucide="user"></i>
+      <span>Profile</span>
+    </div>
+  </nav>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

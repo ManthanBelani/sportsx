@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Academy Dashboard - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--surface); color: var(--fg); min-height: 100vh; display: flex; flex-direction: column; }
+    .status-bar { height: 44px; padding-top: var(--safe-top); display: flex; align-items: center; justify-content: space-between; padding-left: 24px; padding-right: 24px; font-size: 14px; font-weight: 600; }
+    .status-icons { display: flex; gap: 4px; align-items: center; }
+    .status-icons svg { width: 16px; height: 16px; }
+    .header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: var(--bg); }
+    .header h1 { font-size: 20px; font-weight: 700; color: var(--accent); }
+    .notif-btn { width: 40px; height: 40px; border-radius: var(--radius); border: none; background: var(--surface); cursor: pointer; position: relative; display: flex; align-items: center; justify-content: center; }
+    .notif-btn svg { width: 18px; height: 18px; }
+    .notif-btn::after { content: '5'; position: absolute; top: 6px; right: 6px; width: 16px; height: 16px; background: #dc2626; color: white; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+    .main-content { flex: 1; padding: 20px; }
+    .academy-banner { background: var(--bg); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px; }
+    .academy-logo { width: 56px; height: 56px; border-radius: var(--radius); object-fit: cover; }
+    .academy-text h2 { font-size: 18px; font-weight: 600; }
+    .academy-text p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+    .stat-card { background: var(--bg); border-radius: var(--radius); padding: 16px; text-align: center; }
+    .stat-number { font-size: 28px; font-weight: 700; color: var(--accent); }
+    .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .quick-actions { background: var(--bg); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
+    .quick-actions h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+    .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .action-item { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
+    .action-icon { width: 48px; height: 48px; background: var(--surface); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; }
+    .action-icon svg { width: 22px; height: 22px; }
+    .action-label { font-size: 11px; color: var(--muted); text-align: center; }
+    .trials-list { background: var(--bg); border-radius: var(--radius); padding: 16px; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .section-header h3 { font-size: 15px; font-weight: 600; }
+    .section-header a { font-size: 13px; color: var(--accent); text-decoration: none; }
+    .trial-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .trial-item:last-child { border-bottom: none; }
+    .trial-icon { width: 44px; height: 44px; background: var(--surface); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; }
+    .trial-icon svg { width: 20px; height: 20px; }
+    .trial-content { flex: 1; }
+    .trial-title { font-size: 14px; font-weight: 600; }
+    .trial-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .status-badge.published { background: #d1fae5; color: #065f46; }
+    .status-badge.draft { background: #fef3c7; color: #92400e; }
+    .status-badge.closed { background: var(--surface); color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="status-icons">
+      <i data-lucide="wifi"></i>
+      <i data-lucide="radio"></i>
+      <i data-lucide="battery-full"></i>
+    </div>
+  </div>
+  <div class="header">
+    <h1>SportX</h1>
+    <button class="notif-btn" onclick="location.href='../notifications.html'">
+      <i data-lucide="bell"></i>
+    </button>
+  </div>
+  <div class="main-content">
+    <div class="academy-banner">
+      <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=112&h=112&fit=crop" alt="Academy" class="academy-logo">
+      <div class="academy-text">
+        <h2>Sreekanya Academy</h2>
+        <p>Football & Athletics • Indiranagar, Bangalore</p>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-number">3</div><div class="stat-label">Active Trials</div></div>
+      <div class="stat-card"><div class="stat-number">24</div><div class="stat-label">Total Registrations</div></div>
+      <div class="stat-card"><div class="stat-number">8</div><div class="stat-label">Pending Enquiries</div></div>
+    </div>
+    <div class="quick-actions">
+      <h3>Quick Actions</h3>
+      <div class="action-grid">
+        <div class="action-item" onclick="location.href='trial-posting-form.html'">
+          <div class="action-icon"><i data-lucide="plus-circle"></i></div>
+          <span class="action-label">Post Trial</span>
+        </div>
+        <div class="action-item" onclick="location.href='my-trials.html'">
+          <div class="action-icon"><i data-lucide="clipboard-list"></i></div>
+          <span class="action-label">My Trials</span>
+        </div>
+        <div class="action-item">
+          <div class="action-icon"><i data-lucide="message-circle"></i></div>
+          <span class="action-label">Enquiries</span>
+        </div>
+        <div class="action-item" onclick="location.href='academy-listing-edit.html'">
+          <div class="action-icon"><i data-lucide="user"></i></div>
+          <span class="action-label">Edit Listing</span>
+        </div>
+      </div>
+    </div>
+    <div class="trials-list">
+      <div class="section-header">
+        <h3>My Trials</h3>
+        <a href="my-trials.html">View All</a>
+      </div>
+      <div class="trial-item" onclick="location.href='registrant-list.html'">
+        <div class="trial-icon"><i data-lucide="circle-dot"></i></div>
+        <div class="trial-content">
+          <div class="trial-title">Open Football Trials - December</div>
+          <div class="trial-meta">Dec 10, 2024 • 18 registrations</div>
+        </div>
+        <span class="status-badge published">Published</span>
+      </div>
+      <div class="trial-item">
+        <div class="trial-icon"><i data-lucide="footprints"></i></div>
+        <div class="trial-content">
+          <div class="trial-title">Athletics Talent Hunt 2024</div>
+          <div class="trial-meta">Dec 20, 2024 • Draft</div>
+        </div>
+        <span class="status-badge draft">Draft</span>
+      </div>
+      <div class="trial-item">
+        <div class="trial-icon"><i data-lucide="circle-dot"></i></div>
+        <div class="trial-content">
+          <div class="trial-title">U-14 Football Championship</div>
+          <div class="trial-meta">Nov 15, 2024 • Closed</div>
+        </div>
+        <span class="status-badge closed">Closed</span>
+      </div>
+    </div>
+  </div>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

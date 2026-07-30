@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Saved - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .back-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--fg);
+    }
+
+    .back-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .header h1 {
+      flex: 1;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .tabs {
+      display: flex;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab {
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .content {
+      padding: 16px 20px;
+    }
+
+    .list-card {
+      display: flex;
+      align-items: center;
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: 12px;
+      gap: 12px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .list-card:active {
+      background: var(--surface);
+    }
+
+    .list-card-image {
+      width: 72px;
+      height: 72px;
+      background: var(--surface);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .list-card-image svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .list-card-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .list-card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 4px;
+    }
+
+    .list-card-meta {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .list-card-price {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .remove-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .remove-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+    }
+
+    .empty-state svg {
+      width: 64px;
+      height: 64px;
+      color: var(--border);
+      margin-bottom: 16px;
+    }
+
+    .empty-state h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 8px;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      padding-bottom: max(8px, env(safe-area-inset-bottom));
+      z-index: 100;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 8px 16px;
+      color: var(--muted);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+    }
+
+    .nav-item svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .nav-item span {
+      font-size: 11px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="back-btn" onclick="window.history.back()">
+      <i data-lucide="arrow-left"></i>
+    </div>
+    <h1>Saved Items</h1>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active">Academies</div>
+    <div class="tab">Coaches</div>
+    <div class="tab">Trials</div>
+    <div class="tab">Tournaments</div>
+  </div>
+
+  <div class="content">
+    <div class="list-card" onclick="window.location.href='academy-detail.html'">
+      <div class="list-card-image">
+        <i data-lucide="building-2"></i>
+      </div>
+      <div class="list-card-body">
+        <div class="list-card-title">Elite Cricket Academy</div>
+        <div class="list-card-meta">Cricket · Ahmedabad</div>
+        <div class="list-card-price">₹2,000 – ₹5,000/mo</div>
+      </div>
+      <div class="remove-btn" onclick="event.stopPropagation()">
+        <i data-lucide="heart"></i>
+      </div>
+    </div>
+
+    <div class="list-card" onclick="window.location.href='coach-detail.html'">
+      <div class="list-card-image">
+        <i data-lucide="user"></i>
+      </div>
+      <div class="list-card-body">
+        <div class="list-card-title">Rahul Mehta</div>
+        <div class="list-card-meta">Cricket · 8 yrs exp</div>
+        <div class="list-card-price">₹800/session</div>
+      </div>
+      <div class="remove-btn" onclick="event.stopPropagation()">
+        <i data-lucide="heart"></i>
+      </div>
+    </div>
+
+    <div class="list-card" onclick="window.location.href='trial-detail.html'">
+      <div class="list-card-image">
+        <i data-lucide="circle-dot"></i>
+      </div>
+      <div class="list-card-body">
+        <div class="list-card-title">U-14 Cricket Trials</div>
+        <div class="list-card-meta">Aug 15 · Sardar Patel Stadium</div>
+        <div class="list-card-price">₹200</div>
+      </div>
+      <div class="remove-btn" onclick="event.stopPropagation()">
+        <i data-lucide="heart"></i>
+      </div>
+    </div>
+
+    <div class="list-card">
+      <div class="list-card-image">
+        <i data-lucide="building-2"></i>
+      </div>
+      <div class="list-card-body">
+        <div class="list-card-title">Smash Badminton Centre</div>
+        <div class="list-card-meta">Badminton · Ahmedabad</div>
+        <div class="list-card-price">₹1,200 – ₹2,500/mo</div>
+      </div>
+      <div class="remove-btn" onclick="event.stopPropagation()">
+        <i data-lucide="heart"></i>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <div class="nav-item" onclick="window.location.href='home-dashboard.html'">
+      <i data-lucide="home"></i>
+      <span>Home</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='universal-search.html'">
+      <i data-lucide="search"></i>
+      <span>Search</span>
+    </div>
+    <div class="nav-item active">
+      <i data-lucide="heart"></i>
+      <span>Saved</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='activity-hub.html'">
+      <i data-lucide="layout-list"></i>
+      <span>Activity</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='profile-view.html'">
+      <i data-lucide="user"></i>
+      <span>Profile</span>
+    </div>
+  </nav>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

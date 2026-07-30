@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Registrants - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; display: flex; flex-direction: column; }
+    .status-bar { height: 44px; padding-top: var(--safe-top); display: flex; align-items: center; justify-content: space-between; padding-left: 24px; padding-right: 24px; font-size: 14px; font-weight: 600; }
+    .status-icons { display: flex; gap: 4px; align-items: center; }
+    .status-icons svg { width: 16px; height: 16px; }
+    .header { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .back-btn { width: 40px; height: 40px; border-radius: var(--radius); border: none; background: var(--surface); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .back-btn svg { width: 18px; height: 18px; }
+    .main-content { flex: 1; overflow-y: auto; }
+    .trial-info-bar { padding: 16px 20px; background: var(--surface); border-bottom: 1px solid var(--border); }
+    .trial-info-bar h2 { font-size: 16px; font-weight: 600; }
+    .trial-info-bar p { font-size: 13px; color: var(--muted); margin-top: 4px; display: flex; align-items: center; gap: 6px; }
+    .trial-info-bar p svg { width: 14px; height: 14px; }
+    .capacity-bar { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+    .capacity-track { flex: 1; height: 8px; background: var(--border); border-radius: 4px; }
+    .capacity-fill { height: 100%; background: var(--accent); border-radius: 4px; width: 36%; }
+    .capacity-text { font-size: 13px; font-weight: 500; }
+    .registrant-table { width: 100%; }
+    .table-header { display: flex; padding: 12px 20px; background: var(--surface); border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 600; color: var(--muted); }
+    .table-row { display: flex; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .table-row:hover { background: var(--surface); }
+    .col-name { flex: 2; display: flex; align-items: center; gap: 10px; }
+    .col-contact { flex: 1.5; font-size: 13px; color: var(--muted); }
+    .col-docs { flex: 1; font-size: 13px; }
+    .col-status { flex: 1; }
+    .registrant-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+    .registrant-name { font-size: 14px; font-weight: 500; }
+    .registrant-age { font-size: 12px; color: var(--muted); }
+    .doc-status { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .doc-status.complete { background: #d1fae5; color: #065f46; }
+    .doc-status.pending { background: #fef3c7; color: #92400e; }
+    .reg-status { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+    .reg-status.confirmed { background: #d1fae5; color: #065f46; }
+    .reg-status.pending { background: #fef3c7; color: #92400e; }
+  </style>
+</head>
+<body>
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="status-icons">
+      <i data-lucide="wifi"></i>
+      <i data-lucide="radio"></i>
+      <i data-lucide="battery-full"></i>
+    </div>
+  </div>
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">
+      <i data-lucide="arrow-left"></i>
+    </button>
+    <h1>Registrants</h1>
+  </div>
+  <div class="trial-info-bar">
+    <h2>Open Football Trials - December 2024</h2>
+    <p><i data-lucide="calendar"></i> Dec 10, 2024 • 8:00 AM - 12:00 PM</p>
+    <div class="capacity-bar">
+      <div class="capacity-track"><div class="capacity-fill"></div></div>
+      <span class="capacity-text">18 / 50</span>
+    </div>
+  </div>
+  <div class="registrant-table">
+    <div class="table-header">
+      <div class="col-name">Athlete</div>
+      <div class="col-contact">Contact</div>
+      <div class="col-docs">Documents</div>
+      <div class="col-status">Status</div>
+    </div>
+    <div class="table-row" onclick="location.href='registrant-detail.html'">
+      <div class="col-name">
+        <img src="https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=72&h=72&fit=crop" alt="Priya" class="registrant-avatar">
+        <div><div class="registrant-name">Priya Sharma</div><div class="registrant-age">Age 14 • Female</div></div>
+      </div>
+      <div class="col-contact">+91 98765 43210</div>
+      <div class="col-docs"><span class="doc-status complete">Complete</span></div>
+      <div class="col-status"><span class="reg-status confirmed">Confirmed</span></div>
+    </div>
+    <div class="table-row" onclick="location.href='registrant-detail.html'">
+      <div class="col-name">
+        <img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=72&h=72&fit=crop" alt="Arjun" class="registrant-avatar">
+        <div><div class="registrant-name">Arjun Mehta</div><div class="registrant-age">Age 13 • Male</div></div>
+      </div>
+      <div class="col-contact">+91 99876 54321</div>
+      <div class="col-docs"><span class="doc-status complete">Complete</span></div>
+      <div class="col-status"><span class="reg-status confirmed">Confirmed</span></div>
+    </div>
+    <div class="table-row" onclick="location.href='registrant-detail.html'">
+      <div class="col-name">
+        <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?w=72&h=72&fit=crop" alt="Vikram" class="registrant-avatar">
+        <div><div class="registrant-name">Vikram Singh</div><div class="registrant-age">Age 12 • Male</div></div>
+      </div>
+      <div class="col-contact">+91 87654 32109</div>
+      <div class="col-docs"><span class="doc-status pending">Pending</span></div>
+      <div class="col-status"><span class="reg-status pending">Pending</span></div>
+    </div>
+    <div class="table-row">
+      <div class="col-name">
+        <img src="https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=72&h=72&fit=crop" alt="Neha" class="registrant-avatar">
+        <div><div class="registrant-name">Neha Reddy</div><div class="registrant-age">Age 15 • Female</div></div>
+      </div>
+      <div class="col-contact">+91 76543 21098</div>
+      <div class="col-docs"><span class="doc-status complete">Complete</span></div>
+      <div class="col-status"><span class="reg-status confirmed">Confirmed</span></div>
+    </div>
+  </div>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

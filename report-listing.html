@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Report Listing - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      padding-bottom: 100px;
+    }
+
+    .header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 10;
+    }
+
+    .back-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--fg);
+    }
+
+    .back-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .header h1 {
+      flex: 1;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    .listing-info {
+      display: flex;
+      gap: 12px;
+      padding: 16px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      margin-bottom: 24px;
+    }
+
+    .listing-icon {
+      width: 56px;
+      height: 56px;
+      background: var(--bg);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .listing-icon svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .listing-details {
+      flex: 1;
+    }
+
+    .listing-details .title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 4px;
+    }
+
+    .listing-details .meta {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title svg {
+      width: 18px;
+      height: 18px;
+      color: var(--accent);
+    }
+
+    .reason-list {
+      margin-bottom: 24px;
+    }
+
+    .reason-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .reason-item:active {
+      background: var(--surface);
+    }
+
+    .reason-item.selected {
+      border-color: var(--accent);
+      background: #e6f0ff;
+    }
+
+    .reason-radio {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .reason-item.selected .reason-radio {
+      border-color: var(--accent);
+    }
+
+    .reason-radio svg {
+      width: 12px;
+      height: 12px;
+      color: var(--accent);
+      opacity: 0;
+    }
+
+    .reason-item.selected .reason-radio svg {
+      opacity: 1;
+    }
+
+    .reason-content {
+      flex: 1;
+    }
+
+    .reason-content .label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--fg);
+      margin-bottom: 2px;
+    }
+
+    .reason-content .desc {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--fg);
+      margin-bottom: 8px;
+    }
+
+    .form-textarea {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--fg);
+      outline: none;
+      resize: vertical;
+      min-height: 100px;
+      transition: border-color 0.2s ease;
+    }
+
+    .form-textarea:focus {
+      border-color: var(--accent);
+      background: var(--bg);
+    }
+
+    .form-textarea::placeholder {
+      color: var(--muted);
+    }
+
+    .disclaimer {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 24px;
+      padding: 12px;
+      background: var(--surface);
+      border-radius: var(--radius);
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .submit-btn:active {
+      background: var(--fg);
+    }
+
+    .submit-btn:disabled {
+      background: var(--border);
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="back-btn" onclick="window.history.back()">
+      <i data-lucide="arrow-left"></i>
+    </div>
+    <h1>Report Listing</h1>
+  </header>
+
+  <div class="content">
+    <div class="listing-info">
+      <div class="listing-icon">
+        <i data-lucide="building-2"></i>
+      </div>
+      <div class="listing-details">
+        <div class="title">Elite Cricket Academy</div>
+        <div class="meta">Sardar Patel Stadium, Ahmedabad</div>
+      </div>
+    </div>
+
+    <h3 class="section-title">
+      <i data-lucide="alert-triangle"></i>
+      Why are you reporting this listing?
+    </h3>
+
+    <div class="reason-list">
+      <div class="reason-item" data-reason="fake">
+        <div class="reason-radio">
+          <i data-lucide="circle-dot"></i>
+        </div>
+        <div class="reason-content">
+          <div class="label">Fake or Duplicate</div>
+          <div class="desc">This listing appears to be fake or a duplicate</div>
+        </div>
+      </div>
+
+      <div class="reason-item" data-reason="wrong-info">
+        <div class="reason-radio">
+          <i data-lucide="circle-dot"></i>
+        </div>
+        <div class="reason-content">
+          <div class="label">Wrong Information</div>
+          <div class="desc">Contains incorrect or misleading details</div>
+        </div>
+      </div>
+
+      <div class="reason-item" data-reason="inappropriate">
+        <div class="reason-radio">
+          <i data-lucide="circle-dot"></i>
+        </div>
+        <div class="reason-content">
+          <div class="label">Inappropriate Content</div>
+          <div class="desc">Contains offensive or inappropriate material</div>
+        </div>
+      </div>
+
+      <div class="reason-item" data-reason="scam">
+        <div class="reason-radio">
+          <i data-lucide="circle-dot"></i>
+        </div>
+        <div class="reason-content">
+          <div class="label">Suspected Scam</div>
+          <div class="desc">Looks like a fraudulent or scam listing</div>
+        </div>
+      </div>
+
+      <div class="reason-item" data-reason="other">
+        <div class="reason-radio">
+          <i data-lucide="circle-dot"></i>
+        </div>
+        <div class="reason-content">
+          <div class="label">Other</div>
+          <div class="desc">Another reason not listed above</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Additional Details (Optional)</label>
+      <textarea class="form-textarea" placeholder="Provide any additional context that will help us investigate..."></textarea>
+    </div>
+
+    <div class="disclaimer">
+      Your report will be reviewed by our moderation team within 24-48 hours. If urgent, please contact support@sportx.in. Please do not share personal or payment information in your report.
+    </div>
+
+    <button class="submit-btn" id="submitBtn" disabled>Submit Report</button>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    var selectedReason = null;
+
+    document.querySelectorAll('.reason-item').forEach(function(item) {
+      item.addEventListener('click', function() {
+        document.querySelectorAll('.reason-item').forEach(function(r) {
+          r.classList.remove('selected');
+        });
+        this.classList.add('selected');
+        selectedReason = this.dataset.reason;
+        document.getElementById('submitBtn').disabled = false;
+      });
+    });
+
+    document.getElementById('submitBtn').addEventListener('click', function() {
+      if (selectedReason) {
+        window.location.href = 'home-dashboard.html';
+      }
+    });
+  </script>
+</body>
+</html>

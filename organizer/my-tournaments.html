@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SportX India</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; display: flex; flex-direction: column; }
+    .status-bar { height: 44px; padding-top: var(--safe-top); display: flex; align-items: center; justify-content: space-between; padding-left: 24px; padding-right: 24px; font-size: 14px; font-weight: 600; }
+    .header { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .back-btn { width: 40px; height: 40px; border-radius: var(--radius); border: none; background: var(--surface); cursor: pointer; font-size: 18px; }
+    .add-btn { padding: 8px 14px; background: var(--accent); color: white; border: none; border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; }
+    .main-content { flex: 1; overflow-y: auto; padding: 16px 20px; }
+    .tournament-card { background: var(--surface); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; cursor: pointer; }
+    .tournament-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .tournament-icon { width: 48px; height: 48px; background: var(--bg); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 22px; }
+    .tournament-info { flex: 1; }
+    .tournament-title { font-size: 15px; font-weight: 600; }
+    .tournament-dates { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .status-badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+    .status-badge.published { background: #d1fae5; color: #065f46; }
+    .status-badge.draft { background: #fef3c7; color: #92400e; }
+    .tournament-stats { display: flex; gap: 20px; }
+    .tournament-stat { font-size: 13px; color: var(--muted); }
+    .tournament-stat strong { color: var(--fg); }
+    .section-title { font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 12px; }
+    .capacity-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .capacity-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .capacity-track { height: 6px; background: var(--border); border-radius: 3px; }
+    .capacity-fill { height: 100%; background: var(--accent); border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div class="status-bar"><span>9:41</span><span>📶 📡 🔋</span></div>
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <h1>My Tournaments</h1>
+    <button class="add-btn" onclick="location.href='tournament-create.html'">+ New</button>
+  </div>
+  <div class="main-content">
+    <div class="section-title">PUBLISHED (1)</div>
+    <div class="tournament-card" onclick="location.href='registration-management.html'">
+      <div class="tournament-header">
+        <div class="tournament-icon"><i data-lucide="trophy"></i></div>
+        <div class="tournament-info">
+          <div class="tournament-title">Junior National Football Championship 2024</div>
+          <div class="tournament-dates">Dec 15-17, 2024 • Bangalore</div>
+        </div>
+        <span class="status-badge published">Published</span>
+      </div>
+      <div class="tournament-stats">
+        <span class="tournament-stat"><strong>42</strong> teams registered</span>
+        <span class="tournament-stat"><strong>₹1,26,000</strong> collected</span>
+      </div>
+      <div class="capacity-section">
+        <div class="capacity-row">
+          <span style="font-size:12px;color:var(--muted);">U-16: 16/16 teams</span>
+          <span style="font-size:12px;font-weight:500;">Full</span>
+        </div>
+        <div class="capacity-track"><div class="capacity-fill" style="width:100%"></div></div>
+      </div>
+    </div>
+    <div class="section-title" style="margin-top:20px;">DRAFTS (2)</div>
+    <div class="tournament-card">
+      <div class="tournament-header">
+        <div class="tournament-icon"><i data-lucide="trophy"></i></div>
+        <div class="tournament-info">
+          <div class="tournament-title">State Level Athletics Meet 2025</div>
+          <div class="tournament-dates">Jan 5-7, 2025 • Bangalore</div>
+        </div>
+        <span class="status-badge draft">Draft</span>
+      </div>
+    </div>
+    <div class="tournament-card">
+      <div class="tournament-header">
+        <div class="tournament-icon">⚽</div>
+        <div class="tournament-info">
+          <div class="tournament-title">Inter-School Football Cup 2025</div>
+          <div class="tournament-dates">Feb 10-15, 2025 • Mumbai</div>
+        </div>
+        <span class="status-badge draft">Draft</span>
+      </div>
+    </div>
+  </div>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

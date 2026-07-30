@@ -1,0 +1,707 @@
+{
+  "schema": "open-design.design-manifest.v1",
+  "title": "screens",
+  "entryFile": "academy-detail.html",
+  "sourceFiles": {
+    "all": [
+      "academy-detail.html",
+      "academy-directory.html",
+      "academy/academy-dashboard.html",
+      "academy/academy-listing-edit.html",
+      "academy/academy-onboarding.html",
+      "academy/my-trials.html",
+      "academy/registrant-detail.html",
+      "academy/registrant-list.html",
+      "academy/trial-posting-form.html",
+      "activity-hub.html",
+      "admin/admin-analytics.html",
+      "admin/admin-content-flagging.html",
+      "admin/admin-dashboard.html",
+      "admin/admin-listing-moderation.html",
+      "admin/admin-notification-templates.html",
+      "admin/admin-report-center.html",
+      "admin/admin-sponsor-verification.html",
+      "admin/admin-sport-category-management.html",
+      "admin/admin-system-settings.html",
+      "admin/admin-user-management.html",
+      "athlete/apply-sponsor.html",
+      "athlete/enquire-coach.html",
+      "athlete/media-gallery.html",
+      "athlete/scholarship-detail.html",
+      "athlete/scholarship-feed.html",
+      "athlete/settings.html",
+      "athlete/sponsorship-detail.html",
+      "athlete/sponsorship-list.html",
+      "athlete/tournament-detail.html",
+      "athlete/tournament-registration.html",
+      "coach-detail.html",
+      "coach-directory.html",
+      "coach/coach-dashboard.html",
+      "coach/coach-onboarding.html",
+      "coach/coach-profile-edit.html",
+      "coach/enquiry-detail.html",
+      "coach/enquiry-inbox.html",
+      "help-support.html",
+      "home-dashboard.html",
+      "notifications.html",
+      "onboarding-location.html",
+      "onboarding-sport.html",
+      "organizer/capacity-management.html",
+      "organizer/my-tournaments.html",
+      "organizer/organizer-dashboard.html",
+      "organizer/organizer-onboarding.html",
+      "organizer/registration-management.html",
+      "organizer/results-publishing.html",
+      "organizer/tournament-create.html",
+      "profile-edit.html",
+      "profile-view.html",
+      "registration-confirmation.html",
+      "report-listing.html",
+      "role-selection.html",
+      "saved-items.html",
+      "search-results.html",
+      "settings.html",
+      "shared/filter-panel.html",
+      "shared/help-support.html",
+      "shared/login.html",
+      "shared/notifications-center.html",
+      "shared/otp-verification.html",
+      "shared/report-listing.html",
+      "shared/settings.html",
+      "shared/sign-up.html",
+      "splash-screen.html",
+      "sponsor/application-detail.html",
+      "sponsor/applications-inbox.html",
+      "sponsor/athlete-discovery.html",
+      "sponsor/athlete-profile-view.html",
+      "sponsor/sponsor-dashboard.html",
+      "sponsor/sponsor-onboarding.html",
+      "sponsor/sponsorship-create.html",
+      "tournament-calendar.html",
+      "trial-detail.html",
+      "trial-listings.html",
+      "trial-registration.html",
+      "universal-search.html"
+    ],
+    "html": [
+      "academy-detail.html",
+      "academy-directory.html",
+      "academy/academy-dashboard.html",
+      "academy/academy-listing-edit.html",
+      "academy/academy-onboarding.html",
+      "academy/my-trials.html",
+      "academy/registrant-detail.html",
+      "academy/registrant-list.html",
+      "academy/trial-posting-form.html",
+      "activity-hub.html",
+      "admin/admin-analytics.html",
+      "admin/admin-content-flagging.html",
+      "admin/admin-dashboard.html",
+      "admin/admin-listing-moderation.html",
+      "admin/admin-notification-templates.html",
+      "admin/admin-report-center.html",
+      "admin/admin-sponsor-verification.html",
+      "admin/admin-sport-category-management.html",
+      "admin/admin-system-settings.html",
+      "admin/admin-user-management.html",
+      "athlete/apply-sponsor.html",
+      "athlete/enquire-coach.html",
+      "athlete/media-gallery.html",
+      "athlete/scholarship-detail.html",
+      "athlete/scholarship-feed.html",
+      "athlete/settings.html",
+      "athlete/sponsorship-detail.html",
+      "athlete/sponsorship-list.html",
+      "athlete/tournament-detail.html",
+      "athlete/tournament-registration.html",
+      "coach-detail.html",
+      "coach-directory.html",
+      "coach/coach-dashboard.html",
+      "coach/coach-onboarding.html",
+      "coach/coach-profile-edit.html",
+      "coach/enquiry-detail.html",
+      "coach/enquiry-inbox.html",
+      "help-support.html",
+      "home-dashboard.html",
+      "notifications.html",
+      "onboarding-location.html",
+      "onboarding-sport.html",
+      "organizer/capacity-management.html",
+      "organizer/my-tournaments.html",
+      "organizer/organizer-dashboard.html",
+      "organizer/organizer-onboarding.html",
+      "organizer/registration-management.html",
+      "organizer/results-publishing.html",
+      "organizer/tournament-create.html",
+      "profile-edit.html",
+      "profile-view.html",
+      "registration-confirmation.html",
+      "report-listing.html",
+      "role-selection.html",
+      "saved-items.html",
+      "search-results.html",
+      "settings.html",
+      "shared/filter-panel.html",
+      "shared/help-support.html",
+      "shared/login.html",
+      "shared/notifications-center.html",
+      "shared/otp-verification.html",
+      "shared/report-listing.html",
+      "shared/settings.html",
+      "shared/sign-up.html",
+      "splash-screen.html",
+      "sponsor/application-detail.html",
+      "sponsor/applications-inbox.html",
+      "sponsor/athlete-discovery.html",
+      "sponsor/athlete-profile-view.html",
+      "sponsor/sponsor-dashboard.html",
+      "sponsor/sponsor-onboarding.html",
+      "sponsor/sponsorship-create.html",
+      "tournament-calendar.html",
+      "trial-detail.html",
+      "trial-listings.html",
+      "trial-registration.html",
+      "universal-search.html"
+    ],
+    "css": [],
+    "scriptsAndComponents": [],
+    "assets": []
+  },
+  "screens": [
+    {
+      "file": "academy-detail.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "academy-directory.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "academy/academy-dashboard.html",
+      "role": "product-screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "academy/academy-listing-edit.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "academy/academy-onboarding.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "academy/my-trials.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "academy/registrant-detail.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "academy/registrant-list.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "academy/trial-posting-form.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "activity-hub.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "admin/admin-analytics.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "admin/admin-content-flagging.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "admin/admin-dashboard.html",
+      "role": "product-screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "admin/admin-listing-moderation.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "admin/admin-notification-templates.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "admin/admin-report-center.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "admin/admin-sponsor-verification.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "admin/admin-sport-category-management.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "admin/admin-system-settings.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "admin/admin-user-management.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "athlete/apply-sponsor.html",
+      "role": "product-screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "athlete/enquire-coach.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "athlete/media-gallery.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "athlete/scholarship-detail.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "athlete/scholarship-feed.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "athlete/settings.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "athlete/sponsorship-detail.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "athlete/sponsorship-list.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "athlete/tournament-detail.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "athlete/tournament-registration.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "coach-detail.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "coach-directory.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "coach/coach-dashboard.html",
+      "role": "product-screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "coach/coach-onboarding.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "coach/coach-profile-edit.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "coach/enquiry-detail.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "coach/enquiry-inbox.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "help-support.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "home-dashboard.html",
+      "role": "product-screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "notifications.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "onboarding-location.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "onboarding-sport.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "organizer/capacity-management.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "organizer/my-tournaments.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "organizer/organizer-dashboard.html",
+      "role": "product-screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "organizer/organizer-onboarding.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "organizer/registration-management.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "organizer/results-publishing.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "organizer/tournament-create.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "profile-edit.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "profile-view.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "registration-confirmation.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "report-listing.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "role-selection.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "saved-items.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "search-results.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "settings.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "shared/filter-panel.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "shared/help-support.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "shared/login.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "shared/notifications-center.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "shared/otp-verification.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "shared/report-listing.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "shared/settings.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "shared/sign-up.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "splash-screen.html",
+      "role": "product-screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "sponsor/application-detail.html",
+      "role": "product-screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "sponsor/applications-inbox.html",
+      "role": "product-screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "sponsor/athlete-discovery.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "sponsor/athlete-profile-view.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "sponsor/sponsor-dashboard.html",
+      "role": "product-screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "sponsor/sponsor-onboarding.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "sponsor/sponsorship-create.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "tournament-calendar.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "trial-detail.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "trial-listings.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "trial-registration.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "universal-search.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    }
+  ],
+  "screenFilePolicy": {
+    "mode": "screen-file-first",
+    "entryFileRole": "primary-screen",
+    "rules": [
+      "Each distinct user-facing screen or surface must be delivered and implemented as its own file/route.",
+      "If a landing page is present or requested, keep it in landing.html and do not merge it into the product app screen.",
+      "When multiple HTML screens exist, index.html is a launcher/overview only; it must not be treated as the combined final UI.",
+      "Keep product app screens, landing pages, platform screens, and OS widget surfaces separate in production code."
+    ]
+  },
+  "appModules": [
+    "Identify domain-specific in-app modules from the exported UI; do not reduce them to generic cards.",
+    "For each major module, implement purpose, default/loading/empty/error/success states, and responsive behavior.",
+    "Keep app modules separate from OS home-screen widgets in the production component model."
+  ],
+  "osWidgets": [
+    "If the export includes home-screen, lock-screen, Live Activity, tablet glance, or Android widget surfaces, implement them as platform quick-access surfaces outside the app UI.",
+    "If none are present, do not invent OS widgets unless the product requirements request them."
+  ],
+  "landingPage": {
+    "detection": "Inspect files and screen names for a marketing/landing page surface. If present, keep it separate from product app screens.",
+    "requiredSections": [
+      "hero",
+      "value props",
+      "product proof/screenshots",
+      "feature proof",
+      "CTA"
+    ]
+  },
+  "tokens": {
+    "source": [
+      "academy-detail.html"
+    ],
+    "required": [
+      "background",
+      "surface",
+      "foreground",
+      "muted text",
+      "border",
+      "accent",
+      "radius",
+      "shadow",
+      "spacing",
+      "type scale",
+      "motion"
+    ],
+    "note": "Extract/freeze tokens before framework implementation so coding tools do not substitute default theme colors or typography."
+  },
+  "interactions": {
+    "source": [
+      "academy-detail.html"
+    ],
+    "requiredStates": [
+      "default",
+      "hover",
+      "focus",
+      "active",
+      "disabled",
+      "loading",
+      "empty",
+      "error",
+      "success"
+    ],
+    "requiredBehaviors": [
+      "forms/validation where present",
+      "tabs/filters where present",
+      "dialogs/sheets/drawers where present",
+      "copy/generate/share actions where present",
+      "player or quick controls where present"
+    ],
+    "note": "If the prototype is static, derive missing behavior from visible controls and document it before coding."
+  },
+  "responsiveViewports": [
+    {
+      "name": "mobile-compact",
+      "width": 360,
+      "height": 800,
+      "category": "mobile",
+      "mustAvoidHorizontalScroll": true
+    },
+    {
+      "name": "mobile-standard",
+      "width": 390,
+      "height": 844,
+      "category": "mobile",
+      "mustAvoidHorizontalScroll": true
+    },
+    {
+      "name": "mobile-large",
+      "width": 430,
+      "height": 932,
+      "category": "mobile",
+      "mustAvoidHorizontalScroll": true
+    },
+    {
+      "name": "foldable-small-tablet",
+      "width": 600,
+      "height": 960,
+      "category": "foldable-tablet",
+      "mustAvoidHorizontalScroll": true
+    },
+    {
+      "name": "tablet-portrait",
+      "width": 820,
+      "height": 1180,
+      "category": "tablet",
+      "mustAvoidHorizontalScroll": true
+    },
+    {
+      "name": "tablet-landscape",
+      "width": 1024,
+      "height": 768,
+      "category": "tablet",
+      "mustAvoidHorizontalScroll": true
+    },
+    {
+      "name": "laptop",
+      "width": 1366,
+      "height": 768,
+      "category": "desktop",
+      "mustAvoidHorizontalScroll": true
+    },
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900,
+      "category": "desktop",
+      "mustAvoidHorizontalScroll": true
+    },
+    {
+      "name": "wide",
+      "width": 1920,
+      "height": 1080,
+      "category": "wide",
+      "mustAvoidHorizontalScroll": true
+    }
+  ],
+  "implementationChecklist": [
+    "Open entryFile first and map screens, modules, tokens, and interactions.",
+    "Extract tokens before writing framework components.",
+    "Implement app-specific modules with real states instead of generic card grids.",
+    "Preserve or rebuild JS interactions for meaningful UX actions.",
+    "Validate screenshots at desktop/tablet/mobile viewports with no horizontal overflow.",
+    "Keep landing pages, in-app modules, and OS widgets as separate implementation surfaces."
+  ]
+}

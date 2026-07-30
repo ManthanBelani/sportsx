@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Verify Account - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .status-bar {
+      height: 44px;
+      padding-top: var(--safe-top);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-left: 24px;
+      padding-right: 24px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .status-icons {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .status-icons svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header h1 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .back-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius);
+      border: none;
+      background: var(--surface);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--fg);
+    }
+
+    .back-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 32px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .icon-circle {
+      width: 72px;
+      height: 72px;
+      background: var(--surface);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      margin-bottom: 24px;
+    }
+
+    .icon-circle svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .subtitle a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .otp-inputs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .otp-input {
+      width: 52px;
+      height: 56px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 24px;
+      font-weight: 600;
+      text-align: center;
+      background: var(--bg);
+      color: var(--fg);
+    }
+
+    .otp-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .timer {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .timer strong {
+      color: var(--fg);
+    }
+
+    .resend {
+      color: var(--accent);
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .resend:disabled {
+      color: var(--muted);
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 12px;
+      font-family: inherit;
+    }
+
+    .info-box {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-top: 24px;
+      width: 100%;
+    }
+
+    .info-box p {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="status-icons">
+      <i data-lucide="wifi"></i>
+      <i data-lucide="radio"></i>
+      <i data-lucide="battery-full"></i>
+    </div>
+  </div>
+
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">
+      <i data-lucide="arrow-left"></i>
+    </button>
+    <h1>Verify Account</h1>
+  </div>
+
+  <div class="main-content">
+    <div class="icon-circle">
+      <i data-lucide="mail"></i>
+    </div>
+    <div class="title">Check your email</div>
+    <div class="subtitle">We sent a verification code to<br><a href="mailto:priya@example.com">priya@example.com</a></div>
+
+    <div class="otp-inputs">
+      <input type="text" class="otp-input" maxlength="1" value="4">
+      <input type="text" class="otp-input" maxlength="1" value="7">
+      <input type="text" class="otp-input" maxlength="1" value="2">
+      <input type="text" class="otp-input" maxlength="1" value="9">
+      <input type="text" class="otp-input" maxlength="1" value="1">
+      <input type="text" class="otp-input" maxlength="1" value="3">
+    </div>
+
+    <div class="timer">Resend code in <strong>0:58</strong></div>
+    <button class="btn-primary" onclick="location.href='../role-selection.html'">Verify & Continue</button>
+
+    <div class="info-box">
+      <p>Didn't receive the code? Check your spam folder or <span class="resend">resend</span> after 0:58</p>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

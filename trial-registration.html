@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Register - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      padding-bottom: 100px;
+    }
+
+    .header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 10;
+    }
+
+    .back-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--fg);
+    }
+
+    .back-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .header h1 {
+      flex: 1;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    .profile-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      margin-bottom: 24px;
+    }
+
+    .profile-avatar {
+      width: 48px;
+      height: 48px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+
+    .profile-avatar svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .profile-info .name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--fg);
+    }
+
+    .profile-info .meta {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title svg {
+      width: 18px;
+      height: 18px;
+      color: var(--accent);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--fg);
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--fg);
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+      background: var(--bg);
+    }
+
+    .form-input::placeholder {
+      color: var(--muted);
+    }
+
+    textarea.form-input {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .upload-zone:active {
+      border-color: var(--accent);
+      background: #e6f0ff;
+    }
+
+    .upload-zone .icon {
+      margin-bottom: 8px;
+      color: var(--accent);
+    }
+
+    .upload-zone .icon svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .upload-zone .text {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .upload-zone .text span {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--accent);
+      margin-top: 2px;
+    }
+
+    .checkbox-group label {
+      font-size: 13px;
+      color: var(--fg);
+      line-height: 1.5;
+    }
+
+    .cta-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      padding: 16px 20px;
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      z-index: 100;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .submit-btn:active {
+      background: var(--fg);
+    }
+
+    .submit-btn:disabled {
+      background: var(--border);
+      cursor: not-allowed;
+    }
+
+    .summary-box {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .summary-row:last-child {
+      border-bottom: none;
+    }
+
+    .summary-row .label {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .summary-row .value {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--fg);
+    }
+
+    .summary-row.total {
+      font-weight: 600;
+    }
+
+    .summary-row.total .value {
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="back-btn" onclick="window.history.back()">
+      <i data-lucide="arrow-left"></i>
+    </div>
+    <h1>Register for Trial</h1>
+  </header>
+
+  <div class="content">
+    <div class="profile-card">
+      <div class="profile-avatar">
+        <i data-lucide="user"></i>
+      </div>
+      <div class="profile-info">
+        <div class="name">Aryan Patel</div>
+        <div class="meta">Cricket · Under-14</div>
+      </div>
+    </div>
+
+    <div class="summary-box">
+      <div class="summary-row">
+        <span class="label">Event</span>
+        <span class="value">U-14 Cricket Trials</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Date</span>
+        <span class="value">Aug 15, 2026</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Venue</span>
+        <span class="value">Sardar Patel Stadium</span>
+      </div>
+      <div class="summary-row total">
+        <span class="label">Entry Fee</span>
+        <span class="value">₹200</span>
+      </div>
+    </div>
+
+    <section class="section">
+      <h2 class="section-title">
+        <i data-lucide="clipboard-list"></i>
+        Your Details
+      </h2>
+
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" class="form-input" value="Aryan Patel" placeholder="Enter your full name">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Date of Birth</label>
+        <input type="date" class="form-input" value="2012-03-15">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Parent/Guardian Name</label>
+        <input type="text" class="form-input" value="Rajesh Patel" placeholder="Enter parent/guardian name">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Contact Number</label>
+        <input type="tel" class="form-input" value="+91 98XXX XXXXX" placeholder="Enter contact number">
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">
+        <i data-lucide="file-text"></i>
+        Documents
+      </h2>
+
+      <div class="upload-zone">
+        <div class="icon">
+          <i data-lucide="upload"></i>
+        </div>
+        <div class="text">Tap to upload <span>Aadhaar Card</span></div>
+      </div>
+
+      <div class="upload-zone" style="margin-top: 12px;">
+        <div class="icon">
+          <i data-lucide="image"></i>
+        </div>
+        <div class="text">Tap to upload <span>Passport Photo</span></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">
+        <i data-lucide="message-square"></i>
+        Message (Optional)
+      </h2>
+      <textarea class="form-input" placeholder="Any message for the organizer..."></textarea>
+    </section>
+
+    <div class="checkbox-group">
+      <input type="checkbox" id="confirm">
+      <label for="confirm">I confirm that all details provided are accurate. I have read and agree to the Terms & Conditions and Privacy Policy.</label>
+    </div>
+  </div>
+
+  <div class="cta-bar">
+    <button class="submit-btn" onclick="window.location.href='registration-confirmation.html'">Submit Registration</button>
+  </div>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

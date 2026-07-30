@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Edit Academy Listing - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; display: flex; flex-direction: column; }
+    .status-bar { height: 44px; padding-top: var(--safe-top); display: flex; align-items: center; justify-content: space-between; padding-left: 24px; padding-right: 24px; font-size: 14px; font-weight: 600; }
+    .status-icons { display: flex; gap: 4px; align-items: center; }
+    .status-icons svg { width: 16px; height: 16px; }
+    .header { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .back-btn { width: 40px; height: 40px; border-radius: var(--radius); border: none; background: var(--surface); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .back-btn svg { width: 18px; height: 18px; }
+    .save-btn { margin-left: auto; padding: 8px 16px; background: var(--accent); color: white; border: none; border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; }
+    .main-content { flex: 1; padding: 20px; overflow-y: auto; }
+    .form-section { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+    .form-section:last-child { border-bottom: none; }
+    .section-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; font-family: inherit; background: var(--bg); color: var(--fg); }
+    .form-group textarea { resize: none; height: 80px; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--accent); }
+    .row { display: flex; gap: 12px; }
+    .row .form-group { flex: 1; }
+    .facility-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .facility-tag { padding: 8px 14px; border: 1px solid var(--border); border-radius: 20px; font-size: 13px; background: var(--bg); cursor: pointer; }
+    .facility-tag.selected { background: var(--accent); color: white; border-color: var(--accent); }
+    .age-group-options { display: flex; gap: 8px; }
+    .age-option { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius); text-align: center; font-size: 13px; background: var(--bg); cursor: pointer; }
+    .age-option.selected { background: var(--accent); color: white; border-color: var(--accent); }
+    .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+    .photo-item { aspect-ratio: 1; background: var(--surface); border-radius: var(--radius); overflow: hidden; position: relative; }
+    .photo-item img { width: 100%; height: 100%; object-fit: cover; }
+    .photo-item.add { border: 2px dashed var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); }
+    .photo-item.add svg { width: 24px; height: 24px; }
+    .timing-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .timing-row input { flex: 1; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="status-icons">
+      <i data-lucide="wifi"></i>
+      <i data-lucide="radio"></i>
+      <i data-lucide="battery-full"></i>
+    </div>
+  </div>
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">
+      <i data-lucide="arrow-left"></i>
+    </button>
+    <h1>Edit Academy Listing</h1>
+    <button class="save-btn" onclick="location.href='academy-dashboard.html'">Save</button>
+  </div>
+  <div class="main-content">
+    <div class="form-section">
+      <div class="section-title">Basic Info</div>
+      <div class="form-group"><label>Academy Name</label><input type="text" value="Sreekanya Football & Athletics Academy"></div>
+      <div class="row">
+        <div class="form-group"><label>City</label><input type="text" value="Bangalore"></div>
+        <div class="form-group"><label>Pincode</label><input type="text" value="560038"></div>
+      </div>
+      <div class="form-group"><label>Full Address</label><textarea>No. 42, 3rd Cross, Indiranagar 2nd Stage, Bangalore - 560038</textarea></div>
+    </div>
+    <div class="form-section">
+      <div class="section-title">Sports Offered</div>
+      <div class="facility-tags">
+        <div class="facility-tag selected">Football</div>
+        <div class="facility-tag selected">Athletics</div>
+        <div class="facility-tag">Basketball</div>
+        <div class="facility-tag">Swimming</div>
+        <div class="facility-tag">Cricket</div>
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="section-title">Facilities</div>
+      <div class="facility-tags">
+        <div class="facility-tag selected">Turf Ground</div>
+        <div class="facility-tag selected">AC Classroom</div>
+        <div class="facility-tag selected">Video Analysis</div>
+        <div class="facility-tag selected">Gym</div>
+        <div class="facility-tag">Swimming Pool</div>
+        <div class="facility-tag selected">Changing Rooms</div>
+        <div class="facility-tag selected">Parking</div>
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="section-title">Fee Range (per month)</div>
+      <div class="row">
+        <div class="form-group"><label>Minimum</label><input type="text" value="₹3,000"></div>
+        <div class="form-group"><label>Maximum</label><input type="text" value="₹8,000"></div>
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="section-title">Age Groups</div>
+      <div class="age-group-options">
+        <div class="age-option selected">5-8</div>
+        <div class="age-option selected">8-12</div>
+        <div class="age-option selected">12-16</div>
+        <div class="age-option">16-20</div>
+        <div class="age-option">20+</div>
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="section-title">Training Timings</div>
+      <div class="timing-row"><input type="text" value="Monday - Friday"><input type="text" value="4:00 PM - 7:00 PM"></div>
+      <div class="timing-row"><input type="text" value="Saturday"><input type="text" value="9:00 AM - 1:00 PM"></div>
+      <div class="timing-row"><input type="text" value="Sunday"><input type="text" value="9:00 AM - 12:00 PM"></div>
+    </div>
+    <div class="form-section">
+      <div class="section-title">Photos</div>
+      <div class="photo-grid">
+        <div class="photo-item"><img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=200&h=200&fit=crop" alt="Ground"></div>
+        <div class="photo-item"><img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?w=200&h=200&fit=crop" alt="Training"></div>
+        <div class="photo-item add"><i data-lucide="plus"></i></div>
+      </div>
+    </div>
+  </div>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

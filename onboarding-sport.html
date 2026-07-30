@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Select Sport - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .back-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--fg);
+    }
+
+    .back-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .header-text {
+      flex: 1;
+    }
+
+    .header-text h1 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .header-text p {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .progress {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .content {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .sport-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .sport-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 20px 12px;
+      background: var(--surface);
+      border: 2px solid transparent;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .sport-card:active {
+      background: var(--border);
+    }
+
+    .sport-card.selected {
+      background: #e6f0ff;
+      border-color: var(--accent);
+    }
+
+    .sport-card svg {
+      width: 32px;
+      height: 32px;
+      color: var(--muted);
+    }
+
+    .sport-card.selected svg {
+      color: var(--accent);
+    }
+
+    .sport-card span {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--fg);
+    }
+
+    .age-section {
+      margin-bottom: 24px;
+    }
+
+    .age-options {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .age-chip {
+      padding: 10px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .age-chip:active {
+      background: var(--border);
+    }
+
+    .age-chip.selected {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .footer {
+      padding: 16px 20px;
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      border-top: 1px solid var(--border);
+    }
+
+    .continue-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .continue-btn:active {
+      background: #0d47a1;
+    }
+
+    .continue-btn:disabled {
+      background: var(--border);
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="back-btn" onclick="window.history.back()">
+      <i data-lucide="arrow-left"></i>
+    </div>
+    <div class="header-text">
+      <h1>Your Sport & Age</h1>
+      <p>Step 1 of 2</p>
+    </div>
+    <div class="progress">1</div>
+  </header>
+
+  <div class="content">
+    <div class="section-title">Select your primary sport</div>
+    <div class="sport-grid">
+      <div class="sport-card" onclick="selectSport(this, 'cricket')">
+        <i data-lucide="circle-dot"></i>
+        <span>Cricket</span>
+      </div>
+      <div class="sport-card" onclick="selectSport(this, 'football')">
+        <i data-lucide="goal"></i>
+        <span>Football</span>
+      </div>
+      <div class="sport-card" onclick="selectSport(this, 'badminton')">
+        <i data-lucide="shuttlecock"></i>
+        <span>Badminton</span>
+      </div>
+      <div class="sport-card" onclick="selectSport(this, 'swimming')">
+        <i data-lucide="waves"></i>
+        <span>Swimming</span>
+      </div>
+      <div class="sport-card" onclick="selectSport(this, 'athletics')">
+        <i data-lucide="footprints"></i>
+        <span>Athletics</span>
+      </div>
+      <div class="sport-card" onclick="selectSport(this, 'tennis')">
+        <i data-lucide="circle"></i>
+        <span>Tennis</span>
+      </div>
+      <div class="sport-card" onclick="selectSport(this, 'basketball')">
+        <i data-lucide="circle"></i>
+        <span>Basketball</span>
+      </div>
+      <div class="sport-card" onclick="selectSport(this, 'kabaddi')">
+        <i data-lucide="hand"></i>
+        <span>Kabaddi</span>
+      </div>
+      <div class="sport-card" onclick="selectSport(this, 'other')">
+        <i data-lucide="plus"></i>
+        <span>Other</span>
+      </div>
+    </div>
+
+    <div class="section-title">Age category</div>
+    <div class="age-options">
+      <div class="age-chip" onclick="selectAge(this, 'under-10')">Under 10</div>
+      <div class="age-chip" onclick="selectAge(this, 'under-12')">Under 12</div>
+      <div class="age-chip" onclick="selectAge(this, 'under-14')">Under 14</div>
+      <div class="age-chip" onclick="selectAge(this, 'under-16')">Under 16</div>
+      <div class="age-chip" onclick="selectAge(this, 'under-18')">Under 18</div>
+      <div class="age-chip" onclick="selectAge(this, '18-plus')">18+</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <button class="continue-btn" id="continueBtn" disabled onclick="continueFlow()">Continue</button>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    let selectedSport = null;
+    let selectedAge = null;
+
+    function selectSport(card, sport) {
+      document.querySelectorAll('.sport-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedSport = sport;
+      checkContinue();
+    }
+
+    function selectAge(chip, age) {
+      document.querySelectorAll('.age-chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+      selectedAge = age;
+      checkContinue();
+    }
+
+    function checkContinue() {
+      document.getElementById('continueBtn').disabled = !(selectedSport && selectedAge);
+    }
+
+    function continueFlow() {
+      if (selectedSport && selectedAge) {
+        window.location.href = 'onboarding-location.html';
+      }
+    }
+  </script>
+</body>
+</html>

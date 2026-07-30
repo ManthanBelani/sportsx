@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Home - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--surface);
+      color: var(--fg);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .header {
+      background: var(--bg);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .greeting {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .greeting h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--fg);
+    }
+
+    .greeting p {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface);
+      border-radius: 50%;
+      cursor: pointer;
+      color: var(--muted);
+    }
+
+    .icon-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .search-bar {
+      background: var(--bg);
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-input {
+      display: flex;
+      align-items: center;
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 10px 16px;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .search-input svg {
+      width: 18px;
+      height: 18px;
+      color: var(--muted);
+    }
+
+    .search-input input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--fg);
+      outline: none;
+    }
+
+    .search-input input::placeholder {
+      color: var(--muted);
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--fg);
+    }
+
+    .section-link {
+      font-size: 13px;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .horizontal-scroll {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .horizontal-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .card {
+      background: var(--bg);
+      border-radius: var(--radius);
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .card:active {
+      opacity: 0.9;
+    }
+
+    .card.wide {
+      width: 280px;
+    }
+
+    .card.square {
+      width: 140px;
+      height: 140px;
+    }
+
+    .card-image {
+      width: 100%;
+      height: 120px;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+    }
+
+    .card-image svg {
+      width: 40px;
+      height: 40px;
+    }
+
+    .card.wide .card-image {
+      height: 100px;
+    }
+
+    .card.square .card-image {
+      height: 80px;
+    }
+
+    .card.square .card-image svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .card-body {
+      padding: 12px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-meta {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .card-meta span {
+      margin-right: 8px;
+    }
+
+    .list-card {
+      display: flex;
+      align-items: center;
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: 12px;
+      gap: 12px;
+      margin-bottom: 8px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .list-card:active {
+      background: var(--surface);
+    }
+
+    .list-card-image {
+      width: 60px;
+      height: 60px;
+      background: var(--surface);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .list-card-image svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .list-card-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .list-card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 2px;
+    }
+
+    .list-card-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .list-card-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #fef3c7;
+      color: #92400e;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      padding-bottom: max(8px, env(safe-area-inset-bottom));
+      z-index: 100;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 8px 16px;
+      color: var(--muted);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+    }
+
+    .nav-item svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .nav-item span {
+      font-size: 11px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="greeting">
+      <h1>Hi Aryan! <span style="display:inline-flex"><i data-lucide="hand" style="width:20px;height:20px"></i></span></h1>
+      <p>Cricket · Under-14</p>
+    </div>
+    <div class="header-actions">
+      <div class="icon-btn" onclick="window.location.href='notifications.html'">
+        <i data-lucide="bell"></i>
+      </div>
+      <div class="icon-btn" onclick="window.location.href='saved-items.html'">
+        <i data-lucide="heart"></i>
+      </div>
+    </div>
+  </header>
+
+  <div class="search-bar" onclick="window.location.href='universal-search.html'">
+    <div class="search-input">
+      <i data-lucide="search"></i>
+      <input type="text" placeholder="Search academies, trials, coaches..." readonly>
+    </div>
+  </div>
+
+  <div class="content">
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Recommended for you</h2>
+        <a href="academy-directory.html" class="section-link">See all</a>
+      </div>
+      <div class="horizontal-scroll">
+        <div class="card wide" onclick="window.location.href='academy-detail.html'">
+          <div class="card-image">
+            <i data-lucide="circle-dot"></i>
+          </div>
+          <div class="card-body">
+            <div class="card-title">Elite Cricket Academy</div>
+            <div class="card-meta">Cricket · Ahmedabad</div>
+            <div class="card-meta">₹2,000 – ₹5,000/mo</div>
+          </div>
+        </div>
+        <div class="card wide" onclick="window.location.href='coach-detail.html'">
+          <div class="card-image">
+            <i data-lucide="user"></i>
+          </div>
+          <div class="card-body">
+            <div class="card-title">Rahul Mehta</div>
+            <div class="card-meta">Cricket · 8 yrs exp</div>
+            <div class="card-meta">₹800/session</div>
+          </div>
+        </div>
+        <div class="card wide">
+          <div class="card-image">
+            <i data-lucide="goal"></i>
+          </div>
+          <div class="card-body">
+            <div class="card-title">Football Academy Ahmedabad</div>
+            <div class="card-meta">Football · Ahmedabad</div>
+            <div class="card-meta">₹1,500 – ₹3,000/mo</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Trials closing soon</h2>
+        <a href="trial-listings.html" class="section-link">See all</a>
+      </div>
+      <div class="horizontal-scroll">
+        <div class="card wide" onclick="window.location.href='trial-detail.html'">
+          <div class="card-image">
+            <i data-lucide="circle-dot"></i>
+          </div>
+          <div class="card-body">
+            <div class="card-title">U-14 Cricket Trials</div>
+            <div class="card-meta">Sardar Patel Stadium</div>
+            <div class="card-meta">Aug 15 · ₹200</div>
+          </div>
+        </div>
+        <div class="card wide">
+          <div class="card-image">
+            <i data-lucide="goal"></i>
+          </div>
+          <div class="card-body">
+            <div class="card-title">District Football Trials</div>
+            <div class="card-meta">INAX Ground</div>
+            <div class="card-meta">Aug 20 · ₹150</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Upcoming Tournaments</h2>
+        <a href="tournament-calendar.html" class="section-link">See all</a>
+      </div>
+      <div class="list-card" onclick="window.location.href='trial-detail.html'">
+        <div class="list-card-image">
+          <i data-lucide="trophy"></i>
+        </div>
+        <div class="list-card-body">
+          <div class="list-card-title">U-16 State Cricket Cup</div>
+          <div class="list-card-meta">Aug 15–20 · Sardar Patel Stadium</div>
+          <span class="list-card-badge">Prize: ₹50,000</span>
+        </div>
+      </div>
+      <div class="list-card">
+        <div class="list-card-image">
+          <i data-lucide="badminton"></i>
+        </div>
+        <div class="list-card-body">
+          <div class="list-card-title">All India Badminton Championship</div>
+          <div class="list-card-meta">Sep 5–10 · Sports Complex</div>
+          <span class="list-card-badge">Prize: ₹25,000</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">New Scholarships</h2>
+        <a href="scholarship-feed.html" class="section-link">See all</a>
+      </div>
+      <div class="list-card" onclick="window.location.href='scholarship-detail.html'">
+        <div class="list-card-image">
+          <i data-lucide="graduation-cap"></i>
+        </div>
+        <div class="list-card-body">
+          <div class="list-card-title">State Sports Scholarship 2026</div>
+          <div class="list-card-meta">Up to ₹50,000 · Deadline: Aug 30</div>
+          <span class="list-card-badge">For U-18 athletes</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <nav class="bottom-nav">
+    <div class="nav-item active">
+      <i data-lucide="home"></i>
+      <span>Home</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='universal-search.html'">
+      <i data-lucide="search"></i>
+      <span>Search</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='saved-items.html'">
+      <i data-lucide="heart"></i>
+      <span>Saved</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='activity-hub.html'">
+      <i data-lucide="layout-list"></i>
+      <span>Activity</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='profile-view.html'">
+      <i data-lucide="user"></i>
+      <span>Profile</span>
+    </div>
+  </nav>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

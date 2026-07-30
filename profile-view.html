@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>My Profile - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header h1 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .edit-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--accent);
+    }
+
+    .edit-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .profile-section {
+      padding: 32px 20px;
+      text-align: center;
+      border-bottom: 8px solid var(--surface);
+    }
+
+    .avatar {
+      width: 96px;
+      height: 96px;
+      background: linear-gradient(135deg, var(--accent) 0%, #0d47a1 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      color: #fff;
+    }
+
+    .avatar svg {
+      width: 48px;
+      height: 48px;
+    }
+
+    .name {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--fg);
+      margin-bottom: 4px;
+    }
+
+    .meta {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .location {
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .location svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-top: 20px;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--fg);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .section {
+      padding: 20px;
+      border-bottom: 8px solid var(--surface);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--fg);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title svg {
+      width: 18px;
+      height: 18px;
+      color: var(--accent);
+    }
+
+    .edit-link {
+      font-size: 14px;
+      color: var(--accent);
+      cursor: pointer;
+    }
+
+    .achievements-list {
+      list-style: none;
+    }
+
+    .achievements-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+
+    .achievements-list li:last-child {
+      border-bottom: none;
+    }
+
+    .achievements-list .icon {
+      width: 18px;
+      height: 18px;
+      color: var(--accent);
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .gallery-item {
+      aspect-ratio: 1;
+      background: var(--surface);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+    }
+
+    .gallery-item svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .see-all {
+      display: block;
+      text-align: center;
+      padding: 12px;
+      margin-top: 8px;
+      font-size: 14px;
+      color: var(--accent);
+      cursor: pointer;
+    }
+
+    .menu-list {
+      list-style: none;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .menu-item:last-child {
+      border-bottom: none;
+    }
+
+    .menu-item .icon {
+      width: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+    }
+
+    .menu-item .icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .menu-item .label {
+      flex: 1;
+      font-size: 15px;
+      color: var(--fg);
+    }
+
+    .menu-item .arrow {
+      color: var(--muted);
+    }
+
+    .menu-item .arrow svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      padding-bottom: max(8px, env(safe-area-inset-bottom));
+      z-index: 100;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 8px 16px;
+      color: var(--muted);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+    }
+
+    .nav-item svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .nav-item span {
+      font-size: 11px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div></div>
+    <h1>My Profile</h1>
+    <div class="edit-btn" onclick="window.location.href='profile-edit.html'">
+      <i data-lucide="pencil"></i>
+    </div>
+  </header>
+
+  <div class="profile-section">
+    <div class="avatar">
+      <i data-lucide="user"></i>
+    </div>
+    <div class="name">Aryan Patel</div>
+    <div class="meta">Cricket · Under-14</div>
+    <div class="location">
+      <i data-lucide="map-pin"></i>
+      Ahmedabad, Gujarat
+    </div>
+
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-value">3</div>
+        <div class="stat-label">Achievements</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">2</div>
+        <div class="stat-label">Trials</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">1</div>
+        <div class="stat-label">Scholarships</div>
+      </div>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="section-header">
+      <h2 class="section-title">
+        <i data-lucide="trophy"></i>
+        Achievements
+      </h2>
+      <span class="edit-link" onclick="window.location.href='profile-edit.html'">Edit</span>
+    </div>
+    <ul class="achievements-list">
+      <li><i data-lucide="award" class="icon"></i> State-level U-14 selection 2025</li>
+      <li><i data-lucide="medal" class="icon"></i> District top scorer 2024</li>
+      <li><i data-lucide="star" class="icon"></i> Best Bowler Award, inter-school 2024</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-header">
+      <h2 class="section-title">
+        <i data-lucide="image"></i>
+        Media Gallery
+      </h2>
+      <span class="edit-link">Manage</span>
+    </div>
+    <div class="gallery-grid">
+      <div class="gallery-item">
+        <i data-lucide="circle-dot"></i>
+      </div>
+      <div class="gallery-item">
+        <i data-lucide="trophy"></i>
+      </div>
+      <div class="gallery-item">
+        <i data-lucide="play"></i>
+      </div>
+      <div class="gallery-item">
+        <i data-lucide="plus"></i>
+      </div>
+    </div>
+    <span class="see-all">See all photos & videos</span>
+  </section>
+
+  <section class="section">
+    <ul class="menu-list">
+      <li class="menu-item" onclick="window.location.href='activity-hub.html'">
+        <span class="icon"><i data-lucide="layout-list"></i></span>
+        <span class="label">My Activity</span>
+        <span class="arrow"><i data-lucide="chevron-right"></i></span>
+      </li>
+      <li class="menu-item" onclick="window.location.href='notifications.html'">
+        <span class="icon"><i data-lucide="bell"></i></span>
+        <span class="label">Notifications</span>
+        <span class="arrow"><i data-lucide="chevron-right"></i></span>
+      </li>
+      <li class="menu-item" onclick="window.location.href='settings.html'">
+        <span class="icon"><i data-lucide="settings"></i></span>
+        <span class="label">Settings</span>
+        <span class="arrow"><i data-lucide="chevron-right"></i></span>
+      </li>
+      <li class="menu-item" onclick="window.location.href='help-support.html'">
+        <span class="icon"><i data-lucide="help-circle"></i></span>
+        <span class="label">Help & Support</span>
+        <span class="arrow"><i data-lucide="chevron-right"></i></span>
+      </li>
+    </ul>
+  </section>
+
+  <nav class="bottom-nav">
+    <div class="nav-item" onclick="window.location.href='home-dashboard.html'">
+      <i data-lucide="home"></i>
+      <span>Home</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='universal-search.html'">
+      <i data-lucide="search"></i>
+      <span>Search</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='saved-items.html'">
+      <i data-lucide="heart"></i>
+      <span>Saved</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='activity-hub.html'">
+      <i data-lucide="layout-list"></i>
+      <span>Activity</span>
+    </div>
+    <div class="nav-item active">
+      <i data-lucide="user"></i>
+      <span>Profile</span>
+    </div>
+  </nav>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

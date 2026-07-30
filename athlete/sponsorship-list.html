@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SportX India</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; display: flex; flex-direction: column; }
+    .status-bar { height: 44px; padding-top: var(--safe-top); display: flex; align-items: center; justify-content: space-between; padding-left: 24px; padding-right: 24px; font-size: 14px; font-weight: 600; }
+    .header { display: flex; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .main-content { flex: 1; padding: 20px; }
+    .search-bar { display: flex; align-items: center; gap: 10px; background: var(--surface); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 20px; }
+    .search-bar input { flex: 1; border: none; background: transparent; font-size: 14px; font-family: inherit; }
+    .search-bar input:focus { outline: none; }
+    .section-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+    .card { background: var(--surface); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+    .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .brand-logo { width: 48px; height: 48px; border-radius: var(--radius); object-fit: cover; background: white; }
+    .brand-name { font-size: 15px; font-weight: 600; }
+    .brand-category { font-size: 12px; color: var(--muted); }
+    .card-body p { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+    .benefits { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .benefit-tag { padding: 4px 10px; background: #d1fae5; color: #065f46; border-radius: 4px; font-size: 12px; font-weight: 500; }
+    .deadline-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: #fee2e2; color: #dc2626; border-radius: 4px; font-size: 11px; font-weight: 600; margin-top: 10px; }
+    .filters { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
+    .filter-chip { padding: 8px 14px; border: 1px solid var(--border); border-radius: 20px; font-size: 13px; font-weight: 500; background: var(--bg); white-space: nowrap; cursor: pointer; }
+    .filter-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="status-bar"><span>9:41</span><span>📶 📡 🔋</span></div>
+  <div class="header"><h1>Sponsorships</h1></div>
+  <div class="main-content">
+    <div class="search-bar"><span>🔍</span><input type="text" placeholder="Search sponsorships..."></div>
+    <div class="filters">
+      <div class="filter-chip active">All Sports</div>
+      <div class="filter-chip">Football</div>
+      <div class="filter-chip">Basketball</div>
+      <div class="filter-chip">Athletics</div>
+    </div>
+    <div class="section-title">Available Sponsorships</div>
+    <div class="card" onclick="location.href='sponsorship-detail.html'">
+      <div class="card-header">
+        <img src="https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=96&h=96&fit=crop" alt="Nike" class="brand-logo">
+        <div>
+          <div class="brand-name">Nike India — Emerging Athletes Program</div>
+          <div class="brand-category">Apparel & Equipment • Football, Running</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p>Supporting young athletes with gear, training stipends, and mentorship from Nike athlete coaches. Open to district and state-level performers.</p>
+        <div class="benefits">
+          <span class="benefit-tag">₹25,000 Grant</span>
+          <span class="benefit-tag">Gear Package</span>
+          <span class="benefit-tag">Mentorship</span>
+        </div>
+        <div class="deadline-badge">Deadline: Dec 20, 2024</div>
+      </div>
+    </div>
+    <div class="card" onclick="location.href='sponsorship-detail.html'">
+      <div class="card-header">
+        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=96&h=96&fit=crop" alt="Adidas" class="brand-logo">
+        <div>
+          <div class="brand-name">Adidas Grassroots Sports Initiative</div>
+          <div class="brand-category">Apparel • Multi-sport</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p>Adidas supports talented young athletes from underserved communities with footwear, apparel, and access to training camps.</p>
+        <div class="benefits">
+          <span class="benefit-tag">₹15,000 Grant</span>
+          <span class="benefit-tag">Full Gear Kit</span>
+          <span class="benefit-tag">Training Camp</span>
+        </div>
+        <div class="deadline-badge">Deadline: Jan 15, 2025</div>
+      </div>
+    </div>
+    <div class="card" onclick="location.href='sponsorship-detail.html'">
+      <div class="card-header">
+        <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=96&h=96&fit=crop" alt="Red Bull" class="brand-logo">
+        <div>
+          <div class="brand-name">Red Bull Junior Athletes</div>
+          <div class="brand-category">Energy Drinks • Extreme & Adventure Sports</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p>For athletes demonstrating exceptional potential in skateboarding, BMX, surfing, and other action sports. Global exposure and event participation.</p>
+        <div class="benefits">
+          <span class="benefit-tag">₹50,000 Grant</span>
+          <span class="benefit-tag">Event Entry</span>
+          <span class="benefit-tag">Global Exposure</span>
+        </div>
+        <div class="deadline-badge">Deadline: Rolling</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SportX India</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; display: flex; flex-direction: column; }
+    .status-bar { height: 44px; padding-top: var(--safe-top); display: flex; align-items: center; justify-content: space-between; padding-left: 24px; padding-right: 24px; font-size: 14px; font-weight: 600; }
+    .header { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .back-btn { width: 40px; height: 40px; border-radius: var(--radius); border: none; background: var(--surface); cursor: pointer; font-size: 18px; }
+    .search-bar { display: flex; align-items: center; gap: 10px; background: var(--surface); border-radius: var(--radius); padding: 10px 14px; margin: 16px 20px; }
+    .search-bar input { flex: 1; border: none; background: transparent; font-size: 14px; font-family: inherit; }
+    .search-bar input:focus { outline: none; }
+    .tab-bar { display: flex; border-bottom: 1px solid var(--border); padding: 0 20px; }
+    .tab { padding: 12px 16px; font-size: 14px; font-weight: 500; color: var(--muted); border-bottom: 2px solid transparent; cursor: pointer; }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .main-content { flex: 1; overflow-y: auto; }
+    .athlete-item { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .athlete-item:hover { background: var(--surface); }
+    .athlete-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+    .athlete-content { flex: 1; }
+    .athlete-name { font-size: 15px; font-weight: 600; }
+    .athlete-meta { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .athlete-tags { display: flex; gap: 6px; margin-top: 6px; }
+    .tag { padding: 2px 8px; background: var(--surface); border-radius: 4px; font-size: 11px; color: var(--muted); }
+    .shortlist-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg); cursor: pointer; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <div class="status-bar"><span>9:41</span><span>📶 📡 🔋</span></div>
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <h1>Discover Athletes</h1>
+  </div>
+  <div class="search-bar"><span>🔍</span><input type="text" placeholder="Search by name, sport, city..."></div>
+  <div class="tab-bar">
+    <div class="tab active">All (156)</div>
+    <div class="tab">Shortlisted (5)</div>
+  </div>
+  <div class="main-content">
+    <div class="athlete-item" onclick="location.href='athlete-profile-view.html'">
+      <img src="https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=104&h=104&fit=crop" alt="Priya" class="athlete-avatar">
+      <div class="athlete-content">
+        <div class="athlete-name">Priya Sharma</div>
+        <div class="athlete-meta">Football • Age 16 • Bangalore</div>
+        <div class="athlete-tags">
+          <span class="tag">U-18 State Champion</span>
+          <span class="tag">District Level</span>
+        </div>
+      </div>
+      <button class="shortlist-btn" onclick="event.stopPropagation();alert('Added to shortlist!')">☆</button>
+    </div>
+    <div class="athlete-item">
+      <img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=104&h=104&fit=crop" alt="Arjun" class="athlete-avatar">
+      <div class="athlete-content">
+        <div class="athlete-name">Arjun Mehta</div>
+        <div class="athlete-meta">Football • Age 14 • Bangalore</div>
+        <div class="athlete-tags">
+          <span class="tag">District Runner-up</span>
+        </div>
+      </div>
+      <button class="shortlist-btn" onclick="event.stopPropagation();alert('Added to shortlist!')">☆</button>
+    </div>
+    <div class="athlete-item">
+      <img src="https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=104&h=104&fit=crop" alt="Neha" class="athlete-avatar">
+      <div class="athlete-content">
+        <div class="athlete-name">Neha Reddy</div>
+        <div class="athlete-meta">Athletics • Age 17 • Mysore</div>
+        <div class="athlete-tags">
+          <span class="tag">100m State Gold</span>
+          <span class="tag">Long Jump</span>
+        </div>
+      </div>
+      <button class="shortlist-btn" onclick="event.stopPropagation();alert('Added to shortlist!')">☆</button>
+    </div>
+    <div class="athlete-item">
+      <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?w=104&h=104&fit=crop" alt="Vikram" class="athlete-avatar">
+      <div class="athlete-content">
+        <div class="athlete-name">Vikram Singh</div>
+        <div class="athlete-meta">Football • Age 12 • Delhi</div>
+        <div class="athlete-tags">
+          <span class="tag">School Champion</span>
+        </div>
+      </div>
+      <button class="shortlist-btn" onclick="event.stopPropagation();alert('Added to shortlist!')">☆</button>
+    </div>
+  </div>
+</body>
+</html>

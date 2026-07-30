@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SportX — Interactive App Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --bg-2: #e5e7eb;
+      --surface: #ffffff;
+      --fg: #0a0e1a;
+      --fg-2: #1f2937;
+      --muted: #6b7280;
+      --muted-2: #9ca3af;
+      --border: #e5e7eb;
+      --border-2: #d1d5db;
+      --accent: #1677ff;
+      --accent-dark: #0d47a1;
+      --accent-light: #e6f0ff;
+
+      --athlete: #f59e0b;
+      --coach: #1677ff;
+      --academy: #10b981;
+      --organizer: #8b5cf6;
+      --sponsor: #ec4899;
+      --admin: #64748b;
+
+      --phone-bg: #111;
+      --phone-frame: #0a0a0a;
+      --phone-border: #2a2a2a;
+      --status-bar-bg: #ffffff;
+
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-lg: 20px;
+
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+      --shadow: 0 4px 12px rgba(0,0,0,0.06);
+      --shadow-lg: 0 20px 40px -8px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(0,0,0,0.04);
+      --shadow-xl: 0 40px 80px -20px rgba(15, 23, 42, 0.4), 0 20px 40px -20px rgba(15, 23, 42, 0.2);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background:
+        radial-gradient(900px 500px at 20% 0%, rgba(22, 119, 255, 0.08), transparent 60%),
+        radial-gradient(700px 400px at 90% 100%, rgba(139, 92, 246, 0.06), transparent 60%),
+        var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+    /* HEADER */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-inner {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: -0.4px;
+    }
+    .brand-mark {
+      width: 30px;
+      height: 30px;
+      background: linear-gradient(135deg, #1677ff 0%, #0d47a1 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 12px rgba(22, 119, 255, 0.3);
+    }
+    .brand-mark svg { width: 16px; height: 16px; }
+
+    .topbar-center {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .topbar-tab {
+      padding: 7px 14px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .topbar-tab svg { width: 14px; height: 14px; }
+    .topbar-tab:hover { color: var(--fg); }
+    .topbar-tab.active {
+      background: var(--fg);
+      color: white;
+    }
+
+    .topbar-actions { display: flex; gap: 8px; }
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      transition: all 0.15s ease;
+    }
+    .icon-btn:hover { background: var(--bg); color: var(--fg); }
+    .icon-btn svg { width: 16px; height: 16px; }
+
+    /* LAYOUT */
+    .stage {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 28px;
+      display: grid;
+      grid-template-columns: 280px 1fr 320px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* PANELS */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .panel-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .panel-head h3 {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .panel-head h3 svg { width: 14px; height: 14px; }
+    .panel-body { padding: 12px; max-height: 400px; overflow-y: auto; }
+
+    /* PERSONA PANEL */
+    .persona-list { display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow-y: auto; }
+
+    .persona-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+      text-align: left;
+      width: 100%;
+    }
+    .persona-card:hover { background: var(--bg); }
+    .persona-card.active {
+      background: var(--bg);
+      border-color: var(--border-2);
+      box-shadow: var(--shadow-sm);
+    }
+    .persona-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .persona-icon svg { width: 18px; height: 18px; }
+    .persona-text { flex: 1; min-width: 0; }
+    .persona-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+    }
+    .persona-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    .persona-card[data-p="athlete"] .persona-icon { background: rgba(245, 158, 11, 0.14); color: var(--athlete); }
+    .persona-card[data-p="coach"] .persona-icon { background: rgba(22, 119, 255, 0.14); color: var(--coach); }
+    .persona-card[data-p="academy"] .persona-icon { background: rgba(16, 185, 129, 0.14); color: var(--academy); }
+    .persona-card[data-p="organizer"] .persona-icon { background: rgba(139, 92, 246, 0.14); color: var(--organizer); }
+    .persona-card[data-p="sponsor"] .persona-icon { background: rgba(236, 72, 153, 0.14); color: var(--sponsor); }
+    .persona-card[data-p="admin"] .persona-icon { background: rgba(100, 116, 139, 0.14); color: var(--admin); }
+
+    .persona-card.active[data-p="athlete"] { border-color: var(--athlete); }
+    .persona-card.active[data-p="coach"] { border-color: var(--coach); }
+    .persona-card.active[data-p="academy"] { border-color: var(--academy); }
+    .persona-card.active[data-p="organizer"] { border-color: var(--organizer); }
+    .persona-card.active[data-p="sponsor"] { border-color: var(--sponsor); }
+    .persona-card.active[data-p="admin"] { border-color: var(--admin); }
+
+    /* FLOW PANEL */
+    .flow-list { display: flex; flex-direction: column; gap: 4px; }
+    .flow-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      text-align: left;
+      width: 100%;
+      color: var(--fg-2);
+      font-size: 13px;
+    }
+    .flow-item:hover { background: var(--bg); }
+    .flow-item .flow-num {
+      width: 22px;
+      height: 22px;
+      background: var(--bg);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .flow-item .flow-name { flex: 1; }
+    .flow-item .flow-count {
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* PHONE STAGE */
+    .phone-stage {
+      position: sticky;
+      top: 90px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 0;
+    }
+    .phone-stage.hidden { display: none; }
+
+    /* DESKTOP STAGE */
+    .desktop-stage {
+      position: sticky;
+      top: 90px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 0;
+    }
+    .desktop-stage.visible { display: flex; }
+
+    .desktop-frame {
+      width: 100%;
+      max-width: 1200px;
+      height: 700px;
+      background: #f7f8fa;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      overflow: hidden;
+      box-shadow: 0 20px 40px -12px rgba(15, 23, 42, 0.12);
+    }
+    .desktop-frame iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+    }
+
+    /* PHONE */
+    .phone {
+      position: relative;
+      width: 380px;
+      height: 780px;
+      background: var(--phone-bg);
+      border-radius: 50px;
+      padding: 12px;
+      box-shadow:
+        0 60px 120px -30px rgba(15, 23, 42, 0.45),
+        0 30px 60px -20px rgba(15, 23, 42, 0.25),
+        inset 0 0 0 2px var(--phone-border),
+        inset 0 0 0 4px #1a1a1a;
+      transition: transform 0.4s ease;
+    }
+    .phone:hover { transform: translateY(-2px); }
+
+    /* Notch / Dynamic Island */
+    .phone-notch {
+      position: absolute;
+      top: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 32px;
+      background: #000;
+      border-radius: 100px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .phone-notch-dot {
+      width: 10px;
+      height: 10px;
+      background: #1a1a1a;
+      border-radius: 50%;
+    }
+    .phone-notch-cam {
+      width: 8px;
+      height: 8px;
+      background: #0a0a0a;
+      border: 1px solid #2a2a2a;
+      border-radius: 50%;
+    }
+
+    /* Side buttons */
+    .phone::before, .phone::after {
+      content: '';
+      position: absolute;
+      background: #1a1a1a;
+      border-radius: 2px;
+    }
+    .phone::before {
+      left: -3px;
+      top: 140px;
+      width: 3px;
+      height: 30px;
+      box-shadow: 0 50px 0 0 #1a1a1a, 0 90px 0 0 #1a1a1a;
+    }
+    .phone::after {
+      right: -3px;
+      top: 180px;
+      width: 3px;
+      height: 50px;
+    }
+
+    .phone-screen {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: white;
+      border-radius: 40px;
+      overflow: hidden;
+      padding-top: 44px;
+    }
+
+    .phone-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+      transition: opacity 0.25s ease;
+      display: block;
+    }
+    .phone-iframe.loading { opacity: 0; }
+
+    .phone-loader {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      background-size: 200% 100%;
+      animation: loadbar 1.2s infinite;
+      z-index: 5;
+      opacity: 0;
+    }
+    .phone-loader.active { opacity: 1; }
+
+    @keyframes loadbar {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Home indicator */
+    .phone-home {
+      position: absolute;
+      bottom: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 130px;
+      height: 5px;
+      background: white;
+      border-radius: 100px;
+      z-index: 11;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    /* PHONE BOTTOM CONTROLS */
+    .phone-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      box-shadow: var(--shadow);
+    }
+    .ctrl-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--fg-2);
+      transition: all 0.15s ease;
+      position: relative;
+    }
+    .ctrl-btn:hover { background: var(--fg); color: white; transform: scale(1.05); }
+    .ctrl-btn:active { transform: scale(0.95); }
+    .ctrl-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .ctrl-btn:disabled:hover { background: var(--bg); color: var(--fg-2); transform: none; }
+    .ctrl-btn svg { width: 18px; height: 18px; }
+    .ctrl-btn.primary {
+      width: 56px;
+      height: 56px;
+      background: var(--fg);
+      color: white;
+    }
+    .ctrl-btn.primary:hover { background: var(--accent); }
+
+    /* URL bar */
+    .url-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      max-width: 360px;
+      width: 100%;
+      box-shadow: var(--shadow-sm);
+    }
+    .url-bar-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: var(--success);
+    }
+    .url-bar-dot.loading { background: var(--warning); animation: pulse 1.2s infinite; }
+    .url-bar-text {
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      font-size: 12px;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* RIGHT PANEL */
+    .screen-info {
+      padding: 20px;
+    }
+    .screen-info-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .screen-info-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.6px;
+      margin-bottom: 6px;
+    }
+    .screen-info-path {
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      color: var(--muted);
+      padding: 4px 8px;
+      background: var(--bg);
+      border-radius: 6px;
+      display: inline-block;
+      margin-bottom: 14px;
+    }
+    .screen-info-desc {
+      font-size: 13.5px;
+      color: var(--fg-2);
+      line-height: 1.55;
+      margin-bottom: 18px;
+    }
+
+    /* Tour */
+    .tour-section { border-top: 1px solid var(--border); padding: 16px 20px; }
+    .tour-btn {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--fg);
+      color: white;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      transition: all 0.15s ease;
+    }
+    .tour-btn:hover { background: var(--accent); }
+    .tour-btn.playing { background: var(--danger); }
+    .tour-btn svg { width: 16px; height: 16px; }
+
+    .tour-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .tour-step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-align: left;
+      width: 100%;
+      color: var(--fg-2);
+    }
+    .tour-step:hover { background: var(--bg); }
+    .tour-step.active {
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+    .tour-step-num {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .tour-step.active .tour-step-num {
+      background: var(--accent);
+      color: white;
+    }
+    .tour-step.done .tour-step-num {
+      background: var(--success);
+      color: white;
+    }
+    .tour-step-name {
+      font-size: 12.5px;
+      font-weight: 500;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Related screens */
+    .related-section { border-top: 1px solid var(--border); padding: 16px 20px; }
+    .related-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .related-list { display: flex; flex-direction: column; gap: 4px; }
+    .related-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      color: var(--fg-2);
+      font-size: 13px;
+    }
+    .related-item:hover { background: var(--bg); color: var(--accent); }
+    .related-item svg { width: 14px; height: 14px; color: var(--muted); }
+
+    /* KEYS */
+    .keys {
+      margin-top: 14px;
+      padding: 14px 20px 20px;
+      border-top: 1px solid var(--border);
+    }
+    .keys-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .kbd {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      padding: 2px 6px;
+      background: var(--bg);
+      border: 1px solid var(--border-2);
+      border-radius: 5px;
+      font-family: ui-monospace, monospace;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--fg-2);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 1280px) {
+      .stage { grid-template-columns: 240px 1fr 280px; }
+    }
+    @media (max-width: 1080px) {
+      .stage {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .phone-stage { order: -1; position: static; }
+      .right-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .right-col > * { min-width: 0; }
+    }
+    @media (max-width: 720px) {
+      .stage { padding: 16px; }
+      .phone { width: 320px; height: 660px; border-radius: 40px; padding: 8px; }
+      .phone-screen { border-radius: 32px; }
+      .phone-notch { top: 16px; width: 100px; height: 26px; }
+      .right-col { grid-template-columns: 1fr; }
+      .topbar-center { display: none; }
+    }
+
+    /* No-select for phone feel */
+    .phone { user-select: none; -webkit-user-select: none; }
+
+    /* TOUCH RIPPLE */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+      transform: scale(0);
+      animation: ripple 0.6s ease-out;
+      pointer-events: none;
+    }
+    @keyframes ripple {
+      to { transform: scale(4); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="index.html" class="brand">
+        <div class="brand-mark"><i data-lucide="trophy"></i></div>
+        SportX
+      </a>
+      <div class="topbar-center">
+        <a class="topbar-tab" href="index.html"><i data-lucide="layout-grid"></i> Showcase</a>
+        <a class="topbar-tab active" href="app.html"><i data-lucide="smartphone"></i> App Preview</a>
+        <a class="topbar-tab" href="landing.html"><i data-lucide="globe"></i> Marketing</a>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="btnReload" title="Reload current screen">
+          <i data-lucide="rotate-cw"></i>
+        </button>
+        <button class="icon-btn" id="btnShare" title="Copy link">
+          <i data-lucide="link-2"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="stage">
+
+    <!-- LEFT: Persona + Flows -->
+    <div class="left-col">
+      <div class="panel">
+        <div class="panel-head">
+          <h3><i data-lucide="users"></i> Choose persona</h3>
+        </div>
+        <div class="panel-body">
+          <div class="persona-list" id="personaList"></div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:16px;">
+        <div class="panel-head">
+          <h3><i data-lucide="workflow"></i> Quick flows</h3>
+        </div>
+        <div class="panel-body">
+          <div class="flow-list" id="flowList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CENTER: Phone -->
+    <div class="phone-stage" id="phoneStage">
+      <div class="url-bar">
+        <span class="url-bar-dot" id="urlDot"></span>
+        <span class="url-bar-text" id="urlText">sportx.app/home</span>
+      </div>
+
+      <div class="phone">
+        <div class="phone-notch">
+          <div class="phone-notch-cam"></div>
+          <div class="phone-notch-dot"></div>
+        </div>
+        <div class="phone-screen">
+          <div class="phone-loader" id="phoneLoader"></div>
+          <iframe id="phoneFrame" class="phone-iframe" src="splash-screen.html"></iframe>
+        </div>
+        <div class="phone-home"></div>
+      </div>
+
+      <div class="phone-controls">
+        <button class="ctrl-btn" id="btnBack" title="Back" disabled>
+          <i data-lucide="chevron-left"></i>
+        </button>
+        <button class="ctrl-btn primary" id="btnHome" title="Home">
+          <i data-lucide="home"></i>
+        </button>
+        <button class="ctrl-btn" id="btnForward" title="Forward" disabled>
+          <i data-lucide="chevron-right"></i>
+        </button>
+        <button class="ctrl-btn" id="btnTour" title="Play tour">
+          <i data-lucide="play"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- CENTER: Desktop (for admin screens) -->
+    <div class="desktop-stage" id="desktopStage">
+      <div class="url-bar">
+        <span class="url-bar-dot" id="desktopUrlDot"></span>
+        <span class="url-bar-text" id="desktopUrlText">sportx.app/admin</span>
+      </div>
+      <div class="desktop-frame">
+        <iframe id="desktopFrame" src="admin/admin-dashboard.html"></iframe>
+      </div>
+    </div>
+
+    <!-- RIGHT: Info -->
+    <div class="right-col">
+      <div class="panel">
+        <div class="screen-info" id="screenInfo">
+          <div class="screen-info-eyebrow" id="screenEyebrow">Splash</div>
+          <div class="screen-info-title" id="screenTitle">Loading…</div>
+          <div class="screen-info-path" id="screenPath">splash-screen.html</div>
+          <div class="screen-info-desc" id="screenDesc">The first screen users see when opening the app.</div>
+        </div>
+        <div class="tour-section">
+          <button class="tour-btn" id="tourBtn">
+            <i data-lucide="play-circle"></i>
+            <span>Play persona tour</span>
+          </button>
+          <div class="tour-steps" id="tourSteps"></div>
+        </div>
+        <div class="related-section" id="relatedSection" style="display:none;">
+          <div class="related-title">Jump to any screen</div>
+          <div class="related-list" id="relatedList"></div>
+        </div>
+        <div class="keys">
+          <div class="related-title" style="margin-bottom:8px;">Keyboard</div>
+          <div class="keys-row"><span class="kbd">←</span> Back</div>
+          <div class="keys-row"><span class="kbd">→</span> Forward</div>
+          <div class="keys-row"><span class="kbd">H</span> Home</div>
+          <div class="keys-row"><span class="kbd">T</span> Tour</div>
+          <div class="keys-row"><span class="kbd">R</span> Reload</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // ===================== DATA =====================
+    const personas = {
+      athlete: {
+        name: 'Athlete',
+        icon: 'user',
+        color: '#f59e0b',
+        meta: '29 screens · Discovery',
+        home: 'home-dashboard.html',
+        tour: [
+          { url: 'splash-screen.html', name: 'Splash', dwell: 1800 },
+          { url: 'role-selection.html', name: 'Choose role', dwell: 1800 },
+          { url: 'onboarding-sport.html', name: 'Pick sport', dwell: 1800 },
+          { url: 'onboarding-location.html', name: 'Set location', dwell: 1800 },
+          { url: 'home-dashboard.html', name: 'Home dashboard', dwell: 2400 },
+          { url: 'academy-directory.html', name: 'Browse academies', dwell: 2000 },
+          { url: 'academy-detail.html', name: 'Academy detail', dwell: 2200 },
+          { url: 'athlete/enquire-coach.html', name: 'Enquire', dwell: 2200 },
+          { url: 'saved-items.html', name: 'Saved items', dwell: 1800 }
+        ],
+        screens: {
+          'home-dashboard.html': { name: 'Home', desc: 'The main feed — personalised recommendations, closing-soon trials, upcoming tournaments and scholarships.' },
+          'academy-directory.html': { name: 'Academy Directory', desc: 'Browse and filter academies by sport, age group, location and fees.' },
+          'academy-detail.html': { name: 'Academy Detail', desc: 'Full academy profile with coaches, facilities, timings, location and an enquiry CTA.' },
+          'coach-directory.html': { name: 'Coach Directory', desc: 'Find verified coaches with bios, specialties, experience and reviews.' },
+          'coach-detail.html': { name: 'Coach Detail', desc: 'Coach profile with credentials, sessions, pricing and enquiry form.' },
+          'trial-listings.html': { name: 'Trial Listings', desc: 'All open trials across sports, locations and age groups.' },
+          'trial-detail.html': { name: 'Trial Detail', desc: 'Complete trial info — date, venue, eligibility, fees and register CTA.' },
+          'trial-registration.html': { name: 'Trial Registration', desc: 'Form to register for a trial with player details and consent.' },
+          'registration-confirmation.html': { name: 'Registration Confirmation', desc: 'Success screen with trial details, calendar add and next steps.' },
+          'tournament-calendar.html': { name: 'Tournament Calendar', desc: 'Calendar view of upcoming tournaments across India.' },
+          'athlete/tournament-detail.html': { name: 'Tournament Detail', desc: 'Full tournament brief — eligibility, prizes, venue, organiser and register CTA.' },
+          'athlete/tournament-registration.html': { name: 'Tournament Registration', desc: 'Register a team for an upcoming tournament.' },
+          'athlete/scholarship-feed.html': { name: 'Scholarship Feed', desc: 'All available scholarships filtered by sport and age.' },
+          'athlete/scholarship-detail.html': { name: 'Scholarship Detail', desc: 'Scholarship brief with eligibility, amount and application form.' },
+          'athlete/sponsorship-list.html': { name: 'Sponsorship List', desc: 'Brands offering sponsorships — apply or save for later.' },
+          'athlete/sponsorship-detail.html': { name: 'Sponsorship Detail', desc: 'Brand sponsorship brief with deliverables and apply CTA.' },
+          'athlete/apply-sponsor.html': { name: 'Apply for Sponsor', desc: 'Form to apply for a sponsorship with profile and pitch.' },
+          'athlete/enquire-coach.html': { name: 'Enquire Coach', desc: 'Send an enquiry to a coach with goals, age and preferred schedule.' },
+          'athlete/media-gallery.html': { name: 'Media Gallery', desc: 'Personal media gallery of training videos, photos and achievements.' },
+          'activity-hub.html': { name: 'Activity Hub', desc: 'All your activity in one place — enquiries, registrations, applications.' },
+          'saved-items.html': { name: 'Saved Items', desc: 'Bookmarked academies, coaches, trials and tournaments.' },
+          'profile-view.html': { name: 'Profile', desc: 'Public profile with bio, sport, achievements and media.' },
+          'profile-edit.html': { name: 'Edit Profile', desc: 'Edit personal info, sport details and media.' },
+          'notifications.html': { name: 'Notifications', desc: 'All app notifications — enquiries, registrations, results.' },
+          'universal-search.html': { name: 'Universal Search', desc: 'Search across all categories — academies, coaches, trials, scholarships.' },
+          'search-results.html': { name: 'Search Results', desc: 'Filtered results for any search query.' },
+          'report-listing.html': { name: 'Report Listing', desc: 'Report an issue with a listing — content, behaviour, safety.' },
+          'help-support.html': { name: 'Help & Support', desc: 'FAQs, contact options and ticket history.' },
+          'settings.html': { name: 'Settings', desc: 'Account, privacy, notifications and app preferences.' }
+        }
+      },
+      coach: {
+        name: 'Coach',
+        icon: 'clipboard-list',
+        color: '#1677ff',
+        meta: '8 screens · Coaching',
+        home: 'coach/coach-dashboard.html',
+        tour: [
+          { url: 'coach/coach-onboarding.html', name: 'Onboard', dwell: 2000 },
+          { url: 'coach/coach-dashboard.html', name: 'Dashboard', dwell: 2200 },
+          { url: 'coach/enquiry-inbox.html', name: 'Enquiry inbox', dwell: 2000 },
+          { url: 'coach/enquiry-detail.html', name: 'Reply to enquiry', dwell: 2200 },
+          { url: 'coach/coach-profile-edit.html', name: 'Edit profile', dwell: 2000 }
+        ],
+        screens: {
+          'coach/coach-dashboard.html': { name: 'Coach Dashboard', desc: 'Overview of enquiries, profile completeness and quick actions.' },
+          'coach/coach-onboarding.html': { name: 'Coach Onboarding', desc: 'Set up your coaching profile, credentials, sport and rates.' },
+          'coach/coach-profile-edit.html': { name: 'Edit Profile', desc: 'Edit bio, experience, certifications, photos and rates.' },
+          'coach/enquiry-inbox.html': { name: 'Enquiry Inbox', desc: 'All incoming enquiries from athletes and parents.' },
+          'coach/enquiry-detail.html': { name: 'Enquiry Detail', desc: 'Read and reply to an enquiry with quick templates.' }
+        }
+      },
+      academy: {
+        name: 'Academy',
+        icon: 'building-2',
+        color: '#10b981',
+        meta: '7 screens · Trials',
+        home: 'academy/academy-dashboard.html',
+        tour: [
+          { url: 'academy/academy-onboarding.html', name: 'Onboard', dwell: 2000 },
+          { url: 'academy/academy-dashboard.html', name: 'Dashboard', dwell: 2200 },
+          { url: 'academy/trial-posting-form.html', name: 'Post trial', dwell: 2200 },
+          { url: 'academy/my-trials.html', name: 'My trials', dwell: 2000 },
+          { url: 'academy/registrant-list.html', name: 'Registrants', dwell: 2200 },
+          { url: 'academy/registrant-detail.html', name: 'Registrant detail', dwell: 2000 }
+        ],
+        screens: {
+          'academy/academy-dashboard.html': { name: 'Academy Dashboard', desc: 'Active trials, total registrations, pending enquiries and quick actions.' },
+          'academy/academy-onboarding.html': { name: 'Academy Onboarding', desc: 'Set up your academy — name, sport, location, facilities and timings.' },
+          'academy/academy-listing-edit.html': { name: 'Edit Listing', desc: 'Edit academy listing details, photos and coach roster.' },
+          'academy/trial-posting-form.html': { name: 'Post Trial', desc: 'Create a new trial — date, venue, age group, fees, capacity.' },
+          'academy/my-trials.html': { name: 'My Trials', desc: 'All trials — published, draft and closed.' },
+          'academy/registrant-list.html': { name: 'Registrant List', desc: 'All athletes registered for a specific trial with status.' },
+          'academy/registrant-detail.html': { name: 'Registrant Detail', desc: 'Full profile of an athlete who registered for a trial.' }
+        }
+      },
+      organizer: {
+        name: 'Organizer',
+        icon: 'calendar',
+        color: '#8b5cf6',
+        meta: '7 screens · Events',
+        home: 'organizer/organizer-dashboard.html',
+        tour: [
+          { url: 'organizer/organizer-onboarding.html', name: 'Onboard', dwell: 2000 },
+          { url: 'organizer/organizer-dashboard.html', name: 'Dashboard', dwell: 2200 },
+          { url: 'organizer/tournament-create.html', name: 'Create event', dwell: 2200 },
+          { url: 'organizer/my-tournaments.html', name: 'My tournaments', dwell: 2000 },
+          { url: 'organizer/registration-management.html', name: 'Registrations', dwell: 2000 },
+          { url: 'organizer/results-publishing.html', name: 'Publish results', dwell: 2200 }
+        ],
+        screens: {
+          'organizer/organizer-dashboard.html': { name: 'Organizer Dashboard', desc: 'Tournament overview, registrations, capacity and quick actions.' },
+          'organizer/organizer-onboarding.html': { name: 'Organizer Onboarding', desc: 'Set up organiser profile, federation details and event history.' },
+          'organizer/tournament-create.html': { name: 'Create Tournament', desc: 'Multi-step tournament creation — basics, format, eligibility, fees.' },
+          'organizer/my-tournaments.html': { name: 'My Tournaments', desc: 'All tournaments — upcoming, live and completed.' },
+          'organizer/capacity-management.html': { name: 'Capacity Management', desc: 'Adjust capacities across categories and venues.' },
+          'organizer/registration-management.html': { name: 'Registration Management', desc: 'Approve, reject and manage all tournament registrations.' },
+          'organizer/results-publishing.html': { name: 'Publish Results', desc: 'Publish match results, scores and final standings.' }
+        }
+      },
+      sponsor: {
+        name: 'Sponsor',
+        icon: 'briefcase',
+        color: '#ec4899',
+        meta: '7 screens · Brands',
+        home: 'sponsor/sponsor-dashboard.html',
+        tour: [
+          { url: 'sponsor/sponsor-onboarding.html', name: 'Onboard', dwell: 2000 },
+          { url: 'sponsor/sponsor-dashboard.html', name: 'Dashboard', dwell: 2200 },
+          { url: 'sponsor/athlete-discovery.html', name: 'Discover athletes', dwell: 2200 },
+          { url: 'sponsor/athlete-profile-view.html', name: 'Athlete profile', dwell: 2000 },
+          { url: 'sponsor/sponsorship-create.html', name: 'Create sponsorship', dwell: 2200 },
+          { url: 'sponsor/applications-inbox.html', name: 'Inbox', dwell: 2000 }
+        ],
+        screens: {
+          'sponsor/sponsor-dashboard.html': { name: 'Sponsor Dashboard', desc: 'Active sponsorships, applications and brand profile.' },
+          'sponsor/sponsor-onboarding.html': { name: 'Sponsor Onboarding', desc: 'Set up brand profile, logo, bio and sponsorship interests.' },
+          'sponsor/athlete-discovery.html': { name: 'Athlete Discovery', desc: 'Browse and filter athletes by sport, age, location and achievements.' },
+          'sponsor/athlete-profile-view.html': { name: 'Athlete Profile', desc: 'Full athlete profile with media, stats and sponsorship pitch.' },
+          'sponsor/sponsorship-create.html': { name: 'Create Sponsorship', desc: 'Create a sponsorship opportunity — amount, deliverables, duration.' },
+          'sponsor/application-detail.html': { name: 'Application Detail', desc: 'View an athlete\'s application with cover note and profile.' },
+          'sponsor/applications-inbox.html': { name: 'Applications Inbox', desc: 'All incoming sponsorship applications from athletes.' }
+        }
+      },
+      admin: {
+        name: 'Admin',
+        icon: 'shield',
+        color: '#64748b',
+        meta: '10 screens · Moderation',
+        home: 'admin/admin-dashboard.html',
+        tour: [
+          { url: 'admin/admin-dashboard.html', name: 'Dashboard', dwell: 2200 },
+          { url: 'admin/admin-user-management.html', name: 'Manage users', dwell: 2000 },
+          { url: 'admin/admin-listing-moderation.html', name: 'Moderate listings', dwell: 2000 },
+          { url: 'admin/admin-report-center.html', name: 'Reports', dwell: 2000 },
+          { url: 'admin/admin-analytics.html', name: 'Analytics', dwell: 2200 },
+          { url: 'admin/admin-system-settings.html', name: 'Settings', dwell: 2000 }
+        ],
+        screens: {
+          'admin/admin-dashboard.html': { name: 'Admin Dashboard', desc: 'Platform KPIs — users, listings, reports, verifications.' },
+          'admin/admin-user-management.html': { name: 'User Management', desc: 'Search, view and manage all platform users.' },
+          'admin/admin-listing-moderation.html': { name: 'Listing Moderation', desc: 'Approve, reject and moderate academy / coach listings.' },
+          'admin/admin-content-flagging.html': { name: 'Content Flagging', desc: 'Review user-flagged content and take action.' },
+          'admin/admin-report-center.html': { name: 'Report Center', desc: 'All user reports — pending, investigating and resolved.' },
+          'admin/admin-sponsor-verification.html': { name: 'Sponsor Verification', desc: 'Verify brand credentials and approve sponsors.' },
+          'admin/admin-notification-templates.html': { name: 'Notification Templates', desc: 'Manage push, email and SMS notification templates.' },
+          'admin/admin-sport-category-management.html': { name: 'Sport Categories', desc: 'Manage sport, sub-categories and age groups.' },
+          'admin/admin-analytics.html': { name: 'Analytics', desc: 'Platform-wide analytics — growth, engagement, funnels.' },
+          'admin/admin-system-settings.html': { name: 'System Settings', desc: 'App-wide configuration — features, integrations, policies.' }
+        }
+      }
+    };
+
+    // ===================== STATE =====================
+    const state = {
+      persona: 'athlete',
+      history: ['splash-screen.html'],
+      historyIdx: 0,
+      current: 'splash-screen.html',
+      tourPlaying: false,
+      tourIdx: 0,
+      tourTimeout: null
+    };
+
+    // ===================== ELEMENTS =====================
+    const els = {
+      personaList: document.getElementById('personaList'),
+      flowList: document.getElementById('flowList'),
+      frame: document.getElementById('phoneFrame'),
+      loader: document.getElementById('phoneLoader'),
+      urlDot: document.getElementById('urlDot'),
+      urlText: document.getElementById('urlText'),
+      btnBack: document.getElementById('btnBack'),
+      btnForward: document.getElementById('btnForward'),
+      btnHome: document.getElementById('btnHome'),
+      btnTour: document.getElementById('btnTour'),
+      btnReload: document.getElementById('btnReload'),
+      btnShare: document.getElementById('btnShare'),
+      tourBtn: document.getElementById('tourBtn'),
+      tourSteps: document.getElementById('tourSteps'),
+      screenEyebrow: document.getElementById('screenEyebrow'),
+      screenTitle: document.getElementById('screenTitle'),
+      screenPath: document.getElementById('screenPath'),
+      screenDesc: document.getElementById('screenDesc'),
+      relatedSection: document.getElementById('relatedSection'),
+      relatedList: document.getElementById('relatedList'),
+      phoneStage: document.getElementById('phoneStage'),
+      desktopStage: document.getElementById('desktopStage'),
+      desktopFrame: document.getElementById('desktopFrame'),
+      desktopUrlDot: document.getElementById('desktopUrlDot'),
+      desktopUrlText: document.getElementById('desktopUrlText')
+    };
+
+    function isAdminScreen(url) {
+      return url && url.startsWith('admin/');
+    }
+
+    function updateStage(url) {
+      if (isAdminScreen(url)) {
+        els.phoneStage.classList.add('hidden');
+        els.desktopStage.classList.add('visible');
+        els.desktopUrlDot.classList.remove('loading');
+        els.desktopUrlText.textContent = 'sportx.app/' + url.replace('.html', '');
+        els.desktopFrame.src = url;
+      } else {
+        els.phoneStage.classList.remove('hidden');
+        els.desktopStage.classList.remove('visible');
+        els.urlDot.classList.add('loading');
+        els.frame.src = url;
+      }
+    }
+
+    // ===================== RENDER PERSONAS =====================
+    function renderPersonas() {
+      els.personaList.innerHTML = Object.entries(personas).map(([key, p]) => `
+        <button class="persona-card ${key === state.persona ? 'active' : ''}" data-p="${key}">
+          <div class="persona-icon"><i data-lucide="${p.icon}"></i></div>
+          <div class="persona-text">
+            <div class="persona-name">${p.name}</div>
+            <div class="persona-meta">${p.meta}</div>
+          </div>
+        </button>
+      `).join('');
+      lucide.createIcons();
+      els.personaList.querySelectorAll('.persona-card').forEach(card => {
+        card.addEventListener('click', () => {
+          stopTour();
+          state.persona = card.dataset.p;
+          renderPersonas();
+          renderFlows();
+          navigate(personas[state.persona].home, true);
+        });
+      });
+    }
+
+    // ===================== RENDER FLOWS =====================
+    function renderFlows() {
+      const p = personas[state.persona];
+      els.flowList.innerHTML = p.tour.map((t, i) => `
+        <button class="flow-item" data-idx="${i}">
+          <span class="flow-num">${i + 1}</span>
+          <span class="flow-name">${t.name}</span>
+          <span class="flow-count">${p.tour.length}</span>
+        </button>
+      `).join('');
+      els.flowList.querySelectorAll('.flow-item').forEach(item => {
+        item.addEventListener('click', () => {
+          stopTour();
+          const idx = parseInt(item.dataset.idx);
+          navigate(p.tour[idx].url);
+        });
+      });
+    }
+
+    // ===================== NAVIGATION =====================
+    function navigate(url, replaceHistory = false) {
+      // Truncate forward history
+      state.history = state.history.slice(0, state.historyIdx + 1);
+      state.history.push(url);
+      if (replaceHistory && state.history.length > 1) {
+        state.history = [url];
+      }
+      state.historyIdx = state.history.length - 1;
+      state.current = url;
+
+      // Update stage (phone or desktop)
+      updateStage(url);
+
+      updateNavControls();
+      updateScreenInfo();
+      updateTourProgress();
+    }
+
+    function goBack() {
+      if (state.historyIdx <= 0) return;
+      state.historyIdx--;
+      state.current = state.history[state.historyIdx];
+      loadCurrent();
+    }
+
+    function goForward() {
+      if (state.historyIdx >= state.history.length - 1) return;
+      state.historyIdx++;
+      state.current = state.history[state.historyIdx];
+      loadCurrent();
+    }
+
+    function goHome() {
+      stopTour();
+      navigate(personas[state.persona].home, true);
+    }
+
+    function loadCurrent() {
+      updateStage(state.current);
+      updateNavControls();
+      updateScreenInfo();
+      updateTourProgress();
+    }
+
+    function reload() {
+      updateStage(state.current);
+    }
+
+    function updateNavControls() {
+      els.btnBack.disabled = state.historyIdx <= 0;
+      els.btnForward.disabled = state.historyIdx >= state.history.length - 1;
+    }
+
+    // ===================== SCREEN INFO =====================
+    function getScreenInfo(url) {
+      for (const p of Object.values(personas)) {
+        if (p.screens[url]) return { persona: p.name, color: p.color, ...p.screens[url] };
+      }
+      // Shared / cross-role screens
+      const shared = {
+        'splash-screen.html': { name: 'Splash', desc: 'Brand splash screen shown for ~1.5s on cold start.' },
+        'role-selection.html': { name: 'Role Selection', desc: 'Choose how to join — athlete, coach, academy, organizer or sponsor.' },
+        'onboarding-sport.html': { name: 'Pick Sport', desc: 'First onboarding step — choose primary sport.' },
+        'onboarding-location.html': { name: 'Set Location', desc: 'Set city and radius for personalised recommendations.' },
+        'shared/sign-up.html': { name: 'Sign Up', desc: 'Create a new SportX account with email or phone.' },
+        'shared/login.html': { name: 'Login', desc: 'Log in with email / phone and password.' },
+        'shared/otp-verification.html': { name: 'OTP Verification', desc: 'Verify phone number with a 6-digit OTP.' },
+        'shared/filter-panel.html': { name: 'Filter Panel', desc: 'Bottom-sheet filter for sport, age, location and fees.' },
+        'shared/notifications-center.html': { name: 'Notifications Center', desc: 'Categorised view of all platform notifications.' },
+        'shared/settings.html': { name: 'Settings', desc: 'Cross-role account and privacy settings.' },
+        'shared/help-support.html': { name: 'Help & Support', desc: 'Help center shared across all roles.' },
+        'shared/report-listing.html': { name: 'Report Listing', desc: 'Cross-role reporting flow for any listing.' }
+      };
+      if (shared[url]) return { persona: 'Shared', color: '#06b6d4', ...shared[url] };
+      return { persona: 'Unknown', color: '#9ca3af', name: url.replace('.html', '').replace(/^.*\//, ''), desc: '' };
+    }
+
+    function updateScreenInfo() {
+      const info = getScreenInfo(state.current);
+      els.screenEyebrow.textContent = info.persona;
+      els.screenEyebrow.style.color = info.color;
+      els.screenTitle.textContent = info.name;
+      els.screenPath.textContent = state.current;
+      els.screenDesc.textContent = info.desc || 'Custom screen.';
+
+      // Related screens
+      const p = personas[state.persona];
+      const related = Object.entries(p.screens).filter(([url]) => url !== state.current).slice(0, 6);
+      if (related.length > 0) {
+        els.relatedSection.style.display = '';
+        els.relatedList.innerHTML = related.map(([url, info]) => `
+          <button class="related-item" data-url="${url}">
+            <i data-lucide="arrow-right"></i>
+            ${info.name}
+          </button>
+        `).join('');
+        lucide.createIcons();
+        els.relatedList.querySelectorAll('.related-item').forEach(btn => {
+          btn.addEventListener('click', () => navigate(btn.dataset.url));
+        });
+      } else {
+        els.relatedSection.style.display = 'none';
+      }
+    }
+
+    // ===================== TOUR =====================
+    function startTour() {
+      stopTour();
+      const tour = personas[state.persona].tour;
+      // Always start tour from beginning
+      state.tourIdx = 0;
+      state.tourPlaying = true;
+      els.tourBtn.innerHTML = '<i data-lucide="square"></i><span>Stop tour</span>';
+      els.tourBtn.classList.add('playing');
+      lucide.createIcons();
+      renderTourSteps();
+      navigate(tour[0].url);
+      scheduleTourNext();
+    }
+
+    function scheduleTourNext() {
+      if (!state.tourPlaying) return;
+      const tour = personas[state.persona].tour;
+      const current = tour[state.tourIdx];
+      state.tourTimeout = setTimeout(() => {
+        if (!state.tourPlaying) return;
+        if (state.tourIdx >= tour.length - 1) {
+          stopTour();
+          return;
+        }
+        state.tourIdx++;
+        navigate(tour[state.tourIdx].url);
+        scheduleTourNext();
+      }, current.dwell || 2000);
+    }
+
+    function stopTour() {
+      state.tourPlaying = false;
+      if (state.tourTimeout) clearTimeout(state.tourTimeout);
+      els.tourBtn.innerHTML = '<i data-lucide="play-circle"></i><span>Play persona tour</span>';
+      els.tourBtn.classList.remove('playing');
+      lucide.createIcons();
+      renderTourSteps();
+    }
+
+    function renderTourSteps() {
+      const tour = personas[state.persona].tour;
+      els.tourSteps.innerHTML = tour.map((t, i) => `
+        <button class="tour-step ${i === state.tourIdx && state.tourPlaying ? 'active' : ''} ${i < state.tourIdx && state.tourPlaying ? 'done' : ''}" data-idx="${i}">
+          <span class="tour-step-num">${i < state.tourIdx && state.tourPlaying ? '✓' : i + 1}</span>
+          <span class="tour-step-name">${t.name}</span>
+        </button>
+      `).join('');
+      els.tourSteps.querySelectorAll('.tour-step').forEach(step => {
+        step.addEventListener('click', () => {
+          stopTour();
+          const idx = parseInt(step.dataset.idx);
+          state.tourIdx = idx;
+          navigate(tour[idx].url);
+        });
+      });
+    }
+
+    function updateTourProgress() {
+      if (!state.tourPlaying) return;
+      const tour = personas[state.persona].tour;
+      const currentIdx = tour.findIndex(t => t.url === state.current);
+      if (currentIdx >= 0) {
+        state.tourIdx = currentIdx;
+        renderTourSteps();
+      }
+    }
+
+    // ===================== IFRAME LOAD HANDLER =====================
+    els.frame.addEventListener('load', () => {
+      els.loader.classList.remove('active');
+      els.frame.classList.remove('loading');
+      setTimeout(() => els.urlDot.classList.remove('loading'), 300);
+    });
+
+    els.desktopFrame.addEventListener('load', () => {
+      els.desktopUrlDot.classList.remove('loading');
+    });
+
+    // ===================== EVENTS =====================
+    els.btnBack.addEventListener('click', () => { stopTour(); goBack(); });
+    els.btnForward.addEventListener('click', () => { stopTour(); goForward(); });
+    els.btnHome.addEventListener('click', goHome);
+    els.btnTour.addEventListener('click', () => {
+      if (state.tourPlaying) stopTour();
+      else startTour();
+    });
+    els.btnReload.addEventListener('click', () => {
+      if (isAdminScreen(state.current)) {
+        els.desktopFrame.src = state.current;
+      } else {
+        els.frame.src = state.current;
+      }
+    });
+    els.btnShare.addEventListener('click', () => {
+      const url = window.location.origin + window.location.pathname.replace(/app\.html.*/, '') + state.current;
+      navigator.clipboard?.writeText(url);
+      const orig = els.btnShare.innerHTML;
+      els.btnShare.innerHTML = '<i data-lucide="check"></i>';
+      lucide.createIcons();
+      setTimeout(() => { els.btnShare.innerHTML = orig; lucide.createIcons(); }, 1200);
+    });
+    els.tourBtn.addEventListener('click', () => {
+      if (state.tourPlaying) stopTour();
+      else startTour();
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === 'ArrowLeft') { stopTour(); goBack(); }
+      else if (e.key === 'ArrowRight') { stopTour(); goForward(); }
+      else if (e.key.toLowerCase() === 'h') goHome();
+      else if (e.key.toLowerCase() === 't') {
+        if (state.tourPlaying) stopTour();
+        else startTour();
+      }
+      else if (e.key.toLowerCase() === 'r') reload();
+    });
+
+    // ===================== INIT =====================
+    renderPersonas();
+    renderFlows();
+    renderTourSteps();
+    updateNavControls();
+    updateScreenInfo();
+    lucide.createIcons();
+  </script>
+</body>
+</html>

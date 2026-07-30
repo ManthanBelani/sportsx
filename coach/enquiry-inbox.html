@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Enquiry Inbox - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; display: flex; flex-direction: column; }
+    .status-bar { height: 44px; padding-top: var(--safe-top); display: flex; align-items: center; justify-content: space-between; padding-left: 24px; padding-right: 24px; font-size: 14px; font-weight: 600; }
+    .status-icons { display: flex; gap: 4px; align-items: center; }
+    .status-icons svg { width: 16px; height: 16px; }
+    .header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .back-btn { width: 40px; height: 40px; border-radius: var(--radius); border: none; background: var(--surface); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .back-btn svg { width: 18px; height: 18px; }
+    .tab-bar { display: flex; border-bottom: 1px solid var(--border); padding: 0 20px; }
+    .tab { padding: 12px 16px; font-size: 14px; font-weight: 500; color: var(--muted); border-bottom: 2px solid transparent; cursor: pointer; }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .main-content { flex: 1; overflow-y: auto; }
+    .enquiry-item { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .enquiry-item:hover { background: var(--surface); }
+    .enquiry-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+    .enquiry-content { flex: 1; min-width: 0; }
+    .enquiry-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .enquiry-name { font-size: 15px; font-weight: 600; }
+    .status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .status-badge.new { background: #dbeafe; color: var(--accent); }
+    .status-badge.replied { background: #d1fae5; color: #065f46; }
+    .status-badge.closed { background: var(--surface); color: var(--muted); }
+    .enquiry-preview { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .enquiry-meta { display: flex; justify-content: space-between; margin-top: 6px; }
+    .enquiry-sport { font-size: 12px; color: var(--accent); font-weight: 500; display: flex; align-items: center; gap: 4px; }
+    .enquiry-sport svg { width: 12px; height: 12px; }
+    .enquiry-time { font-size: 12px; color: var(--muted); }
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; }
+    .empty-state svg { width: 48px; height: 48px; color: var(--muted); }
+    .empty-state h3 { font-size: 16px; font-weight: 600; margin-top: 16px; }
+    .empty-state p { font-size: 14px; color: var(--muted); margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="status-icons">
+      <i data-lucide="wifi"></i>
+      <i data-lucide="radio"></i>
+      <i data-lucide="battery-full"></i>
+    </div>
+  </div>
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">
+      <i data-lucide="arrow-left"></i>
+    </button>
+    <h1>Enquiry Inbox</h1>
+  </div>
+  <div class="tab-bar">
+    <div class="tab active">All (12)</div>
+    <div class="tab">New (3)</div>
+    <div class="tab">Replied (8)</div>
+    <div class="tab">Closed (1)</div>
+  </div>
+  <div class="main-content">
+    <div class="enquiry-item" onclick="location.href='enquiry-detail.html'">
+      <img src="https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=104&h=104&fit=crop" alt="Priya" class="enquiry-avatar">
+      <div class="enquiry-content">
+        <div class="enquiry-header">
+          <span class="enquiry-name">Priya Sharma</span>
+          <span class="status-badge new">New</span>
+        </div>
+        <div class="enquiry-preview">Hi Raj, I'm a 14-year-old footballer looking to improve my striking and dribbling skills...</div>
+        <div class="enquiry-meta">
+          <span class="enquiry-sport"><i data-lucide="circle-dot"></i> Football</span>
+          <span class="enquiry-time">2 hours ago</span>
+        </div>
+      </div>
+    </div>
+    <div class="enquiry-item" onclick="location.href='enquiry-detail.html'">
+      <img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=104&h=104&fit=crop" alt="Arjun" class="enquiry-avatar">
+      <div class="enquiry-content">
+        <div class="enquiry-header">
+          <span class="enquiry-name">Arjun Mehta</span>
+          <span class="status-badge replied">Replied</span>
+        </div>
+        <div class="enquiry-preview">Interested in monthly training sessions. What slots are available on weekends?</div>
+        <div class="enquiry-meta">
+          <span class="enquiry-sport"><i data-lucide="circle-dot"></i> Football</span>
+          <span class="enquiry-time">Yesterday</span>
+        </div>
+      </div>
+    </div>
+    <div class="enquiry-item" onclick="location.href='enquiry-detail.html'">
+      <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?w=104&h=104&fit=crop" alt="Vikram" class="enquiry-avatar">
+      <div class="enquiry-content">
+        <div class="enquiry-header">
+          <span class="enquiry-name">Vikram Singh (Parent)</span>
+          <span class="status-badge new">New</span>
+        </div>
+        <div class="enquiry-preview">My son is 12 and wants to join your academy. Please share the fee structure and schedule.</div>
+        <div class="enquiry-meta">
+          <span class="enquiry-sport"><i data-lucide="circle-dot"></i> Football</span>
+          <span class="enquiry-time">2 days ago</span>
+        </div>
+      </div>
+    </div>
+    <div class="enquiry-item" onclick="location.href='enquiry-detail.html'">
+      <img src="https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=104&h=104&fit=crop" alt="Neha" class="enquiry-avatar">
+      <div class="enquiry-content">
+        <div class="enquiry-header">
+          <span class="enquiry-name">Neha Reddy</span>
+          <span class="status-badge replied">Replied</span>
+        </div>
+        <div class="enquiry-preview">I have experience playing at district level. Looking for advanced training to reach state level.</div>
+        <div class="enquiry-meta">
+          <span class="enquiry-sport"><i data-lucide="circle-dot"></i> Football</span>
+          <span class="enquiry-time">3 days ago</span>
+        </div>
+      </div>
+    </div>
+    <div class="enquiry-item" onclick="location.href='enquiry-detail.html'">
+      <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=104&h=104&fit=crop" alt="Rohan" class="enquiry-avatar">
+      <div class="enquiry-content">
+        <div class="enquiry-header">
+          <span class="enquiry-name">Rohan Pillai</span>
+          <span class="status-badge closed">Closed</span>
+        </div>
+        <div class="enquiry-preview">Enquiry about summer camp starting in May. Is there still availability?</div>
+        <div class="enquiry-meta">
+          <span class="enquiry-sport"><i data-lucide="circle-dot"></i> Football</span>
+          <span class="enquiry-time">1 week ago</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Coach Setup - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .status-bar {
+      height: 44px;
+      padding-top: var(--safe-top);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-left: 24px;
+      padding-right: 24px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .status-icons {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .status-icons svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .progress-bar {
+      display: flex;
+      padding: 16px 20px;
+      gap: 8px;
+    }
+
+    .progress-step {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+    }
+
+    .progress-step.completed {
+      background: var(--accent);
+    }
+
+    .progress-step.active {
+      background: var(--accent);
+      opacity: 0.5;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header h1 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .back-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius);
+      border: none;
+      background: var(--surface);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--fg);
+    }
+
+    .back-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 20px;
+    }
+
+    .step-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .step-subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .sport-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .chip {
+      padding: 10px 16px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      background: var(--bg);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chip svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .chip.selected {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-family: inherit;
+      background: var(--bg);
+      color: var(--fg);
+    }
+
+    .form-group textarea {
+      resize: none;
+      height: 80px;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .form-group input::placeholder {
+      color: var(--muted);
+    }
+
+    .cert-item {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .cert-item input {
+      flex: 1;
+    }
+
+    .cert-item button {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+    }
+
+    .cert-item button svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .add-more {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .add-more svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .cta-bar {
+      padding: 16px 20px;
+      padding-bottom: calc(16px + var(--safe-bottom));
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-secondary {
+      flex: 1;
+      padding: 14px;
+      background: var(--surface);
+      color: var(--fg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      flex: 1;
+      padding: 14px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="status-icons">
+      <i data-lucide="wifi"></i>
+      <i data-lucide="radio"></i>
+      <i data-lucide="battery-full"></i>
+    </div>
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-step completed"></div>
+    <div class="progress-step active"></div>
+    <div class="progress-step"></div>
+  </div>
+
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">
+      <i data-lucide="arrow-left"></i>
+    </button>
+    <h1>Coach Setup</h1>
+  </div>
+
+  <div class="main-content">
+    <div class="step-title">Sports & Certifications</div>
+    <div class="step-subtitle">What sport(s) do you coach?</div>
+
+    <div class="sport-chips">
+      <div class="chip selected">
+        <i data-lucide="goal"></i>
+        Football
+      </div>
+      <div class="chip">
+        <i data-lucide="dribbble"></i>
+        Basketball
+      </div>
+      <div class="chip">
+        <i data-lucide="circle-dot"></i>
+        Cricket
+      </div>
+      <div class="chip">
+        <i data-lucide="footprints"></i>
+        Athletics
+      </div>
+      <div class="chip">
+        <i data-lucide="waves"></i>
+        Swimming
+      </div>
+      <div class="chip">
+        <i data-lucide="circle-dot"></i>
+        Tennis
+      </div>
+      <div class="chip">
+        <i data-lucide="shuttlecock"></i>
+        Badminton
+      </div>
+      <div class="chip">
+        <i data-lucide="table-2"></i>
+        Table Tennis
+      </div>
+      <div class="chip">
+        <i data-lucide="brain"></i>
+        Chess
+      </div>
+      <div class="chip">
+        <i data-lucide="swords"></i>
+        Martial Arts
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Years of Experience</label>
+      <select>
+        <option>1-3 years</option>
+        <option selected>3-5 years</option>
+        <option>5-10 years</option>
+        <option>10+ years</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Certifications (e.g., AFC B License, AIFF D License)</label>
+      <div class="cert-item">
+        <input type="text" placeholder="Certification name" value="AIFF C License">
+        <button>
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="cert-item">
+        <input type="text" placeholder="Certification name" value="First Aid Certified">
+        <button>
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="add-more">
+        <i data-lucide="plus"></i>
+        Add another certification
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Coaching Philosophy (brief)</label>
+      <textarea placeholder="Describe your coaching approach and what makes your training unique..."></textarea>
+    </div>
+  </div>
+
+  <div class="cta-bar">
+    <button class="btn-secondary" onclick="history.back()">Back</button>
+    <button class="btn-primary" onclick="location.href='coach-profile-edit.html'">Continue</button>
+  </div>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

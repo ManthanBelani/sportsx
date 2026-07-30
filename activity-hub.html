@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Activity - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .back-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--fg);
+    }
+
+    .back-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .header h1 {
+      flex: 1;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .filter-bar {
+      padding: 12px 20px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .filter-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-chip {
+      padding: 8px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--fg);
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .filter-chip.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .content {
+      padding: 16px 20px;
+    }
+
+    .date-group {
+      margin-bottom: 20px;
+    }
+
+    .date-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .activity-card {
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 8px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .activity-card:active {
+      background: var(--surface);
+    }
+
+    .activity-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .activity-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--surface);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+    }
+
+    .activity-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .activity-icon.success {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .activity-icon.pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .activity-icon.info {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .activity-info {
+      flex: 1;
+    }
+
+    .activity-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 2px;
+    }
+
+    .activity-meta {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .activity-status {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 12px;
+    }
+
+    .activity-status.confirmed {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .activity-status.pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .activity-status.new {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      padding-bottom: max(8px, env(safe-area-inset-bottom));
+      z-index: 100;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 8px 16px;
+      color: var(--muted);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+    }
+
+    .nav-item svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .nav-item span {
+      font-size: 11px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="back-btn" onclick="window.history.back()">
+      <i data-lucide="arrow-left"></i>
+    </div>
+    <h1>Activity Hub</h1>
+  </header>
+
+  <div class="filter-bar">
+    <div class="filter-chip active">All</div>
+    <div class="filter-chip">Registrations</div>
+    <div class="filter-chip">Enquiries</div>
+    <div class="filter-chip">Results</div>
+    <div class="filter-chip">Scholarships</div>
+  </div>
+
+  <div class="content">
+    <div class="date-group">
+      <div class="date-label">Today</div>
+
+      <div class="activity-card" onclick="window.location.href='registration-confirmation.html'">
+        <div class="activity-header">
+          <div class="activity-icon success">
+            <i data-lucide="check-circle"></i>
+          </div>
+          <div class="activity-info">
+            <div class="activity-title">Trial Registration Confirmed</div>
+            <div class="activity-meta">U-14 Cricket Trials · 2:30 PM</div>
+          </div>
+          <span class="activity-status confirmed">Confirmed</span>
+        </div>
+      </div>
+
+      <div class="activity-card">
+        <div class="activity-header">
+          <div class="activity-icon info">
+            <i data-lucide="message-circle"></i>
+          </div>
+          <div class="activity-info">
+            <div class="activity-title">New reply from Rahul Mehta</div>
+            <div class="activity-meta">Regarding: Cricket coaching enquiry</div>
+          </div>
+          <span class="activity-status new">New</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="date-group">
+      <div class="date-label">Yesterday</div>
+
+      <div class="activity-card">
+        <div class="activity-header">
+          <div class="activity-icon">
+            <i data-lucide="calendar"></i>
+          </div>
+          <div class="activity-info">
+            <div class="activity-title">Trial Reminder</div>
+            <div class="activity-meta">District Football Trials · Tomorrow 10 AM</div>
+          </div>
+          <span class="activity-status pending">Upcoming</span>
+        </div>
+      </div>
+
+      <div class="activity-card">
+        <div class="activity-header">
+          <div class="activity-icon success">
+            <i data-lucide="trophy"></i>
+          </div>
+          <div class="activity-info">
+            <div class="activity-title">Scholarship Application Received</div>
+            <div class="activity-meta">State Sports Scholarship 2026</div>
+          </div>
+          <span class="activity-status confirmed">Under Review</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="date-group">
+      <div class="date-label">This Week</div>
+
+      <div class="activity-card">
+        <div class="activity-header">
+          <div class="activity-icon">
+            <i data-lucide="building-2"></i>
+          </div>
+          <div class="activity-info">
+            <div class="activity-title">Academy review submitted</div>
+            <div class="activity-meta">Elite Cricket Academy · 5 stars</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="activity-card">
+        <div class="activity-header">
+          <div class="activity-icon pending">
+            <i data-lucide="clock"></i>
+          </div>
+          <div class="activity-info">
+            <div class="activity-title">Enquiry sent</div>
+            <div class="activity-meta">Ahmedabad Football Academy</div>
+          </div>
+          <span class="activity-status pending">Pending</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <div class="nav-item" onclick="window.location.href='home-dashboard.html'">
+      <i data-lucide="home"></i>
+      <span>Home</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='universal-search.html'">
+      <i data-lucide="search"></i>
+      <span>Search</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='saved-items.html'">
+      <i data-lucide="heart"></i>
+      <span>Saved</span>
+    </div>
+    <div class="nav-item active">
+      <i data-lucide="layout-list"></i>
+      <span>Activity</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='profile-view.html'">
+      <i data-lucide="user"></i>
+      <span>Profile</span>
+    </div>
+  </nav>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

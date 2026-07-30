@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SportX — India's Sports Network</title>
+  <meta name="description" content="Find academies, coaches, trials, tournaments, scholarships and sponsors — all in one app. Built for Indian sport.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-alt: #fafbfc;
+      --surface: #f5f7fa;
+      --fg: #0a0e1a;
+      --fg-2: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --accent: #1677ff;
+      --accent-dark: #0d47a1;
+      --accent-light: #e6f0ff;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(15, 23, 42, 0.06);
+      --shadow-lg: 0 20px 60px -10px rgba(15, 23, 42, 0.12);
+      --gradient-hero: linear-gradient(135deg, #1677ff 0%, #0d47a1 50%, #1e1b4b 100%);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+    /* NAV */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: -0.4px;
+    }
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      background: var(--gradient-hero);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 12px rgba(22, 119, 255, 0.3);
+    }
+    .brand-mark svg { width: 20px; height: 20px; }
+
+    .nav-menu {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .nav-menu a {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--fg-2);
+      transition: all 0.15s ease;
+    }
+    .nav-menu a:hover { background: var(--surface); color: var(--fg); }
+
+    /* NAV SWITCHER */
+    .nav-switcher {
+      display: flex;
+      padding: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .nav-switcher a {
+      padding: 7px 14px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .nav-switcher a:hover { color: var(--fg); }
+    .nav-switcher a.active { background: var(--fg); color: white; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+    .nav-switcher svg { width: 14px; height: 14px; }
+
+    /* NAV GROUPS + DROPDOWNS */
+    .nav-groups { display: flex; gap: 4px; align-items: center; }
+    .nav-group { position: relative; }
+    .nav-trigger {
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--fg-2);
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: inherit;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .nav-trigger:hover { background: var(--surface); color: var(--fg); }
+    .nav-trigger svg.chev { width: 14px; height: 14px; transition: transform 0.2s ease; }
+    .nav-group.open .nav-trigger { background: var(--surface); color: var(--fg); }
+    .nav-group.open .nav-trigger svg.chev { transform: rotate(180deg); }
+
+    .nav-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      min-width: 280px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px;
+      box-shadow: 0 20px 60px -10px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(0,0,0,0.04);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-4px);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+      z-index: 100;
+    }
+    .nav-group.open .nav-dropdown { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    .nav-dd-section-label {
+      padding: 6px 10px 4px;
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--muted);
+    }
+    .nav-dd-divider { height: 1px; background: var(--border); margin: 6px -2px; }
+    .nav-dd-list { display: flex; flex-direction: column; gap: 2px; }
+    .nav-dd-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 8px;
+      color: var(--fg-2);
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+    .nav-dd-item:hover { background: var(--surface); color: var(--fg); }
+    .nav-dd-item.active { background: var(--surface); color: #1677ff; }
+    .nav-dd-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .nav-dd-icon svg { width: 16px; height: 16px; }
+    .nav-dd-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+    .nav-dd-title { font-size: 13px; font-weight: 600; color: var(--fg); line-height: 1.2; }
+    .nav-dd-sub { font-size: 11px; color: var(--muted); }
+
+    .nav-dd-item.role-athlete .nav-dd-icon { background: rgba(245, 158, 11, 0.14); color: #f59e0b; }
+    .nav-dd-item.role-coach .nav-dd-icon { background: rgba(22, 119, 255, 0.14); color: #1677ff; }
+    .nav-dd-item.role-academy .nav-dd-icon { background: rgba(16, 185, 129, 0.14); color: #10b981; }
+    .nav-dd-item.role-organizer .nav-dd-icon { background: rgba(139, 92, 246, 0.14); color: #8b5cf6; }
+    .nav-dd-item.role-sponsor .nav-dd-icon { background: rgba(236, 72, 153, 0.14); color: #ec4899; }
+    .nav-dd-item.role-admin .nav-dd-icon { background: rgba(100, 116, 139, 0.14); color: #64748b; }
+
+    /* MOBILE NAV */
+    .nav-mobile-btn {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .nav-mobile-btn svg { width: 18px; height: 18px; color: var(--fg-2); }
+    .nav-mobile {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: white;
+      z-index: 200;
+      padding: 20px;
+      overflow-y: auto;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+    }
+    .nav-mobile.open { transform: translateX(0); }
+    .nav-mobile-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .nav-mobile-close {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .nav-mobile-close svg { width: 18px; height: 18px; }
+    .nav-mobile-section { margin-bottom: 20px; }
+    .nav-mobile-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      padding: 0 6px;
+    }
+    .nav-mobile-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      color: var(--fg-2);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: none;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    .nav-mobile-link:hover, .nav-mobile-link.active { background: var(--surface); color: var(--fg); }
+    .nav-mobile-link svg.ico { width: 18px; height: 18px; color: var(--muted); }
+
+    @media (max-width: 1080px) {
+      .nav-menu, .nav-groups, .nav-switcher { display: none; }
+      .nav-mobile-btn { display: flex; }
+    }
+
+    .nav-cta {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .btn-ghost-sm {
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--fg);
+    }
+    .btn-ghost-sm:hover { background: var(--surface); }
+    .btn-primary-sm {
+      padding: 9px 16px;
+      background: var(--fg);
+      color: white;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: background 0.15s ease;
+    }
+    .btn-primary-sm:hover { background: var(--accent); }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      padding: 80px 32px 100px;
+      background: var(--gradient-hero);
+      overflow: hidden;
+      text-align: center;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(900px 500px at 15% 25%, rgba(22, 119, 255, 0.5), transparent 60%),
+        radial-gradient(700px 400px at 85% 75%, rgba(139, 92, 246, 0.4), transparent 60%),
+        radial-gradient(500px 300px at 50% 50%, rgba(236, 72, 153, 0.2), transparent 70%);
+      pointer-events: none;
+    }
+    .hero-grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+      -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      max-width: 980px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 100px;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .hero-pill-dot {
+      width: 6px;
+      height: 6px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+    }
+
+    .hero h1 {
+      font-size: clamp(44px, 7vw, 88px);
+      font-weight: 900;
+      color: white;
+      letter-spacing: -3px;
+      line-height: 1.0;
+      margin-bottom: 24px;
+    }
+    .hero h1 .grad {
+      background: linear-gradient(135deg, #fbbf24 0%, #f472b6 50%, #c084fc 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero p.lead {
+      font-size: clamp(17px, 1.8vw, 21px);
+      color: rgba(255,255,255,0.85);
+      max-width: 720px;
+      margin: 0 auto 40px;
+      line-height: 1.55;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+    }
+    .btn svg { width: 18px; height: 18px; }
+    .btn-white { background: white; color: var(--accent-dark); }
+    .btn-white:hover { transform: translateY(-1px); box-shadow: 0 12px 32px rgba(0,0,0,0.2); }
+    .btn-outline-white { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.25); }
+    .btn-outline-white:hover { background: rgba(255,255,255,0.15); }
+
+    .hero-trust {
+      margin-top: 64px;
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      flex-wrap: wrap;
+      color: rgba(255,255,255,0.7);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .hero-trust .item { display: flex; align-items: center; gap: 8px; }
+    .hero-trust svg { width: 16px; height: 16px; color: rgba(255,255,255,0.5); }
+
+    /* PHONE MOCKUPS */
+    .phone-row {
+      max-width: 1280px;
+      margin: -60px auto 0;
+      padding: 0 32px;
+      position: relative;
+      z-index: 2;
+    }
+    .phones {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      perspective: 2000px;
+    }
+    .phone {
+      width: 280px;
+      height: 580px;
+      background: #111;
+      border-radius: 36px;
+      padding: 8px;
+      box-shadow: 0 30px 80px -20px rgba(15, 23, 42, 0.5), inset 0 0 0 1px rgba(255,255,255,0.1);
+      position: relative;
+    }
+    .phone::before {
+      content: '';
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 22px;
+      background: #111;
+      border-radius: 14px;
+      z-index: 10;
+    }
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      border-radius: 28px;
+      overflow: hidden;
+      background: white;
+      position: relative;
+    }
+    .phone-screen iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      pointer-events: none;
+    }
+    .phone-1 { transform: rotateY(8deg) translateY(20px); }
+    .phone-2 { transform: translateY(-10px); z-index: 2; }
+    .phone-3 { transform: rotateY(-8deg) translateY(20px); }
+
+    /* SECTION */
+    section {
+      padding: 100px 32px;
+    }
+    .section-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .section-eyebrow {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .section-title {
+      font-size: clamp(32px, 4vw, 48px);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      margin-bottom: 20px;
+      max-width: 800px;
+    }
+    .section-sub {
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 720px;
+      line-height: 1.6;
+      margin-bottom: 56px;
+    }
+    .section-center { text-align: center; margin: 0 auto; }
+    .section-center .section-title,
+    .section-center .section-sub { margin-left: auto; margin-right: auto; }
+
+    /* VALUE PROPS */
+    .value-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .value-card {
+      padding: 32px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      transition: all 0.2s ease;
+    }
+    .value-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--accent);
+    }
+    .value-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: var(--accent-light);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .value-icon svg { width: 26px; height: 26px; }
+    .value-card h3 {
+      font-size: 19px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.4px;
+    }
+    .value-card p {
+      font-size: 14.5px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ROLES */
+    .roles-section { background: var(--bg-alt); }
+    .roles-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .role-card {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 28px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s ease;
+    }
+    .role-card:hover {
+      border-color: var(--accent);
+      box-shadow: var(--shadow);
+    }
+    .role-icon-box {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .role-icon-box svg { width: 26px; height: 26px; }
+    .role-card-body { flex: 1; }
+    .role-card-body h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .role-card-body p {
+      font-size: 13.5px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .role-card-arrow {
+      color: var(--muted-2, #9ca3af);
+      flex-shrink: 0;
+    }
+    .role-card-arrow svg { width: 20px; height: 20px; }
+
+    .role-card[data-role="athlete"] .role-icon-box { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
+    .role-card[data-role="coach"] .role-icon-box { background: rgba(22, 119, 255, 0.12); color: #1677ff; }
+    .role-card[data-role="academy"] .role-icon-box { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+    .role-card[data-role="organizer"] .role-icon-box { background: rgba(139, 92, 246, 0.12); color: #8b5cf6; }
+    .role-card[data-role="sponsor"] .role-icon-box { background: rgba(236, 72, 153, 0.12); color: #ec4899; }
+    .role-card[data-role="admin"] .role-icon-box { background: rgba(100, 116, 139, 0.12); color: #64748b; }
+
+    /* FEATURES */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+    .feature-card {
+      padding: 32px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      transition: all 0.2s ease;
+    }
+    .feature-card:hover {
+      border-color: var(--accent);
+      box-shadow: var(--shadow);
+    }
+    .feature-card h3 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: -0.4px;
+    }
+    .feature-card p {
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14.5px;
+      margin-bottom: 20px;
+    }
+    .feature-card ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .feature-card li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13.5px;
+      color: var(--fg-2);
+    }
+    .feature-card li svg {
+      width: 16px;
+      height: 16px;
+      color: var(--success);
+      flex-shrink: 0;
+    }
+
+    /* STATS */
+    .stats-section {
+      background: var(--gradient-hero);
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+    .stats-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(600px 300px at 80% 30%, rgba(139, 92, 246, 0.4), transparent),
+        radial-gradient(500px 300px at 20% 70%, rgba(22, 119, 255, 0.4), transparent);
+    }
+    .stats-section .section-eyebrow { color: rgba(255,255,255,0.7); }
+    .stats-section .section-title { color: white; }
+    .stats-section .section-sub { color: rgba(255,255,255,0.7); }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+      position: relative;
+    }
+    .stat-block {
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    .stat-block .v {
+      font-size: 56px;
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #fbbf24 0%, #f472b6 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .stat-block .l {
+      font-size: 14px;
+      color: rgba(255,255,255,0.75);
+      font-weight: 500;
+    }
+
+    /* CTA */
+    .cta-section {
+      padding: 80px 32px;
+    }
+    .cta-box {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: var(--gradient-hero);
+      border-radius: 24px;
+      padding: 80px 40px;
+      text-align: center;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-box::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(500px 250px at 30% 30%, rgba(139, 92, 246, 0.4), transparent),
+        radial-gradient(400px 200px at 70% 70%, rgba(236, 72, 153, 0.3), transparent);
+    }
+    .cta-box > * { position: relative; }
+    .cta-box h2 {
+      font-size: clamp(32px, 4vw, 48px);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      margin-bottom: 16px;
+    }
+    .cta-box p {
+      font-size: 18px;
+      color: rgba(255,255,255,0.8);
+      max-width: 540px;
+      margin: 0 auto 32px;
+    }
+
+    /* FOOTER */
+    footer {
+      background: var(--bg-alt);
+      border-top: 1px solid var(--border);
+      padding: 48px 32px 24px;
+    }
+    .footer-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 32px;
+    }
+    .footer-brand {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .footer-desc {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 320px;
+    }
+    .footer-col h5 {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+      color: var(--muted);
+    }
+    .footer-col ul { list-style: none; }
+    .footer-col li { margin-bottom: 10px; }
+    .footer-col a {
+      color: var(--fg-2);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .footer-col a:hover { color: var(--accent); }
+    .footer-bottom {
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--muted);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    @media (max-width: 960px) {
+      .nav-menu { display: none; }
+      .phones { flex-wrap: wrap; }
+      .phone { width: 240px; height: 500px; }
+      .value-grid { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr; }
+      .roles-grid { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .hero { padding: 56px 20px 80px; }
+      section { padding: 64px 20px; }
+      .cta-box { padding: 56px 24px; }
+      .stat-block .v { font-size: 40px; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .footer-bottom { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="landing.html" class="brand">
+        <div class="brand-mark"><i data-lucide="trophy"></i></div>
+        SportX
+      </a>
+
+      <div class="nav-groups">
+        <div class="nav-group" data-dropdown="sections">
+          <button class="nav-trigger" type="button">
+            <i data-lucide="list"></i>
+            Sections
+            <i class="chev" data-lucide="chevron-down"></i>
+          </button>
+          <div class="nav-dropdown">
+            <div class="nav-dd-section-label">On this page</div>
+            <div class="nav-dd-list">
+              <a class="nav-dd-item" href="#features">
+                <div class="nav-dd-icon" style="background:rgba(22,119,255,.12);color:#1677ff;"><i data-lucide="zap"></i></div>
+                <div class="nav-dd-text"><div class="nav-dd-title">Features</div><div class="nav-dd-sub">What SportX does</div></div>
+              </a>
+              <a class="nav-dd-item" href="#roles">
+                <div class="nav-dd-icon" style="background:rgba(16,185,129,.12);color:#10b981;"><i data-lucide="users"></i></div>
+                <div class="nav-dd-text"><div class="nav-dd-title">For everyone</div><div class="nav-dd-sub">Six roles, one platform</div></div>
+              </a>
+              <a class="nav-dd-item" href="#stats">
+                <div class="nav-dd-icon" style="background:rgba(245,158,11,.12);color:#f59e0b;"><i data-lucide="bar-chart-3"></i></div>
+                <div class="nav-dd-text"><div class="nav-dd-title">Impact</div><div class="nav-dd-sub">By the numbers</div></div>
+              </a>
+            </div>
+            <div class="nav-dd-divider"></div>
+            <div class="nav-dd-section-label">Get started</div>
+            <div class="nav-dd-list">
+              <a class="nav-dd-item" href="app.html">
+                <div class="nav-dd-icon" style="background:rgba(139,92,246,.12);color:#8b5cf6;"><i data-lucide="smartphone"></i></div>
+                <div class="nav-dd-text"><div class="nav-dd-title">Try the app preview</div><div class="nav-dd-sub">Live, clickable demo</div></div>
+              </a>
+              <a class="nav-dd-item" href="index.html">
+                <div class="nav-dd-icon" style="background:rgba(236,72,153,.12);color:#ec4899;"><i data-lucide="layout-grid"></i></div>
+                <div class="nav-dd-text"><div class="nav-dd-title">Design showcase</div><div class="nav-dd-sub">All 78 screens</div></div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-switcher">
+        <a href="index.html"><i data-lucide="layout-grid"></i> Showcase</a>
+        <a href="app.html"><i data-lucide="smartphone"></i> App Preview</a>
+        <a class="active" href="landing.html"><i data-lucide="globe"></i> Marketing</a>
+      </div>
+
+      <div class="nav-cta">
+        <a class="btn-ghost-sm" href="index.html">View design</a>
+        <a class="btn-primary-sm" href="#">Get the app</a>
+      </div>
+
+      <button class="nav-mobile-btn" id="mobileMenuBtn" aria-label="Open menu">
+        <i data-lucide="menu"></i>
+      </button>
+    </div>
+  </nav>
+
+  <div class="nav-mobile" id="mobileMenu">
+    <div class="nav-mobile-head">
+      <a href="landing.html" class="brand">
+        <div class="brand-mark"><i data-lucide="trophy"></i></div>
+        SportX
+      </a>
+      <button class="nav-mobile-close" id="mobileMenuClose" aria-label="Close menu">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+
+    <div class="nav-mobile-section">
+      <div class="nav-mobile-label">Pages</div>
+      <a class="nav-mobile-link" href="index.html"><i class="ico" data-lucide="layout-grid"></i> Showcase</a>
+      <a class="nav-mobile-link" href="app.html"><i class="ico" data-lucide="smartphone"></i> App Preview</a>
+      <a class="nav-mobile-link active" href="landing.html"><i class="ico" data-lucide="globe"></i> Marketing site</a>
+    </div>
+
+    <div class="nav-mobile-section">
+      <div class="nav-mobile-label">Sections</div>
+      <a class="nav-mobile-link" href="#features"><i class="ico" data-lucide="zap"></i> Features</a>
+      <a class="nav-mobile-link" href="#roles"><i class="ico" data-lucide="users"></i> For everyone</a>
+      <a class="nav-mobile-link" href="#stats"><i class="ico" data-lucide="bar-chart-3"></i> Impact</a>
+    </div>
+  </div>
+
+  <header class="hero">
+    <div class="hero-grid-bg"></div>
+    <div class="hero-inner">
+      <div class="hero-pill">
+        <span class="hero-pill-dot"></span>
+        Now onboarding across India
+      </div>
+      <h1>
+        India's sports<br>
+        network — <span class="grad">built for every player.</span>
+      </h1>
+      <p class="lead">
+        Find academies, coaches, trials, tournaments, scholarships and sponsors — all in one place. Whether you're 8 or 80, picking up a bat or chasing a podium, SportX connects you to the rest of Indian sport.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-white" href="#">
+          <i data-lucide="download"></i>
+          Download SportX
+        </a>
+        <a class="btn btn-outline-white" href="index.html">
+          <i data-lucide="play-circle"></i>
+          See it in action
+        </a>
+      </div>
+      <div class="hero-trust">
+        <div class="item"><i data-lucide="check"></i> Free to join</div>
+        <div class="item"><i data-lucide="check"></i> Verified coaches & academies</div>
+        <div class="item"><i data-lucide="check"></i> Pan-India coverage</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="phone-row">
+    <div class="phones">
+      <div class="phone phone-1">
+        <div class="phone-screen">
+          <iframe src="home-dashboard.html" loading="lazy"></iframe>
+        </div>
+      </div>
+      <div class="phone phone-2">
+        <div class="phone-screen">
+          <iframe src="trial-detail.html" loading="lazy"></iframe>
+        </div>
+      </div>
+      <div class="phone phone-3">
+        <div class="phone-screen">
+          <iframe src="academy-detail.html" loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VALUE PROPS -->
+  <section>
+    <div class="section-inner section-center">
+      <div class="section-eyebrow">Why SportX</div>
+      <h2 class="section-title">A single platform for the entire sports ecosystem.</h2>
+      <p class="section-sub">Indian sport is fragmented. SportX unifies discovery, training, competition and sponsorship into one mobile-first experience.</p>
+
+      <div class="value-grid">
+        <div class="value-card">
+          <div class="value-icon"><i data-lucide="search"></i></div>
+          <h3>Discover everything nearby</h3>
+          <p>Search academies, coaches, trials, tournaments, scholarships and sponsorships by sport, age, city and budget.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-icon"><i data-lucide="zap"></i></div>
+          <h3>One-tap enquiries & registration</h3>
+          <p>Reach out, register for trials and book sessions without filling endless forms. Status updates in real time.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-icon"><i data-lucide="shield-check"></i></div>
+          <h3>Verified coaches & academies</h3>
+          <p>Every listing is verified. Ratings, reviews and credentials so you can choose with confidence.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-icon"><i data-lucide="trophy"></i></div>
+          <h3>Pathway from playground to podium</h3>
+          <p>Track progress, apply for scholarships, win sponsorships — SportX supports your journey end to end.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-icon"><i data-lucide="briefcase"></i></div>
+          <h3>Built for every operator</h3>
+          <p>Coaches, academies, organizers and sponsors get powerful workflows — not consumer-grade forms.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-icon"><i data-lucide="globe"></i></div>
+          <h3>Made for India</h3>
+          <p>Multi-language, low-bandwidth friendly, UPI-ready and aligned with Indian sports federations.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROLES -->
+  <section class="roles-section" id="roles">
+    <div class="section-inner">
+      <div class="section-eyebrow">Built for everyone</div>
+      <h2 class="section-title">Six roles, one product.</h2>
+      <p class="section-sub">From athletes and parents to sponsors and admins — SportX gives every user a tailored experience designed for their goals.</p>
+
+      <div class="roles-grid">
+        <a class="role-card" data-role="athlete" href="home-dashboard.html">
+          <div class="role-icon-box"><i data-lucide="user"></i></div>
+          <div class="role-card-body">
+            <h3>Athletes & parents</h3>
+            <p>Find academies, coaches, trials, scholarships and tournaments near you.</p>
+          </div>
+          <div class="role-card-arrow"><i data-lucide="arrow-right"></i></div>
+        </a>
+        <a class="role-card" data-role="coach" href="coach/coach-dashboard.html">
+          <div class="role-icon-box"><i data-lucide="clipboard-list"></i></div>
+          <div class="role-card-body">
+            <h3>Coaches</h3>
+            <p>List services, manage enquiries, schedule sessions and grow your roster.</p>
+          </div>
+          <div class="role-card-arrow"><i data-lucide="arrow-right"></i></div>
+        </a>
+        <a class="role-card" data-role="academy" href="academy/academy-dashboard.html">
+          <div class="role-icon-box"><i data-lucide="building-2"></i></div>
+          <div class="role-card-body">
+            <h3>Academies</h3>
+            <p>Manage your listing, post trials, track registrations and run operations.</p>
+          </div>
+          <div class="role-card-arrow"><i data-lucide="arrow-right"></i></div>
+        </a>
+        <a class="role-card" data-role="organizer" href="organizer/organizer-dashboard.html">
+          <div class="role-icon-box"><i data-lucide="calendar"></i></div>
+          <div class="role-card-body">
+            <h3>Tournament organizers</h3>
+            <p>Create events, manage capacity, registrations and publish results.</p>
+          </div>
+          <div class="role-card-arrow"><i data-lucide="arrow-right"></i></div>
+        </a>
+        <a class="role-card" data-role="sponsor" href="sponsor/sponsor-dashboard.html">
+          <div class="role-icon-box"><i data-lucide="briefcase"></i></div>
+          <div class="role-card-body">
+            <h3>Sponsors & brands</h3>
+            <p>Discover rising athletes, create sponsorships and manage applications.</p>
+          </div>
+          <div class="role-card-arrow"><i data-lucide="arrow-right"></i></div>
+        </a>
+        <a class="role-card" data-role="admin" href="admin/admin-dashboard.html">
+          <div class="role-icon-box"><i data-lucide="shield"></i></div>
+          <div class="role-card-body">
+            <h3>Platform admins</h3>
+            <p>Moderate listings, verify sponsors, manage users and track analytics.</p>
+          </div>
+          <div class="role-card-arrow"><i data-lucide="arrow-right"></i></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="section-inner section-center">
+      <div class="section-eyebrow">Features</div>
+      <h2 class="section-title">Everything Indian sport needs, in one app.</h2>
+      <p class="section-sub">Every feature in SportX solves a real friction point in the Indian sports journey — from discovery to sponsorship.</p>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <h3>Smart discovery</h3>
+          <p>Personalised recommendations based on sport, age group, location and budget — refreshed as new listings drop.</p>
+          <ul>
+            <li><i data-lucide="check"></i> Filter by sport, age, city, fees</li>
+            <li><i data-lucide="check"></i> Saved items & activity history</li>
+            <li><i data-lucide="check"></i> Universal search across roles</li>
+          </ul>
+        </div>
+        <div class="feature-card">
+          <h3>Trials & tournaments</h3>
+          <p>Browse upcoming trials, register with one tap, get instant confirmations and reminders.</p>
+          <ul>
+            <li><i data-lucide="check"></i> Real-time seat availability</li>
+            <li><i data-lucide="check"></i> Eligibility check on register</li>
+            <li><i data-lucide="check"></i> Calendar sync & push reminders</li>
+          </ul>
+        </div>
+        <div class="feature-card">
+          <h3>Coach & academy tools</h3>
+          <p>Operators get full dashboards: enquiry inbox, schedule, registrants, profile completeness and analytics.</p>
+          <ul>
+            <li><i data-lucide="check"></i> Enquiry inbox with status</li>
+            <li><i data-lucide="check"></i> Trial posting form & drafts</li>
+            <li><i data-lucide="check"></i> Registrant list & detail</li>
+          </ul>
+        </div>
+        <div class="feature-card">
+          <h3>Sponsorships & scholarships</h3>
+          <p>A dedicated feed for financial aid and brand support — apply in minutes, track status in real time.</p>
+          <ul>
+            <li><i data-lucide="check"></i> Scholarship feed & detail</li>
+            <li><i data-lucide="check"></i> Sponsor discovery for athletes</li>
+            <li><i data-lucide="check"></i> Brand applications inbox</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats-section" id="stats">
+    <div class="section-inner section-center">
+      <div class="section-eyebrow">By the numbers</div>
+      <h2 class="section-title">Designed to scale across the country.</h2>
+      <p class="section-sub">Targets for the first 24 months of launch.</p>
+
+      <div class="stats-row">
+        <div class="stat-block">
+          <div class="v">5M+</div>
+          <div class="l">Athletes onboarded</div>
+        </div>
+        <div class="stat-block">
+          <div class="v">50K</div>
+          <div class="l">Verified coaches</div>
+        </div>
+        <div class="stat-block">
+          <div class="v">10K</div>
+          <div class="l">Academies listed</div>
+        </div>
+        <div class="stat-block">
+          <div class="v">₹500Cr</div>
+          <div class="l">Sponsorships facilitated</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-box">
+      <div class="section-eyebrow" style="color:rgba(255,255,255,0.7);">Get started</div>
+      <h2>Your next game starts here.</h2>
+      <p>Join SportX free and connect with the rest of Indian sport — wherever you are in your journey.</p>
+      <div class="hero-actions" style="justify-content:center;">
+        <a class="btn btn-white" href="#">
+          <i data-lucide="download"></i>
+          Download for iOS
+        </a>
+        <a class="btn btn-outline-white" href="#">
+          <i data-lucide="smartphone"></i>
+          Download for Android
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">
+            <div class="brand-mark"><i data-lucide="trophy"></i></div>
+            SportX
+          </div>
+          <p class="footer-desc">India's sports network. Built mobile-first for athletes, coaches, academies, organisers and sponsors.</p>
+        </div>
+        <div class="footer-col">
+          <h5>Product</h5>
+          <ul>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#roles">For everyone</a></li>
+            <li><a href="#">Pricing</a></li>
+            <li><a href="#">Changelog</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>Company</h5>
+          <ul>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Press</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>Resources</h5>
+          <ul>
+            <li><a href="index.html">Design system</a></li>
+            <li><a href="#">Help center</a></li>
+            <li><a href="#">Community</a></li>
+            <li><a href="#">Blog</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>Legal</h5>
+          <ul>
+            <li><a href="#">Privacy</a></li>
+            <li><a href="#">Terms</a></li>
+            <li><a href="#">Security</a></li>
+            <li><a href="#">Cookies</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div>© 2026 SportX. All rights reserved.</div>
+        <div>Made in India 🇮🇳</div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    // NAV: dropdowns + mobile menu
+    (function() {
+      const groups = document.querySelectorAll('.nav-group[data-dropdown]');
+      groups.forEach(g => {
+        const trig = g.querySelector('.nav-trigger');
+        trig.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const wasOpen = g.classList.contains('open');
+          groups.forEach(o => o.classList.remove('open'));
+          if (!wasOpen) g.classList.add('open');
+        });
+      });
+      document.addEventListener('click', () => groups.forEach(g => g.classList.remove('open')));
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') groups.forEach(g => g.classList.remove('open')); });
+
+      const mb = document.getElementById('mobileMenu');
+      const mbBtn = document.getElementById('mobileMenuBtn');
+      const mbClose = document.getElementById('mobileMenuClose');
+      if (mbBtn) mbBtn.addEventListener('click', () => mb.classList.add('open'));
+      if (mbClose) mbClose.addEventListener('click', () => mb.classList.remove('open'));
+      if (mb) mb.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mb.classList.remove('open')));
+    })();
+  </script>
+</body>
+</html>

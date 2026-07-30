@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SportX India</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; display: flex; flex-direction: column; }
+    .status-bar { height: 44px; padding-top: var(--safe-top); display: flex; align-items: center; justify-content: space-between; padding-left: 24px; padding-right: 24px; font-size: 14px; font-weight: 600; }
+    .header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .mark-read { font-size: 14px; color: var(--accent); font-weight: 500; cursor: pointer; }
+    .main-content { flex: 1; overflow-y: auto; }
+    .date-group { padding: 8px 20px; font-size: 12px; font-weight: 600; color: var(--muted); background: var(--surface); position: sticky; top: 0; }
+    .notif-item { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 12px; cursor: pointer; }
+    .notif-item:hover { background: var(--surface); }
+    .notif-icon { width: 44px; height: 44px; border-radius: var(--radius); background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .notif-icon.trial { background: #dbeafe; }
+    .notif-icon.reply { background: #d1fae5; }
+    .notif-icon.deadline { background: #fef3c7; }
+    .notif-icon.application { background: #ede9fe; }
+    .notif-content { flex: 1; min-width: 0; }
+    .notif-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .notif-desc { font-size: 13px; color: var(--muted); line-height: 1.4; margin-bottom: 4px; }
+    .notif-time { font-size: 12px; color: var(--muted); }
+    .unread-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <div class="status-bar"><span>9:41</span><span>📶 📡 🔋</span></div>
+  <div class="header">
+    <h1>Notifications</h1>
+    <span class="mark-read">Mark all read</span>
+  </div>
+  <div class="main-content">
+    <div class="date-group">TODAY</div>
+    <div class="notif-item">
+      <div class="notif-icon trial">⚽</div>
+      <div class="notif-content">
+        <div class="notif-title">Trial Registration Confirmed!</div>
+        <div class="notif-desc">Your registration for the Nike Football Trials on Dec 10 has been confirmed. Report at 8 AM sharp.</div>
+        <div class="notif-time">2 hours ago</div>
+      </div>
+      <div class="unread-dot"></div>
+    </div>
+    <div class="notif-item">
+      <div class="notif-icon reply">💬</div>
+      <div class="notif-content">
+        <div class="notif-title">Coach Raj Kapoor replied to your enquiry</div>
+        <div class="notif-desc">"Hi! Yes, we have slots available on Saturday afternoons. Let's connect!"</div>
+        <div class="notif-time">5 hours ago</div>
+      </div>
+      <div class="unread-dot"></div>
+    </div>
+    <div class="notif-item">
+      <div class="notif-icon deadline"><i data-lucide="clock"></i></div>
+      <div class="notif-content">
+        <div class="notif-title">Deadline Reminder</div>
+        <div class="notif-desc">Junior National Championship registration closes in 3 days (Dec 1).</div>
+        <div class="notif-time">6 hours ago</div>
+      </div>
+      <div class="unread-dot"></div>
+    </div>
+    <div class="date-group">YESTERDAY</div>
+    <div class="notif-item">
+      <div class="notif-icon application"><i data-lucide="trophy"></i></div>
+      <div class="notif-content">
+        <div class="notif-title">Scholarship Application Update</div>
+        <div class="notif-desc">Your application for SportyAI Junior Athlete Scholarship has been reviewed.</div>
+        <div class="notif-time">Yesterday, 3:30 PM</div>
+      </div>
+    </div>
+    <div class="notif-item">
+      <div class="notif-icon trial"><i data-lucide="stadium"></i></div>
+      <div class="notif-content">
+        <div class="notif-title">New Trial Added Near You</div>
+        <div class="notif-desc">Air Force Football Academy is hosting open trials on Dec 20 in Bangalore.</div>
+        <div class="notif-time">Yesterday, 11:00 AM</div>
+      </div>
+    </div>
+    <div class="date-group">THIS WEEK</div>
+    <div class="notif-item">
+      <div class="notif-icon reply">💬</div>
+      <div class="notif-content">
+        <div class="notif-title">Academy replied to your enquiry</div>
+        <div class="notif-desc">Sreekanya Football Academy: "Welcome for a free trial session this weekend!"</div>
+        <div class="notif-time">Monday</div>
+      </div>
+    </div>
+  </div>
+  <script>lucide.createIcons();</script>
+</body>
+</html>
