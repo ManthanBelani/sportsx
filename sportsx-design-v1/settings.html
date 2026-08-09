@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Settings - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+    }
+
+    .header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 10;
+    }
+
+    .back-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--fg);
+    }
+
+    .back-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .header h1 {
+      flex: 1;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .section {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .setting-row:last-child {
+      border-bottom: none;
+    }
+
+    .setting-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--surface);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+      color: var(--accent);
+    }
+
+    .setting-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .setting-content {
+      flex: 1;
+    }
+
+    .setting-label {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--fg);
+    }
+
+    .setting-desc {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .setting-action {
+      color: var(--muted);
+    }
+
+    .setting-action svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .toggle {
+      width: 48px;
+      height: 28px;
+      background: var(--border);
+      border-radius: 14px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .toggle.active {
+      background: var(--accent);
+    }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 24px;
+      height: 24px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .toggle.active::after {
+      transform: translateX(20px);
+    }
+
+    .version {
+      text-align: center;
+      padding: 24px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="back-btn" onclick="window.history.back()">
+      <i data-lucide="arrow-left"></i>
+    </div>
+    <h1>Settings</h1>
+  </header>
+
+  <section class="section">
+    <h3 class="section-title">Account</h3>
+    <div class="setting-row">
+      <div class="setting-icon">
+        <i data-lucide="user"></i>
+      </div>
+      <div class="setting-content">
+        <div class="setting-label">Edit Profile</div>
+        <div class="setting-desc">Update your personal information</div>
+      </div>
+      <div class="setting-action">
+        <i data-lucide="chevron-right"></i>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-icon">
+        <i data-lucide="lock"></i>
+      </div>
+      <div class="setting-content">
+        <div class="setting-label">Change Password</div>
+        <div class="setting-desc">Update your security password</div>
+      </div>
+      <div class="setting-action">
+        <i data-lucide="chevron-right"></i>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-icon">
+        <i data-lucide="phone"></i>
+      </div>
+      <div class="setting-content">
+        <div class="setting-label">Phone Number</div>
+        <div class="setting-desc">+91 98XXX XXXXX</div>
+      </div>
+      <div class="setting-action">
+        <i data-lucide="chevron-right"></i>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h3 class="section-title">Preferences</h3>
+    <div class="setting-row">
+      <div class="setting-icon">
+        <i data-lucide="bell"></i>
+      </div>
+      <div class="setting-content">
+        <div class="setting-label">Push Notifications</div>
+        <div class="setting-desc">Receive alerts for trials and results</div>
+      </div>
+      <div class="toggle active" id="notifToggle"></div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-icon">
+        <i data-lucide="mail"></i>
+      </div>
+      <div class="setting-content">
+        <div class="setting-label">Email Updates</div>
+        <div class="setting-desc">Get weekly digest and news</div>
+      </div>
+      <div class="toggle" id="emailToggle"></div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-icon">
+        <i data-lucide="map-pin"></i>
+      </div>
+      <div class="setting-content">
+        <div class="setting-label">Location Services</div>
+        <div class="setting-desc">Allow access for nearby recommendations</div>
+      </div>
+      <div class="toggle active" id="locationToggle"></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h3 class="section-title">Support</h3>
+    <div class="setting-row" onclick="window.location.href='help-support.html'">
+      <div class="setting-icon">
+        <i data-lucide="help-circle"></i>
+      </div>
+      <div class="setting-content">
+        <div class="setting-label">Help & Support</div>
+        <div class="setting-desc">FAQs and contact support</div>
+      </div>
+      <div class="setting-action">
+        <i data-lucide="chevron-right"></i>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-icon">
+        <i data-lucide="shield"></i>
+      </div>
+      <div class="setting-content">
+        <div class="setting-label">Privacy Policy</div>
+        <div class="setting-desc">How we handle your data</div>
+      </div>
+      <div class="setting-action">
+        <i data-lucide="chevron-right"></i>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-icon">
+        <i data-lucide="file-text"></i>
+      </div>
+      <div class="setting-content">
+        <div class="setting-label">Terms of Service</div>
+        <div class="setting-desc">Platform usage terms</div>
+      </div>
+      <div class="setting-action">
+        <i data-lucide="chevron-right"></i>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h3 class="section-title">Danger Zone</h3>
+    <div class="setting-row">
+      <div class="setting-icon" style="background: #fee2e2; color: #dc2626;">
+        <i data-lucide="trash-2"></i>
+      </div>
+      <div class="setting-content">
+        <div class="setting-label" style="color: #dc2626;">Delete Account</div>
+        <div class="setting-desc">Permanently remove your account</div>
+      </div>
+      <div class="setting-action">
+        <i data-lucide="chevron-right"></i>
+      </div>
+    </div>
+  </section>
+
+  <div class="version">SportX India v1.0.0</div>
+
+  <script>
+    lucide.createIcons();
+
+    document.querySelectorAll('.toggle').forEach(function(toggle) {
+      toggle.addEventListener('click', function() {
+        this.classList.toggle('active');
+      });
+    });
+  </script>
+</body>
+</html>

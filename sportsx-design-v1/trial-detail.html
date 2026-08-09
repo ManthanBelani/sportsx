@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>U-14 Cricket Trials - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      padding-bottom: 100px;
+    }
+
+    .hero {
+      height: 180px;
+      background: linear-gradient(135deg, #1a365d 0%, #2d5a87 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .hero-icon {
+      color: rgba(255,255,255,0.9);
+    }
+
+    .hero-icon svg {
+      width: 64px;
+      height: 64px;
+    }
+
+    .hero-badge {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      padding: 6px 12px;
+      background: #fef3c7;
+      color: #92400e;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .hero-actions {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .hero-btn {
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .hero-btn svg {
+      width: 18px;
+      height: 18px;
+      color: var(--fg);
+    }
+
+    .content {
+      padding: 20px;
+      margin-top: -20px;
+      background: var(--bg);
+      border-radius: 20px 20px 0 0;
+      position: relative;
+    }
+
+    .title-section {
+      margin-bottom: 20px;
+    }
+
+    .title-section h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--fg);
+      margin-bottom: 4px;
+    }
+
+    .organizer {
+      font-size: 14px;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .countdown {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      background: #fee2e2;
+      color: #dc2626;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 12px;
+    }
+
+    .countdown svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title svg {
+      width: 18px;
+      height: 18px;
+      color: var(--accent);
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .info-item {
+      background: var(--surface);
+      padding: 12px;
+      border-radius: var(--radius);
+    }
+
+    .info-item.wide {
+      grid-column: span 2;
+    }
+
+    .info-item .label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .info-item .value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+    }
+
+    .docs-list {
+      list-style: none;
+    }
+
+    .docs-list li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      font-size: 14px;
+      color: var(--fg);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .docs-list li:last-child {
+      border-bottom: none;
+    }
+
+    .docs-list svg {
+      width: 16px;
+      height: 16px;
+      color: var(--accent);
+    }
+
+    .contact-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--surface);
+      border-radius: var(--radius);
+    }
+
+    .contact-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+
+    .contact-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .contact-info {
+      flex: 1;
+    }
+
+    .contact-info .name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+    }
+
+    .contact-info .role {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .contact-call svg {
+      width: 20px;
+      height: 20px;
+      color: var(--accent);
+      cursor: pointer;
+    }
+
+    .report-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .report-link svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .cta-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      padding: 16px 20px;
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      display: flex;
+      gap: 12px;
+      z-index: 100;
+    }
+
+    .cta-bar .save-btn {
+      width: 48px;
+      height: 48px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--muted);
+    }
+
+    .cta-bar .save-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .cta-bar .save-btn.active {
+      color: #dc2626;
+    }
+
+    .cta-bar .register-btn {
+      flex: 1;
+      padding: 14px 24px;
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .cta-bar .register-btn:active {
+      background: var(--fg);
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <div class="hero-icon">
+      <i data-lucide="circle-dot"></i>
+    </div>
+    <div class="hero-badge">Closing Soon</div>
+    <div class="hero-actions">
+      <div class="hero-btn" onclick="window.history.back()">
+        <i data-lucide="arrow-left"></i>
+      </div>
+      <div class="hero-btn" id="saveBtn">
+        <i data-lucide="heart"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="title-section">
+      <h1>U-14 Cricket Trials</h1>
+      <div class="organizer">Elite Cricket Academy</div>
+      <div class="countdown">
+        <i data-lucide="clock"></i>
+        Closes in 3 days
+      </div>
+    </div>
+
+    <section class="section">
+      <h2 class="section-title">
+        <i data-lucide="clipboard-list"></i>
+        Details
+      </h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="label">Date & Time</div>
+          <div class="value">Aug 15, 7:00 AM</div>
+        </div>
+        <div class="info-item">
+          <div class="label">Entry Fee</div>
+          <div class="value">₹200</div>
+        </div>
+        <div class="info-item">
+          <div class="label">Age Category</div>
+          <div class="value">Under-14 (Boys)</div>
+        </div>
+        <div class="info-item">
+          <div class="label">Spots Left</div>
+          <div class="value" style="color: #dc2626;">12 of 40</div>
+        </div>
+        <div class="info-item wide">
+          <div class="label">Venue</div>
+          <div class="value">Sardar Patel Stadium, Motera, Ahmedabad</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">
+        <i data-lucide="user-check"></i>
+        Eligibility
+      </h2>
+      <div class="info-item wide">
+        <div class="value">Boys aged 12–14 years as of Aug 15, 2026. Must have valid age proof.</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">
+        <i data-lucide="file-text"></i>
+        Required Documents
+      </h2>
+      <ul class="docs-list">
+        <li>
+          <i data-lucide="image"></i>
+          Passport-size photo (2 copies)
+        </li>
+        <li>
+          <i data-lucide="credit-card"></i>
+          Aadhaar Card (original + copy)
+        </li>
+        <li>
+          <i data-lucide="file-badge"></i>
+          Age Certificate / Birth Certificate
+        </li>
+        <li>
+          <i data-lucide="heart-pulse"></i>
+          Medical Fitness Certificate
+        </li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">
+        <i data-lucide="phone"></i>
+        Contact
+      </h2>
+      <div class="contact-card">
+        <div class="contact-icon">
+          <i data-lucide="user"></i>
+        </div>
+        <div class="contact-info">
+          <div class="name">Rahul Mehta</div>
+          <div class="role">Academy Director</div>
+        </div>
+        <span class="contact-call">
+          <i data-lucide="phone"></i>
+        </span>
+      </div>
+    </section>
+
+    <div class="report-link">
+      <i data-lucide="flag"></i>
+      Report this listing
+    </div>
+  </div>
+
+  <div class="cta-bar">
+    <div class="save-btn" id="saveBtnBottom">
+      <i data-lucide="heart"></i>
+    </div>
+    <button class="register-btn" onclick="window.location.href='trial-registration.html'">Register for Trial</button>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    document.getElementById('saveBtn').addEventListener('click', function() {
+      this.classList.toggle('active');
+    });
+    document.getElementById('saveBtnBottom').addEventListener('click', function() {
+      this.classList.toggle('active');
+    });
+  </script>
+</body>
+</html>

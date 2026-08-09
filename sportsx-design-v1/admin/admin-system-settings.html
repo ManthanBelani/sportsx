@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Settings | SportX India</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #f7f8fa; color: #111111; min-height: 100vh; display: flex; }
+    .sidebar { width: 260px; background: #111111; min-height: 100vh; position: fixed; left: 0; top: 0; display: flex; flex-direction: column; }
+    .sidebar-brand { display: flex; align-items: center; gap: 12px; padding: 20px 24px; border-bottom: 1px solid #333; }
+    .sidebar-brand-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #1677ff, #0d47a1); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .sidebar-brand-text { font-size: 18px; font-weight: 700; color: #fff; }
+    .sidebar-nav { flex: 1; padding: 16px 0; }
+    .sidebar-nav-section { padding: 0 12px; margin-bottom: 8px; }
+    .sidebar-nav-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; padding: 8px 12px; }
+    .sidebar-nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; color: #9ca3af; text-decoration: none; font-size: 14px; font-weight: 500; border-radius: 8px; margin: 2px 0; transition: all 0.15s; }
+    .sidebar-nav-item:hover { background: #1a1a1a; color: #fff; }
+    .sidebar-nav-item.active { background: #1677ff; color: #fff; }
+    .sidebar-nav-item svg { width: 18px; height: 18px; }
+    .sidebar-footer { padding: 16px 24px; border-top: 1px solid #333; }
+    .sidebar-user { display: flex; align-items: center; gap: 12px; }
+    .sidebar-user-avatar { width: 36px; height: 36px; background: #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .sidebar-user-info { flex: 1; }
+    .sidebar-user-name { font-size: 13px; font-weight: 600; color: #fff; }
+    .sidebar-user-role { font-size: 11px; color: #6b7280; }
+    .main { margin-left: 260px; flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
+    .main-header { background: #fff; padding: 16px 32px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .main-header h1 { font-size: 20px; font-weight: 600; }
+    .main-content { padding: 24px 32px; flex: 1; }
+    .card { background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; margin-bottom: 20px; overflow: hidden; }
+    .card-header { padding: 16px 20px; border-bottom: 1px solid #e5e7eb; }
+    .card-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .card-desc { font-size: 13px; color: #6b7280; }
+    .settings-list { }
+    .settings-item { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-bottom: 1px solid #f0f0f0; }
+    .settings-item:last-child { border-bottom: none; }
+    .settings-icon { width: 40px; height: 40px; background: #f0f7ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .settings-info { flex: 1; }
+    .settings-label { font-size: 14px; font-weight: 500; }
+    .settings-desc { font-size: 12px; color: #6b7280; margin-top: 2px; }
+    .toggle { width: 48px; height: 28px; background: #d9dee7; border-radius: 14px; position: relative; cursor: pointer; border: none; transition: background 0.2s; }
+    .toggle.on { background: #16a34a; }
+    .toggle::after { content: ''; position: absolute; width: 24px; height: 24px; background: #fff; border-radius: 50%; top: 2px; left: 2px; transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    .toggle.on::after { left: 22px; }
+    .settings-value { font-size: 14px; color: #6b7280; }
+    .settings-arrow { color: #9ca3af; font-size: 18px; }
+    .danger-zone { border-color: #fecaca; }
+    .danger-zone .settings-item:first-child { color: #dc2626; }
+    .btn { padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+    .btn-danger { background: #fee2e2; color: #dc2626; }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon"><i data-lucide="shield" style="width:22px;height:22px;color:#fff;"></i></div>
+      <span class="sidebar-brand-text">SportX</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-nav-section">
+        <div class="sidebar-nav-label">Main</div>
+        <a href="admin-dashboard.html" class="sidebar-nav-item"><i data-lucide="layout-dashboard"></i>Dashboard</a>
+        <a href="admin-user-management.html" class="sidebar-nav-item"><i data-lucide="users"></i>Users</a>
+        <a href="admin-listing-moderation.html" class="sidebar-nav-item"><i data-lucide="clipboard-list"></i>Moderation</a>
+        <a href="admin-report-center.html" class="sidebar-nav-item"><i data-lucide="alert-octagon"></i>Reports</a>
+      </div>
+      <div class="sidebar-nav-section">
+        <div class="sidebar-nav-label">Management</div>
+        <a href="admin-sponsor-verification.html" class="sidebar-nav-item"><i data-lucide="badge-check"></i>Sponsors</a>
+        <a href="admin-content-flagging.html" class="sidebar-nav-item"><i data-lucide="flag"></i>Content Flags</a>
+      </div>
+      <div class="sidebar-nav-section">
+        <div class="sidebar-nav-label">System</div>
+        <a href="admin-analytics.html" class="sidebar-nav-item"><i data-lucide="bar-chart-2"></i>Analytics</a>
+        <a href="admin-notification-templates.html" class="sidebar-nav-item"><i data-lucide="bell"></i>Notifications</a>
+        <a href="admin-sport-category-management.html" class="sidebar-nav-item"><i data-lucide="tag"></i>Categories</a>
+        <a href="admin-system-settings.html" class="sidebar-nav-item active"><i data-lucide="settings"></i>Settings</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar"><i data-lucide="user" style="width:18px;height:18px;color:#9ca3af;"></i></div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">Admin User</div>
+          <div class="sidebar-user-role">Super Admin</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="main-header">
+      <h1>System Settings</h1>
+    </header>
+
+    <div class="main-content">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Platform</div>
+          <div class="card-desc">Core platform configuration</div>
+        </div>
+        <div class="settings-list">
+          <div class="settings-item">
+            <div class="settings-icon"><i data-lucide="lock" style="width:20px;height:20px;color:#1677ff;"></i></div>
+            <div class="settings-info">
+              <div class="settings-label">Moderation Required</div>
+              <div class="settings-desc">All new listings require admin approval</div>
+            </div>
+            <button class="toggle on"></button>
+          </div>
+          <div class="settings-item">
+            <div class="settings-icon"><i data-lucide="check-circle" style="width:20px;height:20px;color:#16a34a;"></i></div>
+            <div class="settings-info">
+              <div class="settings-label">Auto-verify coaches</div>
+              <div class="settings-desc">Auto-approve coaches with valid certification</div>
+            </div>
+            <button class="toggle"></button>
+          </div>
+          <div class="settings-item">
+            <div class="settings-icon"><i data-lucide="users" style="width:20px;height:20px;color:#6b7280;"></i></div>
+            <div class="settings-info">
+              <div class="settings-label">Min age for registration</div>
+              <div class="settings-desc">Minimum age to create an account</div>
+            </div>
+            <span class="settings-value">13 years</span>
+            <span class="settings-arrow">&rsaquo;</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Notifications</div>
+          <div class="card-desc">Alert and notification preferences</div>
+        </div>
+        <div class="settings-list">
+          <div class="settings-item">
+            <div class="settings-icon"><i data-lucide="mail" style="width:20px;height:20px;color:#1677ff;"></i></div>
+            <div class="settings-info">
+              <div class="settings-label">Email alerts</div>
+              <div class="settings-desc">Send email for critical reports</div>
+            </div>
+            <button class="toggle on"></button>
+          </div>
+          <div class="settings-item">
+            <div class="settings-icon"><i data-lucide="bell" style="width:20px;height:20px;color:#d97706;"></i></div>
+            <div class="settings-info">
+              <div class="settings-label">Push notifications</div>
+              <div class="settings-desc">Push alerts for urgent moderation</div>
+            </div>
+            <button class="toggle on"></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Security</div>
+          <div class="card-desc">Platform security settings</div>
+        </div>
+        <div class="settings-list">
+          <div class="settings-item">
+            <div class="settings-icon"><i data-lucide="ban" style="width:20px;height:20px;color:#dc2626;"></i></div>
+            <div class="settings-info">
+              <div class="settings-label">Suspicious login detection</div>
+              <div class="settings-desc">Flag accounts with unusual activity</div>
+            </div>
+            <button class="toggle on"></button>
+          </div>
+          <div class="settings-item">
+            <div class="settings-icon"><i data-lucide="clock" style="width:20px;height:20px;color:#6b7280;"></i></div>
+            <div class="settings-info">
+              <div class="settings-label">Session timeout</div>
+              <div class="settings-desc">Auto logout inactive users</div>
+            </div>
+            <span class="settings-value">30 min</span>
+            <span class="settings-arrow">&rsaquo;</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card danger-zone">
+        <div class="card-header">
+          <div class="card-title">Danger Zone</div>
+          <div class="card-desc">Irreversible actions - proceed with caution</div>
+        </div>
+        <div class="settings-list">
+          <div class="settings-item">
+            <div class="settings-icon"><i data-lucide="octagon" style="width:20px;height:20px;color:#dc2626;"></i></div>
+            <div class="settings-info">
+              <div class="settings-label">Maintenance Mode</div>
+              <div class="settings-desc">Disable platform for all users</div>
+            </div>
+            <button class="toggle"></button>
+          </div>
+          <div class="settings-item">
+            <div class="settings-icon"><i data-lucide="trash-2" style="width:20px;height:20px;color:#dc2626;"></i></div>
+            <div class="settings-info">
+              <div class="settings-label">Wipe all data</div>
+              <div class="settings-desc">Permanently delete all user data</div>
+            </div>
+            <button class="btn btn-danger"><i data-lucide="alert-triangle" style="width:14px;height:14px;"></i> Wipe Data</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

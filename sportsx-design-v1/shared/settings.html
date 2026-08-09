@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SportX India</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; display: flex; flex-direction: column; }
+    .status-bar { height: 44px; padding-top: var(--safe-top); display: flex; align-items: center; justify-content: space-between; padding-left: 24px; padding-right: 24px; font-size: 14px; font-weight: 600; }
+    .header { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .back-btn { width: 40px; height: 40px; border-radius: var(--radius); border: none; background: var(--surface); cursor: pointer; font-size: 18px; }
+    .main-content { flex: 1; padding: 20px; }
+    .section { margin-bottom: 24px; }
+    .section-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .settings-group { background: var(--surface); border-radius: var(--radius); overflow: hidden; }
+    .settings-item { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .settings-item:last-child { border-bottom: none; }
+    .settings-item-left { display: flex; align-items: center; gap: 12px; }
+    .settings-icon { width: 36px; height: 36px; border-radius: var(--radius); background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .settings-item-title { font-size: 15px; font-weight: 500; }
+    .settings-item-subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .toggle { width: 48px; height: 28px; background: var(--border); border-radius: 14px; position: relative; cursor: pointer; transition: background 0.2s; }
+    .toggle.active { background: var(--accent); }
+    .toggle::after { content: ''; position: absolute; width: 22px; height: 22px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: left 0.2s; }
+    .toggle.active::after { left: 23px; }
+    .arrow { color: var(--muted); font-size: 18px; }
+    .danger-item { color: #dc2626; }
+    .version { text-align: center; font-size: 12px; color: var(--muted); margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="status-bar"><span>9:41</span><span>📶 📡 🔋</span></div>
+  <div class="header"><button class="back-btn" onclick="history.back()">←</button><h1>Settings</h1></div>
+  <div class="main-content">
+    <div class="section">
+      <div class="section-title">Notifications</div>
+      <div class="settings-group">
+        <div class="settings-item">
+          <div class="settings-item-left">
+            <div class="settings-icon"><i data-lucide="bell"></i></div>
+            <div>
+              <div class="settings-item-title">Push Notifications</div>
+              <div class="settings-item-subtitle">Trial deadlines, replies, updates</div>
+            </div>
+          </div>
+          <div class="toggle active"></div>
+        </div>
+        <div class="settings-item">
+          <div class="settings-item-left">
+            <div class="settings-icon"><i data-lucide="mail"></i></div>
+            <div>
+              <div class="settings-item-title">Email Alerts</div>
+              <div class="settings-item-subtitle">Weekly digest, important updates</div>
+            </div>
+          </div>
+          <div class="toggle"></div>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Preferences</div>
+      <div class="settings-group">
+        <div class="settings-item">
+          <div class="settings-item-left">
+            <div class="settings-icon">🌐</div>
+            <div>
+              <div class="settings-item-title">Language</div>
+              <div class="settings-item-subtitle">English</div>
+            </div>
+          </div>
+          <span class="arrow">›</span>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Support</div>
+      <div class="settings-group">
+        <div class="settings-item">
+          <div class="settings-item-left">
+            <div class="settings-icon">❓</div>
+            <div class="settings-item-title">Help & Support</div>
+          </div>
+          <span class="arrow">›</span>
+        </div>
+        <div class="settings-item">
+          <div class="settings-item-left">
+            <div class="settings-icon">📜</div>
+            <div class="settings-item-title">Terms of Service</div>
+          </div>
+          <span class="arrow">›</span>
+        </div>
+        <div class="settings-item">
+          <div class="settings-item-left">
+            <div class="settings-icon"><i data-lucide="lock"></i></div>
+            <div class="settings-item-title">Privacy Policy</div>
+          </div>
+          <span class="arrow">›</span>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="settings-group">
+        <div class="settings-item danger-item">
+          <div class="settings-item-left">
+            <div class="settings-icon">🚪</div>
+            <div class="settings-item-title">Log Out</div>
+          </div>
+        </div>
+        <div class="settings-item danger-item">
+          <div class="settings-item-left">
+            <div class="settings-icon"><i data-lucide="trash-2"></i></div>
+            <div class="settings-item-title">Delete Account</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="version">SportX India v1.0.0</div>
+  </div>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

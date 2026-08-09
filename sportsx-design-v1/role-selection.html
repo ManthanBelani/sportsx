@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Join SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      flex: 1;
+      padding: 24px;
+      padding-top: 60px;
+      padding-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--fg);
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .role-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .role-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .role-card:active {
+      background: var(--surface);
+      border-color: var(--accent);
+    }
+
+    .role-card.selected {
+      background: #e6f0ff;
+      border-color: var(--accent);
+    }
+
+    .role-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .role-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .role-icon.athlete { background: #fef3c7; color: #92400e; }
+    .role-icon.coach { background: #dbeafe; color: #1e40af; }
+    .role-icon.academy { background: #d1fae5; color: #065f46; }
+    .role-icon.organizer { background: #ede9fe; color: #5b21b6; }
+    .role-icon.sponsor { background: #fce7f3; color: #9d174d; }
+
+    .role-info {
+      flex: 1;
+    }
+
+    .role-info h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 2px;
+    }
+
+    .role-info p {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .role-arrow {
+      color: var(--muted);
+    }
+
+    .role-arrow svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .footer {
+      margin-top: 24px;
+      text-align: center;
+    }
+
+    .footer p {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .footer a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .continue-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: background 0.2s ease;
+      font-family: inherit;
+    }
+
+    .continue-btn:active {
+      background: var(--fg);
+    }
+
+    .continue-btn:disabled {
+      background: var(--border);
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Who are you joining as?</h1>
+      <p>Choose your role to get started</p>
+    </div>
+
+    <div class="role-list">
+      <div class="role-card" data-role="athlete" onclick="selectRole(this, 'athlete')">
+        <div class="role-icon athlete">
+          <i data-lucide="user"></i>
+        </div>
+        <div class="role-info">
+          <h3>Athlete / Parent</h3>
+          <p>Find academies, coaches, trials & more</p>
+        </div>
+        <div class="role-arrow">
+          <i data-lucide="chevron-right"></i>
+        </div>
+      </div>
+
+      <div class="role-card" data-role="coach" onclick="selectRole(this, 'coach')">
+        <div class="role-icon coach">
+          <i data-lucide="clipboard-list"></i>
+        </div>
+        <div class="role-info">
+          <h3>Coach</h3>
+          <p>List your coaching services</p>
+        </div>
+        <div class="role-arrow">
+          <i data-lucide="chevron-right"></i>
+        </div>
+      </div>
+
+      <div class="role-card" data-role="academy" onclick="selectRole(this, 'academy')">
+        <div class="role-icon academy">
+          <i data-lucide="building-2"></i>
+        </div>
+        <div class="role-info">
+          <h3>Academy</h3>
+          <p>Manage your academy & trials</p>
+        </div>
+        <div class="role-arrow">
+          <i data-lucide="chevron-right"></i>
+        </div>
+      </div>
+
+      <div class="role-card" data-role="organizer" onclick="selectRole(this, 'organizer')">
+        <div class="role-icon organizer">
+          <i data-lucide="calendar"></i>
+        </div>
+        <div class="role-info">
+          <h3>Organizer</h3>
+          <p>Post tournaments & manage events</p>
+        </div>
+        <div class="role-arrow">
+          <i data-lucide="chevron-right"></i>
+        </div>
+      </div>
+
+      <div class="role-card" data-role="sponsor" onclick="selectRole(this, 'sponsor')">
+        <div class="role-icon sponsor">
+          <i data-lucide="briefcase"></i>
+        </div>
+        <div class="role-info">
+          <h3>Sponsor / Brand</h3>
+          <p>Find & sponsor athletes</p>
+        </div>
+        <div class="role-arrow">
+          <i data-lucide="chevron-right"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Already have an account? <a href="login.html">Log in</a></p>
+      <button class="continue-btn" id="continueBtn" disabled onclick="continueFlow()">Continue</button>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+    
+    let selectedRole = null;
+
+    function selectRole(card, role) {
+      document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedRole = role;
+      document.getElementById('continueBtn').disabled = false;
+    }
+
+    function continueFlow() {
+      if (selectedRole === 'athlete') {
+        window.location.href = 'onboarding-sport.html';
+      } else if (selectedRole === 'coach') {
+        window.location.href = 'coach/coach-onboarding.html';
+      } else if (selectedRole === 'academy') {
+        window.location.href = 'academy/academy-onboarding.html';
+      } else if (selectedRole === 'organizer') {
+        window.location.href = 'organizer/organizer-onboarding.html';
+      } else if (selectedRole === 'sponsor') {
+        window.location.href = 'sponsor/sponsor-onboarding.html';
+      }
+    }
+  </script>
+</body>
+</html>

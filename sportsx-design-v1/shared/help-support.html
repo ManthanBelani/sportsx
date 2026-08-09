@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SportX India</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; display: flex; flex-direction: column; }
+    .status-bar { height: 44px; padding-top: var(--safe-top); display: flex; align-items: center; justify-content: space-between; padding-left: 24px; padding-right: 24px; font-size: 14px; font-weight: 600; }
+    .header { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .back-btn { width: 40px; height: 40px; border-radius: var(--radius); border: none; background: var(--surface); cursor: pointer; font-size: 18px; }
+    .main-content { flex: 1; padding: 20px; }
+    .search-bar { display: flex; align-items: center; gap: 10px; background: var(--surface); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 20px; }
+    .search-bar input { flex: 1; border: none; background: transparent; font-size: 14px; font-family: inherit; }
+    .search-bar input:focus { outline: none; }
+    .section-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+    .faq-item { border-bottom: 1px solid var(--border); }
+    .faq-question { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; font-size: 14px; font-weight: 500; cursor: pointer; }
+    .faq-answer { padding: 0 0 16px; font-size: 14px; color: var(--muted); line-height: 1.6; display: none; }
+    .faq-item.open .faq-answer { display: block; }
+    .faq-item.open .faq-question::after { content: '−'; }
+    .faq-question::after { content: '+'; font-size: 18px; color: var(--muted); }
+    .contact-card { background: var(--surface); border-radius: var(--radius); padding: 20px; text-align: center; margin-top: 24px; }
+    .contact-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .contact-card p { font-size: 14px; color: var(--muted); margin-bottom: 16px; }
+    .contact-btn { display: inline-block; padding: 12px 24px; background: var(--accent); color: white; border-radius: var(--radius); font-size: 14px; font-weight: 600; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="status-bar"><span>9:41</span><span>📶 📡 🔋</span></div>
+  <div class="header"><button class="back-btn" onclick="history.back()">←</button><h1>Help & Support</h1></div>
+  <div class="main-content">
+    <div class="search-bar"><span>🔍</span><input type="text" placeholder="Search for help..."></div>
+    <div class="section-title">Frequently Asked Questions</div>
+    <div class="faq-item">
+      <div class="faq-question">How do I register for a trial?</div>
+      <div class="faq-answer">Browse trials from the Trials tab, tap on any trial to view details, then tap "Register Now" to fill in your details and submit your registration.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question">How do I create a profile?</div>
+      <div class="faq-answer">Go to Profile tab after signing up, tap "Edit Profile", and fill in your details including sport(s), achievements, and upload photos to your gallery.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question">How do I enquire with a coach?</div>
+      <div class="faq-answer">Visit any coach's profile and tap "Send Enquiry". Fill in your message and preferred training slots, then submit. The coach will reply within 24-48 hours.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question">Are the trials free?</div>
+      <div class="faq-answer">Trial fees vary by organizer. Some are free, others charge a nominal entry fee (₹100-₹500). Fee details are clearly mentioned on each trial's detail page.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question">How do I apply for scholarships?</div>
+      <div class="faq-answer">Visit the Scholarships tab to browse available opportunities. Tap on any scholarship to see eligibility criteria and apply directly through the provider's official portal.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question">How do I delete my account?</div>
+      <div class="faq-answer">Go to Settings > Delete Account. Note that this action is permanent and will remove all your data including profile, registrations, and saved items.</div>
+    </div>
+    <div class="contact-card">
+      <h3>Still need help?</h3>
+      <p>Our support team is available Mon-Sat, 9 AM - 6 PM IST</p>
+      <a href="mailto:support@sportxindia.com" class="contact-btn"><i data-lucide="mail"></i> Email Support</a>
+    </div>
+  </div>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

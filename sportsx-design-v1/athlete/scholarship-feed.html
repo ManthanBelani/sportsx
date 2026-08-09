@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SportX India</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .status-bar {
+      height: 44px;
+      padding-top: var(--safe-top);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-left: 24px;
+      padding-right: 24px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .main-content { flex: 1; padding: 20px; }
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      margin-bottom: 20px;
+    }
+    .search-bar input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    .search-bar input:focus { outline: none; }
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      gap: 14px;
+    }
+    .card-image {
+      width: 80px;
+      height: 80px;
+      border-radius: var(--radius);
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .card-content { flex: 1; min-width: 0; }
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .card-subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .deadline-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      background: #fee2e2;
+      color: #dc2626;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .deadline-badge.soon {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .amount-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: #d1fae5;
+      color: #065f46;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .filters {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+    .filter-chip {
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      background: var(--bg);
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .filter-chip.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <div class="status-bar"><span>9:41</span><span>📶 📡 🔋</span></div>
+  <div class="header"><h1>Scholarships</h1></div>
+  <div class="main-content">
+    <div class="search-bar">
+      <span>🔍</span>
+      <input type="text" placeholder="Search scholarships...">
+    </div>
+    <div class="filters">
+      <div class="filter-chip active">All Sports</div>
+      <div class="filter-chip">Football</div>
+      <div class="filter-chip">Basketball</div>
+      <div class="filter-chip">Athletics</div>
+      <div class="filter-chip">Swimming</div>
+    </div>
+    <div class="section-title">Available Scholarships</div>
+    <div class="card" onclick="location.href='scholarship-detail.html'">
+      <img src="https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=160&h=160&fit=crop" alt="Scholarship" class="card-image">
+      <div class="card-content">
+        <div class="card-title">SportyAI Junior Athlete Scholarship 2024</div>
+        <div class="card-subtitle">SportyAI Foundation • Football, Athletics</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+          <span class="amount-badge">₹50,000</span>
+          <span class="deadline-badge">Deadline: Dec 15</span>
+        </div>
+      </div>
+    </div>
+    <div class="card" onclick="location.href='scholarship-detail.html'">
+      <img src="https://images.unsplash.com/photo-1547347298-4074fc3086f0?w=160&h=160&fit=crop" alt="Scholarship" class="card-image">
+      <div class="card-content">
+        <div class="card-title">Reliance Foundation Youth Sports Award</div>
+        <div class="card-subtitle">Reliance Foundation • All Sports</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+          <span class="amount-badge">₹1,00,000</span>
+          <span class="deadline-badge soon">Deadline: Jan 10</span>
+        </div>
+      </div>
+    </div>
+    <div class="card" onclick="location.href='scholarship-detail.html'">
+      <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=160&h=160&fit=crop" alt="Scholarship" class="card-image">
+      <div class="card-content">
+        <div class="card-title">GoSports Basketball Excellence Grant</div>
+        <div class="card-subtitle">GoSports Foundation • Basketball</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+          <span class="amount-badge">₹75,000</span>
+          <span class="deadline-badge">Deadline: Dec 30</span>
+        </div>
+      </div>
+    </div>
+    <div class="card" onclick="location.href='scholarship-detail.html'">
+      <img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=160&h=160&fit=crop" alt="Scholarship" class="card-image">
+      <div class="card-content">
+        <div class="card-title">OGQ Athlete Support Programme</div>
+        <div class="card-subtitle">Olympic Gold Quest • All Olympic Sports</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+          <span class="amount-badge">₹2,00,000</span>
+          <span class="deadline-badge">Deadline: Rolling</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

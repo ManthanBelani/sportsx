@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Content Flagging | SportX India</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #f7f8fa; color: #111111; min-height: 100vh; display: flex; }
+    .sidebar { width: 260px; background: #111111; min-height: 100vh; position: fixed; left: 0; top: 0; display: flex; flex-direction: column; }
+    .sidebar-brand { display: flex; align-items: center; gap: 12px; padding: 20px 24px; border-bottom: 1px solid #333; }
+    .sidebar-brand-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #1677ff, #0d47a1); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .sidebar-brand-text { font-size: 18px; font-weight: 700; color: #fff; }
+    .sidebar-nav { flex: 1; padding: 16px 0; }
+    .sidebar-nav-section { padding: 0 12px; margin-bottom: 8px; }
+    .sidebar-nav-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; padding: 8px 12px; }
+    .sidebar-nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; color: #9ca3af; text-decoration: none; font-size: 14px; font-weight: 500; border-radius: 8px; margin: 2px 0; transition: all 0.15s; }
+    .sidebar-nav-item:hover { background: #1a1a1a; color: #fff; }
+    .sidebar-nav-item.active { background: #1677ff; color: #fff; }
+    .sidebar-nav-item svg { width: 18px; height: 18px; }
+    .sidebar-footer { padding: 16px 24px; border-top: 1px solid #333; }
+    .sidebar-user { display: flex; align-items: center; gap: 12px; }
+    .sidebar-user-avatar { width: 36px; height: 36px; background: #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .sidebar-user-info { flex: 1; }
+    .sidebar-user-name { font-size: 13px; font-weight: 600; color: #fff; }
+    .sidebar-user-role { font-size: 11px; color: #6b7280; }
+    .main { margin-left: 260px; flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
+    .main-header { background: #fff; padding: 16px 32px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .main-header h1 { font-size: 20px; font-weight: 600; }
+    .header-badge { background: #fee2e2; color: #dc2626; font-size: 12px; padding: 4px 12px; border-radius: 20px; font-weight: 500; }
+    .main-content { padding: 24px 32px; flex: 1; }
+    .card { background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; margin-bottom: 16px; overflow: hidden; }
+    .card-header { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 12px; }
+    .card-header-icon { width: 44px; height: 44px; background: #f0f7ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .card-header-info { flex: 1; }
+    .card-header-title { font-size: 15px; font-weight: 600; }
+    .card-header-meta { font-size: 12px; color: #6b7280; margin-top: 2px; }
+    .card-body { padding: 16px 20px; }
+    .flag-tags { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+    .flag-tag { background: #fee2e2; color: #dc2626; font-size: 11px; padding: 4px 10px; border-radius: 6px; font-weight: 500; }
+    .flag-desc { font-size: 13px; color: #6b7280; line-height: 1.5; background: #f9fafb; padding: 12px; border-radius: 8px; margin-bottom: 16px; }
+    .action-bar { display: flex; gap: 10px; padding-top: 16px; border-top: 1px solid #f0f0f0; }
+    .action-btn { flex: 1; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .action-btn.remove { background: #fee2e2; color: #dc2626; }
+    .action-btn.warn { background: #fef3c7; color: #d97706; }
+    .action-btn.dismiss { background: #f0f7ff; color: #1677ff; }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon"><i data-lucide="shield" style="width:22px;height:22px;color:#fff;"></i></div>
+      <span class="sidebar-brand-text">SportX</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-nav-section">
+        <div class="sidebar-nav-label">Main</div>
+        <a href="admin-dashboard.html" class="sidebar-nav-item"><i data-lucide="layout-dashboard"></i>Dashboard</a>
+        <a href="admin-user-management.html" class="sidebar-nav-item"><i data-lucide="users"></i>Users</a>
+        <a href="admin-listing-moderation.html" class="sidebar-nav-item"><i data-lucide="clipboard-list"></i>Moderation</a>
+        <a href="admin-report-center.html" class="sidebar-nav-item"><i data-lucide="alert-octagon"></i>Reports</a>
+      </div>
+      <div class="sidebar-nav-section">
+        <div class="sidebar-nav-label">Management</div>
+        <a href="admin-sponsor-verification.html" class="sidebar-nav-item"><i data-lucide="badge-check"></i>Sponsors</a>
+        <a href="admin-content-flagging.html" class="sidebar-nav-item active"><i data-lucide="flag"></i>Content Flags</a>
+      </div>
+      <div class="sidebar-nav-section">
+        <div class="sidebar-nav-label">System</div>
+        <a href="admin-analytics.html" class="sidebar-nav-item"><i data-lucide="bar-chart-2"></i>Analytics</a>
+        <a href="admin-notification-templates.html" class="sidebar-nav-item"><i data-lucide="bell"></i>Notifications</a>
+        <a href="admin-sport-category-management.html" class="sidebar-nav-item"><i data-lucide="tag"></i>Categories</a>
+        <a href="admin-system-settings.html" class="sidebar-nav-item"><i data-lucide="settings"></i>Settings</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar"><i data-lucide="user" style="width:18px;height:18px;color:#9ca3af;"></i></div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">Admin User</div>
+          <div class="sidebar-user-role">Super Admin</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="main-header">
+      <h1>Content Flagging</h1>
+      <span class="header-badge">23 Active Flags</span>
+    </header>
+
+    <div class="main-content">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon"><i data-lucide="flag" style="width:22px;height:22px;color:#dc2626;"></i></div>
+          <div class="card-header-info">
+            <div class="card-header-title">Priya Sports Academy</div>
+            <div class="card-header-meta">Reported by 3 users • 12 min ago</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="flag-tags">
+            <span class="flag-tag">Spam</span>
+            <span class="flag-tag">Fake Contact</span>
+            <span class="flag-tag">Misleading</span>
+          </div>
+          <div class="flag-desc">"Phone number doesn't belong to any registered academy. Multiple users reported no response."</div>
+          <div class="action-bar">
+            <button class="action-btn remove"><i data-lucide="trash-2" style="width:14px;height:14px;"></i> Remove</button>
+            <button class="action-btn warn"><i data-lucide="alert-triangle" style="width:14px;height:14px;"></i> Warn User</button>
+            <button class="action-btn dismiss"><i data-lucide="check" style="width:14px;height:14px;"></i> Dismiss</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon"><i data-lucide="flag" style="width:22px;height:22px;color:#dc2626;"></i></div>
+          <div class="card-header-info">
+            <div class="card-header-title">Nike India Scholarship</div>
+            <div class="card-header-meta">Reported by 7 users • 8 hours ago</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="flag-tags">
+            <span class="flag-tag">Scam</span>
+            <span class="flag-tag">Fake Brand</span>
+            <span class="flag-tag">Phishing Link</span>
+          </div>
+          <div class="flag-desc">"Nike India official site doesn't have this scholarship. URL is fake. Do not click."</div>
+          <div class="action-bar">
+            <button class="action-btn remove"><i data-lucide="trash-2" style="width:14px;height:14px;"></i> Remove</button>
+            <button class="action-btn warn"><i data-lucide="alert-triangle" style="width:14px;height:14px;"></i> Warn User</button>
+            <button class="action-btn dismiss"><i data-lucide="check" style="width:14px;height:14px;"></i> Dismiss</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-icon"><i data-lucide="flag" style="width:22px;height:22px;color:#dc2626;"></i></div>
+          <div class="card-header-info">
+            <div class="card-header-title">Gold Medalist Coach Profile</div>
+            <div class="card-header-meta">Reported by 2 users • 1 day ago</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="flag-tags">
+            <span class="flag-tag">Fake Credentials</span>
+            <span class="flag-tag">Misleading</span>
+          </div>
+          <div class="flag-desc">"Claims to be a gold medalist but no verifiable achievements found. Experience claims appear exaggerated."</div>
+          <div class="action-bar">
+            <button class="action-btn remove"><i data-lucide="trash-2" style="width:14px;height:14px;"></i> Remove</button>
+            <button class="action-btn warn"><i data-lucide="alert-triangle" style="width:14px;height:14px;"></i> Warn User</button>
+            <button class="action-btn dismiss"><i data-lucide="check" style="width:14px;height:14px;"></i> Dismiss</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

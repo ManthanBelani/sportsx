@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Coach Dashboard - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--surface); color: var(--fg); min-height: 100vh; display: flex; flex-direction: column; }
+    .status-bar { height: 44px; padding-top: var(--safe-top); display: flex; align-items: center; justify-content: space-between; padding-left: 24px; padding-right: 24px; font-size: 14px; font-weight: 600; }
+    .status-icons { display: flex; gap: 4px; align-items: center; }
+    .status-icons svg { width: 16px; height: 16px; }
+    .header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: var(--bg); }
+    .header h1 { font-size: 20px; font-weight: 700; color: var(--accent); }
+    .notif-btn { width: 40px; height: 40px; border-radius: var(--radius); border: none; background: var(--surface); cursor: pointer; position: relative; display: flex; align-items: center; justify-content: center; }
+    .notif-btn svg { width: 18px; height: 18px; }
+    .notif-btn::after { content: '3'; position: absolute; top: 6px; right: 6px; width: 16px; height: 16px; background: #dc2626; color: white; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+    .main-content { flex: 1; padding: 20px; }
+    .welcome-banner { background: var(--bg); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px; }
+    .welcome-avatar { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; }
+    .welcome-text h2 { font-size: 18px; font-weight: 600; }
+    .welcome-text p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+    .stat-card { background: var(--bg); border-radius: var(--radius); padding: 16px; text-align: center; }
+    .stat-number { font-size: 28px; font-weight: 700; color: var(--accent); }
+    .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .profile-completeness { background: var(--bg); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
+    .completeness-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .completeness-header h3 { font-size: 15px; font-weight: 600; }
+    .completeness-header span { font-size: 14px; font-weight: 600; color: var(--accent); }
+    .progress-track { height: 8px; background: var(--border); border-radius: 4px; }
+    .progress-fill { height: 100%; background: var(--accent); border-radius: 4px; width: 75%; }
+    .completeness-tips { margin-top: 12px; }
+    .tip-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); padding: 6px 0; }
+    .tip-item svg { width: 14px; height: 14px; color: var(--accent); }
+    .quick-actions { background: var(--bg); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
+    .quick-actions h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+    .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .action-item { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
+    .action-icon { width: 48px; height: 48px; background: var(--surface); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; }
+    .action-icon svg { width: 22px; height: 22px; }
+    .action-label { font-size: 11px; color: var(--muted); text-align: center; }
+    .recent-enquiries { background: var(--bg); border-radius: var(--radius); padding: 16px; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .section-header h3 { font-size: 15px; font-weight: 600; }
+    .section-header a { font-size: 13px; color: var(--accent); text-decoration: none; }
+    .enquiry-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .enquiry-item:last-child { border-bottom: none; }
+    .enquiry-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+    .enquiry-content { flex: 1; }
+    .enquiry-name { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    .enquiry-preview { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .enquiry-time { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .status-badge.new { background: #dbeafe; color: var(--accent); }
+    .status-badge.replied { background: #d1fae5; color: #065f46; }
+  </style>
+</head>
+<body>
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="status-icons">
+      <i data-lucide="wifi"></i>
+      <i data-lucide="radio"></i>
+      <i data-lucide="battery-full"></i>
+    </div>
+  </div>
+  <div class="header">
+    <h1>SportX</h1>
+    <button class="notif-btn" onclick="location.href='../notifications.html'">
+      <i data-lucide="bell"></i>
+    </button>
+  </div>
+  <div class="main-content">
+    <div class="welcome-banner">
+      <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=112&h=112&fit=crop" alt="Coach" class="welcome-avatar">
+      <div class="welcome-text">
+        <h2>Welcome, Raj!</h2>
+        <p>You have 3 new enquiries this week</p>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-number">12</div><div class="stat-label">Total Enquiries</div></div>
+      <div class="stat-card"><div class="stat-number">8</div><div class="stat-label">This Month</div></div>
+      <div class="stat-card"><div class="stat-number">4.8</div><div class="stat-label"><i data-lucide="star" style="width:12px;height:12px;display:inline;vertical-align:middle;"></i> Avg Rating</div></div>
+    </div>
+    <div class="profile-completeness">
+      <div class="completeness-header">
+        <h3>Profile Completeness</h3>
+        <span>75%</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill"></div></div>
+      <div class="completeness-tips">
+        <div class="tip-item"><i data-lucide="circle-dot"></i> Add your AIFF license certificate</div>
+        <div class="tip-item"><i data-lucide="circle-dot"></i> Upload a training video</div>
+      </div>
+    </div>
+    <div class="quick-actions">
+      <h3>Quick Actions</h3>
+      <div class="action-grid">
+        <div class="action-item" onclick="location.href='coach-profile-edit.html'">
+          <div class="action-icon"><i data-lucide="user"></i></div>
+          <span class="action-label">Edit Profile</span>
+        </div>
+        <div class="action-item" onclick="location.href='enquiry-inbox.html'">
+          <div class="action-icon"><i data-lucide="message-circle"></i></div>
+          <span class="action-label">Enquiries</span>
+        </div>
+        <div class="action-item">
+          <div class="action-icon"><i data-lucide="calendar"></i></div>
+          <span class="action-label">Schedule</span>
+        </div>
+        <div class="action-item">
+          <div class="action-icon"><i data-lucide="bar-chart-2"></i></div>
+          <span class="action-label">Analytics</span>
+        </div>
+      </div>
+    </div>
+    <div class="recent-enquiries">
+      <div class="section-header">
+        <h3>Recent Enquiries</h3>
+        <a href="enquiry-inbox.html">View All</a>
+      </div>
+      <div class="enquiry-item" onclick="location.href='enquiry-detail.html'">
+        <img src="https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=88&h=88&fit=crop" alt="Priya" class="enquiry-avatar">
+        <div class="enquiry-content">
+          <div class="enquiry-name">Priya Sharma <span class="status-badge new">New</span></div>
+          <div class="enquiry-preview">Hi Raj, I'm a 14-year-old footballer looking to improve...</div>
+          <div class="enquiry-time">2 hours ago</div>
+        </div>
+      </div>
+      <div class="enquiry-item" onclick="location.href='enquiry-detail.html'">
+        <img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=88&h=88&fit=crop" alt="Arjun" class="enquiry-avatar">
+        <div class="enquiry-content">
+          <div class="enquiry-name">Arjun Mehta <span class="status-badge replied">Replied</span></div>
+          <div class="enquiry-preview">Interested in monthly training sessions. What slots...</div>
+          <div class="enquiry-time">Yesterday</div>
+        </div>
+      </div>
+      <div class="enquiry-item" onclick="location.href='enquiry-detail.html'">
+        <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?w=88&h=88&fit=crop" alt="Vikram" class="enquiry-avatar">
+        <div class="enquiry-content">
+          <div class="enquiry-name">Vikram Singh <span class="status-badge new">New</span></div>
+          <div class="enquiry-preview">My son is 12 and wants to join your academy. Please share...</div>
+          <div class="enquiry-time">2 days ago</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SportX India</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; display: flex; flex-direction: column; }
+    .status-bar { height: 44px; padding-top: var(--safe-top); display: flex; align-items: center; justify-content: space-between; padding-left: 24px; padding-right: 24px; font-size: 14px; font-weight: 600; }
+    .header { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .back-btn { width: 40px; height: 40px; border-radius: var(--radius); border: none; background: var(--surface); cursor: pointer; font-size: 18px; }
+    .main-content { flex: 1; padding: 20px; }
+    .profile-hero { text-align: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+    .profile-avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 12px; }
+    .profile-name { font-size: 22px; font-weight: 700; }
+    .profile-sport { font-size: 14px; color: var(--muted); margin-top: 4px; }
+    .profile-location { font-size: 13px; color: var(--muted); margin-top: 4px; }
+    .profile-tags { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 12px; }
+    .tag { padding: 6px 12px; background: var(--surface); border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .info-section { margin-bottom: 20px; }
+    .info-section h3 { font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 10px; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .info-item { background: var(--surface); border-radius: var(--radius); padding: 12px; }
+    .info-item .label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    .info-item .value { font-size: 14px; font-weight: 500; }
+    .achievements { display: flex; flex-direction: column; gap: 8px; }
+    .achievement-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--surface); border-radius: var(--radius); }
+    .achievement-icon { font-size: 20px; }
+    .achievement-text { font-size: 14px; }
+    .action-bar { display: flex; gap: 10px; padding: 16px 20px; padding-bottom: calc(16px + var(--safe-bottom)); border-top: 1px solid var(--border); }
+    .btn { flex: 1; padding: 12px; border-radius: var(--radius); font-size: 14px; font-weight: 600; cursor: pointer; border: none; }
+    .btn.contact { background: var(--surface); border: 1px solid var(--border); }
+    .btn.shortlist { background: var(--accent); color: white; }
+  </style>
+</head>
+<body>
+  <div class="status-bar"><span>9:41</span><span>📶 📡 🔋</span></div>
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <h1>Athlete Profile</h1>
+  </div>
+  <div class="main-content">
+    <div class="profile-hero">
+      <img src="https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=200&h=200&fit=crop" alt="Priya" class="profile-avatar">
+      <div class="profile-name">Priya Sharma</div>
+      <div class="profile-sport">Football • Age 16 • Female</div>
+      <div class="profile-location">📍 Indiranagar, Bangalore</div>
+      <div class="profile-tags">
+        <span class="tag">U-18 State Champion</span>
+        <span class="tag">Team Captain</span>
+        <span class="tag">4 years experience</span>
+      </div>
+    </div>
+    <div class="info-section">
+      <h3>Quick Stats</h3>
+      <div class="info-grid">
+        <div class="info-item"><div class="label">Position</div><div class="value">Forward</div></div>
+        <div class="info-item"><div class="label">Strong Foot</div><div class="value">Right</div></div>
+        <div class="info-item"><div class="label">Height</div><div class="value">5'6"</div></div>
+        <div class="info-item"><div class="label">BMI</div><div class="value">21.5</div></div>
+      </div>
+    </div>
+    <div class="info-section">
+      <h3>Key Achievements</h3>
+      <div class="achievements">
+        <div class="achievement-item"><span class="achievement-icon"><i data-lucide="trophy"></i></span><span class="achievement-text">Karnataka State U-18 Football Championship — Winner (2024)</span></div>
+        <div class="achievement-item"><span class="achievement-icon">🏅</span><span class="achievement-text">South Zone Inter-School Football — Best Player Award</span></div>
+        <div class="achievement-item"><span class="achievement-icon"><i data-lucide="star"></i></span><span class="achievement-text">District Level Athletics — 100m Gold Medalist</span></div>
+      </div>
+    </div>
+    <div class="info-section">
+      <h3>Gallery Preview</h3>
+      <div style="display:flex;gap:8px;">
+        <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?w=100&h=100&fit=crop" style="width:80px;height:80px;border-radius:var(--radius);object-fit:cover;">
+        <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=100&h=100&fit=crop" style="width:80px;height:80px;border-radius:var(--radius);object-fit:cover;">
+        <img src="https://images.unsplash.com/photo-1547347298-4074fc3086f0?w=100&h=100&fit=crop" style="width:80px;height:80px;border-radius:var(--radius);object-fit:cover;">
+        <div style="flex:1;background:var(--surface);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;">+12 more</div>
+      </div>
+    </div>
+  </div>
+  <div class="action-bar">
+    <button class="btn contact">💬 Contact</button>
+    <button class="btn shortlist"><i data-lucide="star"></i> Shortlist</button>
+  </div>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

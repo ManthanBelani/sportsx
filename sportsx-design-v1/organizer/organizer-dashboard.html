@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SportX India</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--surface); color: var(--fg); min-height: 100vh; display: flex; flex-direction: column; }
+    .status-bar { height: 44px; padding-top: var(--safe-top); display: flex; align-items: center; justify-content: space-between; padding-left: 24px; padding-right: 24px; font-size: 14px; font-weight: 600; }
+    .header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: var(--bg); }
+    .header h1 { font-size: 20px; font-weight: 700; color: var(--accent); }
+    .notif-btn { width: 40px; height: 40px; border-radius: var(--radius); border: none; background: var(--surface); cursor: pointer; position: relative; }
+    .main-content { flex: 1; padding: 20px; }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+    .stat-card { background: var(--bg); border-radius: var(--radius); padding: 16px; text-align: center; }
+    .stat-number { font-size: 28px; font-weight: 700; color: var(--accent); }
+    .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .quick-actions { background: var(--bg); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
+    .quick-actions h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+    .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .action-item { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
+    .action-icon { width: 48px; height: 48px; background: var(--surface); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .action-label { font-size: 11px; color: var(--muted); text-align: center; }
+    .section-card { background: var(--bg); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .section-header h3 { font-size: 15px; font-weight: 600; }
+    .section-header a { font-size: 13px; color: var(--accent); text-decoration: none; }
+    .event-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .event-item:last-child { border-bottom: none; }
+    .event-icon { width: 44px; height: 44px; background: var(--surface); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .event-content { flex: 1; }
+    .event-title { font-size: 14px; font-weight: 600; }
+    .event-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .status-badge.active { background: #d1fae5; color: #065f46; }
+    .status-badge.draft { background: #fef3c7; color: #92400e; }
+    .deadline-alert { background: #fee2e2; border-radius: var(--radius); padding: 14px; display: flex; align-items: center; gap: 10px; }
+    .deadline-alert .icon { font-size: 20px; }
+    .deadline-alert .text { font-size: 13px; color: #dc2626; }
+    .deadline-alert .text strong { font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="status-bar"><span>9:41</span><span>📶 📡 🔋</span></div>
+  <div class="header">
+    <h1>SportX</h1>
+    <button class="notif-btn"><i data-lucide="bell"></i></button>
+  </div>
+  <div class="main-content">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-number">2</div><div class="stat-label">Active Trials</div></div>
+      <div class="stat-card"><div class="stat-number">3</div><div class="stat-label">Tournaments</div></div>
+      <div class="stat-card"><div class="stat-number">156</div><div class="stat-label">Total Registrations</div></div>
+    </div>
+    <div class="deadline-alert">
+      <span class="icon"><i data-lucide="clock"></i></span>
+      <span class="text"><strong>Deadline approaching:</strong> Junior National Championship registration closes in <strong>3 days</strong></span>
+    </div>
+    <div class="quick-actions">
+      <h3>Quick Actions</h3>
+      <div class="action-grid">
+        <div class="action-item" onclick="location.href='trial-posting-form.html'"><div class="action-icon"><i data-lucide="stadium"></i></div><span class="action-label">Post Trial</span></div>
+        <div class="action-item" onclick="location.href='tournament-create.html'"><div class="action-icon"><i data-lucide="trophy"></i></div><span class="action-label">Post Tournament</span></div>
+        <div class="action-item"><div class="action-icon"><i data-lucide="bar-chart-2"></i></div><span class="action-label">Registrations</span></div>
+        <div class="action-item"><div class="action-icon">📅</div><span class="action-label">Schedule</span></div>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="section-header"><h3>My Trials</h3><a href="my-trials.html">View All</a></div>
+      <div class="event-item" onclick="location.href='registrant-list.html'">
+        <div class="event-icon">⚽</div>
+        <div class="event-content"><div class="event-title">Open Football Trials - December</div><div class="event-meta">Dec 10, 2024 • 18 registrations</div></div>
+        <span class="status-badge active">Active</span>
+      </div>
+      <div class="event-item">
+        <div class="event-icon">🏃</div>
+        <div class="event-content"><div class="event-title">Athletics Talent Hunt 2024</div><div class="event-meta">Dec 20, 2024 • Draft</div></div>
+        <span class="status-badge draft">Draft</span>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="section-header"><h3>My Tournaments</h3><a href="my-tournaments.html">View All</a></div>
+      <div class="event-item">
+        <div class="event-icon"><i data-lucide="trophy"></i></div>
+        <div class="event-content"><div class="event-title">Junior National Football Championship 2024</div><div class="event-meta">Dec 15-17, 2024 • 42 teams registered</div></div>
+        <span class="status-badge active">Published</span>
+      </div>
+      <div class="event-item">
+        <div class="event-icon"><i data-lucide="trophy"></i></div>
+        <div class="event-content"><div class="event-title">State Level Athletics Meet 2025</div><div class="event-meta">Jan 5-7, 2025 • Draft</div></div>
+        <span class="status-badge draft">Draft</span>
+      </div>
+    </div>
+  </div>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

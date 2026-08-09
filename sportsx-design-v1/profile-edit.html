@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Edit Profile - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 10;
+    }
+
+    .cancel-btn {
+      font-size: 15px;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .header h1 {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .save-btn {
+      font-size: 15px;
+      color: var(--accent);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    .avatar-section {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .avatar {
+      width: 96px;
+      height: 96px;
+      background: linear-gradient(135deg, var(--accent) 0%, #0d47a1 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      color: #fff;
+    }
+
+    .avatar svg {
+      width: 40px;
+      height: 40px;
+    }
+
+    .change-photo {
+      font-size: 14px;
+      color: var(--accent);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .change-photo svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--fg);
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--fg);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+      background: var(--bg);
+    }
+
+    .form-input::placeholder {
+      color: var(--muted);
+    }
+
+    select.form-input {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 40px;
+    }
+
+    .chips-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      padding: 8px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--fg);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .chip svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .chip.selected {
+      background: #e6f0ff;
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .achievement-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+    }
+
+    .achievement-row input {
+      flex: 1;
+    }
+
+    .achievement-row .remove-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .achievement-row .remove-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .add-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 12px;
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      color: var(--accent);
+      cursor: pointer;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .add-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .add-btn:active {
+      background: #e6f0ff;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <span class="cancel-btn" onclick="window.history.back()">Cancel</span>
+    <h1>Edit Profile</h1>
+    <span class="save-btn" onclick="window.history.back()">Save</span>
+  </header>
+
+  <div class="content">
+    <div class="avatar-section">
+      <div class="avatar">
+        <i data-lucide="user"></i>
+      </div>
+      <div class="change-photo">
+        <i data-lucide="image"></i>
+        Change Photo
+      </div>
+    </div>
+
+    <section class="section">
+      <h3 class="section-title">Basic Info</h3>
+
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" class="form-input" value="Aryan Patel">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Sport(s)</label>
+        <div class="chips-group">
+          <div class="chip selected">
+            <i data-lucide="circle-dot"></i>
+            Cricket
+            <i data-lucide="check"></i>
+          </div>
+          <div class="chip">
+            <i data-lucide="goal"></i>
+            Football
+          </div>
+          <div class="chip">
+            <i data-lucide="shuttlecock"></i>
+            Badminton
+          </div>
+          <div class="chip">
+            <i data-lucide="plus"></i>
+            Add
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Age Group</label>
+        <select class="form-input">
+          <option>Under-10</option>
+          <option>Under-14</option>
+          <option selected>Under-18</option>
+          <option>Open</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Skill Level</label>
+        <select class="form-input">
+          <option>Beginner</option>
+          <option selected>Intermediate</option>
+          <option>Advanced</option>
+          <option>Competitive</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">City</label>
+        <input type="text" class="form-input" value="Ahmedabad, Gujarat">
+      </div>
+    </section>
+
+    <section class="section">
+      <h3 class="section-title">
+        <i data-lucide="trophy"></i>
+        Achievements
+      </h3>
+
+      <div class="achievement-row">
+        <input type="text" class="form-input" value="State-level U-14 selection 2025">
+        <span class="remove-btn">
+          <i data-lucide="x"></i>
+        </span>
+      </div>
+      <div class="achievement-row">
+        <input type="text" class="form-input" value="District top scorer 2024">
+        <span class="remove-btn">
+          <i data-lucide="x"></i>
+        </span>
+      </div>
+      <div class="achievement-row">
+        <input type="text" class="form-input" value="Best Bowler Award, inter-school 2024">
+        <span class="remove-btn">
+          <i data-lucide="x"></i>
+        </span>
+      </div>
+
+      <div class="add-btn">
+        <i data-lucide="plus"></i>
+        Add Achievement
+      </div>
+    </section>
+  </div>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

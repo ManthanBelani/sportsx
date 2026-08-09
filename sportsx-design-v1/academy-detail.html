@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Elite Cricket Academy - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      padding-bottom: 100px;
+    }
+
+    .hero {
+      height: 200px;
+      background: linear-gradient(135deg, #1a365d 0%, #2d5a87 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .hero svg {
+      width: 72px;
+      height: 72px;
+      color: rgba(255,255,255,0.8);
+    }
+
+    .hero-actions {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .hero-btn {
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      border: none;
+    }
+
+    .hero-btn svg {
+      width: 20px;
+      height: 20px;
+      color: var(--fg);
+    }
+
+    .content {
+      padding: 20px;
+      margin-top: -20px;
+      background: var(--bg);
+      border-radius: 20px 20px 0 0;
+      position: relative;
+    }
+
+    .title-section {
+      margin-bottom: 20px;
+    }
+
+    .title-section h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--fg);
+      margin-bottom: 4px;
+    }
+
+    .title-section .location {
+      font-size: 14px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .location svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .rating-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .rating {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .rating svg {
+      width: 16px;
+      height: 16px;
+      color: #f59e0b;
+    }
+
+    .reviews {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .tag {
+      padding: 6px 12px;
+      background: var(--surface);
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--fg);
+    }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title svg {
+      width: 18px;
+      height: 18px;
+      color: var(--accent);
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .info-item {
+      background: var(--surface);
+      padding: 12px;
+      border-radius: var(--radius);
+    }
+
+    .info-item .label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .info-item .value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+    }
+
+    .coach-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .coach-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+
+    .coach-card:active {
+      background: var(--border);
+    }
+
+    .coach-avatar {
+      width: 48px;
+      height: 48px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+
+    .coach-avatar svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .coach-info {
+      flex: 1;
+    }
+
+    .coach-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+    }
+
+    .coach-meta {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .map-preview {
+      height: 120px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 14px;
+      border: 1px solid var(--border);
+    }
+
+    .map-preview svg {
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+    }
+
+    .address {
+      margin-top: 8px;
+      font-size: 14px;
+      color: var(--fg);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .address svg {
+      width: 16px;
+      height: 16px;
+      color: var(--muted);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .address span {
+      color: var(--muted);
+    }
+
+    .cta-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      padding: 16px 20px;
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      display: flex;
+      gap: 12px;
+      z-index: 100;
+    }
+
+    .cta-bar .contact-btn {
+      width: 48px;
+      height: 48px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--muted);
+    }
+
+    .cta-bar .contact-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .cta-bar .enquire-btn {
+      flex: 1;
+      padding: 14px 24px;
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .cta-bar .enquire-btn:active {
+      background: var(--fg);
+    }
+
+    .report-link {
+      display: block;
+      text-align: center;
+      padding: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .report-link svg {
+      width: 14px;
+      height: 14px;
+      margin-right: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <i data-lucide="circle-dot"></i>
+    <div class="hero-actions">
+      <button class="hero-btn" onclick="window.history.back()">
+        <i data-lucide="arrow-left"></i>
+      </button>
+      <button class="hero-btn" onclick="window.location.href='saved-items.html'">
+        <i data-lucide="heart"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="title-section">
+      <h1>Elite Cricket Academy</h1>
+      <div class="location">
+        <i data-lucide="map-pin"></i>
+        Ahmedabad, Gujarat
+      </div>
+      <div class="rating-row">
+        <div class="rating">
+          <i data-lucide="star"></i>
+          4.8
+        </div>
+        <span class="reviews">(124 reviews)</span>
+      </div>
+      <div class="tags">
+        <span class="tag">Cricket</span>
+        <span class="tag">U-12, U-14, U-16</span>
+        <span class="tag">Evening Batch</span>
+      </div>
+    </div>
+
+    <section class="section">
+      <h2 class="section-title">
+        <i data-lucide="clipboard-list"></i>
+        Details
+      </h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="label">Age Groups</div>
+          <div class="value">U-12, U-14, U-16, Open</div>
+        </div>
+        <div class="info-item">
+          <div class="label">Timings</div>
+          <div class="value">6–9 AM, 4–7 PM</div>
+        </div>
+        <div class="info-item">
+          <div class="label">Fees</div>
+          <div class="value">₹2,000 – ₹5,000/mo</div>
+        </div>
+        <div class="info-item">
+          <div class="label">Facilities</div>
+          <div class="value">Turf, Nets, Gym</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">
+        <i data-lucide="users"></i>
+        Coaches
+      </h2>
+      <div class="coach-list">
+        <div class="coach-card" onclick="window.location.href='coach-detail.html'">
+          <div class="coach-avatar">
+            <i data-lucide="user"></i>
+          </div>
+          <div class="coach-info">
+            <div class="coach-name">Rahul Mehta</div>
+            <div class="coach-meta">BCCI Level 2 · 8 yrs experience</div>
+          </div>
+          <i data-lucide="chevron-right" style="color: var(--muted); width: 18px; height: 18px;"></i>
+        </div>
+        <div class="coach-card">
+          <div class="coach-avatar">
+            <i data-lucide="user"></i>
+          </div>
+          <div class="coach-info">
+            <div class="coach-name">Vikram Singh</div>
+            <div class="coach-meta">BCCI Level 1 · 5 yrs experience</div>
+          </div>
+          <i data-lucide="chevron-right" style="color: var(--muted); width: 18px; height: 18px;"></i>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">
+        <i data-lucide="map-pin"></i>
+        Location
+      </h2>
+      <div class="map-preview">
+        <i data-lucide="map"></i>
+        Map Preview
+      </div>
+      <div class="address">
+        <i data-lucide="building"></i>
+        <span>Sardar Patel Stadium Compound,<br>Motera, Ahmedabad, Gujarat 380009<br>+91 98XXX XXXXX</span>
+      </div>
+    </section>
+
+    <div class="report-link" onclick="window.location.href='report-listing.html'">
+      <i data-lucide="flag"></i>
+      Report this listing
+    </div>
+  </div>
+
+  <div class="cta-bar">
+    <button class="contact-btn">
+      <i data-lucide="phone"></i>
+    </button>
+    <button class="enquire-btn" onclick="window.location.href='enquire-coach.html'">Enquire Now</button>
+  </div>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

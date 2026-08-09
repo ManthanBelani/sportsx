@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Management | SportX India</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #f7f8fa; color: #111111; min-height: 100vh; display: flex; }
+    .sidebar { width: 260px; background: #111111; min-height: 100vh; position: fixed; left: 0; top: 0; display: flex; flex-direction: column; }
+    .sidebar-brand { display: flex; align-items: center; gap: 12px; padding: 20px 24px; border-bottom: 1px solid #333; }
+    .sidebar-brand-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #1677ff, #0d47a1); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .sidebar-brand-text { font-size: 18px; font-weight: 700; color: #fff; }
+    .sidebar-nav { flex: 1; padding: 16px 0; }
+    .sidebar-nav-section { padding: 0 12px; margin-bottom: 8px; }
+    .sidebar-nav-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; padding: 8px 12px; }
+    .sidebar-nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; color: #9ca3af; text-decoration: none; font-size: 14px; font-weight: 500; border-radius: 8px; margin: 2px 0; transition: all 0.15s; }
+    .sidebar-nav-item:hover { background: #1a1a1a; color: #fff; }
+    .sidebar-nav-item.active { background: #1677ff; color: #fff; }
+    .sidebar-nav-item svg { width: 18px; height: 18px; }
+    .sidebar-footer { padding: 16px 24px; border-top: 1px solid #333; }
+    .sidebar-user { display: flex; align-items: center; gap: 12px; }
+    .sidebar-user-avatar { width: 36px; height: 36px; background: #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .sidebar-user-info { flex: 1; }
+    .sidebar-user-name { font-size: 13px; font-weight: 600; color: #fff; }
+    .sidebar-user-role { font-size: 11px; color: #6b7280; }
+    .main { margin-left: 260px; flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
+    .main-header { background: #fff; padding: 16px 32px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .main-header-left { display: flex; align-items: center; gap: 16px; }
+    .main-header h1 { font-size: 20px; font-weight: 600; }
+    .header-badge { background: #1677ff; color: #fff; font-size: 12px; padding: 4px 12px; border-radius: 20px; font-weight: 500; }
+    .main-content { padding: 24px 32px; flex: 1; }
+    .card { background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; margin-bottom: 24px; overflow: hidden; }
+    .card-header { padding: 16px 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+    .card-title { font-size: 15px; font-weight: 600; }
+    .search-bar { display: flex; gap: 12px; padding: 16px 20px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+    .search-input { flex: 1; display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 14px; }
+    .search-input input { border: none; background: none; outline: none; font-size: 14px; flex: 1; }
+    .filter-btn { display: flex; align-items: center; gap: 6px; padding: 10px 14px; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+    .table { width: 100%; border-collapse: collapse; }
+    .table th { text-align: left; padding: 12px 20px; font-size: 12px; font-weight: 600; color: #6b7280; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+    .table td { padding: 14px 20px; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+    .table tr:hover { background: #f9fafb; }
+    .user-cell { display: flex; align-items: center; gap: 12px; }
+    .user-avatar { width: 36px; height: 36px; background: #f0f7ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #1677ff; }
+    .user-name { font-weight: 500; }
+    .user-email { font-size: 12px; color: #6b7280; }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+    .badge.athlete { background: #fef3c7; color: #d97706; }
+    .badge.coach { background: #dbeafe; color: #1677ff; }
+    .badge.academy { background: #dcfce7; color: #16a34a; }
+    .badge.admin { background: #f3e8ff; color: #9333ea; }
+    .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+    .status-dot.active { background: #16a34a; }
+    .status-dot.inactive { background: #6b7280; }
+    .action-btns { display: flex; gap: 8px; }
+    .action-btn { padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; border: none; cursor: pointer; }
+    .action-btn.view { background: #f0f7ff; color: #1677ff; }
+    .action-btn.warn { background: #fef3c7; color: #d97706; }
+    .action-btn.disable { background: #fee2e2; color: #dc2626; }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon"><i data-lucide="shield" style="width:22px;height:22px;color:#fff;"></i></div>
+      <span class="sidebar-brand-text">SportX</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-nav-section">
+        <div class="sidebar-nav-label">Main</div>
+        <a href="admin-dashboard.html" class="sidebar-nav-item"><i data-lucide="layout-dashboard"></i>Dashboard</a>
+        <a href="admin-user-management.html" class="sidebar-nav-item active"><i data-lucide="users"></i>Users</a>
+        <a href="admin-listing-moderation.html" class="sidebar-nav-item"><i data-lucide="clipboard-list"></i>Moderation</a>
+        <a href="admin-report-center.html" class="sidebar-nav-item"><i data-lucide="alert-octagon"></i>Reports</a>
+      </div>
+      <div class="sidebar-nav-section">
+        <div class="sidebar-nav-label">Management</div>
+        <a href="admin-sponsor-verification.html" class="sidebar-nav-item"><i data-lucide="badge-check"></i>Sponsors</a>
+        <a href="admin-content-flagging.html" class="sidebar-nav-item"><i data-lucide="flag"></i>Content Flags</a>
+      </div>
+      <div class="sidebar-nav-section">
+        <div class="sidebar-nav-label">System</div>
+        <a href="admin-analytics.html" class="sidebar-nav-item"><i data-lucide="bar-chart-2"></i>Analytics</a>
+        <a href="admin-notification-templates.html" class="sidebar-nav-item"><i data-lucide="bell"></i>Notifications</a>
+        <a href="admin-sport-category-management.html" class="sidebar-nav-item"><i data-lucide="tag"></i>Categories</a>
+        <a href="admin-system-settings.html" class="sidebar-nav-item"><i data-lucide="settings"></i>Settings</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar"><i data-lucide="user" style="width:18px;height:18px;color:#9ca3af;"></i></div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">Admin User</div>
+          <div class="sidebar-user-role">Super Admin</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="main-header">
+      <div class="main-header-left">
+        <h1>User Management</h1>
+      </div>
+      <span class="header-badge">48,291 Users</span>
+    </header>
+
+    <div class="main-content">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">All Users</span>
+        </div>
+        <div class="search-bar">
+          <div class="search-input">
+            <i data-lucide="search" style="width:18px;height:18px;color:#6b7280;"></i>
+            <input type="text" placeholder="Search users by name, email or ID...">
+          </div>
+          <button class="filter-btn"><i data-lucide="sliders-horizontal" style="width:16px;height:16px;"></i>Filters</button>
+        </div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Joined</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar"><i data-lucide="user" style="width:18px;height:18px;"></i></div>
+                  <div>
+                    <div class="user-name">Priya Sharma</div>
+                    <div class="user-email">priya.sharma@email.com</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge athlete">Athlete</span></td>
+              <td><span class="status-dot active"></span>Active</td>
+              <td>Jan 15, 2024</td>
+              <td><div class="action-btns"><button class="action-btn view">View</button><button class="action-btn warn">Warn</button></div></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar"><i data-lucide="user" style="width:18px;height:18px;"></i></div>
+                  <div>
+                    <div class="user-name">Raj Kumar</div>
+                    <div class="user-email">raj.kumar@email.com</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge coach">Coach</span></td>
+              <td><span class="status-dot active"></span>Active</td>
+              <td>Feb 20, 2024</td>
+              <td><div class="action-btns"><button class="action-btn view">View</button><button class="action-btn warn">Warn</button></div></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar"><i data-lucide="building-2" style="width:18px;height:18px;"></i></div>
+                  <div>
+                    <div class="user-name">Sunrise Academy</div>
+                    <div class="user-email">info@sunriseacademy.com</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge academy">Academy</span></td>
+              <td><span class="status-dot active"></span>Active</td>
+              <td>Mar 10, 2024</td>
+              <td><div class="action-btns"><button class="action-btn view">View</button><button class="action-btn disable">Disable</button></div></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar"><i data-lucide="shield" style="width:18px;height:18px;"></i></div>
+                  <div>
+                    <div class="user-name">Admin User</div>
+                    <div class="user-email">admin@sportx.com</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge admin">Admin</span></td>
+              <td><span class="status-dot active"></span>Active</td>
+              <td>Dec 1, 2023</td>
+              <td><div class="action-btns"><button class="action-btn view">View</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

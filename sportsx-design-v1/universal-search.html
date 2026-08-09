@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Search - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .search-header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .back-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--fg);
+    }
+
+    .back-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .search-input-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 14px 12px 42px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--fg);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+      background: var(--bg);
+    }
+
+    .search-input::placeholder {
+      color: var(--muted);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+    }
+
+    .search-icon svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .clear-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      background: var(--muted);
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #fff;
+      border: none;
+    }
+
+    .clear-btn.show {
+      display: flex;
+    }
+
+    .clear-btn svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .recent-list {
+      list-style: none;
+    }
+
+    .recent-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .recent-item:last-child {
+      border-bottom: none;
+    }
+
+    .recent-item .icon {
+      color: var(--muted);
+    }
+
+    .recent-item .icon svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .recent-item .text {
+      flex: 1;
+      font-size: 14px;
+      color: var(--fg);
+    }
+
+    .recent-item .remove {
+      font-size: 14px;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .recent-item .remove svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .trending-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .trending-chip {
+      padding: 10px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--fg);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .trending-chip svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .trending-chip:active {
+      background: var(--border);
+    }
+
+    .quick-links {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .quick-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+
+    .quick-link:active {
+      background: var(--border);
+    }
+
+    .quick-link .icon {
+      color: var(--accent);
+    }
+
+    .quick-link .icon svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .quick-link .text {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--fg);
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      padding-bottom: max(8px, env(safe-area-inset-bottom));
+      z-index: 100;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 8px 16px;
+      color: var(--muted);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+    }
+
+    .nav-item svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .nav-item span {
+      font-size: 11px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <header class="search-header">
+    <div class="back-btn" onclick="window.history.back()">
+      <i data-lucide="arrow-left"></i>
+    </div>
+    <div class="search-input-wrapper">
+      <span class="search-icon">
+        <i data-lucide="search"></i>
+      </span>
+      <input type="text" class="search-input" id="searchInput" placeholder="Search academies, coaches, trials...">
+      <button class="clear-btn" id="clearBtn">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+  </header>
+
+  <div class="content">
+    <section class="section">
+      <h2 class="section-title">Recent Searches</h2>
+      <ul class="recent-list">
+        <li class="recent-item" onclick="performSearch('Cricket academies Ahmedabad')">
+          <span class="icon"><i data-lucide="clock"></i></span>
+          <span class="text">Cricket academies Ahmedabad</span>
+          <span class="remove"><i data-lucide="x"></i></span>
+        </li>
+        <li class="recent-item" onclick="performSearch('Football trials under-14')">
+          <span class="icon"><i data-lucide="clock"></i></span>
+          <span class="text">Football trials under-14</span>
+          <span class="remove"><i data-lucide="x"></i></span>
+        </li>
+        <li class="recent-item" onclick="performSearch('Badminton coaching')">
+          <span class="icon"><i data-lucide="clock"></i></span>
+          <span class="text">Badminton coaching</span>
+          <span class="remove"><i data-lucide="x"></i></span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Trending</h2>
+      <div class="trending-chips">
+        <div class="trending-chip" onclick="performSearch('Cricket')">
+          <i data-lucide="circle-dot"></i>
+          Cricket
+        </div>
+        <div class="trending-chip" onclick="performSearch('Football')">
+          <i data-lucide="goal"></i>
+          Football
+        </div>
+        <div class="trending-chip" onclick="performSearch('Badminton')">
+          <i data-lucide="shuttlecock"></i>
+          Badminton
+        </div>
+        <div class="trending-chip" onclick="performSearch('Athletics')">
+          <i data-lucide="footprints"></i>
+          Athletics
+        </div>
+        <div class="trending-chip" onclick="performSearch('Swimming')">
+          <i data-lucide="waves"></i>
+          Swimming
+        </div>
+        <div class="trending-chip" onclick="performSearch('Tennis')">
+          <i data-lucide="circle"></i>
+          Tennis
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Quick Links</h2>
+      <div class="quick-links">
+        <div class="quick-link" onclick="window.location.href='academy-directory.html'">
+          <span class="icon"><i data-lucide="building-2"></i></span>
+          <span class="text">Academies</span>
+        </div>
+        <div class="quick-link" onclick="window.location.href='coach-directory.html'">
+          <span class="icon"><i data-lucide="user"></i></span>
+          <span class="text">Coaches</span>
+        </div>
+        <div class="quick-link" onclick="window.location.href='trial-listings.html'">
+          <span class="icon"><i data-lucide="circle-dot"></i></span>
+          <span class="text">Trials</span>
+        </div>
+        <div class="quick-link" onclick="window.location.href='tournament-calendar.html'">
+          <span class="icon"><i data-lucide="trophy"></i></span>
+          <span class="text">Tournaments</span>
+        </div>
+        <div class="quick-link" onclick="window.location.href='scholarship-feed.html'">
+          <span class="icon"><i data-lucide="graduation-cap"></i></span>
+          <span class="text">Scholarships</span>
+        </div>
+        <div class="quick-link" onclick="window.location.href='sponsorship-list.html'">
+          <span class="icon"><i data-lucide="briefcase"></i></span>
+          <span class="text">Sponsorships</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <nav class="bottom-nav">
+    <div class="nav-item" onclick="window.location.href='home-dashboard.html'">
+      <i data-lucide="home"></i>
+      <span>Home</span>
+    </div>
+    <div class="nav-item active">
+      <i data-lucide="search"></i>
+      <span>Search</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='saved-items.html'">
+      <i data-lucide="heart"></i>
+      <span>Saved</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='activity-hub.html'">
+      <i data-lucide="layout-list"></i>
+      <span>Activity</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='profile-view.html'">
+      <i data-lucide="user"></i>
+      <span>Profile</span>
+    </div>
+  </nav>
+
+  <script>
+    lucide.createIcons();
+    
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearBtn');
+
+    searchInput.addEventListener('input', () => {
+      clearBtn.classList.toggle('show', searchInput.value.length > 0);
+    });
+
+    clearBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      clearBtn.classList.remove('show');
+      searchInput.focus();
+    });
+
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && searchInput.value.trim()) {
+        performSearch(searchInput.value.trim());
+      }
+    });
+
+    function performSearch(query) {
+      window.location.href = 'search-results.html?q=' + encodeURIComponent(query);
+    }
+  </script>
+</body>
+</html>

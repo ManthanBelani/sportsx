@@ -1,0 +1,489 @@
+SportX India MVP - Mandatory & Optional Fields
+Sports Academy
+Field
+
+Requirement
+
+Academy Name
+
+■ Mandatory
+
+Sport(s) Offered
+
+■ Mandatory
+
+Address
+
+■ Mandatory
+
+City
+
+■ Mandatory
+
+Contact Number
+
+■ Mandatory
+
+Google Maps Location
+
+■ Mandatory
+
+Description
+
+■ Mandatory
+
+Logo
+
+Optional
+
+Cover Photo
+
+Optional
+
+Email
+
+Optional
+
+Website/Social Media
+
+Optional
+
+Head Coach
+
+Optional
+
+Year Established
+
+Optional
+
+Age Groups
+
+Optional
+
+Training Timings
+
+Optional
+
+Fees
+
+Optional
+
+Facilities
+
+Optional
+
+Achievements
+
+Optional
+
+Photos & Videos
+
+Optional
+
+Verification Badge
+
+System
+
+Coach
+Field
+
+Requirement
+
+Full Name
+
+■ Mandatory
+
+Sport
+
+■ Mandatory
+
+City
+
+■ Mandatory
+
+Contact Number
+
+■ Mandatory
+
+Experience
+
+■ Mandatory
+
+Profile Photo
+
+Optional
+
+Qualification
+
+Optional
+
+Certifications
+
+Optional
+
+Academy
+
+Optional
+
+Languages
+
+Optional
+
+Email
+
+Optional
+
+Personal Coaching
+
+Optional
+
+Fees
+
+Optional
+
+Achievements
+
+Optional
+
+Rating
+
+System
+
+Verification
+
+System
+
+Tournament
+Field
+
+Requirement
+
+Tournament Name
+
+■ Mandatory
+
+Sport
+
+■ Mandatory
+
+Organizer
+
+■ Mandatory
+
+Tournament Dates
+
+■ Mandatory
+
+Registration Deadline
+
+■ Mandatory
+
+Venue
+
+■ Mandatory
+
+Google Maps
+
+■ Mandatory
+
+Entry Fee
+
+■ Mandatory
+
+Contact Number
+
+■ Mandatory
+
+Registration Link
+
+■ Mandatory
+
+Banner
+
+Optional
+
+Age Category
+
+Optional
+
+Gender
+
+Optional
+
+Prize Pool
+
+Optional
+
+Rules
+
+Optional
+
+Fixtures
+
+Optional
+
+Results
+
+Optional
+
+Photos
+
+Optional
+
+Status
+
+System
+
+Verification
+
+System
+
+Trial
+Field
+
+Requirement
+
+Trial Name
+
+■ Mandatory
+
+Organization
+
+■ Mandatory
+
+Sport
+
+■ Mandatory
+
+Date
+
+■ Mandatory
+
+Venue
+
+■ Mandatory
+
+Google Maps
+
+■ Mandatory
+
+Contact Number
+
+■ Mandatory
+
+Registration Deadline
+
+■ Mandatory
+
+Eligibility
+
+Optional
+
+Required Documents
+
+Optional
+
+Vacancies
+
+Optional
+
+Benefits
+
+Optional
+
+Registration Fee
+
+Optional
+
+Status
+
+System
+
+Verification
+
+System
+
+Sponsor / Scholarship
+Field
+
+Requirement
+
+Organization Name
+
+■ Mandatory
+
+Sponsorship/Scholarship Name
+
+■ Mandatory
+
+Sport
+
+■ Mandatory
+
+Eligibility
+
+■ Mandatory
+
+Last Date
+
+■ Mandatory
+
+Application Link
+
+■ Mandatory
+
+Contact Email/Number
+
+■ Mandatory
+
+Logo
+
+Optional
+
+Benefits
+
+Optional
+
+Amount
+
+Optional
+
+Documents Required
+
+Optional
+
+Description
+
+Optional
+
+Verification
+
+System
+
+Athlete
+Field
+
+Requirement
+
+Full Name
+
+■ Mandatory
+
+Profile Photo
+
+■ Mandatory
+
+Sport
+
+■ Mandatory
+
+City
+
+■ Mandatory
+
+Date of Birth
+
+■ Mandatory
+
+Gender
+
+■ Mandatory
+
+Contact Number
+
+Optional
+
+Email
+
+Optional
+
+Academy
+
+Optional
+
+Coach
+
+Optional
+
+Position
+
+Optional
+
+Experience
+
+Optional
+
+Achievements
+
+Optional
+
+Videos
+
+Optional
+
+Certificates
+
+Optional
+
+Ranking
+
+System
+
+Verification
+
+System
+
+Sports Venue
+Field
+
+Requirement
+
+Venue Name
+
+■ Mandatory
+
+Sport
+
+■ Mandatory
+
+Address
+
+■ Mandatory
+
+Google Maps
+
+■ Mandatory
+
+Contact Number
+
+■ Mandatory
+
+Photos
+
+Optional
+
+Booking Available
+
+Optional
+
+Pricing
+
+Optional
+
+Facilities
+
+Optional
+
+Working Hours
+
+Optional
+
+Rating
+
+System
+
+Verification
+
+System
+
+

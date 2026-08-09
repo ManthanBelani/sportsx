@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Search Results - SportX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f7f8fa;
+      --fg: #111111;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --accent: #1677ff;
+      --radius: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 10;
+    }
+
+    .back-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--fg);
+    }
+
+    .back-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .search-term {
+      flex: 1;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--fg);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .filter-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface);
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--muted);
+    }
+
+    .filter-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .tabs {
+      display: flex;
+      padding: 0;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab {
+      padding: 14px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .tab svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab .count {
+      display: inline-block;
+      padding: 2px 6px;
+      background: var(--surface);
+      border-radius: 10px;
+      font-size: 11px;
+    }
+
+    .tab.active .count {
+      background: #e6f0ff;
+      color: var(--accent);
+    }
+
+    .content {
+      padding: 16px 20px;
+    }
+
+    .results-count {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .result-card {
+      display: flex;
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: 14px;
+      gap: 12px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .result-card:active {
+      background: var(--surface);
+    }
+
+    .result-icon {
+      width: 64px;
+      height: 64px;
+      background: var(--surface);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .result-icon svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .result-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .result-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 4px;
+    }
+
+    .result-meta {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .result-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .result-price {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .result-rating {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .result-rating svg {
+      width: 14px;
+      height: 14px;
+      color: #f59e0b;
+      fill: #f59e0b;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      padding-bottom: max(8px, env(safe-area-inset-bottom));
+      z-index: 100;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 8px 16px;
+      color: var(--muted);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+    }
+
+    .nav-item svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .nav-item span {
+      font-size: 11px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="back-btn" onclick="window.history.back()">
+      <i data-lucide="arrow-left"></i>
+    </div>
+    <span class="search-term">"Cricket academies Ahmedabad"</span>
+    <div class="filter-btn">
+      <i data-lucide="sliders-horizontal"></i>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active">
+      Academies <span class="count">4</span>
+    </div>
+    <div class="tab">
+      Coaches <span class="count">3</span>
+    </div>
+    <div class="tab">
+      Trials <span class="count">2</span>
+    </div>
+    <div class="tab">
+      Tournaments <span class="count">1</span>
+    </div>
+    <div class="tab">
+      Scholarships <span class="count">0</span>
+    </div>
+    <div class="tab">
+      Sponsors <span class="count">0</span>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="results-count">4 academies found</div>
+
+    <div class="result-card" onclick="window.location.href='academy-detail.html'">
+      <div class="result-icon">
+        <i data-lucide="building-2"></i>
+      </div>
+      <div class="result-body">
+        <div class="result-title">Elite Cricket Academy</div>
+        <div class="result-meta">Cricket · Ahmedabad, Gujarat</div>
+        <div class="result-footer">
+          <span class="result-price">₹2,000 – ₹5,000/mo</span>
+          <span class="result-rating">
+            <i data-lucide="star"></i>
+            4.8 (124)
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-card">
+      <div class="result-icon">
+        <i data-lucide="building-2"></i>
+      </div>
+      <div class="result-body">
+        <div class="result-title">Gujarat Cricket Academy</div>
+        <div class="result-meta">Cricket · Gandhinagar, Gujarat</div>
+        <div class="result-footer">
+          <span class="result-price">₹2,500 – ₹6,000/mo</span>
+          <span class="result-rating">
+            <i data-lucide="star"></i>
+            4.7 (156)
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-card">
+      <div class="result-icon">
+        <i data-lucide="building-2"></i>
+      </div>
+      <div class="result-body">
+        <div class="result-title">Ahmedabad Cricket Centre</div>
+        <div class="result-meta">Cricket · Ahmedabad, Gujarat</div>
+        <div class="result-footer">
+          <span class="result-price">₹1,800 – ₹4,000/mo</span>
+          <span class="result-rating">
+            <i data-lucide="star"></i>
+            4.5 (89)
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-card">
+      <div class="result-icon">
+        <i data-lucide="building-2"></i>
+      </div>
+      <div class="result-body">
+        <div class="result-title">Sachin Cricket Academy</div>
+        <div class="result-meta">Cricket · Baroda, Gujarat</div>
+        <div class="result-footer">
+          <span class="result-price">₹2,000 – ₹5,500/mo</span>
+          <span class="result-rating">
+            <i data-lucide="star"></i>
+            4.6 (112)
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <div class="nav-item" onclick="window.location.href='home-dashboard.html'">
+      <i data-lucide="home"></i>
+      <span>Home</span>
+    </div>
+    <div class="nav-item active">
+      <i data-lucide="search"></i>
+      <span>Search</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='saved-items.html'">
+      <i data-lucide="heart"></i>
+      <span>Saved</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='activity-hub.html'">
+      <i data-lucide="layout-list"></i>
+      <span>Activity</span>
+    </div>
+    <div class="nav-item" onclick="window.location.href='profile-view.html'">
+      <i data-lucide="user"></i>
+      <span>Profile</span>
+    </div>
+  </nav>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

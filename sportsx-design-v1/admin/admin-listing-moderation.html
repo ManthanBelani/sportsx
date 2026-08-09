@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Listing Moderation | SportX India</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #f7f8fa; color: #111111; min-height: 100vh; display: flex; }
+    .sidebar { width: 260px; background: #111111; min-height: 100vh; position: fixed; left: 0; top: 0; display: flex; flex-direction: column; }
+    .sidebar-brand { display: flex; align-items: center; gap: 12px; padding: 20px 24px; border-bottom: 1px solid #333; }
+    .sidebar-brand-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #1677ff, #0d47a1); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .sidebar-brand-text { font-size: 18px; font-weight: 700; color: #fff; }
+    .sidebar-nav { flex: 1; padding: 16px 0; }
+    .sidebar-nav-section { padding: 0 12px; margin-bottom: 8px; }
+    .sidebar-nav-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; padding: 8px 12px; }
+    .sidebar-nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; color: #9ca3af; text-decoration: none; font-size: 14px; font-weight: 500; border-radius: 8px; margin: 2px 0; transition: all 0.15s; }
+    .sidebar-nav-item:hover { background: #1a1a1a; color: #fff; }
+    .sidebar-nav-item.active { background: #1677ff; color: #fff; }
+    .sidebar-nav-item svg { width: 18px; height: 18px; }
+    .sidebar-footer { padding: 16px 24px; border-top: 1px solid #333; }
+    .sidebar-user { display: flex; align-items: center; gap: 12px; }
+    .sidebar-user-avatar { width: 36px; height: 36px; background: #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .sidebar-user-info { flex: 1; }
+    .sidebar-user-name { font-size: 13px; font-weight: 600; color: #fff; }
+    .sidebar-user-role { font-size: 11px; color: #6b7280; }
+    .main { margin-left: 260px; flex: 1; min-height: 100vh; display: flex; flex-direction: column; }
+    .main-header { background: #fff; padding: 16px 32px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .main-header h1 { font-size: 20px; font-weight: 600; }
+    .header-badge { background: #fef3c7; color: #d97706; font-size: 12px; padding: 4px 12px; border-radius: 20px; font-weight: 500; }
+    .main-content { padding: 24px 32px; flex: 1; }
+    .tabs { display: flex; gap: 4px; margin-bottom: 24px; background: #fff; padding: 4px; border-radius: 10px; border: 1px solid #e5e7eb; width: fit-content; }
+    .tab { padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; color: #6b7280; border: none; background: none; }
+    .tab.active { background: #111; color: #fff; }
+    .card { background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; margin-bottom: 16px; overflow: hidden; }
+    .listing-header { display: flex; align-items: center; gap: 16px; padding: 16px 20px; border-bottom: 1px solid #f0f0f0; }
+    .listing-img { width: 60px; height: 60px; background: #f0f7ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .listing-info { flex: 1; }
+    .listing-name { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+    .listing-meta { font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 6px; }
+    .listing-flagged { background: #fee2e2; color: #dc2626; font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 500; }
+    .listing-body { padding: 16px 20px; }
+    .listing-desc { font-size: 13px; color: #6b7280; margin-bottom: 12px; line-height: 1.5; }
+    .listing-actions { display: flex; gap: 10px; }
+    .action-btn { flex: 1; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .action-btn.approve { background: #dcfce7; color: #16a34a; }
+    .action-btn.reject { background: #fee2e2; color: #dc2626; }
+    .action-btn.view { background: #f0f7ff; color: #1677ff; }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon"><i data-lucide="shield" style="width:22px;height:22px;color:#fff;"></i></div>
+      <span class="sidebar-brand-text">SportX</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-nav-section">
+        <div class="sidebar-nav-label">Main</div>
+        <a href="admin-dashboard.html" class="sidebar-nav-item"><i data-lucide="layout-dashboard"></i>Dashboard</a>
+        <a href="admin-user-management.html" class="sidebar-nav-item"><i data-lucide="users"></i>Users</a>
+        <a href="admin-listing-moderation.html" class="sidebar-nav-item active"><i data-lucide="clipboard-list"></i>Moderation</a>
+        <a href="admin-report-center.html" class="sidebar-nav-item"><i data-lucide="alert-octagon"></i>Reports</a>
+      </div>
+      <div class="sidebar-nav-section">
+        <div class="sidebar-nav-label">Management</div>
+        <a href="admin-sponsor-verification.html" class="sidebar-nav-item"><i data-lucide="badge-check"></i>Sponsors</a>
+        <a href="admin-content-flagging.html" class="sidebar-nav-item"><i data-lucide="flag"></i>Content Flags</a>
+      </div>
+      <div class="sidebar-nav-section">
+        <div class="sidebar-nav-label">System</div>
+        <a href="admin-analytics.html" class="sidebar-nav-item"><i data-lucide="bar-chart-2"></i>Analytics</a>
+        <a href="admin-notification-templates.html" class="sidebar-nav-item"><i data-lucide="bell"></i>Notifications</a>
+        <a href="admin-sport-category-management.html" class="sidebar-nav-item"><i data-lucide="tag"></i>Categories</a>
+        <a href="admin-system-settings.html" class="sidebar-nav-item"><i data-lucide="settings"></i>Settings</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar"><i data-lucide="user" style="width:18px;height:18px;color:#9ca3af;"></i></div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">Admin User</div>
+          <div class="sidebar-user-role">Super Admin</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="main-header">
+      <h1>Listing Moderation</h1>
+      <span class="header-badge">156 Pending</span>
+    </header>
+
+    <div class="main-content">
+      <div class="tabs">
+        <button class="tab active">Pending (156)</button>
+        <button class="tab">Approved (2,341)</button>
+        <button class="tab">Rejected (350)</button>
+      </div>
+
+      <div class="card">
+        <div class="listing-header">
+          <div class="listing-img"><i data-lucide="building-2" style="width:28px;height:28px;color:#1677ff;"></i></div>
+          <div class="listing-info">
+            <div class="listing-name">Sunrise Football Academy</div>
+            <div class="listing-meta"><i data-lucide="map-pin" style="width:12px;height:12px;"></i> Indiranagar, Bangalore • <i data-lucide="clock" style="width:12px;height:12px;"></i> 2 hours ago</div>
+          </div>
+          <span class="listing-flagged"><i data-lucide="alert-triangle" style="width:12px;height:12px;display:inline;vertical-align:middle;"></i> Flagged</span>
+        </div>
+        <div class="listing-body">
+          <div class="listing-desc">Elite football academy offering professional training for ages 8-18. Coached by former national team players. FIFA standard turf and facilities.</div>
+          <div style="font-size:12px;color:#dc2626;margin-bottom:12px;"><i data-lucide="alert-triangle" style="width:12px;height:12px;display:inline;vertical-align:middle;"></i> Missing coach certification document</div>
+          <div class="listing-actions">
+            <button class="action-btn view"><i data-lucide="eye" style="width:14px;height:14px;"></i> View</button>
+            <button class="action-btn approve"><i data-lucide="check" style="width:14px;height:14px;"></i> Approve</button>
+            <button class="action-btn reject"><i data-lucide="x" style="width:14px;height:14px;"></i> Reject</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="listing-header">
+          <div class="listing-img"><i data-lucide="user" style="width:28px;height:28px;color:#1677ff;"></i></div>
+          <div class="listing-info">
+            <div class="listing-name">Vikram Singh - Cricket Coach</div>
+            <div class="listing-meta"><i data-lucide="map-pin" style="width:12px;height:12px;"></i> Chandigarh • <i data-lucide="clock" style="width:12px;height:12px;"></i> 5 hours ago</div>
+          </div>
+          <span class="listing-flagged"><i data-lucide="alert-triangle" style="width:12px;height:12px;display:inline;vertical-align:middle;"></i> Flagged</span>
+        </div>
+        <div class="listing-body">
+          <div class="listing-desc">BCCI licensed cricket coach with 12 years experience. Specializes in batting and pace bowling training for U-16 and U-19 players.</div>
+          <div style="font-size:12px;color:#dc2626;margin-bottom:12px;"><i data-lucide="alert-triangle" style="width:12px;height:12px;display:inline;vertical-align:middle;"></i> Potential false claims about government affiliation</div>
+          <div class="listing-actions">
+            <button class="action-btn view"><i data-lucide="eye" style="width:14px;height:14px;"></i> View</button>
+            <button class="action-btn approve"><i data-lucide="check" style="width:14px;height:14px;"></i> Approve</button>
+            <button class="action-btn reject"><i data-lucide="x" style="width:14px;height:14px;"></i> Reject</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="listing-header">
+          <div class="listing-img"><i data-lucide="trophy" style="width:28px;height:28px;color:#d97706;"></i></div>
+          <div class="listing-info">
+            <div class="listing-name">Champions Cricket Tournament 2025</div>
+            <div class="listing-meta"><i data-lucide="map-pin" style="width:12px;height:12px;"></i> Mysore, Karnataka • <i data-lucide="clock" style="width:12px;height:12px;"></i> 1 day ago</div>
+          </div>
+        </div>
+        <div class="listing-body">
+          <div class="listing-desc">Annual inter-school cricket tournament for U-14 and U-17 categories. Prize pool of INR 2 lakhs. Registration open until Dec 15.</div>
+          <div class="listing-actions">
+            <button class="action-btn view"><i data-lucide="eye" style="width:14px;height:14px;"></i> View</button>
+            <button class="action-btn approve"><i data-lucide="check" style="width:14px;height:14px;"></i> Approve</button>
+            <button class="action-btn reject"><i data-lucide="x" style="width:14px;height:14px;"></i> Reject</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script>lucide.createIcons();</script>
+</body>
+</html>
