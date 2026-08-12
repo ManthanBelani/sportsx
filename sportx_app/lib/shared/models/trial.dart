@@ -60,23 +60,27 @@ class Trial {
   factory Trial.fromJson(Map<String, dynamic> json) {
     return Trial(
       id: json['id'] as int,
-      title: json['title'] as String,
-      description: json['description'] as String?,
+      title: (json['title'] ?? json['name'] ?? '') as String,
+      description: (json['description'] ?? json['benefits']) as String?,
       sportId: json['sport_id'] as int,
       cityId: json['city_id'] as int?,
       academyId: json['academy_id'] as int?,
       venue: json['venue'] as String?,
       googleMapsUrl: json['google_maps_url'] as String?,
-      trialDate: json['trial_date'] != null ? DateTime.parse(json['trial_date']) : null,
+      trialDate: (json['trial_date'] ?? json['event_datetime']) != null
+          ? DateTime.parse(json['trial_date'] ?? json['event_datetime'])
+          : null,
       registrationDeadline: json['registration_deadline'] != null ? DateTime.parse(json['registration_deadline']) : null,
-      totalSpots: json['total_spots'] as int?,
+      totalSpots: (json['total_spots'] ?? json['vacancies']) as int?,
       filledSpots: json['filled_spots'] as int?,
-      registrationFee: (json['registration_fee'] as num?)?.toDouble(),
-      ageGroupLabel: json['age_group_label'] as String?,
+      // entry_fee is a varchar on the backend → arrives as a String; parse defensively.
+      registrationFee: _parseNum(json['registration_fee'] ?? json['entry_fee'])?.toDouble(),
+      ageGroupLabel: (json['age_group_label'] ?? json['eligibility']) as String?,
       ageGroupId: json['age_group_id'] as int?,
       contactName: json['contact_name'] as String?,
       contactNumber: json['contact_number'] as String?,
-      documentRequired: json['document_required'] as String?,
+      // required_documents is a JSON column → arrives as a List, not a String.
+      documentRequired: _documentsToString(json['document_required'] ?? json['required_documents']),
       registrationLink: json['registration_link'] as String?,
       status: json['status'] as String? ?? 'draft',
       expiresAt: json['expires_at'] != null ? DateTime.parse(json['expires_at']) : null,
@@ -88,4 +92,16 @@ class Trial {
   }
 
   int? get spotsLeft => totalSpots != null ? totalSpots! - (filledSpots ?? 0) : null;
+
+  static num? _parseNum(dynamic v) {
+    if (v == null) return null;
+    if (v is num) return v;
+    return num.tryParse(v.toString());
+  }
+
+  static String? _documentsToString(dynamic v) {
+    if (v == null) return null;
+    if (v is List) return v.map((e) => e.toString()).join(', ');
+    return v.toString();
+  }
 }

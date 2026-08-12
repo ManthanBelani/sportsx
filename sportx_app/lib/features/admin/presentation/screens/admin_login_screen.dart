@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
 
-class AdminLoginScreen extends StatefulWidget {
+class AdminLoginScreen extends ConsumerStatefulWidget {
   const AdminLoginScreen({super.key});
 
   @override
-  State<AdminLoginScreen> createState() => _AdminLoginScreenState();
+  ConsumerState<AdminLoginScreen> createState() => _AdminLoginScreenState();
 }
 
-class _AdminLoginScreenState extends State<AdminLoginScreen> {
+class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _tfaController = TextEditingController();
   bool _obscurePassword = true;
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -20,6 +23,24 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
     _passwordController.dispose();
     _tfaController.dispose();
     super.dispose();
+  }
+
+  Future<void> _login() async {
+    setState(() => _loading = true);
+    final notifier = ref.read(adminProvider.notifier);
+    final ok = await notifier.login(_emailController.text.trim(), _passwordController.text);
+    if (!mounted) return;
+    if (ok && _tfaController.text.trim().isNotEmpty) {
+      await notifier.verify2fa(_tfaController.text.trim());
+    }
+    setState(() => _loading = false);
+    if (!mounted) return;
+    final state = ref.read(adminProvider);
+    if (state.isLoggedIn) {
+      context.go('/admin/dashboard');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.error ?? 'Login failed')));
+    }
   }
 
   @override
@@ -76,8 +97,10 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 width: double.infinity,
                 height: 50,
                 child: FilledButton(
-                  onPressed: () => context.go('/admin-dashboard'),
-                  child: const Text('Log In', style: TextStyle(fontSize: 16)),
+                  onPressed: _loading ? null : _login,
+                  child: _loading
+                      ? const SizedBox(height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : const Text('Log In', style: TextStyle(fontSize: 16)),
                 ),
               ),
             ],

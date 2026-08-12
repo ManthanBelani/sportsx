@@ -27,6 +27,9 @@ class RegistrationController extends Controller
             'document_media_ids' => 'nullable|array',
             'document_media_ids.*' => 'integer|exists:media_items,id',
             'reminder_enabled' => 'boolean',
+            'playing_role' => 'nullable|string|max:100',
+            'medical_conditions' => 'nullable|string|max:1000',
+            'parental_consent' => 'boolean',
         ]);
 
         abort_if(
@@ -39,6 +42,9 @@ class RegistrationController extends Controller
                 'trial_id' => $trial->id,
                 'athlete_id' => $athlete->id,
                 'registration_ref' => $this->generateRef('TR', $trial->event_datetime),
+                'playing_role' => $validated['playing_role'] ?? null,
+                'medical_conditions' => $validated['medical_conditions'] ?? null,
+                'parental_consent' => $validated['parental_consent'] ?? false,
                 'document_status' => empty($validated['document_media_ids']) ? 'pending' : 'submitted',
                 'verification_status' => 'pending',
                 'reminder_enabled' => $validated['reminder_enabled'] ?? false,

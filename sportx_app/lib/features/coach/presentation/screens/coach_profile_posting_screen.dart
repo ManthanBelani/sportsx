@@ -1,65 +1,97 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/theme/colors.dart';
 
-class CoachProfilePostingScreen extends StatelessWidget {
+class CoachProfilePostingScreen extends ConsumerStatefulWidget {
   const CoachProfilePostingScreen({super.key});
+
+  @override
+  ConsumerState<CoachProfilePostingScreen> createState() => _CoachProfilePostingScreenState();
+}
+
+class _CoachProfilePostingScreenState extends ConsumerState<CoachProfilePostingScreen> {
+  final _name = TextEditingController();
+  final _sport = TextEditingController();
+  final _experience = TextEditingController();
+  final _fee = TextEditingController();
+  final _location = TextEditingController();
+  final _bio = TextEditingController();
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _sport.dispose();
+    _experience.dispose();
+    _fee.dispose();
+    _location.dispose();
+    _bio.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    setState(() => _saving = true);
+    try {
+      await ref.read(dioProvider).put('/me/coach-profile', data: {
+        'full_name': _name.text.trim(),
+        'sport': _sport.text.trim(),
+        'experience': int.tryParse(_experience.text.trim()) ?? 0,
+        'hourly_rate': num.tryParse(_fee.text.trim()) ?? 0,
+        'city': _location.text.trim(),
+        'bio': _bio.text.trim(),
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile Updated!')));
+        context.pop();
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Edit My Listing'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {},
-            child: const Text('Save'),
-          )
-        ],
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        title: const Text('Edit My Listing',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            CircleAvatar(
-              radius: 40,
-              backgroundColor: Colors.grey[300],
-              child: const Icon(Icons.camera_alt, color: Colors.grey),
-            ),
-            const SizedBox(height: 8),
-            TextButton(onPressed: () {}, child: const Text('Upload Profile Photo')),
-            const SizedBox(height: 24),
-            const TextField(decoration: InputDecoration(labelText: 'Name', hintText: 'Rahul Mehta')),
+            TextField(controller: _name, decoration: const InputDecoration(labelText: 'Name')),
             const SizedBox(height: 16),
-            const TextField(decoration: InputDecoration(labelText: 'Sport(s)', hintText: 'Cricket')),
+            TextField(controller: _sport, decoration: const InputDecoration(labelText: 'Sport(s)')),
             const SizedBox(height: 16),
-            const TextField(decoration: InputDecoration(labelText: 'Certifications', hintText: '+ Add / Edit')),
+            TextField(controller: _experience, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Experience (years)')),
             const SizedBox(height: 16),
-            const TextField(decoration: InputDecoration(labelText: 'Experience', hintText: '8 years')),
+            TextField(controller: _fee, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Fee per session')),
             const SizedBox(height: 16),
-            const TextField(decoration: InputDecoration(labelText: 'Fee Structure', hintText: '₹800 / session')),
+            TextField(controller: _location, decoration: const InputDecoration(labelText: 'Location')),
             const SizedBox(height: 16),
-            const TextField(decoration: InputDecoration(labelText: 'Location', hintText: 'Ahmedabad')),
-            const SizedBox(height: 16),
-            const TextField(
-              decoration: InputDecoration(labelText: 'Bio', hintText: 'Tell athletes about yourself...'),
-              maxLines: 4,
-            ),
+            TextField(controller: _bio, decoration: const InputDecoration(labelText: 'Bio'), maxLines: 4),
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
               child: FilledButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile Updated!')));
-                  context.pop();
-                },
-                child: const Text('Save Changes'),
+                onPressed: _saving ? null : _save,
+                style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+                child: _saving
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : const Text('Save Changes'),
               ),
-            )
+            ),
           ],
         ),
       ),

@@ -1,96 +1,94 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
+import 'package:sportx_app/theme/colors.dart';
 
-class RegistrationManagementScreen extends StatefulWidget {
-  const RegistrationManagementScreen({super.key});
+class RegistrationManagementScreen extends ConsumerWidget {
+  final String tournamentId;
+  final String title;
+  const RegistrationManagementScreen({
+    super.key,
+    required this.tournamentId,
+    required this.title,
+  });
 
   @override
-  State<RegistrationManagementScreen> createState() => _RegistrationManagementScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(tournamentRegistrationsProvider(tournamentId));
 
-class _RegistrationManagementScreenState extends State<RegistrationManagementScreen> {
-  int _selectedTab = 0;
-  final _tabs = ['U-14 (18/24)', 'U-16 (22/24)', 'U-18 (9/24)'];
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Registrations: U-16 State Cup'),
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        title: Text('Registrations: $title',
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
           onPressed: () => context.pop(),
         ),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: List.generate(_tabs.length, (index) {
-                final isSelected = _selectedTab == index;
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _selectedTab = index),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      decoration: BoxDecoration(
-                        color: isSelected ? Theme.of(context).primaryColor : Colors.grey[200],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(
-                        child: Text(
-                          _tabs[index],
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            ),
-          ),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
+      body: RefreshIndicator(
+        onRefresh: () async => ref.invalidate(tournamentRegistrationsProvider(tournamentId)),
+        child: async.when(
+          loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+          error: (e, _) => Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                _buildTeamCard('Team Titans', true),
+                Text('$e', style: const TextStyle(color: AppColors.textSecondary)),
                 const SizedBox(height: 12),
-                _buildTeamCard('Team Strikers', false),
-                const SizedBox(height: 12),
-                _buildTeamCard('Team Falcons', true),
+                ElevatedButton(
+                  onPressed: () => ref.invalidate(tournamentRegistrationsProvider(tournamentId)),
+                  child: const Text('Retry'),
+                ),
               ],
             ),
           ),
-        ],
+          data: (regs) => regs.isEmpty
+              ? ListView(children: const [
+                  SizedBox(height: 200),
+                  Center(child: Text('No registrations yet', style: TextStyle(color: AppColors.textSecondary))),
+                ])
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: regs.length,
+                  itemBuilder: (context, i) {
+                    final r = regs[i];
+                    final name = (r['team_name'] ?? r['athlete_name'] ?? r['name'] ?? 'Participant').toString();
+                    final payment = (r['payment_status'] ?? r['status'] ?? 'pending').toString();
+                    final isPaid = payment == 'paid' || payment == 'completed';
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _buildTeamCard(name, isPaid),
+                    );
+                  },
+                ),
+        ),
       ),
     );
   }
 
-  Widget _buildTeamCard(String teamName, bool isPaid) {
+  Widget _buildTeamCard(String name, bool isPaid) {
+    final color = isPaid ? AppColors.success : AppColors.warning;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[300]!),
+        color: AppColors.surface,
+        border: Border.all(color: AppColors.border),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(teamName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary)),
           Row(
             children: [
-              Icon(
-                isPaid ? Icons.check_circle : Icons.warning,
-                size: 16,
-                color: isPaid ? Colors.green : Colors.orange,
-              ),
+              Icon(isPaid ? LucideIcons.checkCircle2 : LucideIcons.alertTriangle, size: 16, color: color),
               const SizedBox(width: 4),
-              Text(isPaid ? 'Paid ✅' : 'Pending ⚠', style: TextStyle(color: isPaid ? Colors.green : Colors.orange)),
+              Text(isPaid ? 'Paid' : 'Pending', style: TextStyle(color: color)),
             ],
           ),
         ],

@@ -151,7 +151,7 @@ class _ScholarshipListScreenState extends ConsumerState<ScholarshipListScreen> {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          '${item.sponsorName ?? 'Sponsor'} • ${item.sports?.join(', ') ?? 'All Sports'}',
+                                          '${item.sponsorName ?? 'Sponsor'} • ${item.sport?.name ?? 'All Sports'}',
                                           style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,

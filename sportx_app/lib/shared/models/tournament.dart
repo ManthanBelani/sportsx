@@ -64,8 +64,8 @@ class Tournament {
   factory Tournament.fromJson(Map<String, dynamic> json) {
     return Tournament(
       id: json['id'] as int,
-      title: json['title'] as String,
-      description: json['description'] as String?,
+      title: (json['title'] ?? json['name'] ?? '') as String,
+      description: (json['description'] ?? json['rules']) as String?,
       sportId: json['sport_id'] as int,
       cityId: json['city_id'] as int?,
       venue: json['venue'] as String?,
@@ -75,9 +75,10 @@ class Tournament {
       registrationDeadline: json['registration_deadline'] != null ? DateTime.parse(json['registration_deadline']) : null,
       totalSpots: json['total_spots'] as int?,
       filledSpots: json['filled_spots'] as int?,
-      registrationFee: (json['registration_fee'] as num?)?.toDouble(),
-      prizePool: (json['prize_pool'] as num?)?.toDouble(),
-      ageGroupLabel: json['age_group_label'] as String?,
+      // entry_fee & prize_pool are varchar on the backend → arrive as String.
+      registrationFee: num.tryParse('${json['registration_fee'] ?? json['entry_fee'] ?? ''}')?.toDouble(),
+      prizePool: num.tryParse('${json['prize_pool'] ?? ''}')?.toDouble(),
+      ageGroupLabel: (json['age_group_label'] ?? json['gender']) as String?,
       ageGroupId: json['age_group_id'] as int?,
       format: json['format'] as String?,
       contactName: json['contact_name'] as String?,

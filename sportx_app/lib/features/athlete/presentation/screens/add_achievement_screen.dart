@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -21,6 +22,10 @@ class _AddAchievementScreenState extends ConsumerState<AddAchievementScreen> {
   File? _certificateFile;
   bool _isSaving = false;
 
+  // Required-by-backend profile fields (loaded + re-sent on save).
+  Map<String, dynamic> _profile = {};
+  List<Map<String, dynamic>> _existing = [];
+
   final List<String> _years = List.generate(10, (index) => (2025 - index).toString());
 
   @override
@@ -28,6 +33,25 @@ class _AddAchievementScreenState extends ConsumerState<AddAchievementScreen> {
     _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentProfile();
+  }
+
+  Future<void> _loadCurrentProfile() async {
+    try {
+      final resp = await ref.read(dioProvider).get('/me/profile');
+      final d = resp.data['data'] as Map<String, dynamic>?;
+      if (d != null) {
+        _profile = d;
+        _existing = (d['achievements'] as List? ?? const [])
+            .map((e) => <String, dynamic>{'text': (e as Map)['text'] ?? ''})
+            .toList();
+      }
+    } catch (_) {}
   }
 
   Future<void> _pickCertificate() async {
@@ -53,18 +77,23 @@ class _AddAchievementScreenState extends ConsumerState<AddAchievementScreen> {
 
     try {
       final dio = ref.read(dioProvider);
+      final allAchievements = <Map<String, dynamic>>[
+        ..._existing,
+        {
+          'text': _titleController.text.trim() +
+              (_descriptionController.text.trim().isNotEmpty
+                  ? ' — ${_descriptionController.text.trim()} (${_selectedYear})'
+                  : ' ($_selectedYear)'),
+        },
+      ];
+
       final formData = FormData.fromMap({
-        'achievements': [
-          {
-            'title': _titleController.text.trim(),
-            'description': _descriptionController.text.trim(),
-            'year': _selectedYear,
-          }
-        ],
-        if (_certificateFile != null) 'certificate': await MultipartFile.fromFile(
-          _certificateFile!.path,
-          filename: 'certificate.jpg',
-        ),
+        'full_name': _profile['full_name'] ?? _profile['name'] ?? '',
+        'date_of_birth': _profile['date_of_birth'] ?? '',
+        'gender': _profile['gender'] ?? '',
+        'skill_level': _profile['skill_level'] ?? '',
+        'city_id': _profile['city_id'],
+        'achievements': allAchievements,
       });
 
       await dio.put('/me/profile', data: formData);

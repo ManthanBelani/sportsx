@@ -1,16 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/theme/colors.dart';
 
-class RegistrantDetailScreen extends StatelessWidget {
-  const RegistrantDetailScreen({super.key});
+class RegistrantDetailScreen extends ConsumerWidget {
+  final String registrationId;
+  const RegistrantDetailScreen({super.key, required this.registrationId});
+
+  Future<void> _act(BuildContext context, WidgetRef ref, String action, String msg) async {
+    try {
+      await ref.read(dioProvider).post('/registrations/trials/$registrationId/$action');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+        context.pop();
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+      }
+    }
+  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Aryan Patel'),
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        title: const Text('Registrant',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
           onPressed: () => context.pop(),
         ),
       ),
@@ -19,47 +42,24 @@ class RegistrantDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Name: Aryan Patel', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            const Text('Age: 14 · Cricket · Under-14'),
-            const SizedBox(height: 8),
-            const Text('Contact: +91 98XXXXXXXX'),
+            Text('Registration #$registrationId',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
             const SizedBox(height: 32),
-            Text('Submitted Documents', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 12),
-            ListTile(
-              leading: const Icon(Icons.description),
-              title: const Text('Aadhaar Card'),
-              trailing: TextButton(onPressed: (){}, child: const Text('View')),
-              contentPadding: EdgeInsets.zero,
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo),
-              title: const Text('Passport Photo'),
-              trailing: TextButton(onPressed: (){}, child: const Text('View')),
-              contentPadding: EdgeInsets.zero,
-            ),
             const Spacer(),
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registration Rejected.')));
-                      context.pop();
-                    },
-                    style: OutlinedButton.styleFrom(foregroundColor: Colors.red, side: const BorderSide(color: Colors.red)),
+                    onPressed: () => _act(context, ref, 'reject', 'Registration Rejected.'),
+                    style: OutlinedButton.styleFrom(foregroundColor: AppColors.error, side: const BorderSide(color: AppColors.error)),
                     child: const Text('Reject'),
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: FilledButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Marked as Verified.')));
-                      context.pop();
-                    },
-                    style: FilledButton.styleFrom(backgroundColor: Colors.green),
+                    onPressed: () => _act(context, ref, 'verify', 'Marked as Verified.'),
+                    style: FilledButton.styleFrom(backgroundColor: AppColors.success),
                     child: const Text('Mark as Verified'),
                   ),
                 ),

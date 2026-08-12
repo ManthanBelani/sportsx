@@ -1,34 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/shared/models/models.dart';
+import 'package:sportx_app/shared/presentation/widgets/async_state_view.dart';
 import 'package:sportx_app/shared/presentation/widgets/directory_list_template.dart';
+import 'package:sportx_app/shared/providers/directory_provider.dart';
 
-class TournamentDirectoryScreen extends StatelessWidget {
+class TournamentDirectoryScreen extends ConsumerWidget {
   const TournamentDirectoryScreen({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    final dummyItems = List.generate(
-      4,
-      (index) => DirectoryItem(
-        id: 'tourney_$index',
-        title: 'U-16 State Cup ${index + 1}',
-        subtitle: 'Sardar Patel Stadium',
-        meta: 'Aug 15–20',
-        rating: null,
-        thumbnailUrl: null,
-      ),
-    );
+  String _meta(Tournament t) {
+    if (t.startDate != null && t.endDate != null) {
+      final s = t.startDate!, e = t.endDate!;
+      return '${s.day}/${s.month}–${e.day}/${e.month}/${e.year}';
+    }
+    if (t.startDate != null) {
+      return '${t.startDate!.day}/${t.startDate!.month}/${t.startDate!.year}';
+    }
+    return '';
+  }
 
-    return DirectoryListTemplate(
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(tournamentsProvider);
+
+    return DirectoryStateView<Tournament>(
+      state: state,
       title: 'Tournaments',
-      defaultIcon: LucideIcons.trophy,
-      items: dummyItems,
-      onFilterTap: () {
-        context.push('/search-filter');
-      },
-      onItemTap: (item) => context.push('/tournament-detail/${item.id}'),
-      onLoadMore: () {},
+      onRetry: () => ref.read(tournamentsProvider.notifier).refresh(),
+      dataBuilder: (items) => DirectoryListTemplate(
+        title: 'Tournaments',
+        defaultIcon: LucideIcons.trophy,
+        items: items
+            .map((t) => DirectoryItem(
+                  id: t.id.toString(),
+                  title: t.title,
+                  subtitle: [t.venue, t.city?.name].whereType<String>().where((s) => s.isNotEmpty).join(' · '),
+                  meta: _meta(t),
+                ))
+            .toList(),
+        onFilterTap: () => context.push('/search-filter'),
+        onItemTap: (item) => context.push('/tournament-detail/${item.id}'),
+        onLoadMore: () => ref.read(tournamentsProvider.notifier).loadMore(),
+      ),
     );
   }
 }

@@ -1,64 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/features/connections/presentation/providers/connections_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
-class ConnectionRequestsScreen extends StatefulWidget {
+class ConnectionRequestsScreen extends ConsumerStatefulWidget {
   const ConnectionRequestsScreen({super.key});
 
   @override
-  State<ConnectionRequestsScreen> createState() => _ConnectionRequestsScreenState();
+  ConsumerState<ConnectionRequestsScreen> createState() => _ConnectionRequestsScreenState();
 }
 
-class _ConnectionRequestsScreenState extends State<ConnectionRequestsScreen>
+class _ConnectionRequestsScreenState extends ConsumerState<ConnectionRequestsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
-  // Mock received requests
-  final List<Map<String, dynamic>> _receivedRequests = [
-    {
-      'id': 'r1',
-      'name': 'Vikram Mehta',
-      'avatar': 'https://i.pravatar.cc/150?img=25',
-      'sport': 'Cricket',
-      'level': 'State Level',
-      'message': 'Hi, I\'d like to connect for training sessions.',
-    },
-    {
-      'id': 'r2',
-      'name': 'Neha Gupta',
-      'avatar': 'https://i.pravatar.cc/150?img=26',
-      'sport': 'Badminton',
-      'level': 'District Level',
-      'message': 'Let\'s practice together!',
-    },
-    {
-      'id': 'r3',
-      'name': 'Raj Sports Academy',
-      'avatar': 'https://i.pravatar.cc/150?img=28',
-      'sport': 'Multi-sport',
-      'level': 'Academy',
-      'message': 'Join our training program.',
-    },
-  ];
-
-  // Mock sent requests
-  final List<Map<String, dynamic>> _sentRequests = [
-    {
-      'id': 's1',
-      'name': 'Coach Rajesh',
-      'avatar': 'https://i.pravatar.cc/150?img=30',
-      'sport': 'Football',
-      'level': 'Coach',
-      'status': 'pending',
-    },
-    {
-      'id': 's2',
-      'name': 'Mumbai Tigers FC',
-      'avatar': 'https://i.pravatar.cc/150?img=32',
-      'sport': 'Football',
-      'level': 'Club',
-      'status': 'pending',
-    },
-  ];
 
   @override
   void initState() {
@@ -74,56 +30,67 @@ class _ConnectionRequestsScreenState extends State<ConnectionRequestsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final currentUserId = ref.watch(authProvider).user?.id.toString() ?? '';
+    final async = ref.watch(connectionRequestsProvider(currentUserId));
+    final requests = async.valueOrNull ?? [];
+
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Connection Requests'),
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        title: const Text('Connection Requests',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
         bottom: TabBar(
           controller: _tabController,
+          labelColor: AppColors.primary,
+          unselectedLabelColor: AppColors.textSecondary,
+          indicatorColor: AppColors.primary,
           tabs: [
-            Tab(text: 'Received (${_receivedRequests.length})'),
-            Tab(text: 'Sent (${_sentRequests.length})'),
+            Tab(text: 'Received (${requests.length})'),
+            const Tab(text: 'Sent'),
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildReceivedTab(),
-          _buildSentTab(),
-        ],
+      body: RefreshIndicator(
+        onRefresh: () async => ref.invalidate(connectionRequestsProvider(currentUserId)),
+        child: async.when(
+          loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+          error: (e, _) => Center(child: Text('$e', style: const TextStyle(color: AppColors.textSecondary))),
+          data: (_) => TabBarView(
+            controller: _tabController,
+            children: [
+              _buildReceivedTab(requests, currentUserId),
+              const Center(child: Text('Sent requests are not exposed by the API yet',
+                  style: TextStyle(color: AppColors.textSecondary))),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildReceivedTab() {
-    if (_receivedRequests.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.inbox_outlined, size: 64, color: AppColors.textTertiary),
-            const SizedBox(height: 16),
-            Text(
-              'No pending requests',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.textSecondary),
-            ),
-          ],
-        ),
-      );
+  Widget _buildReceivedTab(List<ConnectionRecord> requests, String currentUserId) {
+    if (requests.isEmpty) {
+      return ListView(children: [
+        const SizedBox(height: 200),
+        Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+          const Icon(LucideIcons.inbox, size: 64, color: AppColors.textTertiary),
+          const SizedBox(height: 16),
+          Text('No pending requests', style: TextStyle(color: AppColors.textSecondary)),
+        ])),
+      ]);
     }
-
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: _receivedRequests.length,
-      itemBuilder: (context, index) {
-        final request = _receivedRequests[index];
-        return _buildReceivedRequestCard(request);
-      },
+      itemCount: requests.length,
+      itemBuilder: (context, index) => _buildRequestCard(requests[index], currentUserId),
     );
   }
 
-  Widget _buildReceivedRequestCard(Map<String, dynamic> request) {
+  Widget _buildRequestCard(ConnectionRecord request, String currentUserId) {
     return Card(
+      color: AppColors.surface,
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -132,154 +99,51 @@ class _ConnectionRequestsScreenState extends State<ConnectionRequestsScreen>
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundImage: NetworkImage(request['avatar']),
-                ),
+                const CircleAvatar(radius: 28, backgroundColor: AppColors.primary, child: Icon(LucideIcons.user, color: Colors.white)),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        request['name'],
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                        ),
-                      ),
-                      Text(
-                        '${request['sport']} · ${request['level']}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
-                      ),
-                    ],
-                  ),
+                  child: Text(request.other.name,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: AppColors.textPrimary)),
                 ),
               ],
             ),
-            if (request['message'] != null) ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  request['message'],
-                  style: TextStyle(color: AppColors.textSecondary),
-                ),
-              ),
-            ],
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      _declineRequest(request);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.textSecondary,
-                    ),
-                    child: const Text('Decline'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _acceptRequest(request);
-                    },
-                    child: const Text('Accept'),
-                  ),
-                ),
-              ],
-            ),
+            _actions(request, currentUserId),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSentTab() {
-    if (_sentRequests.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.send_outlined, size: 64, color: AppColors.textTertiary),
-            const SizedBox(height: 16),
-            Text(
-              'No sent requests',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.textSecondary),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _sentRequests.length,
-      itemBuilder: (context, index) {
-        final request = _sentRequests[index];
-        return _buildSentRequestCard(request);
-      },
-    );
-  }
-
-  Widget _buildSentRequestCard(Map<String, dynamic> request) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(12),
-        leading: CircleAvatar(
-          radius: 28,
-          backgroundImage: NetworkImage(request['avatar']),
-        ),
-        title: Text(
-          request['name'],
-          style: const TextStyle(fontWeight: FontWeight.w500),
-        ),
-        subtitle: Text(
-          '${request['sport']} · ${request['level']}',
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColors.warning.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            'Pending',
-            style: TextStyle(
-              color: AppColors.warning,
-              fontWeight: FontWeight.w600,
-              fontSize: 12,
-            ),
+  Widget _actions(ConnectionRecord request, String currentUserId) {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton(
+            onPressed: () async {
+              await removeConnection(ref, request.id, currentUserId);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Request from ${request.other.name} declined')));
+              }
+            },
+            style: OutlinedButton.styleFrom(foregroundColor: AppColors.textSecondary),
+            child: const Text('Decline'),
           ),
         ),
-      ),
-    );
-  }
-
-  void _acceptRequest(Map<String, dynamic> request) {
-    setState(() {
-      _receivedRequests.removeWhere((r) => r['id'] == request['id']);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Connected with ${request['name']}')),
-    );
-  }
-
-  void _declineRequest(Map<String, dynamic> request) {
-    setState(() {
-      _receivedRequests.removeWhere((r) => r['id'] == request['id']);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Request from ${request['name']} declined')),
+        const SizedBox(width: 12),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: () async {
+              await acceptConnection(ref, request.id, currentUserId);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Connected with ${request.other.name}')));
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+            child: const Text('Accept'),
+          ),
+        ),
+      ],
     );
   }
 }

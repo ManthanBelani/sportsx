@@ -7,6 +7,9 @@ class OnboardingState {
   final int? selectedAgeGroupId;
   final String? selectedSkillLevel;
   final int? selectedCityId;
+  final String fullName;
+  final String dateOfBirth; // ISO yyyy-MM-dd
+  final String gender; // male | female | other | prefer_not_to_say
   final bool isLoading;
   final String? error;
 
@@ -15,6 +18,9 @@ class OnboardingState {
     this.selectedAgeGroupId,
     this.selectedSkillLevel,
     this.selectedCityId,
+    this.fullName = '',
+    this.dateOfBirth = '',
+    this.gender = '',
     this.isLoading = false,
     this.error,
   });
@@ -24,6 +30,9 @@ class OnboardingState {
     int? selectedAgeGroupId,
     String? selectedSkillLevel,
     int? selectedCityId,
+    String? fullName,
+    String? dateOfBirth,
+    String? gender,
     bool? isLoading,
     String? error,
   }) {
@@ -32,6 +41,9 @@ class OnboardingState {
       selectedAgeGroupId: selectedAgeGroupId ?? this.selectedAgeGroupId,
       selectedSkillLevel: selectedSkillLevel ?? this.selectedSkillLevel,
       selectedCityId: selectedCityId ?? this.selectedCityId,
+      fullName: fullName ?? this.fullName,
+      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      gender: gender ?? this.gender,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
     );
@@ -39,7 +51,10 @@ class OnboardingState {
 
   Map<String, dynamic> toAthletePayload() {
     return {
-      'sport_ids': selectedSportIds.toList(),
+      'full_name': fullName,
+      'date_of_birth': dateOfBirth,
+      'gender': gender,
+      'sports': selectedSportIds.toList(),
       'age_group_id': selectedAgeGroupId,
       'skill_level': selectedSkillLevel,
       'city_id': selectedCityId,
@@ -66,6 +81,18 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
 
   void setCity(int id) {
     state = state.copyWith(selectedCityId: id);
+  }
+
+  void setFullName(String name) {
+    state = state.copyWith(fullName: name);
+  }
+
+  void setDateOfBirth(String dob) {
+    state = state.copyWith(dateOfBirth: dob);
+  }
+
+  void setGender(String gender) {
+    state = state.copyWith(gender: gender);
   }
 
   Future<bool> submitAthleteOnboarding() async {

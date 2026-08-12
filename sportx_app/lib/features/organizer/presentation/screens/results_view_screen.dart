@@ -1,121 +1,86 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
+import 'package:sportx_app/theme/colors.dart';
 
-class ResultsViewScreen extends StatelessWidget {
-  const ResultsViewScreen({super.key});
+class ResultsViewScreen extends ConsumerWidget {
+  final String tournamentId;
+  final String title;
+  const ResultsViewScreen({super.key, required this.tournamentId, required this.title});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(tournamentResultsProvider(tournamentId));
+    final results = async.valueOrNull ?? [];
+
+    Widget medalFor(int index, String label) {
+      final emoji = ['🥇', '🥈', '🥉'][index];
+      final entry = index < results.length ? results[index] : null;
+      final name = (entry?['winner'] ?? entry?['team_name'] ?? entry?['name'] ?? '—').toString();
+      return Column(children: [
+        Text(emoji, style: const TextStyle(fontSize: 32)),
+        const SizedBox(height: 4),
+        Text(name, style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: 4),
+        Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+      ]);
+    }
+
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('U-16 State Cup — Results'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        title: Text('$title — Results',
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Bracket', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+      body: RefreshIndicator(
+        onRefresh: () async => ref.invalidate(tournamentResultsProvider(tournamentId)),
+        child: async.when(
+          loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+          error: (e, _) => Center(
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Text('$e', style: const TextStyle(color: AppColors.textSecondary)),
+              const SizedBox(height: 12),
+              ElevatedButton(onPressed: () => ref.invalidate(tournamentResultsProvider(tournamentId)), child: const Text('Retry')),
+            ]),
+          ),
+          data: (_) => SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: results.isEmpty
+                ? const Padding(
+                    padding: EdgeInsets.only(top: 120),
+                    child: Center(child: Text('Results not published yet', style: TextStyle(color: AppColors.textSecondary))),
+                  )
+                : Column(
                     children: [
-                      Text('Quarterfinal', style: Theme.of(context).textTheme.labelSmall),
-                      Text('Semifinal', style: Theme.of(context).textTheme.labelSmall),
-                      Text('Final', style: Theme.of(context).textTheme.labelSmall),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          medalFor(0, 'Winner'),
+                          medalFor(1, 'Runner-up'),
+                          medalFor(2, '3rd Place'),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text('Full Standings', style: Theme.of(context).textTheme.titleMedium),
+                      ),
+                      const SizedBox(height: 8),
+                      ...results.asMap().entries.map((e) => ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: CircleAvatar(child: Text('${e.key + 1}')),
+                            title: Text((e.value['winner'] ?? e.value['team_name'] ?? e.value['name'] ?? '').toString()),
+                          )),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  _buildBracketRow('Titans', 'Falcons', 'Titans'),
-                  const SizedBox(height: 8),
-                  _buildBracketRow('Strikers', 'Eagles', 'Strikers'),
-                  const SizedBox(height: 24),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.amber.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('🏆 ', style: TextStyle(fontSize: 20)),
-                        Text('Titans', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-            const Divider(),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildMedalCard('🥇', 'Titans', context),
-                _buildMedalCard('🥈', 'Strikers', context),
-                _buildMedalCard('🥉', 'Falcons', context),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBracketRow(String team1, String team2, String winner) {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            children: [
-              _buildTeamChip(team1, team1 == winner),
-              const SizedBox(height: 4),
-              _buildTeamChip(team2, team2 == winner),
-            ],
           ),
         ),
-        const Icon(Icons.arrow_forward, size: 16),
-        Expanded(
-          child: Center(child: _buildTeamChip(winner, true)),
-        ),
-        const Spacer(),
-      ],
-    );
-  }
-
-  Widget _buildTeamChip(String name, bool isWinner) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: isWinner ? Colors.green.withOpacity(0.15) : Colors.grey[200],
-        borderRadius: BorderRadius.circular(6),
-        border: isWinner ? Border.all(color: Colors.green) : null,
       ),
-      child: Text(name, style: TextStyle(fontWeight: isWinner ? FontWeight.bold : FontWeight.normal, fontSize: 12)),
-    );
-  }
-
-  Widget _buildMedalCard(String medal, String team, BuildContext context) {
-    return Column(
-      children: [
-        Text(medal, style: const TextStyle(fontSize: 32)),
-        const SizedBox(height: 4),
-        Text(team, style: Theme.of(context).textTheme.titleSmall),
-      ],
     );
   }
 }

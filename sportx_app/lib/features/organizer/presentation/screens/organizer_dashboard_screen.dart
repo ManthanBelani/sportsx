@@ -1,17 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/features/academy/presentation/providers/academy_provider.dart';
+import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
-class OrganizerDashboardScreen extends StatefulWidget {
+class OrganizerDashboardScreen extends ConsumerStatefulWidget {
   const OrganizerDashboardScreen({super.key});
 
   @override
-  State<OrganizerDashboardScreen> createState() => _OrganizerDashboardScreenState();
+  ConsumerState<OrganizerDashboardScreen> createState() => _OrganizerDashboardScreenState();
 }
 
-class _OrganizerDashboardScreenState extends State<OrganizerDashboardScreen> {
+class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScreen> {
   int _currentTabIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(myTrialsProvider.notifier).refresh();
+      ref.read(myTournamentsProvider.notifier).refresh();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +71,13 @@ class _OrganizerDashboardScreenState extends State<OrganizerDashboardScreen> {
   }
 
   Widget _buildHomeTab() {
+    final trials = ref.watch(myTrialsProvider).items;
+    final tournaments = ref.watch(myTournamentsProvider).items;
+    final activeTrials = trials.where((t) => t.status == 'published').length;
+    final activeTournaments = tournaments.where((t) => t.status == 'published').length;
+    final totalRegs = trials.fold<int>(0, (s, t) => s + (t.filledSpots ?? 0)) +
+        tournaments.fold<int>(0, (s, t) => s + (t.filledSpots ?? 0));
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -67,40 +86,12 @@ class _OrganizerDashboardScreenState extends State<OrganizerDashboardScreen> {
           // Stats Row
           Row(
             children: [
-              Expanded(child: _buildStatCard('2', 'Active Trials')),
+              Expanded(child: _buildStatCard('$activeTrials', 'Active Trials')),
               const SizedBox(width: 10),
-              Expanded(child: _buildStatCard('3', 'Tournaments')),
+              Expanded(child: _buildStatCard('$activeTournaments', 'Tournaments')),
               const SizedBox(width: 10),
-              Expanded(child: _buildStatCard('156', 'Total Registrations')),
+              Expanded(child: _buildStatCard('$totalRegs', 'Registrations')),
             ],
-          ),
-          const SizedBox(height: 16),
-
-          // Deadline Alert
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: const Color(0xFFfee2e2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                const Icon(LucideIcons.clock, color: Color(0xFFdc2626), size: 20),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: RichText(
-                    text: const TextSpan(
-                      style: TextStyle(fontSize: 13, color: Color(0xFFdc2626), fontFamily: 'Inter'),
-                      children: [
-                        TextSpan(text: 'Deadline approaching: ', style: TextStyle(fontWeight: FontWeight.w600)),
-                        TextSpan(text: 'Junior National Championship registration closes in '),
-                        TextSpan(text: '3 days', style: TextStyle(fontWeight: FontWeight.w600)),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ),
           const SizedBox(height: 16),
 
@@ -119,10 +110,10 @@ class _OrganizerDashboardScreenState extends State<OrganizerDashboardScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildQuickAction(LucideIcons.users, 'Post Trial', () => context.push('/post-trial')), // stadium icon isn't standard, using users
+                    _buildQuickAction(LucideIcons.clipboardList, 'Post Trial', () => context.push('/post-trial')),
                     _buildQuickAction(LucideIcons.trophy, 'Post Tournament', () => context.push('/post-tournament')),
-                    _buildQuickAction(LucideIcons.barChart2, 'Registrations', () {}),
-                    _buildQuickAction(LucideIcons.calendar, 'Schedule', () {}),
+                    _buildQuickAction(LucideIcons.barChart2, 'My Tournaments', () => context.push('/my-tournaments')),
+                    _buildQuickAction(LucideIcons.list, 'My Trials', () => context.push('/my-trials')),
                   ],
                 ),
               ],
@@ -145,15 +136,26 @@ class _OrganizerDashboardScreenState extends State<OrganizerDashboardScreen> {
                   children: [
                     const Text('My Trials', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                     GestureDetector(
-                      onTap: () {},
+                      onTap: () => context.push('/my-trials'),
                       child: const Text('View All', style: TextStyle(fontSize: 13, color: AppColors.primary)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                _buildEventItem('Open Football Trials - December', 'Dec 10, 2026 • 18 registrations', 'Active', LucideIcons.circleDot), // football/soccer ball icon replacement
-                const Divider(color: AppColors.border),
-                _buildEventItem('Athletics Talent Hunt 2026', 'Dec 20, 2026 • Draft', 'Draft', LucideIcons.footprints),
+                if (trials.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Text('No trials yet.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                  )
+                else
+                  ...trials.take(3).map((t) => _buildEventItem(
+                        t.title,
+                        t.trialDate != null
+                            ? '${t.trialDate!.day}/${t.trialDate!.month}/${t.trialDate!.year} • ${t.filledSpots ?? 0} registrations'
+                            : '${t.filledSpots ?? 0} registrations',
+                        t.status[0].toUpperCase() + t.status.substring(1),
+                        LucideIcons.circleDot,
+                      )),
               ],
             ),
           ),
@@ -174,15 +176,26 @@ class _OrganizerDashboardScreenState extends State<OrganizerDashboardScreen> {
                   children: [
                     const Text('My Tournaments', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                     GestureDetector(
-                      onTap: () {},
+                      onTap: () => context.push('/my-tournaments'),
                       child: const Text('View All', style: TextStyle(fontSize: 13, color: AppColors.primary)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                _buildEventItem('Junior National Football Championship 2026', 'Dec 15-17, 2026 • 42 teams registered', 'Published', LucideIcons.trophy),
-                const Divider(color: AppColors.border),
-                _buildEventItem('State Level Athletics Meet 2027', 'Jan 5-7, 2027 • Draft', 'Draft', LucideIcons.trophy),
+                if (tournaments.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Text('No tournaments yet.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                  )
+                else
+                  ...tournaments.take(3).map((t) => _buildEventItem(
+                        t.title,
+                        t.startDate != null && t.endDate != null
+                            ? '${t.startDate!.day}/${t.startDate!.month}–${t.endDate!.day}/${t.endDate!.month}/${t.endDate!.year} • ${t.filledSpots ?? 0} registered'
+                            : '${t.filledSpots ?? 0} registered',
+                        t.status[0].toUpperCase() + t.status.substring(1),
+                        LucideIcons.trophy,
+                      )),
               ],
             ),
           ),

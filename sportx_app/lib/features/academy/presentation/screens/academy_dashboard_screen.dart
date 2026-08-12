@@ -1,17 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/features/academy/presentation/providers/academy_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
-class AcademyDashboardScreen extends StatefulWidget {
+class AcademyDashboardScreen extends ConsumerStatefulWidget {
   const AcademyDashboardScreen({super.key});
 
   @override
-  State<AcademyDashboardScreen> createState() => _AcademyDashboardScreenState();
+  ConsumerState<AcademyDashboardScreen> createState() => _AcademyDashboardScreenState();
 }
 
-class _AcademyDashboardScreenState extends State<AcademyDashboardScreen> {
+class _AcademyDashboardScreenState extends ConsumerState<AcademyDashboardScreen> {
   int _currentTabIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(myAcademyProvider);
+      ref.read(myTrialsProvider.notifier).refresh();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +70,11 @@ class _AcademyDashboardScreenState extends State<AcademyDashboardScreen> {
   }
 
   Widget _buildHomeTab() {
+    final academy = ref.watch(myAcademyProvider).valueOrNull;
+    final trials = ref.watch(myTrialsProvider).items;
+    final active = trials.where((t) => t.status == 'published').length;
+    final drafts = trials.where((t) => t.status == 'draft').length;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -84,13 +100,17 @@ class _AcademyDashboardScreenState extends State<AcademyDashboardScreen> {
                   child: const Icon(LucideIcons.building2, color: Colors.white, size: 28),
                 ),
                 const SizedBox(width: 14),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Sreekanya Academy', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                      SizedBox(height: 2),
-                      Text('Football & Athletics • Bangalore', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                      Text(academy?.name ?? 'My Academy',
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                      const SizedBox(height: 2),
+                      Text(
+                        [academy?.sport?.name, academy?.city?.name].whereType<String>().where((s) => s.isNotEmpty).join(' • '),
+                        style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                      ),
                     ],
                   ),
                 ),
@@ -102,11 +122,11 @@ class _AcademyDashboardScreenState extends State<AcademyDashboardScreen> {
           // Stats Row
           Row(
             children: [
-              Expanded(child: _buildStatCard('3', 'Active Trials')),
+              Expanded(child: _buildStatCard('$active', 'Active Trials')),
               const SizedBox(width: 10),
-              Expanded(child: _buildStatCard('24', 'Total Registrations')),
+              Expanded(child: _buildStatCard('${trials.length}', 'Total Trials')),
               const SizedBox(width: 10),
-              Expanded(child: _buildStatCard('8', 'Pending Enquiries')),
+              Expanded(child: _buildStatCard('$drafts', 'Drafts')),
             ],
           ),
           const SizedBox(height: 16),
@@ -127,9 +147,9 @@ class _AcademyDashboardScreenState extends State<AcademyDashboardScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _buildQuickAction(LucideIcons.plusCircle, 'Post Trial', () => context.push('/post-trial')),
-                    _buildQuickAction(LucideIcons.clipboardList, 'My Trials', () {}),
+                    _buildQuickAction(LucideIcons.clipboardList, 'My Trials', () => context.push('/my-trials')),
                     _buildQuickAction(LucideIcons.messageCircle, 'Enquiries', () => context.push('/enquiry-inbox')),
-                    _buildQuickAction(LucideIcons.user, 'Edit Listing', () {}),
+                    _buildQuickAction(LucideIcons.user, 'Edit Listing', () => context.push('/edit-academy-profile')),
                   ],
                 ),
               ],
@@ -152,17 +172,26 @@ class _AcademyDashboardScreenState extends State<AcademyDashboardScreen> {
                   children: [
                     const Text('My Trials', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                     GestureDetector(
-                      onTap: () {},
+                      onTap: () => context.push('/my-trials'),
                       child: const Text('View All', style: TextStyle(fontSize: 13, color: AppColors.primary)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                _buildTrialItem('Open Football Trials - December', 'Dec 10, 2026 • 18 registrations', 'Published', LucideIcons.circleDot),
-                const Divider(color: AppColors.border),
-                _buildTrialItem('Athletics Talent Hunt 2026', 'Dec 20, 2026 • Draft', 'Draft', LucideIcons.footprints),
-                const Divider(color: AppColors.border),
-                _buildTrialItem('U-14 Football Championship', 'Nov 15, 2026 • Closed', 'Closed', LucideIcons.circleDot),
+                if (trials.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Text('No trials yet. Tap “Post Trial” to create one.',
+                        style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                  )
+                else
+                  ...trials.take(3).map((t) {
+                    final dateStr = t.trialDate != null
+                        ? '${t.trialDate!.day}/${t.trialDate!.month}/${t.trialDate!.year} • ${t.filledSpots ?? 0} registrations'
+                        : '${t.filledSpots ?? 0} registrations';
+                    final status = t.status[0].toUpperCase() + t.status.substring(1);
+                    return _buildTrialItem(t.title, dateStr, status, LucideIcons.circleDot);
+                  }),
               ],
             ),
           ),

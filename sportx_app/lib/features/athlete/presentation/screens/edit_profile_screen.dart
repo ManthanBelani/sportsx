@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -30,6 +31,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   File? _avatarFile;
   bool _isSaving = false;
 
+  // Required-by-backend fields. These are loaded from the current profile and
+  // re-sent on save (PUT /me/profile validates them as required every time).
+  String _dob = '';
+  String _gender = '';
+  String _skillLevel = '';
+  int? _cityId;
+
   final List<String> _sports = [
     'Cricket',
     'Football',
@@ -44,6 +52,28 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   ];
   
   final List<String> _dominantSides = ['Right', 'Left', 'Both'];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentProfile();
+  }
+
+  Future<void> _loadCurrentProfile() async {
+    try {
+      final resp = await ref.read(dioProvider).get('/me/profile');
+      final d = resp.data['data'] as Map<String, dynamic>?;
+      if (d != null && mounted) {
+        setState(() {
+          _nameController.text = (d['full_name'] ?? d['name'] ?? '') as String;
+          _dob = (d['date_of_birth'] ?? '') as String;
+          _gender = (d['gender'] ?? '') as String;
+          _skillLevel = (d['skill_level'] ?? '') as String;
+          _cityId = d['city_id'] as int?;
+        });
+      }
+    } catch (_) {}
+  }
 
   @override
   void dispose() {
@@ -79,11 +109,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     try {
       final dio = ref.read(dioProvider);
       final formData = FormData.fromMap({
-        'name': _nameController.text.trim(),
-        'bio': _bioController.text.trim(),
-        'primary_sport': _selectedSport,
-        'location': _locationController.text.trim(),
-        // physical attributes could be saved here
+        'full_name': _nameController.text.trim(),
+        'date_of_birth': _dob,
+        'gender': _gender,
+        'skill_level': _skillLevel,
+        'city_id': _cityId,
+        'experience': _bioController.text.trim(),
         if (_avatarFile != null) 'profile_photo': await MultipartFile.fromFile(
           _avatarFile!.path,
           filename: 'avatar.jpg',

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:dio/dio.dart';
 import 'dart:io';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/theme/colors.dart';
@@ -40,19 +41,19 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
     final picker = ImagePicker();
     try {
       final pickedFile = await picker.pickImage(source: source, imageQuality: 80);
-      if (pickedFile != null) {
-        // Mock success
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Media uploaded successfully!')),
-          );
-        }
+      if (pickedFile == null) return;
+      final file = File(pickedFile.path);
+      final form = FormData.fromMap({
+        'file': await MultipartFile.fromFile(file.path, filename: pickedFile.name),
+        'media_type': 'photo',
+      });
+      await ref.read(dioProvider).post('/media/upload', data: form);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Media uploaded successfully!')));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to upload media: $e')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to upload media: $e')));
       }
     }
   }

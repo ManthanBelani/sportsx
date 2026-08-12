@@ -7,20 +7,47 @@ class PlatformStats {
   final int flaggedItems;
   final int pendingExpirations;
   final int newSignups30d;
+  final int totalUsers;
+  final int pendingApprovals;
+  final int reportsToday;
+  final Map<String, int> usersByRole;
+  final Map<String, int> usersByRegion;
+  final Map<String, int> usersBySport;
+  final Map<String, dynamic> activityMetrics;
 
   PlatformStats({
     this.activeListings = 0,
     this.flaggedItems = 0,
     this.pendingExpirations = 0,
     this.newSignups30d = 0,
+    this.totalUsers = 0,
+    this.pendingApprovals = 0,
+    this.reportsToday = 0,
+    this.usersByRole = const {},
+    this.usersByRegion = const {},
+    this.usersBySport = const {},
+    this.activityMetrics = const {},
   });
 
   factory PlatformStats.fromJson(Map<String, dynamic> json) {
+    int asInt(dynamic v) => v is int ? v : int.tryParse(v?.toString() ?? '') ?? 0;
+    Map<String, int> asIntMap(dynamic v) {
+      if (v is! Map) return {};
+      return v.map((k, val) => MapEntry(k.toString(), asInt(val)));
+    }
+
     return PlatformStats(
-      activeListings: json['active_listings'] ?? 0,
-      flaggedItems: json['flagged_items'] ?? 0,
-      pendingExpirations: json['pending_expirations'] ?? 0,
-      newSignups30d: json['new_signups_30d'] ?? 0,
+      activeListings: asInt(json['active_listings']),
+      flaggedItems: asInt(json['flagged_items']),
+      pendingExpirations: asInt(json['pending_expirations']),
+      newSignups30d: asInt(json['new_signups_30d']),
+      totalUsers: asInt(json['total_users']),
+      pendingApprovals: asInt(json['pending_approvals']),
+      reportsToday: asInt(json['reports_today']),
+      usersByRole: asIntMap(json['users_by_role']),
+      usersByRegion: asIntMap(json['users_by_region']),
+      usersBySport: asIntMap(json['users_by_sport']),
+      activityMetrics: Map<String, dynamic>.from((json['activity_metrics'] as Map?) ?? {}),
     );
   }
 }
@@ -240,7 +267,7 @@ class AdminNotifier extends StateNotifier<AdminState> {
   Future<bool> login(String email, String password) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final response = await _dio.post('/api/v1/admin/login', data: {
+      final response = await _dio.post('/admin/login', data: {
         'email': email,
         'password': password,
       });
@@ -269,7 +296,7 @@ class AdminNotifier extends StateNotifier<AdminState> {
   Future<bool> verify2fa(String code) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final response = await _dio.post('/api/v1/admin/verify-2fa', data: {
+      final response = await _dio.post('/admin/verify-2fa', data: {
         'code': code,
       });
 
@@ -295,7 +322,7 @@ class AdminNotifier extends StateNotifier<AdminState> {
 
   Future<void> logout() async {
     try {
-      await _dio.post('/api/v1/admin/logout');
+      await _dio.post('/admin/logout');
     } catch (_) {}
     state = AdminState();
   }
@@ -303,7 +330,7 @@ class AdminNotifier extends StateNotifier<AdminState> {
   Future<void> loadDashboard() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final response = await _dio.get('/api/v1/admin/dashboard');
+      final response = await _dio.get('/admin/dashboard');
       if (response.statusCode == 200) {
         state = state.copyWith(
           stats: PlatformStats.fromJson(response.data['data']),
@@ -318,7 +345,7 @@ class AdminNotifier extends StateNotifier<AdminState> {
   Future<void> loadContentPicker() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final response = await _dio.get('/api/v1/admin/content');
+      final response = await _dio.get('/admin/content');
       if (response.statusCode == 200) {
         final data = response.data['data'] as Map<String, dynamic>;
         final pickers = data.entries.map((e) =>
@@ -341,7 +368,7 @@ class AdminNotifier extends StateNotifier<AdminState> {
       if (status != null) params['status'] = status;
       if (q != null) params['q'] = q;
 
-      final response = await _dio.get('/api/v1/admin/content/$type', queryParameters: params);
+      final response = await _dio.get('/admin/content/$type', queryParameters: params);
       if (response.statusCode == 200) {
         state = state.copyWith(
           contentList: List<dynamic>.from(response.data['data'] ?? []),
@@ -356,7 +383,7 @@ class AdminNotifier extends StateNotifier<AdminState> {
   Future<void> loadModerationQueue() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final response = await _dio.get('/api/v1/admin/moderation/queue');
+      final response = await _dio.get('/admin/moderation/queue');
       if (response.statusCode == 200) {
         final reports = (response.data['data'] as List)
             .map((r) => Report.fromJson(r))
@@ -373,7 +400,7 @@ class AdminNotifier extends StateNotifier<AdminState> {
 
   Future<void> approveReport(String reportId) async {
     try {
-      await _dio.post('/api/v1/admin/moderation/reports/$reportId/approve');
+      await _dio.post('/admin/moderation/reports/$reportId/approve');
       state = state.copyWith(
         reports: state.reports.where((r) => r.id != reportId).toList(),
       );
@@ -384,7 +411,7 @@ class AdminNotifier extends StateNotifier<AdminState> {
 
   Future<void> removeListing(String reportId) async {
     try {
-      await _dio.post('/api/v1/admin/moderation/reports/$reportId/remove');
+      await _dio.post('/admin/moderation/reports/$reportId/remove');
       state = state.copyWith(
         reports: state.reports.where((r) => r.id != reportId).toList(),
       );
@@ -395,7 +422,7 @@ class AdminNotifier extends StateNotifier<AdminState> {
 
   Future<void> warnOwner(String reportId, {String? message}) async {
     try {
-      await _dio.post('/api/v1/admin/moderation/reports/$reportId/warn', data: {
+      await _dio.post('/admin/moderation/reports/$reportId/warn', data: {
         if (message != null) 'message': message,
       });
       state = state.copyWith(
@@ -409,7 +436,7 @@ class AdminNotifier extends StateNotifier<AdminState> {
   Future<void> loadExpiryMonitor({String tab = 'pending'}) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final response = await _dio.get('/api/v1/admin/expiry/monitor', queryParameters: {
+      final response = await _dio.get('/admin/expiry/monitor', queryParameters: {
         'tab': tab,
       });
       if (response.statusCode == 200) {
@@ -425,7 +452,7 @@ class AdminNotifier extends StateNotifier<AdminState> {
 
   Future<void> overrideExpiry(int eventId) async {
     try {
-      await _dio.post('/api/v1/admin/expiry/events/$eventId/override');
+      await _dio.post('/admin/expiry/events/$eventId/override');
     } catch (e) {
       state = state.copyWith(error: _getErrorMessage(e));
     }
@@ -433,7 +460,7 @@ class AdminNotifier extends StateNotifier<AdminState> {
 
   Future<void> restoreListing(int eventId) async {
     try {
-      await _dio.post('/api/v1/admin/expiry/events/$eventId/restore');
+      await _dio.post('/admin/expiry/events/$eventId/restore');
     } catch (e) {
       state = state.copyWith(error: _getErrorMessage(e));
     }
@@ -442,7 +469,7 @@ class AdminNotifier extends StateNotifier<AdminState> {
   Future<void> loadCategories(String type) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final response = await _dio.get('/api/v1/admin/categories/$type');
+      final response = await _dio.get('/admin/categories/$type');
       if (response.statusCode == 200) {
         state = state.copyWith(
           contentList: List<dynamic>.from(response.data['data'] ?? []),
@@ -456,7 +483,7 @@ class AdminNotifier extends StateNotifier<AdminState> {
 
   Future<bool> createCategory(String type, Map<String, dynamic> data) async {
     try {
-      await _dio.post('/api/v1/admin/categories/$type', data: data);
+      await _dio.post('/admin/categories/$type', data: data);
       return true;
     } catch (e) {
       state = state.copyWith(error: _getErrorMessage(e));
@@ -466,7 +493,7 @@ class AdminNotifier extends StateNotifier<AdminState> {
 
   Future<bool> updateCategory(String type, int id, Map<String, dynamic> data) async {
     try {
-      await _dio.put('/api/v1/admin/categories/$type/$id', data: data);
+      await _dio.put('/admin/categories/$type/$id', data: data);
       return true;
     } catch (e) {
       state = state.copyWith(error: _getErrorMessage(e));
@@ -476,7 +503,155 @@ class AdminNotifier extends StateNotifier<AdminState> {
 
   Future<bool> deleteCategory(String type, int id) async {
     try {
-      await _dio.delete('/api/v1/admin/categories/$type/$id');
+      await _dio.delete('/admin/categories/$type/$id');
+      return true;
+    } catch (e) {
+      state = state.copyWith(error: _getErrorMessage(e));
+      return false;
+    }
+  }
+
+  // ── User management (admin) ──
+  Future<void> loadUsers({String? role, String? status, String? q, String? search}) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final params = <String, dynamic>{};
+      if (role != null) params['role'] = role;
+      if (status != null) params['status'] = status;
+      final query = q ?? search;
+      if (query != null) params['q'] = query;
+      final response = await _dio.get('/admin/users', queryParameters: params);
+      if (response.statusCode == 200) {
+        final list = (response.data['data'] as List? ?? [])
+            .map((u) => AdminUser.fromJson(u as Map<String, dynamic>))
+            .toList();
+        state = state.copyWith(users: list, isLoading: false);
+      }
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+    }
+  }
+
+  Future<void> loadPendingApprovals() async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final response = await _dio.get('/admin/users', queryParameters: {'status': 'pending'});
+      if (response.statusCode == 200) {
+        final list = (response.data['data'] as List? ?? [])
+            .map((u) => AdminUser.fromJson(u as Map<String, dynamic>))
+            .toList();
+        state = state.copyWith(pendingApprovals: list, isLoading: false);
+      }
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+    }
+  }
+
+  Future<void> approveUser(String id) async {
+    try {
+      await _dio.post('/admin/users/$id/approve');
+      state = state.copyWith(
+        users: state.users.where((u) => u.id != id).toList(),
+        pendingApprovals: state.pendingApprovals.where((u) => u.id != id).toList(),
+      );
+    } catch (e) {
+      state = state.copyWith(error: _getErrorMessage(e));
+    }
+  }
+
+  Future<void> rejectUser(String id) async {
+    try {
+      await _dio.post('/admin/users/$id/reject');
+      state = state.copyWith(
+        pendingApprovals: state.pendingApprovals.where((u) => u.id != id).toList(),
+      );
+    } catch (e) {
+      state = state.copyWith(error: _getErrorMessage(e));
+    }
+  }
+
+  Future<void> suspendUser(String id) async {
+    try {
+      await _dio.post('/admin/users/$id/suspend');
+      state = state.copyWith(
+        users: state.users.map((u) => u.id == id ? u : u).toList(),
+      );
+    } catch (e) {
+      state = state.copyWith(error: _getErrorMessage(e));
+    }
+  }
+
+  Future<void> deleteUser(String id) async {
+    try {
+      await _dio.delete('/admin/users/$id');
+      state = state.copyWith(users: state.users.where((u) => u.id != id).toList());
+    } catch (e) {
+      state = state.copyWith(error: _getErrorMessage(e));
+    }
+  }
+
+  // ── Moderation / reports ──
+  Future<void> loadReports() => loadModerationQueue();
+
+  Future<void> dismissReport(String reportId) => approveReport(reportId);
+
+  // ── Opportunities ──
+  Future<void> loadOpportunities() async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final response = await _dio.get('/admin/opportunities');
+      if (response.statusCode == 200) {
+        final list = (response.data['data'] as List? ?? [])
+            .map((o) => Opportunity.fromJson(o as Map<String, dynamic>))
+            .toList();
+        state = state.copyWith(opportunities: list, isLoading: false);
+      }
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+    }
+  }
+
+  Future<bool> approveOpportunity(String id) async {
+    try {
+      await _dio.post('/admin/opportunities/$id/approve');
+      state = state.copyWith(
+        opportunities: state.opportunities.where((o) => o.id != id).toList(),
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(error: _getErrorMessage(e));
+      return false;
+    }
+  }
+
+  Future<bool> rejectOpportunity(String id) async {
+    try {
+      await _dio.post('/admin/opportunities/$id/reject');
+      state = state.copyWith(
+        opportunities: state.opportunities.where((o) => o.id != id).toList(),
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(error: _getErrorMessage(e));
+      return false;
+    }
+  }
+
+  // ── Platform reports / dashboard ──
+  Future<void> loadPlatformStats() => loadDashboard();
+
+  // ── Notifications ──
+  Future<bool> sendNotification({
+    required String title,
+    required String body,
+    List<String>? roles,
+  }) async {
+    try {
+      await _dio.post('/admin/notifications/broadcast', data: {
+        'title': title,
+        'body': body,
+        if (roles != null) 'roles': roles,
+      });
       return true;
     } catch (e) {
       state = state.copyWith(error: _getErrorMessage(e));

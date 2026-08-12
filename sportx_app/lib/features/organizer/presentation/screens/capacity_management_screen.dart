@@ -1,73 +1,104 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/theme/colors.dart';
 
-class CapacityManagementScreen extends StatelessWidget {
-  const CapacityManagementScreen({super.key});
+class CapacityManagementScreen extends ConsumerStatefulWidget {
+  final String tournamentId;
+  const CapacityManagementScreen({super.key, required this.tournamentId});
+
+  @override
+  ConsumerState<CapacityManagementScreen> createState() => _CapacityManagementScreenState();
+}
+
+class _CapacityManagementScreenState extends ConsumerState<CapacityManagementScreen> {
+  int? _totalSpots;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    if (widget.tournamentId.isEmpty) return;
+    try {
+      final resp = await ref.read(dioProvider).get('/tournaments/${widget.tournamentId}/capacity');
+      final data = resp.data is Map && resp.data['data'] is Map
+          ? resp.data['data'] as Map<String, dynamic>
+          : resp.data as Map<String, dynamic>;
+      setState(() => _totalSpots = data['total_spots'] as int?);
+    } catch (_) {}
+  }
+
+  Future<void> _save() async {
+    if (_totalSpots == null) return;
+    setState(() => _saving = true);
+    try {
+      await ref.read(dioProvider).put('/tournaments/${widget.tournamentId}/capacity', data: {
+        'total_spots': _totalSpots,
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Capacity saved')));
+        context.pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Manage Capacity'),
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        title: const Text('Manage Capacity',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
           onPressed: () => context.pop(),
         ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildCategoryCapacity(context, 'U-14 Category', 24, 18),
-          const SizedBox(height: 24),
-          _buildCategoryCapacity(context, 'U-16 Category', 24, 22),
-          const SizedBox(height: 24),
-          _buildCategoryCapacity(context, 'U-18 Category', 24, 9),
+          Text('Total Spots', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              IconButton(
+                onPressed: _totalSpots == null ? null : () => setState(() => _totalSpots = (_totalSpots! > 0 ? _totalSpots! - 1 : 0)),
+                icon: const Icon(LucideIcons.minus),
+              ),
+              Text('${_totalSpots ?? '—'}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+              IconButton(
+                onPressed: _totalSpots == null ? null : () => setState(() => _totalSpots = _totalSpots! + 1),
+                icon: const Icon(LucideIcons.plus),
+              ),
+            ],
+          ),
           const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,
             child: FilledButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Capacity settings saved')));
-                context.pop();
-              },
-              child: const Text('Save Changes'),
+              onPressed: (_saving || _totalSpots == null) ? null : _save,
+              style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+              child: _saving
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Text('Save Changes'),
             ),
-          )
+          ),
         ],
       ),
-    );
-  }
-
-  Widget _buildCategoryCapacity(BuildContext context, String title, int totalSpots, int filled) {
-    final fraction = filled / totalSpots;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title, style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Spots: $totalSpots'),
-            Text('Filled: $filled'),
-          ],
-        ),
-        const SizedBox(height: 8),
-        LinearProgressIndicator(
-          value: fraction,
-          minHeight: 8,
-          borderRadius: BorderRadius.circular(4),
-          color: fraction > 0.9 ? Colors.red : Theme.of(context).primaryColor,
-          backgroundColor: Colors.grey[200],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Checkbox(value: false, onChanged: (v) {}),
-            const Text('Enable waitlist when full'),
-          ],
-        )
-      ],
     );
   }
 }

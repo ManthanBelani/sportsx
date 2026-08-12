@@ -43,12 +43,18 @@ class DirectoryNotifier<T> extends StateNotifier<DirectoryState<T>> {
     state = state.copyWith(isLoading: true, page: 1);
     try {
       final resp = await _dio.get(endpoint, queryParameters: {'page': 1, 'per_page': 20});
+      // Laravel returns a flat paginator: top-level { current_page, data, last_page, … }
+      // (no `meta` wrapper).
       final data = resp.data['data'] as List;
       final items = data.map((e) => fromJson(e)).toList();
-      final hasMore = resp.data['meta']?['current_page'] < resp.data['meta']?['last_page'];
+      final hasMore = (resp.data['current_page'] ?? 1) < (resp.data['last_page'] ?? 1);
       state = DirectoryState(items: items, hasMore: hasMore, page: 1);
     } on DioException catch (e) {
       state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+    } catch (e) {
+      // Parsing / contract errors (e.g. type mismatches) — surface instead of
+      // leaving the directory stuck on an infinite loading spinner.
+      state = DirectoryState(isLoading: false, hasMore: false, error: 'Failed to load: $e');
     }
   }
 
@@ -60,7 +66,7 @@ class DirectoryNotifier<T> extends StateNotifier<DirectoryState<T>> {
       final resp = await _dio.get(endpoint, queryParameters: {'page': nextPage, 'per_page': 20});
       final data = resp.data['data'] as List;
       final newItems = data.map((e) => fromJson(e)).toList();
-      final hasMore = resp.data['meta']?['current_page'] < resp.data['meta']?['last_page'];
+      final hasMore = (resp.data['current_page'] ?? 1) < (resp.data['last_page'] ?? 1);
       state = state.copyWith(
         items: [...state.items, ...newItems],
         hasMore: hasMore,
@@ -69,6 +75,8 @@ class DirectoryNotifier<T> extends StateNotifier<DirectoryState<T>> {
       );
     } on DioException catch (e) {
       state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, hasMore: false, error: 'Failed to load more: $e');
     }
   }
 
@@ -105,4 +113,61 @@ final sponsorshipsProvider = StateNotifierProvider<DirectoryNotifier<Sponsorship
 
 final sportsVenuesProvider = StateNotifierProvider<DirectoryNotifier<SportsVenue>, DirectoryState<SportsVenue>>((ref) {
   return DirectoryNotifier<SportsVenue>(ref.watch(dioProvider), '/sports-venues', SportsVenue.fromJson);
+});
+
+final athletesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  final dio = ref.watch(dioProvider);
+  final resp = await dio.get('/athletes', queryParameters: {'per_page': 20});
+  final data = resp.data['data'];
+  return List<Map<String, dynamic>>.from(data as List);
+});
+
+final athleteDetailProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, id) async {
+  final resp = await ref.watch(dioProvider).get('/athletes/$id');
+  final body = resp.data;
+  return body is Map && body['data'] is Map
+      ? body['data'] as Map<String, dynamic>
+      : body as Map<String, dynamic>;
+});
+
+T _detailFromResponse<T>(Response resp, T Function(Map<String, dynamic>) fromJson) {
+  final body = resp.data;
+  final Map<String, dynamic> data =
+      body is Map && body['data'] is Map ? body['data'] as Map<String, dynamic> : body as Map<String, dynamic>;
+  return fromJson(data);
+}
+
+final academyDetailProvider = FutureProvider.family<Academy, String>((ref, id) async {
+  final resp = await ref.watch(dioProvider).get('/academies/$id');
+  return _detailFromResponse<Academy>(resp, Academy.fromJson);
+});
+
+final coachDetailProvider = FutureProvider.family<Coach, String>((ref, id) async {
+  final resp = await ref.watch(dioProvider).get('/coaches/$id');
+  return _detailFromResponse<Coach>(resp, Coach.fromJson);
+});
+
+final trialDetailProvider = FutureProvider.family<Trial, String>((ref, id) async {
+  final resp = await ref.watch(dioProvider).get('/trials/$id');
+  return _detailFromResponse<Trial>(resp, Trial.fromJson);
+});
+
+final tournamentDetailProvider = FutureProvider.family<Tournament, String>((ref, id) async {
+  final resp = await ref.watch(dioProvider).get('/tournaments/$id');
+  return _detailFromResponse<Tournament>(resp, Tournament.fromJson);
+});
+
+final scholarshipDetailProvider = FutureProvider.family<Scholarship, String>((ref, id) async {
+  final resp = await ref.watch(dioProvider).get('/scholarships/$id');
+  return _detailFromResponse<Scholarship>(resp, Scholarship.fromJson);
+});
+
+final sponsorshipDetailProvider = FutureProvider.family<Sponsorship, String>((ref, id) async {
+  final resp = await ref.watch(dioProvider).get('/sponsorships/$id');
+  return _detailFromResponse<Sponsorship>(resp, Sponsorship.fromJson);
+});
+
+final sportsVenueDetailProvider = FutureProvider.family<SportsVenue, String>((ref, id) async {
+  final resp = await ref.watch(dioProvider).get('/sports-venues/$id');
+  return _detailFromResponse<SportsVenue>(resp, SportsVenue.fromJson);
 });

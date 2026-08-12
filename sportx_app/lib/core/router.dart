@@ -5,10 +5,8 @@ import 'package:sportx_app/features/auth/presentation/providers/auth_provider.da
 import 'package:sportx_app/features/auth/presentation/screens/splash_screen.dart';
 import 'package:sportx_app/features/auth/presentation/screens/role_selection_screen.dart';
 import 'package:sportx_app/features/auth/presentation/screens/sign_up_screen.dart';
-import 'package:sportx_app/features/auth/presentation/screens/otp_screen.dart';
 import 'package:sportx_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:sportx_app/features/home/presentation/screens/home_screen.dart';
-import 'package:sportx_app/features/home/presentation/screens/search_screen.dart';
 import 'package:sportx_app/features/saved/presentation/screens/saved_screen.dart';
 import 'package:sportx_app/features/athlete/presentation/screens/profile_screen.dart';
 import 'package:sportx_app/features/onboarding/presentation/screens/onboarding_sport_age_screen.dart';
@@ -93,22 +91,59 @@ import 'package:sportx_app/features/admin/presentation/screens/opp_review_detail
 import 'package:sportx_app/features/admin/presentation/screens/notification_targeting_screen.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
 
+/// Maps a user role to the first onboarding screen they must complete.
+/// Returns null for roles with no onboarding (e.g. admin).
+String? _onboardingRouteFor(String? role) {
+  switch (role) {
+    case 'athlete':
+      return '/onboarding-1';
+    case 'coach':
+      return '/coach-onboarding';
+    case 'academy':
+      return '/academy-onboarding';
+    case 'organizer':
+      return '/organizer-onboarding';
+    case 'sponsor':
+      return '/sponsor-onboarding';
+    default:
+      return null;
+  }
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
 
   return GoRouter(
     initialLocation: '/splash',
     redirect: (context, state) {
-      final isSplash = state.matchedLocation == '/splash';
-      final isAuth = ['/splash', '/role-selection', '/sign-up', '/otp', '/login'].contains(state.matchedLocation);
+      final loc = state.matchedLocation;
+      final status = authState.status;
+      const authScreens = ['/splash', '/role-selection', '/sign-up', '/login'];
+      const onboardingScreens = [
+        '/onboarding-1', '/onboarding-2',
+        '/coach-onboarding', '/academy-onboarding',
+        '/organizer-onboarding', '/sponsor-onboarding',
+      ];
 
-      if (authState.status == AuthStatus.authenticated && isAuth) {
-        return '/home';
+      if (status == AuthStatus.authenticated) {
+        final onboardingRoute = _onboardingRouteFor(authState.user?.role);
+        // Needs onboarding → force the user through their role onboarding first.
+        if (authState.needsOnboarding && onboardingRoute != null) {
+          return loc == onboardingRoute ? null : onboardingRoute;
+        }
+        // Fully set up → never show auth / onboarding screens.
+        if (authScreens.contains(loc) || onboardingScreens.contains(loc)) {
+          return '/home';
+        }
+        return null;
       }
-      if (authState.status == AuthStatus.unauthenticated && !isAuth && !isSplash) {
+
+      if (status == AuthStatus.unauthenticated) {
+        if (authScreens.contains(loc)) return null;
         return '/role-selection';
       }
-      return null;
+
+      return null; // AuthStatus.initial / loading — let the current screen show.
     },
     routes: [
       GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
@@ -116,10 +151,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/sign-up', builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
         return SignUpScreen(role: extra?['role'] as String? ?? 'athlete');
-      }),
-      GoRoute(path: '/otp', builder: (context, state) {
-        final extra = state.extra as Map<String, dynamic>?;
-        return OtpScreen(email: extra?['email'] as String? ?? '', role: extra?['role'] as String? ?? 'athlete');
       }),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(path: '/onboarding-1', builder: (context, state) => const OnboardingSportAgeScreen()),
@@ -140,7 +171,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/academy-dashboard', builder: (context, state) => const AcademyDashboardScreen()),
       GoRoute(path: '/organizer-dashboard', builder: (context, state) => const OrganizerDashboardScreen()),
       GoRoute(path: '/enquiry-inbox', builder: (context, state) => const EnquiryInboxScreen()),
-      GoRoute(path: '/enquiry-detail', builder: (context, state) => const EnquiryDetailScreen()),
+      GoRoute(path: '/enquiry-detail', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return EnquiryDetailScreen(id: extra?['id'] as String? ?? '');
+      }),
       GoRoute(path: '/post-trial', builder: (context, state) => const TrialPostingScreen()),
       GoRoute(path: '/post-tournament', builder: (context, state) => const TournamentPostingScreen()),
       GoRoute(path: '/edit-coach-profile', builder: (context, state) => const CoachProfilePostingScreen()),
@@ -149,24 +183,62 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/sponsor-onboarding', builder: (context, state) => const SponsorOnboardingScreen()),
       GoRoute(path: '/sponsor-posting', builder: (context, state) => const SponsorshipPostingScreen()),
       GoRoute(path: '/sponsor-pitch/:id', builder: (context, state) => SponsorPitchScreen(sponsorId: state.pathParameters['id']!)),
-      GoRoute(path: '/registrant-detail', builder: (context, state) => const RegistrantDetailScreen()),
+      GoRoute(path: '/registrant-detail', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return RegistrantDetailScreen(registrationId: extra?['id'] as String? ?? '');
+      }),
       GoRoute(path: '/coach-onboarding', builder: (context, state) => const CoachOnboardingScreen()),
       GoRoute(path: '/academy-onboarding', builder: (context, state) => const AcademyOnboardingScreen()),
-      GoRoute(path: '/registrant-list', builder: (context, state) => const RegistrantListScreen()),
-      GoRoute(path: '/registration-management', builder: (context, state) => const RegistrationManagementScreen()),
-      GoRoute(path: '/capacity-management', builder: (context, state) => const CapacityManagementScreen()),
-      GoRoute(path: '/results-publishing', builder: (context, state) => const ResultsPublishingScreen()),
-      GoRoute(path: '/results-view', builder: (context, state) => const ResultsViewScreen()),
+      GoRoute(path: '/registrant-list', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return RegistrantListScreen(
+          trialId: extra?['id'] as String? ?? '',
+          title: extra?['title'] as String? ?? 'Trial',
+        );
+      }),
+      GoRoute(path: '/registration-management', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return RegistrationManagementScreen(
+          tournamentId: extra?['id'] as String? ?? '',
+          title: extra?['title'] as String? ?? 'Tournament',
+        );
+      }),
+      GoRoute(path: '/capacity-management', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return CapacityManagementScreen(tournamentId: extra?['id'] as String? ?? '');
+      }),
+      GoRoute(path: '/results-publishing', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return ResultsPublishingScreen(
+          tournamentId: extra?['id'] as String? ?? '',
+          title: extra?['title'] as String? ?? 'Tournament',
+        );
+      }),
+      GoRoute(path: '/results-view', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return ResultsViewScreen(
+          tournamentId: extra?['id'] as String? ?? '',
+          title: extra?['title'] as String? ?? 'Tournament',
+        );
+      }),
       GoRoute(path: '/sponsor-dashboard', builder: (context, state) => const SponsorDashboardScreen()),
       GoRoute(path: '/athlete-discovery', builder: (context, state) => const AthleteDiscoveryScreen()),
-      GoRoute(path: '/athlete-profile-view', builder: (context, state) => const AthleteProfileViewScreen()),
+      GoRoute(path: '/athlete-profile-view', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return AthleteProfileViewScreen(athleteId: extra?['id'] as String? ?? '');
+      }),
       GoRoute(path: '/applications-inbox', builder: (context, state) => const ApplicationsInboxScreen()),
-      GoRoute(path: '/application-detail', builder: (context, state) => const ApplicationDetailScreen()),
+      GoRoute(path: '/application-detail', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return ApplicationDetailScreen(
+          sponsorshipId: extra?['sponsorship_id'] as String? ?? '',
+          applicationId: extra?['id'] as String? ?? '',
+        );
+      }),
       GoRoute(path: '/shortlist', builder: (context, state) => const ShortlistScreen()),
       GoRoute(path: '/my-trials', builder: (context, state) => const MyTrialsManagementScreen()),
       GoRoute(path: '/my-tournaments', builder: (context, state) => const MyTournamentsManagementScreen()),
       GoRoute(path: '/my-sponsorships', builder: (context, state) => const MySponsorshipsManagementScreen()),
-      GoRoute(path: '/activity-hub', builder: (context, state) => const ActivityHubScreen()),
       GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
       GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
       GoRoute(path: '/help-support', builder: (context, state) => const HelpSupportScreen()),
@@ -191,7 +263,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/sponsor-directory-coach', builder: (context, state) => const SponsorDirectoryCoachScreen()),
       GoRoute(path: '/coach-profile-detail/:id', builder: (context, state) => CoachProfileDetailScreen(coachId: state.pathParameters['id']!)),
       GoRoute(path: '/search-filter', builder: (context, state) => const SearchFilterScreen()),
-      GoRoute(path: '/universal-search', builder: (context, state) => const UniversalSearchScreen()),
       GoRoute(path: '/my-connections', builder: (context, state) => const MyConnectionsScreen()),
       GoRoute(path: '/connection-requests', builder: (context, state) => const ConnectionRequestsScreen()),
       GoRoute(path: '/discover', builder: (context, state) => const DiscoverScreen()),
@@ -228,8 +299,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state, child) => MainShell(child: child),
         routes: [
           GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
-          GoRoute(path: '/search', builder: (context, state) => const SearchScreen()),
+          GoRoute(path: '/universal-search', builder: (context, state) => const UniversalSearchScreen()),
           GoRoute(path: '/saved', builder: (context, state) => const SavedScreen()),
+          GoRoute(path: '/activity-hub', builder: (context, state) => const ActivityHubScreen()),
           GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
         ],
       ),

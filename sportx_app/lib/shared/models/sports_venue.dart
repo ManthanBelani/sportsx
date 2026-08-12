@@ -59,12 +59,19 @@ class SportsVenue {
       bookingAvailable: json['booking_available'] == true || json['booking_available'] == 1,
       hourlyRate: (json['hourly_rate'] as num?)?.toDouble(),
       dailyRate: (json['daily_rate'] as num?)?.toDouble(),
-      amenities: json['amenities'] as String?,
+      // facilities is a JSON column → arrives as a List; amenities may be a String.
+      amenities: _stringOrList(json['amenities'] ?? json['facilities']),
       imageUrl: json['image_url'] as String?,
-      status: json['status'] as String? ?? 'draft',
+      status: (json['status'] ?? json['listing_status']) as String? ?? 'draft',
       sport: json['sport'] != null ? Sport.fromJson(json['sport']) : null,
       city: json['city'] != null ? City.fromJson(json['city']) : null,
       isSaved: json['is_saved'] == true || json['is_saved'] == 1,
     );
+  }
+
+  static String? _stringOrList(dynamic v) {
+    if (v == null) return null;
+    if (v is List) return v.map((e) => e.toString()).join(', ');
+    return v.toString();
   }
 }

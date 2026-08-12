@@ -14,6 +14,7 @@ class TrialRegistration extends Model
     protected $fillable = [
         'trial_id', 'athlete_id', 'registration_ref', 'document_status',
         'verification_status', 'reminder_enabled',
+        'playing_role', 'medical_conditions', 'parental_consent',
     ];
 
     public function trial(): BelongsTo

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:dio/dio.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -240,7 +241,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               onTap: () => _pickMedia(ImageSource.camera),
             ),
             _buildMediaButton(
-              icon: Icons.hashtag,
+              icon: Icons.tag,
               label: 'Hashtags',
               onTap: () {
                 _focusNode.unfocus();

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -27,7 +28,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   int _connectsCount = 156;
   int _achievementsCount = 8;
 
-  final List<Map<String, dynamic>> _achievements = [
+  List<Map<String, dynamic>> _achievements = [
     {
       'id': '1',
       'title': 'State-level U-14 Selection',
@@ -94,16 +95,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       final data = response.data['data'];
 
       if (mounted && data != null) {
+        final sports = data['sports'] as List? ?? const [];
+        final ageGroup = (data['age_group'] ?? data['ageGroup']) as Map<String, dynamic>?;
+        final city = data['city'] as Map<String, dynamic>?;
+        final ach = data['achievements'] as List? ?? const [];
+
         setState(() {
-          _name = data['name'] ?? _name;
-          _bio = data['bio'] ?? _bio;
-          _sport = data['primary_sport'] ?? _sport;
-          _ageGroup = data['age_group'] ?? _ageGroup;
-          _location = data['location'] ?? _location;
+          _name = (data['full_name'] ?? data['name'] ?? _name) as String;
+          _sport = sports.isNotEmpty ? ((sports[0] as Map)['name'] as String?) ?? _sport : _sport;
+          _ageGroup = (ageGroup?['label'] ?? ageGroup?['name'] ?? _ageGroup) as String;
+          _location = (city?['name'] ?? _location) as String;
           _isVerified = data['is_verified'] == true;
-          _postsCount = data['posts_count'] ?? _postsCount;
-          _connectsCount = data['connects_count'] ?? _connectsCount;
-          _achievementsCount = data['achievements_count'] ?? _achievementsCount;
+          _achievementsCount = ach.isNotEmpty ? ach.length : _achievementsCount;
+          if (ach.isNotEmpty) {
+            _achievements = ach.asMap().entries.map((e) {
+              final text = (e.value as Map)['text'] ?? '';
+              return <String, dynamic>{
+                'id': e.key.toString(),
+                'title': text.toString(),
+                'year': '',
+                'icon': '🏆',
+              };
+            }).toList();
+          }
           _isLoading = false;
         });
       } else {
@@ -139,6 +153,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    _buildRoleQuickLinks(),
+                    _buildSectionDivider(),
                     _buildProfileHeader(),
                     _buildSectionDivider(),
                     _buildAboutSection(),
@@ -152,6 +168,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     _buildMediaGallerySection(),
                     _buildSectionDivider(),
                     _buildShareProfileButton(),
+                    _buildAccountActions(),
                   ],
                 ),
               ),
@@ -434,6 +451,147 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
+  Widget _buildRoleQuickLinks() {
+    final role = ref.watch(authProvider).user?.role ?? 'athlete';
+    final links = _quickLinksForRole(role);
+    return _buildSection(
+      title: _roleTitle(role),
+      child: GridView.count(
+        crossAxisCount: 3,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 1.0,
+        padding: EdgeInsets.zero,
+        children: links.map((l) {
+          return GestureDetector(
+            onTap: () => context.push(l.route),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(l.icon, color: AppColors.primary, size: 24),
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Text(
+                      l.label,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
+                    ),
+                  ),
+                ],
+                ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildAccountActions() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+         OutlinedButton.icon(
+              onPressed: () => context.push('/settings'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.textPrimary,
+                side: const BorderSide(color: AppColors.border),
+                minimumSize: const Size.fromHeight(48),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              icon: const Icon(LucideIcons.settings, size: 18),
+              label: const Text('Settings', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () async {
+                await ref.read(authProvider.notifier).logout();
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.red,
+                side: const BorderSide(color: Colors.red),
+                minimumSize: const Size.fromHeight(48),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              icon: const Icon(LucideIcons.logOut, size: 18),
+              label: const Text('Log out', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            ),
+        ],
+      ),
+    );
+  }
+
+  String _roleTitle(String role) {
+    switch (role) {
+      case 'coach': return 'Coach Tools';
+      case 'academy': return 'Academy Tools';
+      case 'organizer': return 'Organizer Tools';
+      case 'sponsor': return 'Sponsor Tools';
+      default: return 'Quick Links';
+    }
+  }
+
+  List<_QuickLink> _quickLinksForRole(String role) {
+    switch (role) {
+      case 'coach':
+        return const [
+          _QuickLink('Dashboard', '/coach-dashboard', LucideIcons.layoutDashboard),
+          _QuickLink('Edit Profile', '/edit-coach-profile', LucideIcons.edit2),
+          _QuickLink('Post Trial', '/post-trial', LucideIcons.plusCircle),
+          _QuickLink('My Trials', '/my-trials', LucideIcons.list),
+          _QuickLink('Enquiries', '/enquiry-inbox', LucideIcons.inbox),
+          _QuickLink('Activity', '/activity-hub', LucideIcons.activity),
+        ];
+      case 'academy':
+        return const [
+          _QuickLink('Dashboard', '/academy-dashboard', LucideIcons.layoutDashboard),
+          _QuickLink('Edit Profile', '/edit-academy-profile', LucideIcons.edit2),
+          _QuickLink('Post Trial', '/post-trial', LucideIcons.plusCircle),
+          _QuickLink('My Trials', '/my-trials', LucideIcons.list),
+          _QuickLink('Enquiries', '/enquiry-inbox', LucideIcons.inbox),
+          _QuickLink('Activity', '/activity-hub', LucideIcons.activity),
+        ];
+      case 'organizer':
+        return const [
+          _QuickLink('Dashboard', '/organizer-dashboard', LucideIcons.layoutDashboard),
+          _QuickLink('Post Event', '/post-tournament', LucideIcons.plusCircle),
+          _QuickLink('My Events', '/my-tournaments', LucideIcons.list),
+          _QuickLink('Activity', '/activity-hub', LucideIcons.activity),
+          _QuickLink('Saved', '/saved', LucideIcons.bookmark),
+          _QuickLink('Search', '/universal-search', LucideIcons.search),
+        ];
+      case 'sponsor':
+        return const [
+          _QuickLink('Dashboard', '/sponsor-dashboard', LucideIcons.layoutDashboard),
+          _QuickLink('Post Sponsor', '/sponsor-posting', LucideIcons.plusCircle),
+          _QuickLink('Discover', '/athlete-discovery', LucideIcons.search),
+          _QuickLink('Shortlist', '/shortlist', LucideIcons.star),
+          _QuickLink('Applications', '/applications-inbox', LucideIcons.inbox),
+          _QuickLink('My Listings', '/my-sponsorships', LucideIcons.list),
+        ];
+      default: // athlete
+        return const [
+          _QuickLink('Edit Profile', '/edit-profile', LucideIcons.edit2),
+          _QuickLink('Media', '/media-gallery', LucideIcons.image),
+          _QuickLink('Activity', '/activity-hub', LucideIcons.activity),
+          _QuickLink('Scholarships', '/scholarships', LucideIcons.graduationCap),
+          _QuickLink('Venues', '/sports-venues', LucideIcons.mapPin),
+          _QuickLink('Connections', '/my-connections', LucideIcons.users),
+        ];
+    }
+  }
+
   Widget _buildSection({
     required String title,
     Widget? action,
@@ -457,4 +615,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
     );
   }
+}
+
+class _QuickLink {
+  final String label;
+  final String route;
+  final IconData icon;
+  const _QuickLink(this.label, this.route, this.icon);
 }

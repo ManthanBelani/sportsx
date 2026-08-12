@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -26,22 +28,19 @@ class StorageService {
   }
 
   Future<void> saveUserData(Map<String, dynamic> userData) async {
-    // Store as JSON string
-    final entries = userData.entries.map((e) => '${e.key}=${e.value}').join('&');
-    await _storage.write(key: _userKey, value: entries);
+    // Persist as JSON so nested values, lists and types survive a round-trip
+    // (the previous k=v&k=v encoding corrupted values containing & or =).
+    await _storage.write(key: _userKey, value: jsonEncode(userData));
   }
 
   Future<Map<String, dynamic>?> getUserData() async {
     final data = await _storage.read(key: _userKey);
     if (data == null) return null;
-    final map = <String, dynamic>{};
-    for (final pair in data.split('&')) {
-      final idx = pair.indexOf('=');
-      if (idx > 0) {
-        map[pair.substring(0, idx)] = pair.substring(idx + 1);
-      }
+    try {
+      return jsonDecode(data) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
     }
-    return map;
   }
 
   Future<void> clearAll() async {

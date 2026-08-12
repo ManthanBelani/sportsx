@@ -25,7 +25,7 @@ class SearchFilters {
   final List<String> achievementLevels;
   final List<String> ageGroups;
 
-  SearchFilters({
+  const SearchFilters({
     this.sports = const [],
     this.locations = const [],
     this.achievementLevels = const [],

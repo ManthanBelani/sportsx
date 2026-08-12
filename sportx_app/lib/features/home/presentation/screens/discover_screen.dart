@@ -42,7 +42,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           _buildTabPills(),
           _buildFilterChips(),
           Expanded(
-            _selectedTab == 0
+            child: _selectedTab == 0
                 ? _buildAthletesGrid()
                 : _selectedTab == 1
                     ? _buildCoachesGrid()
@@ -299,22 +299,24 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   Widget _buildCoachesGrid() {
     final coaches = ref.watch(coachesProvider);
 
-    return coaches.when(
-      data: (items) => GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 0.85,
-        ),
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          return _buildCoachCard(items[index]);
-        },
+    if (coaches.isLoading && coaches.items.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (coaches.items.isEmpty) {
+      return const Center(child: Text('No coaches found'));
+    }
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 0.85,
       ),
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      itemCount: coaches.items.length,
+      itemBuilder: (context, index) {
+        return _buildCoachCard(coaches.items[index]);
+      },
     );
   }
 
@@ -387,22 +389,24 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   Widget _buildSponsorsGrid() {
     final sponsorships = ref.watch(sponsorshipsProvider);
 
-    return sponsorships.when(
-      data: (items) => GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 0.85,
-        ),
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          return _buildSponsorCard(items[index]);
-        },
+    if (sponsorships.isLoading && sponsorships.items.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (sponsorships.items.isEmpty) {
+      return const Center(child: Text('No sponsors found'));
+    }
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 0.85,
       ),
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      itemCount: sponsorships.items.length,
+      itemBuilder: (context, index) {
+        return _buildSponsorCard(sponsorships.items[index]);
+      },
     );
   }
 

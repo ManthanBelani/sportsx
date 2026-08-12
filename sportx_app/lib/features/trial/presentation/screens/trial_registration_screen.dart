@@ -1,21 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
-class TrialRegistrationScreen extends StatefulWidget {
+class TrialRegistrationScreen extends ConsumerStatefulWidget {
   final String trialId;
   const TrialRegistrationScreen({super.key, required this.trialId});
 
   @override
-  State<TrialRegistrationScreen> createState() => _TrialRegistrationScreenState();
+  ConsumerState<TrialRegistrationScreen> createState() => _TrialRegistrationScreenState();
 }
 
-class _TrialRegistrationScreenState extends State<TrialRegistrationScreen> {
+class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScreen> {
   bool _parentalConsent = false;
+  bool _submitting = false;
+  final _roleController = TextEditingController();
+  final _medicalController = TextEditingController();
+
+  @override
+  void dispose() {
+    _roleController.dispose();
+    _medicalController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    setState(() => _submitting = true);
+    try {
+      await ref.read(dioProvider).post('/trials/${widget.trialId}/register', data: {
+        'playing_role': _roleController.text.trim(),
+        'medical_conditions': _medicalController.text.trim(),
+        'parental_consent': _parentalConsent,
+      });
+      if (mounted) context.push('/registration-confirmation');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Registration failed: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(authProvider).user;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -56,13 +88,13 @@ class _TrialRegistrationScreenState extends State<TrialRegistrationScreen> {
                     child: const Icon(LucideIcons.user, color: Colors.white, size: 24),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('John Doe', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                        SizedBox(height: 2),
-                        Text('Athlete · U-14 · Ahmedabad', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                        Text(user?.name ?? 'Athlete', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                        const SizedBox(height: 2),
+                        const Text('Athlete', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                       ],
                     ),
                   ),
@@ -83,11 +115,11 @@ class _TrialRegistrationScreenState extends State<TrialRegistrationScreen> {
             const SizedBox(height: 16),
             
             _buildLabel('Playing Role / Speciality'),
-            _buildTextField('e.g., Right-arm Fast Bowler'),
-            
+            _buildTextField('e.g., Right-arm Fast Bowler', controller: _roleController),
+
             const SizedBox(height: 16),
             _buildLabel('Medical Conditions (if any)'),
-            _buildTextField('e.g., Asthma, Allergies, or None'),
+            _buildTextField('e.g., Asthma, Allergies, or None', controller: _medicalController),
             
             const SizedBox(height: 16),
             _buildLabel('ID Proof (Aadhaar / Passport)'),
@@ -164,7 +196,7 @@ class _TrialRegistrationScreenState extends State<TrialRegistrationScreen> {
 
             const SizedBox(height: 32),
             ElevatedButton(
-              onPressed: _parentalConsent ? () => context.push('/registration-confirmation') : null,
+              onPressed: (_parentalConsent && !_submitting) ? _submit : null,
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
                 backgroundColor: AppColors.primary,
@@ -173,7 +205,9 @@ class _TrialRegistrationScreenState extends State<TrialRegistrationScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 disabledBackgroundColor: AppColors.border,
               ),
-              child: const Text('Pay ₹250 & Register', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              child: _submitting
+                  ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : const Text('Pay ₹250 & Register', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           ],
         ),
@@ -188,7 +222,7 @@ class _TrialRegistrationScreenState extends State<TrialRegistrationScreen> {
     );
   }
 
-  Widget _buildTextField(String hint) {
+  Widget _buildTextField(String hint, {TextEditingController? controller}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
@@ -197,6 +231,7 @@ class _TrialRegistrationScreenState extends State<TrialRegistrationScreen> {
         borderRadius: BorderRadius.circular(8),
       ),
       child: TextField(
+        controller: controller,
         style: const TextStyle(fontSize: 15, color: AppColors.textPrimary),
         decoration: InputDecoration(
           border: InputBorder.none,

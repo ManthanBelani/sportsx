@@ -33,6 +33,11 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Environment config (keep .env.example tracked, ignore local overrides)
+.env
+.env.*
+!.env.example
+
 # Symbolication related
 app.*.symbols
 

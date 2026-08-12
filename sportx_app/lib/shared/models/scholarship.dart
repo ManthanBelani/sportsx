@@ -49,17 +49,19 @@ class Scholarship {
   factory Scholarship.fromJson(Map<String, dynamic> json) {
     return Scholarship(
       id: json['id'] as int,
-      title: json['title'] as String,
+      title: (json['title'] ?? json['name'] ?? '') as String,
       description: json['description'] as String?,
       sportId: json['sport_id'] as int,
       cityId: json['city_id'] as int?,
-      sponsorName: json['sponsor_name'] as String?,
-      sponsorLogoUrl: json['sponsor_logo_url'] as String?,
+      sponsorName: (json['sponsor_name'] ?? json['organization_name']) as String?,
+      sponsorLogoUrl: (json['sponsor_logo_url'] ?? json['logo_url']) as String?,
       amount: (json['amount'] as num?)?.toDouble(),
       amountLabel: json['amount_label'] as String?,
       totalSlots: json['total_slots'] as int?,
       filledSlots: json['filled_slots'] as int?,
-      applicationDeadline: json['application_deadline'] != null ? DateTime.parse(json['application_deadline']) : null,
+      applicationDeadline: (json['application_deadline'] ?? json['deadline']) != null
+          ? DateTime.parse(json['application_deadline'] ?? json['deadline'])
+          : null,
       eligibility: json['eligibility'] as String?,
       benefits: json['benefits'] as String?,
       applicationLink: json['application_link'] as String?,

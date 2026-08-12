@@ -1,17 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/features/sponsor/presentation/providers/sponsor_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
-class SponsorDashboardScreen extends StatefulWidget {
+class SponsorDashboardScreen extends ConsumerStatefulWidget {
   const SponsorDashboardScreen({super.key});
 
   @override
-  State<SponsorDashboardScreen> createState() => _SponsorDashboardScreenState();
+  ConsumerState<SponsorDashboardScreen> createState() => _SponsorDashboardScreenState();
 }
 
-class _SponsorDashboardScreenState extends State<SponsorDashboardScreen> {
+class _SponsorDashboardScreenState extends ConsumerState<SponsorDashboardScreen> {
   int _currentTabIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(mySponsorshipsProvider.notifier).refresh();
+      ref.read(shortlistProvider.notifier).load();
+      ref.read(myApplicationsProvider);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +71,11 @@ class _SponsorDashboardScreenState extends State<SponsorDashboardScreen> {
   }
 
   Widget _buildHomeTab() {
+    final listings = ref.watch(mySponsorshipsProvider).items;
+    final shortlist = ref.watch(shortlistProvider).items;
+    final applications = ref.watch(myApplicationsProvider).valueOrNull ?? [];
+    final active = listings.where((s) => s.status == 'published').length;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -88,9 +105,9 @@ class _SponsorDashboardScreenState extends State<SponsorDashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Nike India', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                      Text('Sponsor Dashboard', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                       SizedBox(height: 2),
-                      Text('Sports Apparel • Verified Sponsor', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                      Text('Manage your sponsorships & applications', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                     ],
                   ),
                 ),
@@ -102,11 +119,11 @@ class _SponsorDashboardScreenState extends State<SponsorDashboardScreen> {
           // Stats Row
           Row(
             children: [
-              Expanded(child: _buildStatCard('2', 'Active Listings')),
+              Expanded(child: _buildStatCard('$active', 'Active Listings')),
               const SizedBox(width: 10),
-              Expanded(child: _buildStatCard('18', 'Applications')),
+              Expanded(child: _buildStatCard('${applications.length}', 'Applications')),
               const SizedBox(width: 10),
-              Expanded(child: _buildStatCard('5', 'Shortlisted')),
+              Expanded(child: _buildStatCard('${shortlist.length}', 'Shortlisted')),
             ],
           ),
           const SizedBox(height: 16),
@@ -128,8 +145,8 @@ class _SponsorDashboardScreenState extends State<SponsorDashboardScreen> {
                   children: [
                     _buildQuickAction(LucideIcons.plusCircle, 'New Listing', () => context.push('/sponsor-posting')),
                     _buildQuickAction(LucideIcons.inbox, 'Applications', () => context.push('/applications-inbox')),
-                    _buildQuickAction(LucideIcons.search, 'Discover', () {}),
-                    _buildQuickAction(LucideIcons.star, 'Shortlist', () {}),
+                    _buildQuickAction(LucideIcons.search, 'Discover', () => context.push('/athlete-discovery')),
+                    _buildQuickAction(LucideIcons.star, 'Shortlist', () => context.push('/shortlist')),
                   ],
                 ),
               ],
@@ -152,15 +169,23 @@ class _SponsorDashboardScreenState extends State<SponsorDashboardScreen> {
                   children: [
                     const Text('My Sponsorships', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                     GestureDetector(
-                      onTap: () {},
+                      onTap: () => context.push('/my-sponsorships'),
                       child: const Text('View All', style: TextStyle(fontSize: 13, color: AppColors.primary)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                _buildListingItem('Emerging Athletes Program 2026', 'Football, Athletics • 45 applications', 'Active'),
-                const Divider(color: AppColors.border),
-                _buildListingItem('Grassroots Sports Initiative', 'Multi-sport • 28 applications', 'Closed'),
+                if (listings.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Text('No sponsorships yet.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                  )
+                else
+                  ...listings.take(3).map((s) => _buildListingItem(
+                        s.title,
+                        [s.sport?.name, s.sponsorshipType].whereType<String>().join(' · '),
+                        s.status[0].toUpperCase() + s.status.substring(1),
+                      )),
               ],
             ),
           ),
@@ -187,9 +212,16 @@ class _SponsorDashboardScreenState extends State<SponsorDashboardScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                _buildApplicationItem('Priya Sharma', 'Football • Applied 2 days ago'),
-                const Divider(color: AppColors.border),
-                _buildApplicationItem('Arjun Mehta', 'Football • Applied 3 days ago'),
+                if (applications.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Text('No applications yet.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                  )
+                else
+                  ...applications.take(3).map((a) => _buildApplicationItem(
+                        (a['athlete_name'] ?? a['name'] ?? 'Athlete').toString(),
+                        '${a['sport'] ?? ''} • ${a['created_at'] ?? ''}',
+                      )),
               ],
             ),
           ),

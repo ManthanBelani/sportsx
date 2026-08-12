@@ -1,91 +1,97 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
+import 'package:sportx_app/theme/colors.dart';
 
-class AdminContentListScreen extends StatelessWidget {
+class AdminContentListScreen extends ConsumerStatefulWidget {
   final String category;
   const AdminContentListScreen({super.key, required this.category});
 
   @override
+  ConsumerState<AdminContentListScreen> createState() => _AdminContentListScreenState();
+}
+
+class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen> {
+  final _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => ref.read(adminProvider.notifier).loadContentList(widget.category));
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final displayName = category[0].toUpperCase() + category.substring(1);
+    final state = ref.watch(adminProvider);
+    final displayName = widget.category[0].toUpperCase() + widget.category.substring(1);
+    final items = state.contentList;
+
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(displayName),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => context.push('/admin-content-edit/$category/new'),
-          ),
-        ],
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        title: Text(displayName,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
       ),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
+              controller: _searchController,
+              onChanged: (v) => ref.read(adminProvider.notifier).loadContentList(widget.category, q: v.isEmpty ? null : v),
               decoration: InputDecoration(
                 hintText: 'Search $displayName...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                prefixIcon: const Icon(LucideIcons.search, color: AppColors.textSecondary),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                filled: true,
+                fillColor: AppColors.surface,
               ),
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: 10,
-              itemBuilder: (context, i) => Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  title: Text('$displayName Item ${i + 1}'),
-                  subtitle: Text(i % 3 == 0 ? 'Active' : i % 3 == 1 ? 'Draft' : 'Expired',
-                      style: TextStyle(
-                        color: i % 3 == 0 ? Colors.green : i % 3 == 1 ? Colors.orange : Colors.red,
-                      )),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit, size: 20),
-                        onPressed: () => context.push('/admin-content-edit/$category/${i + 1}'),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline, size: 20, color: Colors.red),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              title: const Text('Delete Record'),
-                              content: const Text('Are you sure you want to delete this record?'),
-                              actions: [
-                                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-                                FilledButton(
-                                  onPressed: () {
-                                    Navigator.pop(ctx);
-                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Record deleted')));
-                                  },
-                                  style: FilledButton.styleFrom(backgroundColor: Colors.red),
-                                  child: const Text('Delete'),
+            child: state.isLoading && items.isEmpty
+                ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                : items.isEmpty
+                    ? const Center(child: Text('No items', style: TextStyle(color: AppColors.textSecondary)))
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: items.length,
+                        itemBuilder: (context, i) {
+                          final item = items[i] as Map<String, dynamic>;
+                          final title = (item['title'] ?? item['name'] ?? item['full_name'] ?? 'Item #$i').toString();
+                          final status = (item['status'] ?? 'draft').toString();
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              border: Border.all(color: AppColors.border),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary))),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                                  child: Text(status, style: const TextStyle(fontSize: 11, color: AppColors.primary)),
                                 ),
                               ],
                             ),
                           );
                         },
                       ),
-                    ],
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: Colors.grey[300]!),
-                  ),
-                  onTap: () => context.push('/admin-content-edit/$category/${i + 1}'),
-                ),
-              ),
-            ),
           ),
         ],
       ),

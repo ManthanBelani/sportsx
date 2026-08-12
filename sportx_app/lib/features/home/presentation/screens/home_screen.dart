@@ -31,7 +31,6 @@ class HomeScreen extends ConsumerWidget {
               pinned: true,
               elevation: 0,
               automaticallyImplyLeading: false,
-              titlePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               title: Row(
                 children: [
                   Expanded(
@@ -132,28 +131,6 @@ class HomeScreen extends ConsumerWidget {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textSecondary,
-        currentIndex: 0,
-        onTap: (index) {
-          switch (index) {
-            case 0: break;
-            case 1: context.push('/universal-search'); break;
-            case 2: context.push('/saved'); break;
-            case 3: context.push('/activity'); break;
-            case 4: context.push('/profile'); break;
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(LucideIcons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(LucideIcons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(LucideIcons.bookmark), label: 'Saved'),
-          BottomNavigationBarItem(icon: Icon(LucideIcons.activity), label: 'Activity'),
-          BottomNavigationBarItem(icon: Icon(LucideIcons.user), label: 'Profile'),
-        ],
-      ),
     );
   }
 }
@@ -195,7 +172,20 @@ class _RecommendedSection extends ConsumerWidget {
       return const SizedBox(height: 180, child: Center(child: CircularProgressIndicator()));
     }
 
-    final items = [...state.items.take(3), ...coachesState.items.take(2)];
+    final items = <({String id, String title, String subtitle, bool isCoach})>[
+      ...state.items.take(3).map((a) => (
+        id: a.id.toString(),
+        title: a.name,
+        subtitle: a.city?.name ?? '',
+        isCoach: false,
+      )),
+      ...coachesState.items.take(2).map((c) => (
+        id: c.id.toString(),
+        title: c.fullName,
+        subtitle: '${c.experience ?? 0} yrs exp',
+        isCoach: true,
+      )),
+    ];
 
     if (items.isEmpty) {
       return const SizedBox(height: 180, child: Center(child: Text('No recommendations found')));
@@ -209,7 +199,7 @@ class _RecommendedSection extends ConsumerWidget {
         itemCount: items.length,
         itemBuilder: (context, i) {
           final item = items[i];
-          final isCoach = coachesState.items.contains(item);
+          final isCoach = item.isCoach;
           return GestureDetector(
             onTap: () => isCoach ? context.push('/coach-detail/${item.id}') : context.push('/academy-detail/${item.id}'),
             child: Container(
@@ -237,9 +227,9 @@ class _RecommendedSection extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(item.name ?? '', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        Text(item.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
                         const SizedBox(height: 4),
-                        Text(isCoach ? 'Cricket · 8 yrs exp' : 'Cricket · ${item.city?.name ?? ''}', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                        Text('Cricket · ${item.subtitle}', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                         Text(isCoach ? '₹800/session' : '₹2,000 – ₹5,000/mo', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                       ],
                     ),

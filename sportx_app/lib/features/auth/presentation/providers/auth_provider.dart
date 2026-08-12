@@ -11,15 +11,29 @@ class AuthState {
   final User? user;
   final bool needsOnboarding;
   final String? error;
+  final Map<String, String> fieldErrors;
 
-  AuthState({this.status = AuthStatus.initial, this.user, this.needsOnboarding = false, this.error});
+  AuthState({
+    this.status = AuthStatus.initial,
+    this.user,
+    this.needsOnboarding = false,
+    this.error,
+    this.fieldErrors = const {},
+  });
 
-  AuthState copyWith({AuthStatus? status, User? user, bool? needsOnboarding, String? error}) {
+  AuthState copyWith({
+    AuthStatus? status,
+    User? user,
+    bool? needsOnboarding,
+    String? error,
+    Map<String, String>? fieldErrors,
+  }) {
     return AuthState(
       status: status ?? this.status,
       user: user ?? this.user,
       needsOnboarding: needsOnboarding ?? this.needsOnboarding,
       error: error ?? this.error,
+      fieldErrors: fieldErrors ?? this.fieldErrors,
     );
   }
 }
@@ -40,10 +54,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
     try {
       final resp = await _dio.get('/auth/me');
+      // Backend returns { "data": { <user fields…>, "needs_onboarding": bool } }
+      // with the user fields flattened into `data` (no nested `data.user`).
       final data = resp.data['data'] as Map<String, dynamic>;
       state = AuthState(
         status: AuthStatus.authenticated,
-        user: User.fromJson(data['user'] as Map<String, dynamic>),
+        user: User.fromJson(data),
         needsOnboarding: data['needs_onboarding'] == true,
       );
     } catch (_) {
@@ -58,16 +74,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final data = {
         'email': email,
         'password': password,
-        'password_confirmation': password,
         'role': role,
       };
       if (name != null) data['name'] = name;
       if (phone != null) data['phone'] = phone;
-      
-      await _dio.post('/auth/register', data: data);
-      state = state.copyWith(status: AuthStatus.unauthenticated);
+
+      // Email/password-only auth: backend returns a token immediately (no OTP).
+      final resp = await _dio.post('/auth/register', data: data);
+      final respData = resp.data;
+      final authToken = respData['token'] as String;
+      await _storage.saveToken(authToken);
+      final user = User.fromJson(respData['user'] as Map<String, dynamic>);
+      final needsOnboarding = respData['needs_onboarding'] == true;
+      state = AuthState(status: AuthStatus.authenticated, user: user, needsOnboarding: needsOnboarding);
     } on DioException catch (e) {
-      state = state.copyWith(status: AuthStatus.error, error: ApiException.fromDio(e).message);
+      _fail(e);
     }
   }
 
@@ -82,7 +103,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final needsOnboarding = data['needs_onboarding'] == true;
       state = AuthState(status: AuthStatus.authenticated, user: user, needsOnboarding: needsOnboarding);
     } on DioException catch (e) {
-      state = state.copyWith(status: AuthStatus.error, error: ApiException.fromDio(e).message);
+      _fail(e);
+    }
+  }
+
+  Future<void> verifyOtp({required String email, required String otp}) async {
+    await verifyEmail(otp);
+  }
+
+  Future<void> resendOtp(String email) async {
+    try {
+      await _dio.post('/auth/resend-verification', data: {'email': email});
+    } catch (_) {
+      // Endpoint may be unavailable; fail silently — UI shows a generic toast.
     }
   }
 
@@ -97,7 +130,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final needsOnboarding = data['needs_onboarding'] == true;
       state = AuthState(status: AuthStatus.authenticated, user: user, needsOnboarding: needsOnboarding);
     } on DioException catch (e) {
-      state = state.copyWith(status: AuthStatus.error, error: ApiException.fromDio(e).message);
+      _fail(e);
     }
   }
 
@@ -107,7 +140,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _dio.post('/auth/forgot-password', data: {'email': email});
       state = state.copyWith(status: AuthStatus.unauthenticated);
     } on DioException catch (e) {
-      state = state.copyWith(status: AuthStatus.error, error: ApiException.fromDio(e).message);
+      _fail(e);
     }
   }
 
@@ -126,7 +159,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final user = User.fromJson(data['user'] as Map<String, dynamic>);
       state = AuthState(status: AuthStatus.authenticated, user: user, needsOnboarding: false);
     } on DioException catch (e) {
-      state = state.copyWith(status: AuthStatus.error, error: ApiException.fromDio(e).message);
+      _fail(e);
     }
   }
 
@@ -139,7 +172,28 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   void clearError() {
-    state = state.copyWith(status: AuthStatus.unauthenticated, error: null);
+    state = state.copyWith(status: AuthStatus.unauthenticated, error: null, fieldErrors: const {});
+  }
+
+  /// Clears any transient error/field messages without changing auth status —
+  /// used to dismiss inline field errors as the user edits the form.
+  void clearFieldErrors() {
+    state = state.copyWith(error: null, fieldErrors: const {});
+  }
+
+  void _fail(DioException e) {
+    final api = ApiException.fromDio(e);
+    state = state.copyWith(
+      status: AuthStatus.error,
+      error: api.message,
+      fieldErrors: api.fieldErrors,
+    );
+  }
+
+  /// Called when a role finishes its onboarding flow so the router stops
+  /// redirecting to the onboarding screens.
+  void markOnboardingComplete() {
+    state = state.copyWith(needsOnboarding: false);
   }
 }
 

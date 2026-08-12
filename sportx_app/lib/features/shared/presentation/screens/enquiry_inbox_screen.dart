@@ -1,24 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/shared/providers/enquiry_provider.dart';
+import 'package:sportx_app/theme/colors.dart';
 
-class EnquiryInboxScreen extends StatefulWidget {
+class EnquiryInboxScreen extends ConsumerStatefulWidget {
   const EnquiryInboxScreen({super.key});
 
   @override
-  State<EnquiryInboxScreen> createState() => _EnquiryInboxScreenState();
+  ConsumerState<EnquiryInboxScreen> createState() => _EnquiryInboxScreenState();
 }
 
-class _EnquiryInboxScreenState extends State<EnquiryInboxScreen> {
+class _EnquiryInboxScreenState extends ConsumerState<EnquiryInboxScreen> {
   int _selectedIndex = 0;
   final _tabs = ['All', 'New', 'Replied'];
 
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => ref.read(enquiryInboxProvider.notifier).load());
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final state = ref.watch(enquiryInboxProvider);
+    final items = state.items.where((e) {
+      switch (_selectedIndex) {
+        case 1:
+          return e.status == 'new' && !e.isRead;
+        case 2:
+          return e.status != 'new' || e.isRead;
+        default:
+          return true;
+      }
+    }).toList();
+
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Enquiry Inbox'),
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        title: const Text('Enquiry Inbox',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
           onPressed: () => context.pop(),
         ),
       ),
@@ -34,26 +60,33 @@ class _EnquiryInboxScreenState extends State<EnquiryInboxScreen> {
                   child: FilterChip(
                     label: Text(_tabs[index]),
                     selected: isSelected,
-                    onSelected: (val) {
-                      setState(() {
-                        _selectedIndex = index;
-                      });
-                    },
-                    selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
-                    checkmarkColor: Theme.of(context).primaryColor,
+                    onSelected: (val) => setState(() => _selectedIndex = index),
+                    selectedColor: AppColors.primary.withOpacity(0.15),
+                    checkmarkColor: AppColors.primary,
                   ),
                 );
               }),
             ),
           ),
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _buildMessageCard('Aryan Patel', 'Cricket', 'Is there a slot this weekend?', '2h ago', true, context),
-                const SizedBox(height: 12),
-                _buildMessageCard('Meera Shah', 'Badminton', 'What are your fees for U-12?', '1d ago', false, context),
-              ],
+            child: RefreshIndicator(
+              onRefresh: () => ref.read(enquiryInboxProvider.notifier).load(),
+              child: state.isLoading && state.items.isEmpty
+                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                  : items.isEmpty
+                      ? const Center(
+                          child: Text('No enquiries', style: TextStyle(color: AppColors.textSecondary)))
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: items.length,
+                          itemBuilder: (context, i) {
+                            final e = items[i];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: _buildMessageCard(e, context, ref),
+                            );
+                          },
+                        ),
             ),
           ),
         ],
@@ -61,40 +94,46 @@ class _EnquiryInboxScreenState extends State<EnquiryInboxScreen> {
     );
   }
 
-  Widget _buildMessageCard(String name, String sport, String message, String time, bool isNew, BuildContext context) {
+  Widget _buildMessageCard(Enquiry e, BuildContext context, WidgetRef ref) {
+    final isNew = e.status == 'new' && !e.isRead;
     return InkWell(
-      onTap: () => context.push('/enquiry-detail'),
+      onTap: () => context.push('/enquiry-detail', extra: {'id': e.id}),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[300]!),
+          border: Border.all(color: AppColors.border),
           borderRadius: BorderRadius.circular(12),
-          color: isNew ? Theme.of(context).primaryColor.withOpacity(0.05) : Colors.white,
+          color: isNew ? AppColors.primary.withOpacity(0.05) : AppColors.surface,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(Icons.circle, size: 12, color: isNew ? Theme.of(context).primaryColor : Colors.grey[400]),
+                Icon(Icons.circle,
+                    size: 12, color: isNew ? AppColors.primary : AppColors.textSecondary),
                 const SizedBox(width: 8),
-                Text('$name · $sport', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Expanded(
+                  child: Text('${e.athleteName} · ${e.sport ?? ''}',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary)),
+                ),
               ],
             ),
             const SizedBox(height: 8),
-            Text('"$message"', style: TextStyle(color: Colors.grey[700])),
+            Text('"${e.message}"', style: TextStyle(color: Colors.grey[700])),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(isNew ? time : '$time · Replied', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                Text(e.createdAt ?? '',
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
                 if (isNew)
                   TextButton(
-                    onPressed: () => context.push('/enquiry-detail'),
+                    onPressed: () => context.push('/enquiry-detail', extra: {'id': e.id}),
                     child: const Text('Reply'),
-                  )
+                  ),
               ],
-            )
+            ),
           ],
         ),
       ),

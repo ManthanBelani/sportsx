@@ -18,14 +18,27 @@ class AdminContentController extends Controller
         'sports_venues' => \App\Models\SportsVenue::class,
     ];
 
+    // Not every content table uses the same status column — academies, coaches
+    // and sports_venues use `listing_status`, the rest use `status`.
+    private array $statusColumn = [
+        'academies' => 'listing_status',
+        'coaches' => 'listing_status',
+        'trials' => 'status',
+        'tournaments' => 'status',
+        'scholarships' => 'status',
+        'sponsorships' => 'status',
+        'sports_venues' => 'listing_status',
+    ];
+
     public function picker(): JsonResponse
     {
         $counts = [];
         foreach ($this->models as $type => $model) {
+            $col = $this->statusColumn[$type];
             $counts[$type] = [
                 'total' => $model::count(),
-                'published' => $model::where('status', 'published')->count(),
-                'draft' => $model::where('status', 'draft')->count(),
+                'published' => $model::where($col, 'published')->count(),
+                'draft' => $model::where($col, 'draft')->count(),
             ];
         }
 
@@ -50,7 +63,7 @@ class AdminContentController extends Controller
 
         // Apply filters
         if ($request->has('status')) {
-            $query->where('status', $request->status);
+            $query->where($this->statusColumn[$type], $request->status);
         }
 
         if ($request->has('q')) {
