@@ -4,6 +4,8 @@ use App\Http\Controllers\AcademyController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\AthleteDiscoveryController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ConnectionController;
+use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\CoachProfileController;
 use App\Http\Controllers\DirectoryController;
 use App\Http\Controllers\EnquiryController;
@@ -11,6 +13,7 @@ use App\Http\Controllers\MediaController;
 use App\Http\Controllers\MetaController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProviderTrialController;
 use App\Http\Controllers\ProviderTournamentController;
@@ -32,9 +35,25 @@ use App\Http\Controllers\Admin\AdminContentController;
 use App\Http\Controllers\Admin\AdminModerationController;
 use App\Http\Controllers\Admin\AdminExpiryController;
 use App\Http\Controllers\Admin\AdminCategoryController;
+use App\Http\Controllers\AdminUserController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
+
+    // API root — prevents a 404 on the bare prefix and lists key entry points.
+    Route::get('/', function () {
+        return response()->json([
+            'name' => 'SportX India API',
+            'version' => 'v1',
+            'status' => 'ok',
+            'endpoints' => [
+                'health' => '/api/v1/health',
+                'auth' => '/api/v1/auth/register, /login, /verify-email',
+                'directories' => '/api/v1/academies, /coaches, /trials, /tournaments, /scholarships, /sponsorships, /sports-venues',
+                'meta' => '/api/v1/meta/sports, /cities, /age-groups',
+            ],
+        ]);
+    });
 
     Route::get('/health', function () {
         try {
@@ -46,12 +65,15 @@ Route::prefix('v1')->group(function () {
     });
 
     // ── Auth (public) ──
-    Route::post('/auth/register', [AuthController::class, 'register']);
-    Route::post('/auth/verify-email', [AuthController::class, 'verifyEmail']);
-    Route::post('/auth/login', [AuthController::class, 'login']);
+    // Throttle credential endpoints to mitigate brute-force / abuse.
+    Route::middleware(['throttle:10,1'])->group(function () {
+        Route::post('/auth/register', [AuthController::class, 'register']);
+        Route::post('/auth/verify-email', [AuthController::class, 'verifyEmail']);
+        Route::post('/auth/login', [AuthController::class, 'login']);
+        Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
+        Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
+    });
     Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
-    Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
-    Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
     Route::get('/auth/me', [AuthController::class, 'me'])->middleware('auth:sanctum');
 
     // ── Meta / Master Data (public read) ──
@@ -195,6 +217,27 @@ Route::prefix('v1')->group(function () {
     // ── Recent Searches ──
     Route::get('/me/recent-searches', [SearchController::class, 'recentSearches'])->middleware('auth:sanctum');
 
+    // ── Conversations / Chat (Phase 4) ──
+    Route::get('/me/conversations', [ConversationController::class, 'index'])->middleware('auth:sanctum');
+    Route::post('/me/conversations', [ConversationController::class, 'store'])->middleware('auth:sanctum');
+    Route::get('/conversations/{id}', [ConversationController::class, 'show'])->middleware('auth:sanctum');
+    Route::post('/conversations/{id}/messages', [ConversationController::class, 'sendMessage'])->middleware('auth:sanctum');
+    Route::put('/conversations/{id}/read', [ConversationController::class, 'markRead'])->middleware('auth:sanctum');
+
+    // ── Connections (Phase 4) ──
+    Route::get('/me/connections', [ConnectionController::class, 'index'])->middleware('auth:sanctum');
+    Route::post('/me/connections/request', [ConnectionController::class, 'request'])->middleware('auth:sanctum');
+    Route::post('/me/connections/{id}/accept', [ConnectionController::class, 'accept'])->middleware('auth:sanctum');
+    Route::delete('/me/connections/{id}', [ConnectionController::class, 'destroy'])->middleware('auth:sanctum');
+    Route::get('/me/connections/requests', [ConnectionController::class, 'requests'])->middleware('auth:sanctum');
+
+    // ── Social Posts (Phase 4) ──
+    Route::get('/posts', [PostController::class, 'index'])->middleware('auth:sanctum');
+    Route::post('/posts', [PostController::class, 'store'])->middleware('auth:sanctum');
+    Route::get('/posts/{id}', [PostController::class, 'show'])->middleware('auth:sanctum');
+    Route::post('/posts/{id}/like', [PostController::class, 'toggleLike'])->middleware('auth:sanctum');
+    Route::post('/posts/{id}/comments', [PostController::class, 'comment'])->middleware('auth:sanctum');
+
     // ── Onboarding Schema ──
     Route::get('/onboarding/{role}', [OnboardingController::class, 'schema'])->middleware('auth:sanctum');
 
@@ -277,6 +320,32 @@ Route::prefix('v1')->group(function () {
         Route::put('/categories/age-groups/{id}', [AdminCategoryController::class, 'ageGroupsUpdate'])
             ->middleware(['auth:sanctum', 'role:admin']);
         Route::delete('/categories/age-groups/{id}', [AdminCategoryController::class, 'ageGroupsDestroy'])
+            ->middleware(['auth:sanctum', 'role:admin']);
+
+        // Admin User Management (Phase 4 completion)
+        Route::get('/users', [AdminUserController::class, 'index'])
+            ->middleware(['auth:sanctum', 'role:admin']);
+        Route::get('/users/{id}', [AdminUserController::class, 'show'])
+            ->middleware(['auth:sanctum', 'role:admin']);
+        Route::post('/users/{id}/approve', [AdminUserController::class, 'approve'])
+            ->middleware(['auth:sanctum', 'role:admin']);
+        Route::post('/users/{id}/reject', [AdminUserController::class, 'reject'])
+            ->middleware(['auth:sanctum', 'role:admin']);
+        Route::post('/users/{id}/suspend', [AdminUserController::class, 'suspend'])
+            ->middleware(['auth:sanctum', 'role:admin']);
+        Route::delete('/users/{id}', [AdminUserController::class, 'destroy'])
+            ->middleware(['auth:sanctum', 'role:admin']);
+
+        // Admin Opportunity (sponsorship) review queue
+        Route::get('/opportunities', [AdminUserController::class, 'opportunities'])
+            ->middleware(['auth:sanctum', 'role:admin']);
+        Route::post('/opportunities/{id}/approve', [AdminUserController::class, 'approveOpportunity'])
+            ->middleware(['auth:sanctum', 'role:admin']);
+        Route::post('/opportunities/{id}/reject', [AdminUserController::class, 'rejectOpportunity'])
+            ->middleware(['auth:sanctum', 'role:admin']);
+
+        // Admin Notification broadcast
+        Route::post('/notifications/broadcast', [AdminUserController::class, 'broadcast'])
             ->middleware(['auth:sanctum', 'role:admin']);
     });
 });

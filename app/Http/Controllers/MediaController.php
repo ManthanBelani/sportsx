@@ -12,32 +12,56 @@ class MediaController extends Controller
     {
         $validated = $request->validate([
             'file' => 'required|file|max:'.(config('sportx.media.max_upload_mb', 10) * 1024),
-            'owner_type' => 'required|string',
-            'owner_id' => 'required|integer',
+            'owner_type' => 'nullable|string',
+            'owner_id' => 'nullable|integer',
             'media_type' => 'required|in:photo,video,document',
         ]);
 
         $file = $request->file('file');
         $ext = strtolower($file->getClientOriginalExtension());
 
+        // Authoritative check against the REAL content-derived MIME type (not the
+        // client-supplied extension, which is trivially spoofable). guessExtension()
+        // falls back to the client extension when the sniffer is unsure, so we use
+        // getMimeType() directly against an allow-list per media type.
+        $allowedMimes = match ($validated['media_type']) {
+            'photo' => ['image/jpeg', 'image/png', 'image/webp'],
+            'video' => ['video/mp4', 'video/quicktime'],
+            'document' => ['application/pdf', 'image/jpeg', 'image/png'],
+        };
         $allowedExts = match ($validated['media_type']) {
             'photo' => config('sportx.media.allowed_image_types', ['jpg', 'jpeg', 'png', 'webp']),
             'video' => config('sportx.media.allowed_video_types', ['mp4']),
             'document' => config('sportx.media.allowed_document_types', ['pdf', 'jpg', 'jpeg', 'png']),
         };
 
-        abort_unless(in_array($ext, $allowedExts), 422, 'File type not allowed for '.$validated['media_type']);
+        abort_unless(
+            in_array($file->getMimeType(), $allowedMimes) && in_array($ext, $allowedExts),
+            422,
+            'File type not allowed for '.$validated['media_type']
+        );
 
-        $path = $file->store("media/{$validated['owner_type']}/{$validated['owner_id']}", 'public');
+        // Ownership: prefer an explicit owner, otherwise infer from the authenticated
+        // athlete profile so mobile clients can upload without knowing their profile id.
+        $ownerType = $validated['owner_type'] ?? null;
+        $ownerId = $validated['owner_id'] ?? null;
+        if (! $ownerType || ! $ownerId) {
+            $profile = $request->user()->athleteProfile;
+            abort_unless($profile, 422, 'No owner specified and no athlete profile found for this user');
+            $ownerType = $ownerType ?? 'athlete_profile';
+            $ownerId = $ownerId ?? $profile->id;
+        }
+
+        $path = $file->store("media/{$ownerType}/{$ownerId}", 'public');
 
         $media = MediaItem::create([
-            'owner_type' => $validated['owner_type'],
-            'owner_id' => $validated['owner_id'],
+            'owner_type' => $ownerType,
+            'owner_id' => $ownerId,
             'media_type' => $validated['media_type'],
             'disk' => 'public',
             'path' => $path,
             'original_name' => $file->getClientOriginalName(),
-            'mime_type' => $file->getClientMimeType(),
+            'mime_type' => $file->getMimeType(),
             'size_bytes' => $file->getSize(),
         ]);
 

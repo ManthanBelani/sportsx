@@ -11,7 +11,10 @@ class EnsureRole
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         if (! $request->user() || ! in_array($request->user()->role, $roles)) {
-            return response()->json(['error' => ['code' => 'FORBIDDEN', 'message' => 'Insufficient permissions']], 403);
+            return response()->json([
+                'message' => 'Insufficient permissions',
+                'error' => ['code' => 'FORBIDDEN', 'message' => 'Insufficient permissions'],
+            ], 403);
         }
 
         return $next($request);

@@ -19,8 +19,8 @@ class AdminDashboardController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $activeListings = Academy::where('status', 'published')->count()
-            + CoachProfile::where('status', 'published')->count()
+        $activeListings = Academy::where('listing_status', 'published')->count()
+            + CoachProfile::where('listing_status', 'published')->count()
             + Trial::where('status', 'published')->count()
             + Tournament::where('status', 'published')->count()
             + Sponsorship::where('status', 'published')->count();

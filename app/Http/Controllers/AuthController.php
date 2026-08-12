@@ -17,29 +17,31 @@ class AuthController extends Controller
         $validated = $request->validate([
             'role' => 'required|in:athlete,coach,academy,organizer,sponsor',
             'email' => 'required|email|unique:users,email',
-            'name' => 'required|string|max:100',
+            'name' => 'nullable|string|max:100',
             'phone' => 'nullable|string|max:20',
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => ['required', 'string', 'min:8'],
         ]);
 
+        $email = strtolower($validated['email']);
         $user = User::create([
             'role' => $validated['role'],
-            'email' => strtolower($validated['email']),
-            'name' => $validated['name'],
+            'email' => $email,
+            'name' => $validated['name'] ?? explode('@', $email)[0],
             'phone' => $validated['phone'] ?? null,
             'password' => Hash::make($validated['password']),
+            'email_verified_at' => now(),
             'status' => 'active',
         ]);
 
-        $token = Str::random(64);
-        $user->verification_token = $token;
-        $user->save();
-
-        Mail::to($user->email)->send(new VerifyEmail($user, $token));
+        // Email/password-only auth: auto-verify and issue a session token
+        // immediately (no OTP / verification step).
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'message' => 'Registration successful. Please check your email to verify your account.',
+            'message' => 'Registration successful.',
+            'token' => $token,
             'user' => $this->userResource($user),
+            'needs_onboarding' => ! $user->{$user->role.'Profile'},
         ], 201);
     }
 
