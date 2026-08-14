@@ -204,6 +204,9 @@ Route::prefix('v1')->group(function () {
     Route::patch('/me/notifications/{notification}/read', [NotificationController::class, 'markRead'])->middleware('auth:sanctum');
     Route::post('/me/notifications/read-all', [NotificationController::class, 'markAllRead'])->middleware('auth:sanctum');
     Route::delete('/me/notifications/{notification}', [NotificationController::class, 'destroy'])->middleware('auth:sanctum');
+    Route::post('/me/device-tokens', [NotificationController::class, 'registerDeviceToken'])->middleware('auth:sanctum');
+    Route::delete('/me/device-tokens', [NotificationController::class, 'unregisterDeviceToken'])->middleware('auth:sanctum');
+    Route::post('/me/notifications/{notification}/send-push', [NotificationController::class, 'sendPushNotification'])->middleware('auth:sanctum');
 
     // ── Settings (Phase 2) ──
     Route::get('/me/settings', [SettingsController::class, 'show'])->middleware('auth:sanctum');
@@ -244,108 +247,71 @@ Route::prefix('v1')->group(function () {
     // ═══════════════════════════════════════════════════════════════
     // ADMIN ROUTES
     // ═══════════════════════════════════════════════════════════════
-    Route::prefix('admin')->group(function () {
+    Route::prefix('admin')->middleware(['auth:sanctum', 'role:admin', 'admin.2fa'])->group(function () {
 
-        // Admin Auth
+        // Admin Dashboard
+        Route::get('/dashboard', [AdminDashboardController::class, 'index']);
+
+        // Admin Content Management
+        Route::get('/content', [AdminContentController::class, 'picker']);
+        Route::get('/content/{type}', [AdminContentController::class, 'index']);
+        Route::post('/content/{type}', [AdminContentController::class, 'store']);
+        Route::get('/content/{type}/{id}', [AdminContentController::class, 'show']);
+        Route::put('/content/{type}/{id}', [AdminContentController::class, 'update']);
+        Route::delete('/content/{type}/{id}', [AdminContentController::class, 'destroy']);
+
+        // Admin Moderation
+        Route::get('/moderation/queue', [AdminModerationController::class, 'queue']);
+        Route::get('/moderation/reports/{id}', [AdminModerationController::class, 'show']);
+        Route::post('/moderation/reports/{id}/approve', [AdminModerationController::class, 'approve']);
+        Route::post('/moderation/reports/{id}/remove', [AdminModerationController::class, 'remove']);
+        Route::post('/moderation/reports/{id}/warn', [AdminModerationController::class, 'warn']);
+
+        // Admin Expiry
+        Route::get('/expiry-rules', [AdminExpiryController::class, 'getRules']);
+        Route::put('/expiry-rules', [AdminExpiryController::class, 'updateRules']);
+        Route::get('/expiry/monitor', [AdminExpiryController::class, 'monitor']);
+        Route::post('/expiry/events/{id}/override', [AdminExpiryController::class, 'override']);
+        Route::post('/expiry/events/{id}/restore', [AdminExpiryController::class, 'restore']);
+
+        // Admin Categories
+        Route::get('/categories/sports', [AdminCategoryController::class, 'sportsIndex']);
+        Route::post('/categories/sports', [AdminCategoryController::class, 'sportsStore']);
+        Route::put('/categories/sports/{id}', [AdminCategoryController::class, 'sportsUpdate']);
+        Route::delete('/categories/sports/{id}', [AdminCategoryController::class, 'sportsDestroy']);
+
+        Route::get('/categories/cities', [AdminCategoryController::class, 'citiesIndex']);
+        Route::post('/categories/cities', [AdminCategoryController::class, 'citiesStore']);
+        Route::put('/categories/cities/{id}', [AdminCategoryController::class, 'citiesUpdate']);
+        Route::delete('/categories/cities/{id}', [AdminCategoryController::class, 'citiesDestroy']);
+
+        Route::get('/categories/age-groups', [AdminCategoryController::class, 'ageGroupsIndex']);
+        Route::post('/categories/age-groups', [AdminCategoryController::class, 'ageGroupsStore']);
+        Route::put('/categories/age-groups/{id}', [AdminCategoryController::class, 'ageGroupsUpdate']);
+        Route::delete('/categories/age-groups/{id}', [AdminCategoryController::class, 'ageGroupsDestroy']);
+
+        // Admin User Management
+        Route::get('/users', [AdminUserController::class, 'index']);
+        Route::get('/users/{id}', [AdminUserController::class, 'show']);
+        Route::post('/users/{id}/approve', [AdminUserController::class, 'approve']);
+        Route::post('/users/{id}/reject', [AdminUserController::class, 'reject']);
+        Route::post('/users/{id}/suspend', [AdminUserController::class, 'suspend']);
+        Route::delete('/users/{id}', [AdminUserController::class, 'destroy']);
+
+        // Admin Opportunity (sponsorship) review queue
+        Route::get('/opportunities', [AdminUserController::class, 'opportunities']);
+        Route::post('/opportunities/{id}/approve', [AdminUserController::class, 'approveOpportunity']);
+        Route::post('/opportunities/{id}/reject', [AdminUserController::class, 'rejectOpportunity']);
+
+        // Admin Notification broadcast
+        Route::post('/notifications/broadcast', [AdminUserController::class, 'broadcast']);
+    });
+
+    // Admin Auth (no 2FA required - these handle the initial login and 2FA verification)
+    Route::prefix('admin')->group(function () {
         Route::post('/login', [AdminAuthController::class, 'login']);
         Route::post('/verify-2fa', [AdminAuthController::class, 'verify2fa'])->middleware('auth:sanctum');
         Route::post('/logout', [AdminAuthController::class, 'logout'])->middleware('auth:sanctum');
-        Route::get('/me', [AdminAuthController::class, 'me'])->middleware(['auth:sanctum', 'role:admin']);
-
-        // Admin Dashboard
-        Route::get('/dashboard', [AdminDashboardController::class, 'index'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-
-        // Admin Content Management
-        Route::get('/content', [AdminContentController::class, 'picker'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::get('/content/{type}', [AdminContentController::class, 'index'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::post('/content/{type}', [AdminContentController::class, 'store'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::get('/content/{type}/{id}', [AdminContentController::class, 'show'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::put('/content/{type}/{id}', [AdminContentController::class, 'update'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::delete('/content/{type}/{id}', [AdminContentController::class, 'destroy'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-
-        // Admin Moderation
-        Route::get('/moderation/queue', [AdminModerationController::class, 'queue'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::get('/moderation/reports/{id}', [AdminModerationController::class, 'show'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::post('/moderation/reports/{id}/approve', [AdminModerationController::class, 'approve'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::post('/moderation/reports/{id}/remove', [AdminModerationController::class, 'remove'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::post('/moderation/reports/{id}/warn', [AdminModerationController::class, 'warn'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-
-        // Admin Expiry
-        Route::get('/expiry-rules', [AdminExpiryController::class, 'getRules'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::put('/expiry-rules', [AdminExpiryController::class, 'updateRules'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::get('/expiry/monitor', [AdminExpiryController::class, 'monitor'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::post('/expiry/events/{id}/override', [AdminExpiryController::class, 'override'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::post('/expiry/events/{id}/restore', [AdminExpiryController::class, 'restore'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-
-        // Admin Categories
-        Route::get('/categories/sports', [AdminCategoryController::class, 'sportsIndex'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::post('/categories/sports', [AdminCategoryController::class, 'sportsStore'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::put('/categories/sports/{id}', [AdminCategoryController::class, 'sportsUpdate'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::delete('/categories/sports/{id}', [AdminCategoryController::class, 'sportsDestroy'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-
-        Route::get('/categories/cities', [AdminCategoryController::class, 'citiesIndex'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::post('/categories/cities', [AdminCategoryController::class, 'citiesStore'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::put('/categories/cities/{id}', [AdminCategoryController::class, 'citiesUpdate'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::delete('/categories/cities/{id}', [AdminCategoryController::class, 'citiesDestroy'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-
-        Route::get('/categories/age-groups', [AdminCategoryController::class, 'ageGroupsIndex'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::post('/categories/age-groups', [AdminCategoryController::class, 'ageGroupsStore'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::put('/categories/age-groups/{id}', [AdminCategoryController::class, 'ageGroupsUpdate'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::delete('/categories/age-groups/{id}', [AdminCategoryController::class, 'ageGroupsDestroy'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-
-        // Admin User Management (Phase 4 completion)
-        Route::get('/users', [AdminUserController::class, 'index'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::get('/users/{id}', [AdminUserController::class, 'show'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::post('/users/{id}/approve', [AdminUserController::class, 'approve'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::post('/users/{id}/reject', [AdminUserController::class, 'reject'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::post('/users/{id}/suspend', [AdminUserController::class, 'suspend'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::delete('/users/{id}', [AdminUserController::class, 'destroy'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-
-        // Admin Opportunity (sponsorship) review queue
-        Route::get('/opportunities', [AdminUserController::class, 'opportunities'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::post('/opportunities/{id}/approve', [AdminUserController::class, 'approveOpportunity'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-        Route::post('/opportunities/{id}/reject', [AdminUserController::class, 'rejectOpportunity'])
-            ->middleware(['auth:sanctum', 'role:admin']);
-
-        // Admin Notification broadcast
-        Route::post('/notifications/broadcast', [AdminUserController::class, 'broadcast'])
-            ->middleware(['auth:sanctum', 'role:admin']);
+        Route::get('/me', [AdminAuthController::class, 'me'])->middleware('auth:sanctum');
     });
 });
