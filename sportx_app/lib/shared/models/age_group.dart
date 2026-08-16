@@ -10,7 +10,7 @@ class AgeGroup {
   factory AgeGroup.fromJson(Map<String, dynamic> json) {
     return AgeGroup(
       id: json['id'] as int,
-      label: json['label'] as String,
+      label: (json['name'] ?? json['label']) as String,
       minAge: json['min_age'] as int? ?? 0,
       maxAge: json['max_age'] as int? ?? 99,
       isActive: (json['is_active'] ?? 1) == 1,

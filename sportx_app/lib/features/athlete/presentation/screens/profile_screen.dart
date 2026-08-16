@@ -18,15 +18,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _isLoading = true;
 
   // Profile data
-  String _name = 'Aryan Patel';
-  String _bio = 'Passionate cricketer from Ahmedabad. Looking for opportunities to grow and learn from the best in the game. Dedicated to improving my skills every day.';
-  String _sport = 'Cricket';
-  String _ageGroup = 'U-14';
-  String _location = 'Ahmedabad, Gujarat';
-  bool _isVerified = true;
-  int _postsCount = 24;
-  int _connectsCount = 156;
-  int _achievementsCount = 8;
+  String _name = '';
+  String _bio = '';
+  String _sport = '';
+  String _ageGroup = '';
+  String _location = '';
+  bool _isVerified = false;
+  int _postsCount = 0;
+  int _connectsCount = 0;
+  int _achievementsCount = 0;
 
   List<Map<String, dynamic>> _achievements = [
     {

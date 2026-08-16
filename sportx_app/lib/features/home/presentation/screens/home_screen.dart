@@ -13,6 +13,7 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.watch(authProvider);
     final user = auth.user;
+    final profileAsync = ref.watch(profileProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -48,9 +49,19 @@ class HomeScreen extends ConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 2),
-                        const Text(
-                          'Cricket · Under-14',
-                          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                        profileAsync.when(
+                          data: (data) {
+                            final sports = data?['sports'] as List? ?? [];
+                            final sportName = sports.isNotEmpty ? ((sports[0] as Map)['name'] as String?) ?? 'Sport' : 'Sport';
+                            final ageGroup = (data?['age_group'] ?? data?['ageGroup']) as Map<String, dynamic>?;
+                            final ageName = (ageGroup?['label'] ?? ageGroup?['name'] ?? 'Age Group') as String;
+                            return Text(
+                              '$sportName · $ageName',
+                              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                            );
+                          },
+                          loading: () => const Text('Loading profile...', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                          error: (_, __) => const Text('Athlete', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                         ),
                       ],
                     ),

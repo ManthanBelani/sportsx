@@ -45,11 +45,23 @@ class MetaNotifier extends StateNotifier<MetaState> {
         _dio.get('/meta/age-groups'),
       ]);
       final sports = (futures[0].data['data'] as List).map((e) => Sport.fromJson(e)).toList();
-      final cities = (futures[1].data['data'] as List).map((e) => City.fromJson(e)).toList();
+      
+      final citiesData = futures[1].data['data'];
+      final List<City> cities = [];
+      if (citiesData is Map) {
+        for (final group in citiesData.values) {
+          cities.addAll((group as List).map((e) => City.fromJson(e)));
+        }
+      } else if (citiesData is List) {
+        cities.addAll(citiesData.map((e) => City.fromJson(e)));
+      }
+
       final ageGroups = (futures[2].data['data'] as List).map((e) => AgeGroup.fromJson(e)).toList();
       state = MetaState(sports: sports, cities: cities, ageGroups: ageGroups);
     } on DioException catch (e) {
       state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: 'Failed to parse meta data');
     }
   }
 

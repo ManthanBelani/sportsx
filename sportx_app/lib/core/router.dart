@@ -110,13 +110,25 @@ String? _onboardingRouteFor(String? role) {
   }
 }
 
+class RouterNotifier extends ChangeNotifier {
+  RouterNotifier(Ref ref) {
+    ref.listen<AuthState>(authProvider, (previous, next) {
+      if (previous?.status != next.status || previous?.needsOnboarding != next.needsOnboarding) {
+        notifyListeners();
+      }
+    });
+  }
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
+  final notifier = RouterNotifier(ref);
 
   return GoRouter(
     initialLocation: '/splash',
+    refreshListenable: notifier,
     redirect: (context, state) {
       final loc = state.matchedLocation;
+      final authState = ref.read(authProvider);
       final status = authState.status;
       const authScreens = ['/splash', '/role-selection', '/sign-up', '/login'];
       const onboardingScreens = [
@@ -129,7 +141,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         final onboardingRoute = _onboardingRouteFor(authState.user?.role);
         // Needs onboarding → force the user through their role onboarding first.
         if (authState.needsOnboarding && onboardingRoute != null) {
-          return loc == onboardingRoute ? null : onboardingRoute;
+          if (onboardingScreens.contains(loc)) {
+            return null; // Let them move freely between onboarding steps
+          }
+          return onboardingRoute; // Otherwise, force them to start onboarding
         }
         // Fully set up → never show auth / onboarding screens.
         if (authScreens.contains(loc) || onboardingScreens.contains(loc)) {
