@@ -89,6 +89,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Future<void> _loadProfile() async {
+    final authUser = ref.read(authProvider).user;
+    setState(() {
+      _name = authUser?.name ?? '';
+      _isLoading = false;
+    });
+
     try {
       final dio = ref.read(dioProvider);
       final response = await dio.get('/me/profile');
@@ -118,12 +124,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               };
             }).toList();
           }
-          _isLoading = false;
         });
-      } else {
-        setState(() => _isLoading = false);
       }
     } catch (e) {
+      debugPrint('Failed to load profile: $e');
+    } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }

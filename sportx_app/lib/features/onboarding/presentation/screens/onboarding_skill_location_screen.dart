@@ -40,7 +40,8 @@ class _OnboardingSkillLocationScreenState extends ConsumerState<OnboardingSkillL
 
     if (success && mounted) {
       ref.read(authProvider.notifier).markOnboardingComplete();
-      context.go('/home');
+      await ref.read(authProvider.notifier).refreshUser();
+      if (mounted) context.go('/home');
     }
   }
 

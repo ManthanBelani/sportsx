@@ -30,12 +30,26 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
   Future<void> _submit() async {
     setState(() => _submitting = true);
     try {
-      await ref.read(dioProvider).post('/trials/${widget.trialId}/register', data: {
+      final response = await ref.read(dioProvider).post('/trials/${widget.trialId}/register', data: {
         'playing_role': _roleController.text.trim(),
         'medical_conditions': _medicalController.text.trim(),
         'parental_consent': _parentalConsent,
       });
-      if (mounted) context.push('/registration-confirmation');
+      if (mounted) {
+        final data = response.data['data'] as Map<String, dynamic>?;
+        context.push('/registration-confirmation', extra: {
+          'is_trial': true,
+          'registration_ref': data?['registration_ref'],
+          'event_name': data?['trial']?['name'],
+          'event_date': data?['trial']?['event_datetime'] != null
+              ? _formatDate(data!['trial']['event_datetime'])
+              : null,
+          'event_time': data?['trial']?['event_datetime'] != null
+              ? _formatTime(data!['trial']['event_datetime'])
+              : null,
+          'venue': data?['trial']?['venue'],
+        });
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Registration failed: $e')));
@@ -240,5 +254,27 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
         ),
       ),
     );
+  }
+
+  String _formatDate(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr);
+      final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return '${date.day} ${months[date.month - 1]} ${date.year}';
+    } catch (_) {
+      return dateStr;
+    }
+  }
+
+  String _formatTime(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr);
+      final hour = date.hour > 12 ? date.hour - 12 : (date.hour == 0 ? 12 : date.hour);
+      final ampm = date.hour >= 12 ? 'PM' : 'AM';
+      final minute = date.minute.toString().padLeft(2, '0');
+      return '$hour:$minute $ampm';
+    } catch (_) {
+      return '';
+    }
   }
 }

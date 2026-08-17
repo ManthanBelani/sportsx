@@ -35,6 +35,7 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
       });
       if (mounted) {
         ref.read(authProvider.notifier).markOnboardingComplete();
+        await ref.read(authProvider.notifier).refreshUser();
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile Submitted for Review')));
         context.go('/organizer-dashboard');
       }

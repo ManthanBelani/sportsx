@@ -21,34 +21,35 @@ Full endpoint listing for the Laravel REST API. Every endpoint maps to a feature
 
 | Method | Path | Auth | Purpose | Source |
 |---|---|---|---|---|
-| POST | `/auth/register` | — | Create account (unverified). | FR-AUTH-2,3 |
-| POST | `/auth/verify-otp` | — | Verify OTP; issue token. | FR-AUTH-4 |
-| POST | `/auth/resend-otp` | — | Resend OTP (rate-limited). | S4 |
+| POST | `/auth/register` | — | Create account; issues token directly (email/password only, no OTP). | FR-AUTH-2,3 |
+| POST | `/auth/verify-email` | — | Verify email with token (not OTP-based). | FR-AUTH-4 |
 | POST | `/auth/login` | — | Login with email + password; issue token. | FR-AUTH-5 |
 | POST | `/auth/logout` | Any | Revoke token. | — |
-| POST | `/auth/forgot-password` | — | Request password reset OTP. | S5 |
-| POST | `/auth/reset-password` | — | Reset password with OTP token. | S5 |
+| POST | `/auth/forgot-password` | — | Request password reset. | S5 |
+| POST | `/auth/reset-password` | — | Reset password with token. | S5 |
 
 > **Note:** Google OAuth (FR-AUTH-12) is deferred to Phase 4.
+> **Note:** There is NO OTP verification flow. Registration returns token immediately.
+> **Note:** There is NO resend-otp endpoint currently implemented.
 
 ### POST `/auth/register`
 
 **Request:**
 ```json
-{ "role": "athlete", "email": "aryan@example.com", "name": "Aryan Patel" }
+{ "role": "athlete", "email": "aryan@example.com", "password": "secret", "name": "Aryan Patel" }
 ```
-> `phone` optional (captured but unverified). `role` required (one of S2 options).
+> `phone` optional. `role` required (one of: athlete, coach, academy, organizer, sponsor).
 
-**Response 202:**
+**Response 200:**
 ```json
-{ "data": { "message": "OTP sent", "email_masked": "a****@example.com" } }
+{ "token": "1|abc...", "user": { "id": 1, "role": "athlete", "name": "Aryan Patel", "email_verified_at": "..." }, "needs_onboarding": true }
 ```
 
-### POST `/auth/verify-otp`
+### POST `/auth/verify-email`
 
 **Request:**
 ```json
-{ "email": "aryan@example.com", "code": "123456" }
+{ "token": "abc123..." }
 ```
 
 **Response 200:**
@@ -63,7 +64,7 @@ Full endpoint listing for the Laravel REST API. Every endpoint maps to a feature
 { "email": "aryan@example.com", "password": "secret" }
 ```
 
-**Response 200:** Same shape as verify-otp.
+**Response 200:** Same shape as register response.
 
 ---
 
@@ -262,14 +263,14 @@ All seven listing types share the same pattern: paginated card-list with consist
 
 | Method | Path | Auth | Purpose | Source |
 |---|---|---|---|---|
-| POST | `/trials/{id}/registrations` | Athlete | Register for a trial. | FR-ATH-8 |
-| GET | `/trials/{id}/registrations` | Academy/Organizer owner | Registrant list (AC6). | FR-ACAD-5 |
-| GET | `/registrations/{id}` | Academy/Organizer | Registrant detail + documents (AC7). | FR-ACAD-6 |
-| POST | `/registrations/{id}/verify` | Academy/Organizer | Mark as verified. | FR-ACAD-6 |
-| POST | `/registrations/{id}/reject` | Academy/Organizer | Mark as rejected. | FR-ACAD-6 |
-| PATCH | `/registrations/{id}/reminder` | Athlete | Toggle reminder on/off. | A15 |
+| POST | `/trials/{trial}/register` | Athlete | Register for a trial. | FR-ATH-8 |
+| GET | `/trials/{trial}/registrations` | Academy/Organizer owner | Registrant list (AC6). | FR-ACAD-5 |
+| GET | `/registrations/trials/{registration}` | Academy/Organizer | Registrant detail + documents (AC7). | FR-ACAD-6 |
+| POST | `/registrations/trials/{registration}/verify` | Academy/Organizer | Mark as verified. | FR-ACAD-6 |
+| POST | `/registrations/trials/{registration}/reject` | Academy/Organizer | Mark as rejected. | FR-ACAD-6 |
+| POST | `/registrations/trials/{registration}/reminder` | Athlete | Toggle reminder on/off. | A15 |
 
-### POST `/trials/{id}/registrations`
+### POST `/trials/{trial}/register`
 
 **Request:**
 ```json
@@ -289,13 +290,13 @@ All seven listing types share the same pattern: paginated card-list with consist
 
 | Method | Path | Auth | Purpose | Source |
 |---|---|---|---|---|
-| POST | `/tournaments/{id}/registrations` | Athlete | Register for a tournament. | FR-ATH-10 |
-| GET | `/tournaments/{id}/registrations` | Organizer | Registration management list (O7). | FR-ORG-5 |
-| GET | `/tournaments/{id}/capacity` | Organizer | Category capacities (O8). | FR-ORG-6 |
-| PUT | `/tournaments/{id}/capacity` | Organizer | Update capacities + waitlist toggle. | FR-ORG-6 |
-| PATCH | `/registrations/{reg_id}/payment-status` | Organizer | Flip manual payment flag. | FR-ORG-5 |
+| POST | `/tournaments/{tournament}/register` | Athlete | Register for a tournament. | FR-ATH-10 |
+| GET | `/tournaments/{tournament}/registrations` | Organizer | Registration management list (O7). | FR-ORG-5 |
+| GET | `/tournaments/{tournament}/capacity` | Organizer | Category capacities (O8). | FR-ORG-6 |
+| PUT | `/tournaments/{tournament}/capacity` | Organizer | Update capacities + waitlist toggle. | FR-ORG-6 |
+| PATCH | `/registrations/tournaments/{registration}/payment` | Organizer | Flip manual payment flag. | FR-ORG-5 |
 
-### POST `/tournaments/{id}/registrations`
+### POST `/tournaments/{tournament}/register`
 
 **Request:**
 ```json
@@ -361,7 +362,7 @@ All seven listing types share the same pattern: paginated card-list with consist
 
 | Method | Path | Auth | Purpose |
 |---|---|---|---|
-| POST | `/sponsorships/{id}/applications` | Athlete | Submit pitch (FR-ATH-13, A23). |
+| POST | `/sponsorships/{sponsorship}/apply` | Athlete | Submit pitch (FR-ATH-13, A23). |
 
 **Request:** `{ "pitch_note": "I've represented my state at the U-14 level..." }`
 
@@ -370,13 +371,11 @@ All seven listing types share the same pattern: paginated card-list with consist
 | Method | Path | Auth | Purpose | Source |
 |---|---|---|---|---|
 | GET | `/me/applications` | Sponsor | Applications inbox. | FR-SPON-6, SP7 |
-| GET | `/me/applications/{id}` | Sponsor | Application detail + pitch. | FR-SPON-7, SP8 |
-| POST | `/me/applications/{id}/shortlist` | Sponsor | Shortlist from inbox. | FR-SPON-7 |
-| POST | `/me/applications/{id}/reject` | Sponsor | Reject. | FR-SPON-7 |
-| POST | `/me/applications/{id}/reply` | Sponsor | Reply (opens enquiry thread). | FR-SPON-7, AS-04 |
+| GET | `/sponsorships/{sponsorship}/applications` | Sponsor | Applications for a sponsorship. | FR-SPON-7, SP8 |
+| PATCH | `/sponsorships/{sponsorship}/applications/{application}` | Sponsor | Update application (shortlist/reject). | FR-SPON-7 |
 | GET | `/me/shortlist` | Sponsor | Shortlist list. | FR-SPON-8, SP9 |
-| POST | `/me/shortlist` | Sponsor | Shortlist an athlete directly. | FR-SPON-5 |
-| PUT | `/me/shortlist/{entry_id}` | Sponsor | Update note. | FR-SPON-8 |
+| POST | `/me/shortlist` | Sponsor | Add athlete to shortlist directly. | FR-SPON-5 |
+| DELETE | `/me/shortlist/{entry}` | Sponsor | Remove from shortlist. | FR-SPON-8 |
 
 ### Sponsor Athlete Discovery
 

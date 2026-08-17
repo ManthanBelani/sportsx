@@ -181,6 +181,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(error: null, fieldErrors: const {});
   }
 
+  /// Refreshes user data from the server (e.g., after onboarding completes
+  /// when profile name may have been updated).
+  Future<void> refreshUser() async {
+    try {
+      final resp = await _dio.get('/auth/me');
+      final data = resp.data['data'] as Map<String, dynamic>;
+      state = state.copyWith(
+        user: User.fromJson(data),
+        needsOnboarding: data['needs_onboarding'] == true,
+      );
+    } catch (_) {
+      // Silently fail - user data refresh is best-effort
+    }
+  }
+
   void _fail(DioException e) {
     final api = ApiException.fromDio(e);
     state = state.copyWith(

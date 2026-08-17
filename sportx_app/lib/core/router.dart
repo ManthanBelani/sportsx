@@ -11,6 +11,8 @@ import 'package:sportx_app/features/saved/presentation/screens/saved_screen.dart
 import 'package:sportx_app/features/athlete/presentation/screens/profile_screen.dart';
 import 'package:sportx_app/features/onboarding/presentation/screens/onboarding_sport_age_screen.dart';
 import 'package:sportx_app/features/onboarding/presentation/screens/onboarding_skill_location_screen.dart';
+import 'package:sportx_app/features/home/presentation/screens/discover_screen.dart';
+import 'package:sportx_app/features/search/presentation/screens/search_filter_screen.dart';
 import 'package:sportx_app/features/academy/presentation/screens/academy_directory_screen.dart';
 import 'package:sportx_app/features/academy/presentation/screens/academy_detail_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/coach_directory_screen.dart';
@@ -58,6 +60,7 @@ import 'package:sportx_app/features/notifications/presentation/screens/notificat
 import 'package:sportx_app/features/settings/presentation/screens/settings_screen.dart';
 import 'package:sportx_app/features/settings/presentation/screens/help_support_screen.dart';
 import 'package:sportx_app/features/scholarship/presentation/screens/scholarship_list_screen.dart';
+import 'package:sportx_app/features/scholarship/presentation/screens/scholarship_detail_screen.dart';
 import 'package:sportx_app/features/sports_venue/presentation/screens/sports_venue_list_screen.dart';
 import 'package:sportx_app/features/social/presentation/screens/create_post_screen.dart';
 import 'package:sportx_app/features/chat/presentation/screens/chat_list_screen.dart';
@@ -70,11 +73,9 @@ import 'package:sportx_app/features/coach/presentation/screens/edit_facilities_s
 import 'package:sportx_app/features/coach/presentation/screens/showcase_athletes_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/sponsor_directory_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/coach_profile_detail_screen.dart';
-import 'package:sportx_app/features/search/presentation/screens/search_filter_screen.dart';
 import 'package:sportx_app/features/search/presentation/screens/universal_search_screen.dart';
 import 'package:sportx_app/features/connections/presentation/screens/my_connections_screen.dart';
 import 'package:sportx_app/features/connections/presentation/screens/connection_requests_screen.dart';
-import 'package:sportx_app/features/home/presentation/screens/discover_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/view_profile_screen.dart';
 import 'package:sportx_app/features/social/presentation/screens/post_detail_screen.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_login_screen.dart';
@@ -181,7 +182,17 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/enquire/:title', builder: (context, state) => EnquireScreen(title: state.pathParameters['title']!)),
       GoRoute(path: '/trial-registration/:id', builder: (context, state) => TrialRegistrationScreen(trialId: state.pathParameters['id']!)),
       GoRoute(path: '/tournament-registration/:id', builder: (context, state) => TournamentRegistrationScreen(tournamentId: state.pathParameters['id']!)),
-      GoRoute(path: '/registration-confirmation', builder: (context, state) => const RegistrationConfirmationScreen()),
+      GoRoute(path: '/registration-confirmation', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return RegistrationConfirmationScreen(
+          isTrial: extra?['is_trial'] as bool? ?? true,
+          registrationRef: extra?['registration_ref'] as String?,
+          eventName: extra?['event_name'] as String?,
+          eventDate: extra?['event_date'] as String?,
+          eventTime: extra?['event_time'] as String?,
+          venue: extra?['venue'] as String?,
+        );
+      }),
       GoRoute(path: '/coach-dashboard', builder: (context, state) => const CoachDashboardScreen()),
       GoRoute(path: '/academy-dashboard', builder: (context, state) => const AcademyDashboardScreen()),
       GoRoute(path: '/organizer-dashboard', builder: (context, state) => const OrganizerDashboardScreen()),
@@ -258,6 +269,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
       GoRoute(path: '/help-support', builder: (context, state) => const HelpSupportScreen()),
       GoRoute(path: '/scholarships', builder: (context, state) => const ScholarshipListScreen()),
+      GoRoute(path: '/scholarship-detail/:id', builder: (context, state) => ScholarshipDetailScreen(scholarshipId: state.pathParameters['id']!)),
       GoRoute(path: '/sports-venues', builder: (context, state) => const SportsVenueListScreen()),
       GoRoute(path: '/create-post', builder: (context, state) => const CreatePostScreen()),
       GoRoute(path: '/chat-list', builder: (context, state) => const ChatListScreen()),

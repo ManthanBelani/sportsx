@@ -408,7 +408,7 @@ class _ScholarshipSection extends ConsumerWidget {
     return Column(
       children: state.items.take(3).map((item) {
         return GestureDetector(
-          onTap: () => {},
+          onTap: () => context.push('/scholarship-detail/${item.id}'),
           child: Container(
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.all(12),

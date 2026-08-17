@@ -53,6 +53,7 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
         if (_fee.text.trim().isNotEmpty) 'fee_structure': _fee.text.trim(),
       });
       ref.read(authProvider.notifier).markOnboardingComplete();
+      await ref.read(authProvider.notifier).refreshUser();
       if (mounted) context.go('/coach-dashboard');
     } catch (e) {
       if (mounted) {

@@ -4,10 +4,27 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class RegistrationConfirmationScreen extends StatelessWidget {
-  const RegistrationConfirmationScreen({super.key});
+  final String? registrationRef;
+  final String? eventName;
+  final String? eventDate;
+  final String? eventTime;
+  final String? venue;
+  final bool isTrial;
+
+  const RegistrationConfirmationScreen({
+    super.key,
+    this.registrationRef,
+    this.eventName,
+    this.eventDate,
+    this.eventTime,
+    this.venue,
+    this.isTrial = true,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final title = isTrial ? 'You have successfully registered for the trial.' : 'You have successfully registered for the tournament.';
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -17,27 +34,24 @@ class RegistrationConfirmationScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(),
-              
-              // Success Icon
+
               Container(
                 width: 80,
                 height: 80,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFd1fae5),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFd1fae5),
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
                 child: const Icon(LucideIcons.checkCircle, size: 40, color: Color(0xFF059669)),
               ),
               const SizedBox(height: 24),
-              
-              // Title & Subtitle
+
               const Text('Registration Confirmed!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
               const SizedBox(height: 8),
-              const Text('You have successfully registered for the trial.', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+              Text(title, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
               const SizedBox(height: 32),
 
-              // Details Card
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
@@ -47,38 +61,41 @@ class RegistrationConfirmationScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    _buildDetailRow(LucideIcons.calendar, 'Date', '15 Aug 2026'),
-                    const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppColors.border, height: 1)),
-                    _buildDetailRow(LucideIcons.clock, 'Time', '8:00 AM Reporting'),
-                    const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppColors.border, height: 1)),
-                    _buildDetailRow(LucideIcons.mapPin, 'Location', 'Sardar Patel Stadium'),
+                    if (eventDate != null) ...[
+                      _buildDetailRow(LucideIcons.calendar, 'Date', eventDate!),
+                      const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppColors.border, height: 1)),
+                    ],
+                    if (eventTime != null) ...[
+                      _buildDetailRow(LucideIcons.clock, 'Time', eventTime!),
+                      const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Divider(color: AppColors.border, height: 1)),
+                    ],
+                    if (venue != null) _buildDetailRow(LucideIcons.mapPin, 'Location', venue!),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
 
-              // Registration ID Pill
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFe6f0ff),
-                  borderRadius: BorderRadius.circular(20),
+              if (registrationRef != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFe6f0ff),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(LucideIcons.hash, size: 14, color: AppColors.primary),
+                      const SizedBox(width: 6),
+                      Text(registrationRef!, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(LucideIcons.hash, size: 14, color: AppColors.primary),
-                    const SizedBox(width: 6),
-                    const Text('SPX-2489', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary)),
-                  ],
-                ),
-              ),
 
               const Spacer(),
 
-              // Actions
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () => context.go('/activity-hub'),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
                   backgroundColor: AppColors.primary,
@@ -86,7 +103,7 @@ class RegistrationConfirmationScreen extends StatelessWidget {
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
-                child: const Text('View Ticket', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                child: const Text('View in Activity', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               ),
               const SizedBox(height: 12),
               OutlinedButton(

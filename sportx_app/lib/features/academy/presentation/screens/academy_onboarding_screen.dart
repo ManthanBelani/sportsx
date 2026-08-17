@@ -53,6 +53,7 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
         if (_fee.text.trim().isNotEmpty) 'fee_range': _fee.text.trim(),
       });
       ref.read(authProvider.notifier).markOnboardingComplete();
+      await ref.read(authProvider.notifier).refreshUser();
       if (mounted) context.go('/academy-dashboard');
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
