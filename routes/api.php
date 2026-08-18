@@ -233,6 +233,8 @@ Route::prefix('v1')->group(function () {
     Route::post('/me/connections/{id}/accept', [ConnectionController::class, 'accept'])->middleware('auth:sanctum');
     Route::delete('/me/connections/{id}', [ConnectionController::class, 'destroy'])->middleware('auth:sanctum');
     Route::get('/me/connections/requests', [ConnectionController::class, 'requests'])->middleware('auth:sanctum');
+    Route::get('/me/connections/status/{userId}', [ConnectionController::class, 'status'])->middleware('auth:sanctum');
+    Route::get('/me/connections/count', [ConnectionController::class, 'count'])->middleware('auth:sanctum');
 
     // ── Social Posts (Phase 4) ──
     Route::get('/posts', [PostController::class, 'index'])->middleware('auth:sanctum');
