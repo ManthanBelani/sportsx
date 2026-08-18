@@ -69,6 +69,17 @@ final connectionRequestsProvider =
       .toList();
 });
 
+final connectionStatusProvider =
+    FutureProvider.family<Map<String, dynamic>, String>((ref, targetUserId) async {
+  final resp = await ref.watch(dioProvider).get('/me/connections/status/$targetUserId');
+  return resp.data['data'] as Map<String, dynamic>;
+});
+
+final connectionCountProvider = FutureProvider<int>((ref) async {
+  final resp = await ref.watch(dioProvider).get('/me/connections/count');
+  return resp.data['data']['count'] as int? ?? 0;
+});
+
 Future<bool> requestConnection(WidgetRef ref, int userId) async {
   try {
     await ref.read(dioProvider).post('/me/connections/request', data: {'user_id': userId});

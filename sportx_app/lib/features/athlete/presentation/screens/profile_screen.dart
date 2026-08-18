@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:lucide_flutter/lucide_icons.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/features/connections/presentation/providers/connections_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -142,6 +143,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       debugPrint('Failed to load profile: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+
+    _loadConnectionCount();
+  }
+
+  Future<void> _loadConnectionCount() async {
+    try {
+      final dio = ref.read(dioProvider);
+      final resp = await dio.get('/me/connections/count');
+      if (mounted) {
+        setState(() {
+          _connectsCount = resp.data['data']['count'] as int? ?? 0;
+        });
+      }
+    } catch (e) {
+      debugPrint('Failed to load connection count: $e');
     }
   }
 

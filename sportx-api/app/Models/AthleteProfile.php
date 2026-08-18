@@ -29,6 +29,8 @@ class AthleteProfile extends Model
         'photo_media_id',
     ];
 
+    protected $appends = ['connections_count'];
+
     protected function casts(): array
     {
         return [
@@ -84,5 +86,13 @@ class AthleteProfile extends Model
     public function savedItems(): MorphMany
     {
         return $this->morphMany(SavedItem::class, 'item');
+    }
+
+    public function getConnectionsCountAttribute(): int
+    {
+        return Connection::where('status', 'accepted')
+            ->where(fn ($q) => $q->where('follower_user_id', $this->user_id)
+                ->orWhere('followee_user_id', $this->user_id))
+            ->count();
     }
 }

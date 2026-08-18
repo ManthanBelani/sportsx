@@ -18,6 +18,8 @@ class CoachProfile extends Model
         'listing_status', 'profile_completeness',
     ];
 
+    protected $appends = ['connections_count'];
+
     protected $casts = [
         'certifications' => 'array',
         'languages' => 'array',
@@ -48,5 +50,13 @@ class CoachProfile extends Model
     public function photo(): BelongsTo
     {
         return $this->belongsTo(MediaItem::class, 'photo_media_id');
+    }
+
+    public function getConnectionsCountAttribute(): int
+    {
+        return Connection::where('status', 'accepted')
+            ->where(fn ($q) => $q->where('follower_user_id', $this->user_id)
+                ->orWhere('followee_user_id', $this->user_id))
+            ->count();
     }
 }

@@ -85,4 +85,41 @@ class ConnectionController extends Controller
 
         return response()->json($requests);
     }
+
+    /** Get connection status with a specific user. */
+    public function status(Request $request, string $userId)
+    {
+        $currentUserId = $request->user()->id;
+
+        $connection = Connection::where(function ($q) use ($currentUserId, $userId) {
+            $q->where('follower_user_id', $currentUserId)
+              ->where('followee_user_id', $userId);
+        })->orWhere(function ($q) use ($currentUserId, $userId) {
+            $q->where('follower_user_id', $userId)
+              ->where('followee_user_id', $currentUserId);
+        })->first();
+
+        if (!$connection) {
+            return response()->json(['data' => ['status' => 'none', 'connection_id' => null]]);
+        }
+
+        return response()->json([
+            'data' => [
+                'status' => $connection->status,
+                'connection_id' => $connection->id,
+                'is_initiator' => $connection->follower_user_id === $currentUserId,
+            ]
+        ]);
+    }
+
+    /** Get the user's accepted connection count. */
+    public function count(Request $request)
+    {
+        $count = Connection::where('status', 'accepted')
+            ->where(fn ($q) => $q->where('follower_user_id', $request->user()->id)
+                ->orWhere('followee_user_id', $request->user()->id))
+            ->count();
+
+        return response()->json(['data' => ['count' => $count]]);
+    }
 }

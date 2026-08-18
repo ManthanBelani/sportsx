@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/features/connections/presentation/providers/connections_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class ViewProfileScreen extends ConsumerStatefulWidget {
@@ -21,7 +23,10 @@ class ViewProfileScreen extends ConsumerStatefulWidget {
 
 class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
   bool _isLoading = true;
+  bool _isConnecting = false;
   Map<String, dynamic>? _profileData;
+  String _connectionStatus = 'none';
+  String? _connectionId;
 
   @override
   void initState() {
@@ -42,12 +47,57 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
           _isLoading = false;
         });
       }
+      _loadConnectionStatus();
     } catch (e) {
       if (mounted) {
         setState(() {
           _isLoading = false;
           _profileData = _getMockData();
         });
+      }
+    }
+  }
+
+  Future<void> _loadConnectionStatus() async {
+    try {
+      final resp = await ref.read(dioProvider).get('/me/connections/status/${widget.id}');
+      if (mounted) {
+        setState(() {
+          _connectionStatus = resp.data['data']['status'] ?? 'none';
+          _connectionId = resp.data['data']['connection_id']?.toString();
+        });
+      }
+    } catch (e) {
+      // User not logged in or other error - stay with 'none' status
+    }
+  }
+
+  Future<void> _handleConnect() async {
+    if (_connectionStatus == 'pending' || _connectionStatus == 'accepted') return;
+
+    setState(() => _isConnecting = true);
+
+    try {
+      final dio = ref.read(dioProvider);
+      await dio.post('/me/connections/request', data: {'user_id': int.parse(widget.id)});
+      if (mounted) {
+        setState(() {
+          _connectionStatus = 'pending';
+        });
+        ref.invalidate(connectionStatusProvider(widget.id));
+        final currentUserId = ref.read(authProvider).user?.id.toString() ?? '';
+        ref.invalidate(myConnectionsProvider(currentUserId));
+        ref.invalidate(connectionRequestsProvider(currentUserId));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to send connection request')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isConnecting = false);
       }
     }
   }
@@ -62,6 +112,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
         'bio': 'Passionate cricket coach with 8 years of experience.',
         'city': {'name': 'Ahmedabad'},
         'is_verified': true,
+        'connections_count': 0,
       };
     }
     return {
@@ -72,6 +123,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
       'city': {'name': 'Ahmedabad'},
       'age_group': 'Under-14',
       'is_verified': true,
+      'connections_count': 0,
     };
   }
 
@@ -250,13 +302,34 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
   }
 
   Widget _buildActionButtons() {
+    final isPending = _connectionStatus == 'pending';
+    final isConnected = _connectionStatus == 'accepted';
+
     return Row(
       children: [
         Expanded(
           child: ElevatedButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.person_add),
-            label: const Text('Connect'),
+            onPressed: _isConnecting ? null : _handleConnect,
+            icon: _isConnecting
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Icon(
+                    isPending
+                        ? Icons.hourglass_empty
+                        : isConnected
+                            ? Icons.check
+                            : Icons.person_add,
+                  ),
+            label: Text(
+              isPending
+                  ? 'Pending'
+                  : isConnected
+                      ? 'Connected'
+                      : 'Connect',
+            ),
           ),
         ),
         const SizedBox(width: 12),
@@ -278,6 +351,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
   }
 
   Widget _buildStatsRow() {
+    final connectionsCount = _profileData!['connections_count'] ?? 0;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
@@ -289,7 +363,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
         children: [
           _buildStatItem('24', 'Posts', Icons.post_add_outlined),
           Container(width: 1, height: 32, color: AppColors.border),
-          _buildStatItem('156', 'Connects', Icons.people_outline),
+          _buildStatItem('$connectionsCount', 'Connects', Icons.people_outline),
           Container(width: 1, height: 32, color: AppColors.border),
           _buildStatItem('8', 'Achievements', Icons.emoji_events_outlined),
         ],
@@ -517,6 +591,9 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
   }
 
   Widget _buildBottomActions() {
+    final isPending = _connectionStatus == 'pending';
+    final isConnected = _connectionStatus == 'accepted';
+
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -534,9 +611,27 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
           children: [
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.person_add),
-                label: const Text('Connect'),
+                onPressed: _isConnecting ? null : _handleConnect,
+                icon: _isConnecting
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Icon(
+                        isPending
+                            ? Icons.hourglass_empty
+                            : isConnected
+                                ? Icons.check
+                                : Icons.person_add,
+                      ),
+                label: Text(
+                  isPending
+                      ? 'Pending'
+                      : isConnected
+                          ? 'Connected'
+                          : 'Connect',
+                ),
               ),
             ),
             const SizedBox(width: 12),
