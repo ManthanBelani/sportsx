@@ -21,29 +21,24 @@ class TournamentRegistrationSeeder extends Seeder
             return;
         }
 
-        $registrations = [];
+        $count = 0;
         foreach ($athletes as $index => $athlete) {
-            $registrations[] = [
-                'tournament_id' => $tournament->id,
-                'category_id' => $category->id,
-                'athlete_profile_id' => $athlete->id,
-                'team_name' => $index === 0 ? 'Young Strikers' : null,
-                'status' => $index === 0 ? 'confirmed' : 'registered',
-                'registration_date' => now()->subDays(rand(1, 10))->toDateString(),
-            ];
-        }
-
-        foreach ($registrations as $registration) {
-            TournamentRegistration::updateOrCreate(
+            TournamentRegistration::firstOrCreate(
                 [
-                    'tournament_id' => $registration['tournament_id'],
-                    'category_id' => $registration['category_id'],
-                    'athlete_profile_id' => $registration['athlete_profile_id'],
+                    'tournament_id' => $tournament->id,
+                    'category_id' => $category->id,
+                    'athlete_id' => $athlete->id,
                 ],
-                $registration
+                [
+                    'participation_type' => 'individual',
+                    'team_name' => $index === 0 ? 'Young Strikers' : null,
+                    'payment_status' => 'pending',
+                    'status' => 'pending',
+                ]
             );
+            $count++;
         }
 
-        $this->command->info('Tournament registrations seeded: ' . count($registrations));
+        $this->command->info('Tournament registrations seeded: ' . $count);
     }
 }

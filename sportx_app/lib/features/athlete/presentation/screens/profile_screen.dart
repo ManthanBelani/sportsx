@@ -49,6 +49,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     },
   ];
 
+  String? _avatarUrl;
+
+  List<Map<String, dynamic>> _uploadedMedia = const [];
+
   final List<Map<String, dynamic>> _tournamentHistory = [
     {
       'id': '1',
@@ -105,13 +109,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         final ageGroup = (data['age_group'] ?? data['ageGroup']) as Map<String, dynamic>?;
         final city = data['city'] as Map<String, dynamic>?;
         final ach = data['achievements'] as List? ?? const [];
+        final photo = data['photo'] as Map<String, dynamic>?;
+        final mediaItems = data['media_items'] as List? ?? const [];
 
         setState(() {
           _name = (data['full_name'] ?? data['name'] ?? _name) as String;
+          _bio = (data['experience'] ?? data['bio'] ?? _bio) as String;
           _sport = sports.isNotEmpty ? ((sports[0] as Map)['name'] as String?) ?? _sport : _sport;
           _ageGroup = (ageGroup?['label'] ?? ageGroup?['name'] ?? _ageGroup) as String;
           _location = (city?['name'] ?? _location) as String;
           _isVerified = data['is_verified'] == true;
+          _avatarUrl = photo?['url'] as String?;
+          _uploadedMedia = mediaItems
+              .whereType<Map>()
+              .map((m) => Map<String, dynamic>.from(m))
+              .toList();
           _achievementsCount = ach.isNotEmpty ? ach.length : _achievementsCount;
           if (ach.isNotEmpty) {
             _achievements = ach.asMap().entries.map((e) {
@@ -145,7 +157,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         actions: [
           IconButton(
             icon: const Icon(LucideIcons.edit2, color: AppColors.primary, size: 20),
-            onPressed: () => context.push('/edit-athlete-profile'),
+            onPressed: () async {
+              await context.push('/edit-profile');
+              _loadProfile();
+            },
           ),
         ],
       ),
@@ -158,8 +173,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _buildRoleQuickLinks(),
-                    _buildSectionDivider(),
                     _buildProfileHeader(),
                     _buildSectionDivider(),
                     _buildAboutSection(),
@@ -173,6 +186,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     _buildMediaGallerySection(),
                     _buildSectionDivider(),
                     _buildShareProfileButton(),
+                    _buildSectionDivider(),
+                    _buildRoleQuickLinks(),
                     _buildAccountActions(),
                   ],
                 ),
@@ -204,7 +219,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 end: Alignment.bottomRight,
               ),
             ),
-            child: const Icon(LucideIcons.user, size: 48, color: Colors.white),
+            child: ClipOval(
+              child: _avatarUrl != null
+                  ? Image.network(
+                      _absoluteUrl(_avatarUrl!),
+                      width: 96,
+                      height: 96,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          const Icon(LucideIcons.user, size: 48, color: Colors.white),
+                    )
+                  : const Icon(LucideIcons.user, size: 48, color: Colors.white),
+            ),
           ),
           const SizedBox(height: 16),
           Row(
@@ -403,10 +429,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildMediaGallerySection() {
+    final images = _uploadedMedia.isNotEmpty
+        ? _uploadedMedia.map((m) => _absoluteUrl((m['url'] ?? '') as String)).where((u) => u.isNotEmpty).toList()
+        : _mediaGallery;
     return _buildSection(
       title: 'Media Gallery',
       action: GestureDetector(
-        onTap: () => context.push('/media-gallery'),
+        onTap: () async {
+          await context.push('/media-gallery');
+          _loadProfile();
+        },
         child: const Text('See all', style: TextStyle(fontSize: 13, color: AppColors.primary)),
       ),
       child: GridView.builder(
@@ -418,18 +450,33 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         padding: EdgeInsets.zero,
-        itemCount: _mediaGallery.length,
+        itemCount: images.length,
         itemBuilder: (context, index) {
           return ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Image.network(
-              _mediaGallery[index],
+              images[index],
               fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                color: AppColors.surface,
+                child: const Icon(LucideIcons.image, color: AppColors.textSecondary),
+              ),
             ),
           );
         },
       ),
     );
+  }
+
+  /// Media URLs from the API may be root-relative (/storage/…) — make them
+  /// absolute against the configured API host.
+  String _absoluteUrl(String url) {
+    if (url.isEmpty || url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    final base = ref.read(dioProvider).options.baseUrl;
+    final origin = base.replaceFirst(RegExp(r'/api/v1/?$'), '');
+    return '$origin$url';
   }
 
   Widget _buildShareProfileButton() {

@@ -2,6 +2,36 @@ import 'sport.dart';
 import 'city.dart';
 import 'age_group.dart';
 
+class TournamentCategory {
+  final int id;
+  final String name;
+  final int? ageGroupId;
+  final String? ageGroupName;
+  final int? capacity;
+
+  TournamentCategory({
+    required this.id,
+    required this.name,
+    this.ageGroupId,
+    this.ageGroupName,
+    this.capacity,
+  });
+
+  factory TournamentCategory.fromJson(Map<String, dynamic> json) {
+    return TournamentCategory(
+      id: json['id'] as int,
+      name: (json['name'] ?? '') as String,
+      ageGroupId: json['age_group_id'] as int?,
+      ageGroupName: json['age_group'] is Map ? json['age_group']['name'] as String? : null,
+      capacity: (json['capacity'] is num) ? (json['capacity'] as num).toInt() : null,
+    );
+  }
+
+  String get displayName => name.isNotEmpty
+      ? name
+      : (ageGroupName ?? 'Category $id');
+}
+
 class Tournament {
   final int id;
   final String title;
@@ -30,6 +60,7 @@ class Tournament {
   final City? city;
   final AgeGroup? ageGroup;
   final bool isSaved;
+  final List<TournamentCategory> categories;
 
   Tournament({
     required this.id,
@@ -59,6 +90,7 @@ class Tournament {
     this.city,
     this.ageGroup,
     this.isSaved = false,
+    this.categories = const [],
   });
 
   factory Tournament.fromJson(Map<String, dynamic> json) {
@@ -91,6 +123,10 @@ class Tournament {
       city: json['city'] != null ? City.fromJson(json['city']) : null,
       ageGroup: json['age_group'] != null ? AgeGroup.fromJson(json['age_group']) : null,
       isSaved: json['is_saved'] == true || json['is_saved'] == 1,
+      categories: (json['categories'] as List? ?? const [])
+          .whereType<Map>()
+          .map((c) => TournamentCategory.fromJson(Map<String, dynamic>.from(c)))
+          .toList(),
     );
   }
 

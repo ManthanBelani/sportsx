@@ -152,12 +152,22 @@ class RegistrationController extends Controller
             'participation_type' => $validated['participation_type'],
             'team_name' => $validated['team_name'] ?? null,
             'payment_status' => $validated['payment_status'] ?? 'pending',
-            'status' => 'registered',
+            'status' => 'pending',
             'reminder_enabled' => $validated['reminder_enabled'] ?? false,
         ]);
 
+        $registration->load(['category', 'tournament']);
+
         return response()->json([
-            'data' => $registration->load(['category', 'tournament']),
+            'data' => [
+                'id' => $registration->id,
+                'status' => $registration->status,
+                'participation_type' => $registration->participation_type,
+                'team_name' => $registration->team_name,
+                'category' => $registration->category?->only(['id', 'name']),
+                'tournament' => $tournament->only(['id', 'name', 'start_date', 'end_date', 'venue']),
+                'entry_fee' => $tournament->entry_fee,
+            ],
         ], 201);
     }
 
@@ -262,7 +272,7 @@ class RegistrationController extends Controller
             description: "Registration: {$registration->registration_ref}\nVenue: {$trial->venue}",
             start: \Carbon\Carbon::parse($trial->event_datetime),
             end: \Carbon\Carbon::parse($trial->event_datetime)->addHours(3),
-            location: $trial->venue_address ?? $trial->venue ?? '',
+            location: $trial->venue ?? '',
             uid: "trial-{$registration->id}@sportx.app"
         );
 
@@ -287,7 +297,7 @@ class RegistrationController extends Controller
             description: "Registration: {$registration->id}\nCategory: {$category->name}",
             start: $startDate,
             end: $endDate,
-            location: $tournament->venue_address ?? $tournament->venue ?? '',
+            location: $tournament->venue ?? '',
             uid: "tournament-{$registration->id}@sportx.app"
         );
 

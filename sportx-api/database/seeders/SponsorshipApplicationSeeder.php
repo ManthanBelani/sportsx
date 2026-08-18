@@ -19,27 +19,21 @@ class SponsorshipApplicationSeeder extends Seeder
             return;
         }
 
-        $applications = [];
+        $count = 0;
         foreach ($athletes as $index => $athlete) {
-            $applications[] = [
-                'sponsorship_id' => $sponsorship->id,
-                'athlete_profile_id' => $athlete->id,
-                'status' => $index === 0 ? 'approved' : 'pending',
-                'application_date' => now()->subDays(rand(1, 10))->toDateString(),
-                'message' => 'I am very interested in this sponsorship opportunity.',
-            ];
-        }
-
-        foreach ($applications as $application) {
-            SponsorshipApplication::updateOrCreate(
+            SponsorshipApplication::firstOrCreate(
                 [
-                    'sponsorship_id' => $application['sponsorship_id'],
-                    'athlete_profile_id' => $application['athlete_profile_id'],
+                    'sponsorship_id' => $sponsorship->id,
+                    'athlete_id' => $athlete->id,
                 ],
-                $application
+                [
+                    'pitch_note' => 'I am very interested in this sponsorship opportunity.',
+                    'status' => 'submitted',
+                ]
             );
+            $count++;
         }
 
-        $this->command->info('Sponsorship applications seeded: ' . count($applications));
+        $this->command->info('Sponsorship applications seeded: ' . $count);
     }
 }

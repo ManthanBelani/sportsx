@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/shared/presentation/widgets/async_state_view.dart';
 import 'package:sportx_app/shared/presentation/widgets/detail_page_template.dart';
@@ -40,6 +41,11 @@ class TrialDetailScreen extends ConsumerWidget {
         addressStr: t.venue ?? t.city?.name ?? '',
         ctaText: 'Register for Trial',
         onCtaPressed: () => context.push('/trial-registration/$id'),
+        savedType: 'trial',
+        savedItemId: t.id.toString(),
+        onPhonePressed: t.contactNumber == null
+            ? null
+            : () => launchUrl(Uri.parse('tel:${t.contactNumber!.replaceAll(' ', '')}')),
       ),
     );
   }

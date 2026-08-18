@@ -5,6 +5,7 @@ import 'package:sportx_app/core/utils/api_client.dart';
 class SavedItem {
   final String id;
   final String type;
+  final String itemId;
   final String title;
   final String subtitle;
   final String? meta;
@@ -13,6 +14,7 @@ class SavedItem {
   SavedItem({
     required this.id,
     required this.type,
+    required this.itemId,
     required this.title,
     required this.subtitle,
     this.meta,
@@ -20,9 +22,11 @@ class SavedItem {
   });
 
   factory SavedItem.fromJson(Map<String, dynamic> json) {
+    final type = (json['item_type'] as String? ?? json['saveable_type'] as String? ?? json['type'] as String? ?? '').toLowerCase();
     return SavedItem(
-      id: json['id']?.toString() ?? json['saveable_id']?.toString() ?? '',
-      type: (json['saveable_type'] as String? ?? json['type'] as String? ?? '').toLowerCase(),
+      id: json['id']?.toString() ?? '',
+      itemId: json['item_id']?.toString() ?? json['saveable_id']?.toString() ?? '',
+      type: type,
       title: json['title'] as String? ?? json['name'] as String? ?? 'Untitled',
       subtitle: json['subtitle'] as String? ??
           [json['sport']?['name'], json['city']?['name']]
@@ -49,14 +53,15 @@ class SavedState {
       error: error,
     );
   }
+
+  bool isSaved(String type, String itemId) =>
+      items.any((i) => i.type == type && i.itemId == itemId);
 }
 
 class SavedNotifier extends StateNotifier<SavedState> {
   final Dio _dio;
 
-  SavedNotifier(this._dio) : super(SavedState()) {
-    load();
-  }
+  SavedNotifier(this._dio) : super(SavedState());
 
   Future<void> load() async {
     state = state.copyWith(isLoading: true, error: null);
@@ -71,34 +76,32 @@ class SavedNotifier extends StateNotifier<SavedState> {
     }
   }
 
-  Future<void> toggle({
-    required String type,
-    required String id,
-    Map<String, dynamic>? snapshot,
-  }) async {
-    final existing = state.items.where((i) => i.id == id && i.type == type);
+  /// Toggle save state for an item. Returns true when saved, false when unsaved.
+  Future<bool> toggle({required String type, required String itemId}) async {
+    final existing = state.items.where((i) => i.itemId == itemId && i.type == type);
     final isSaved = existing.isNotEmpty;
     try {
       if (isSaved) {
-        await _dio.delete('/me/saved', data: {'saveable_type': type, 'saveable_id': id});
-        state = state.copyWith(items: state.items.where((i) => !(i.id == id && i.type == type)).toList());
+        await _dio.delete('/me/saved', data: {'item_type': type, 'item_id': itemId});
+        state = state.copyWith(
+          items: state.items.where((i) => !(i.itemId == itemId && i.type == type)).toList(),
+        );
+        return false;
       } else {
-        await _dio.post('/me/saved', data: {
-          'saveable_type': type,
-          'saveable_id': id,
-          if (snapshot != null) ...snapshot,
-        });
+        await _dio.post('/me/saved', data: {'item_type': type, 'item_id': itemId});
         await load();
+        return true;
       }
     } on DioException catch (e) {
       state = state.copyWith(error: ApiException.fromDio(e).message);
+      return isSaved;
     }
   }
 
-  Future<void> remove(String savedId) async {
+  Future<void> remove(SavedItem item) async {
     try {
-      await _dio.delete('/me/saved', data: {'id': savedId});
-      state = state.copyWith(items: state.items.where((i) => i.id != savedId).toList());
+      await _dio.delete('/me/saved', data: {'item_type': item.type, 'item_id': item.itemId});
+      state = state.copyWith(items: state.items.where((i) => i.id != item.id).toList());
     } on DioException catch (e) {
       state = state.copyWith(error: ApiException.fromDio(e).message);
     }

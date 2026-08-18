@@ -20,6 +20,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
   void initState() {
     super.initState();
     _focusNode.requestFocus();
+    Future.microtask(() => ref.read(searchProvider.notifier).loadRecentSearches());
   }
 
   @override
@@ -66,14 +67,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () {
-              if (ref.read(searchProvider).results != null) {
-                ref.read(searchProvider.notifier).clearResults();
-                _searchController.clear();
-              } else {
-                context.pop();
-              }
-            },
+            onTap: () => context.pop(),
             child: const Padding(
               padding: EdgeInsets.only(right: 12),
               child: Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary, size: 24),
@@ -82,7 +76,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
           if (hasResults) ...[
             Expanded(
               child: Text(
-                '"${_searchController.text}"',
+                _searchController.text.trim().isEmpty ? 'Results' : '"${_searchController.text.trim()}"',
                 style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -125,6 +119,8 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
                           hintText: 'Search academies, coaches, trials...',
                           hintStyle: TextStyle(color: AppColors.textSecondary, fontSize: 15),
                           border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
                           isDense: true,
                           contentPadding: EdgeInsets.zero,
                         ),
@@ -197,7 +193,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          // Handle remove
+                          ref.read(searchProvider.notifier).removeRecentSearch(search);
                         },
                         child: const Icon(LucideIcons.x, color: AppColors.textSecondary, size: 14),
                       ),
@@ -357,9 +353,6 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
     List<Map<String, dynamic>> items;
 
     switch (category) {
-      case SearchCategory.athletes:
-        items = results.athletes;
-        break;
       case SearchCategory.coaches:
         items = results.coaches;
         break;
@@ -378,15 +371,18 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
       case SearchCategory.sponsors:
         items = results.sponsors;
         break;
+      case SearchCategory.sportsVenues:
+        items = results.sportsVenues;
+        break;
       case SearchCategory.all:
         items = [
-          ...results.athletes,
           ...results.coaches,
           ...results.academies,
           ...results.trials,
           ...results.tournaments,
           ...results.scholarships,
           ...results.sponsors,
+          ...results.sportsVenues,
         ];
         break;
     }
@@ -436,9 +432,58 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
   }
 
   Widget _buildResultCard(Map<String, dynamic> item) {
-    final type = item['type'] ?? 'athlete';
-    final name = item['name'] ?? item['full_name'] ?? item['title'] ?? 'Unknown';
-    final meta = item['sport'] != null ? '${item['sport']} · ${item['city'] ?? item['venue'] ?? ''}' : (item['venue'] ?? '');
+    final type = item['type'] as String? ?? '';
+    final sport = item['sport'] is Map ? item['sport']['name'] as String? : null;
+    final city = item['city'] is Map ? item['city']['name'] as String? : null;
+
+    final title = (item['name'] ?? item['full_name'] ?? item['title'] ?? 'Unknown').toString();
+    final subtitle = [sport, city, item['venue'] ?? item['address']]
+        .whereType<String>()
+        .where((s) => s.trim().isNotEmpty)
+        .take(2)
+        .join(' · ');
+
+    // Real meta per item type — no hardcoded placeholders.
+    String? meta;
+    switch (type) {
+      case 'trial':
+        final dt = item['event_datetime']?.toString();
+        if (dt != null) {
+          final d = DateTime.tryParse(dt);
+          if (d != null) meta = 'Trial: ${d.day}/${d.month}/${d.year}';
+        }
+        meta ??= item['entry_fee'] != null ? 'Fee: ${item['entry_fee']}' : null;
+        break;
+      case 'tournament':
+        final dt = item['start_date']?.toString();
+        if (dt != null) {
+          final d = DateTime.tryParse(dt);
+          if (d != null) meta = 'Starts: ${d.day}/${d.month}/${d.year}';
+        }
+        meta ??= item['prize_pool'] != null ? 'Prize: ₹${item['prize_pool']}' : null;
+        break;
+      case 'scholarship':
+        final amount = item['amount'];
+        if (amount is num) {
+          meta = '₹${amount.toStringAsFixed(0)}';
+        } else if (amount != null) {
+          meta = '₹$amount';
+        }
+        meta ??= item['deadline']?.toString();
+        break;
+      case 'sponsorship':
+        meta = item['deadline']?.toString();
+        break;
+      case 'academy':
+        meta = item['fee_range'] as String?;
+        break;
+      case 'coach':
+        meta = item['fee_structure'] as String?;
+        break;
+      case 'sports_venue':
+        meta = item['pricing'] as String?;
+        break;
+    }
 
     return GestureDetector(
       onTap: () => _navigateToDetail(item),
@@ -453,41 +498,33 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
         child: Row(
           children: [
             Container(
-              width: 64,
-              height: 64,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 borderRadius: BorderRadius.circular(8),
               ),
               alignment: Alignment.center,
-              child: Icon(_getIconForType(type), color: AppColors.primary, size: 28),
+              child: Icon(_getIconForType(type), color: AppColors.primary, size: 26),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                  const SizedBox(height: 4),
-                  if (meta.isNotEmpty)
-                    Text(meta, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-                  const SizedBox(height: 6),
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('₹2,000 – ₹5,000/mo', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary)),
-                      Row(
-                        children: [
-                          Icon(LucideIcons.star, color: Colors.amber, size: 14),
-                          SizedBox(width: 4),
-                          Text('4.8 (124)', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-                        ],
-                      ),
-                    ],
-                  ),
+                  Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  if (subtitle.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(subtitle, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ],
+                  if (meta != null && meta.trim().isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(meta, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ],
                 ],
               ),
             ),
+            const Icon(LucideIcons.chevronRight, size: 18, color: AppColors.textSecondary),
           ],
         ),
       ),
@@ -495,15 +532,12 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
   }
 
   void _navigateToDetail(Map<String, dynamic> item) {
-    final type = item['type'] ?? 'athlete';
+    final type = item['type'] as String? ?? '';
     final id = item['id']?.toString() ?? '';
 
     switch (type) {
-      case 'athlete':
-        context.push('/view-profile', extra: {'type': 'athlete', 'id': id});
-        break;
       case 'coach':
-        context.push('/coach-profile-detail/$id');
+        context.push('/coach-detail/$id');
         break;
       case 'academy':
         context.push('/academy-detail/$id');
@@ -515,10 +549,13 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
         context.push('/tournament-detail/$id');
         break;
       case 'scholarship':
-        context.push('/scholarships');
+        context.push('/scholarship-detail/$id');
         break;
-      case 'sponsor':
+      case 'sponsorship':
         context.push('/sponsor-pitch/$id');
+        break;
+      case 'sports_venue':
+        context.push('/sports-venues');
         break;
     }
   }
@@ -526,13 +563,13 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
   String _getCategoryLabel(SearchCategory category) {
     switch (category) {
       case SearchCategory.all: return 'All';
-      case SearchCategory.athletes: return 'Athletes';
       case SearchCategory.coaches: return 'Coaches';
       case SearchCategory.academies: return 'Academies';
       case SearchCategory.trials: return 'Trials';
       case SearchCategory.tournaments: return 'Tournaments';
       case SearchCategory.scholarships: return 'Scholarships';
       case SearchCategory.sponsors: return 'Sponsors';
+      case SearchCategory.sportsVenues: return 'Venues';
     }
   }
 
@@ -540,25 +577,25 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
     if (results == null) return 0;
     switch (category) {
       case SearchCategory.all: return results.totalCount;
-      case SearchCategory.athletes: return results.athletes.length;
       case SearchCategory.coaches: return results.coaches.length;
       case SearchCategory.academies: return results.academies.length;
       case SearchCategory.trials: return results.trials.length;
       case SearchCategory.tournaments: return results.tournaments.length;
       case SearchCategory.scholarships: return results.scholarships.length;
       case SearchCategory.sponsors: return results.sponsors.length;
+      case SearchCategory.sportsVenues: return results.sportsVenues.length;
     }
   }
 
   IconData _getIconForType(String type) {
     switch (type) {
-      case 'athlete': return LucideIcons.user;
       case 'coach': return LucideIcons.user;
       case 'academy': return LucideIcons.building2;
       case 'trial': return LucideIcons.circleDot;
       case 'tournament': return LucideIcons.trophy;
       case 'scholarship': return LucideIcons.graduationCap;
-      case 'sponsor': return LucideIcons.briefcase;
+      case 'sponsorship': return LucideIcons.briefcase;
+      case 'sports_venue': return LucideIcons.mapPin;
       default: return LucideIcons.search;
     }
   }

@@ -19,27 +19,20 @@ class ShortlistEntrySeeder extends Seeder
             return;
         }
 
-        $entries = [];
-        foreach ($athletes as $index => $athlete) {
-            $entries[] = [
-                'sponsor_id' => $sponsor->id,
-                'athlete_profile_id' => $athlete->id,
-                'status' => 'shortlisted',
-                'notes' => 'Promising athlete with good performance records',
-                'shortlisted_at' => now()->subDays(rand(1, 5))->toDateTimeString(),
-            ];
-        }
-
-        foreach ($entries as $entry) {
-            ShortlistEntry::updateOrCreate(
+        $count = 0;
+        foreach ($athletes as $athlete) {
+            ShortlistEntry::firstOrCreate(
                 [
-                    'sponsor_id' => $entry['sponsor_id'],
-                    'athlete_profile_id' => $entry['athlete_profile_id'],
+                    'sponsor_id' => $sponsor->id,
+                    'athlete_id' => $athlete->id,
                 ],
-                $entry
+                [
+                    'note' => 'Promising athlete with good performance records',
+                ]
             );
+            $count++;
         }
 
-        $this->command->info('Shortlist entries seeded: ' . count($entries));
+        $this->command->info('Shortlist entries seeded: ' . $count);
     }
 }

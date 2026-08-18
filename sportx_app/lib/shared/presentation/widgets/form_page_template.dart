@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
-class FormPageTemplate extends StatelessWidget {
+class FormPageTemplate extends StatefulWidget {
   final String title;
   final Widget? autoFilledProfile;
   final List<Widget> formFields;
   final String ctaText;
   final VoidCallback onSubmit;
+  final String confirmText;
 
   const FormPageTemplate({
     super.key,
@@ -14,20 +15,28 @@ class FormPageTemplate extends StatelessWidget {
     required this.formFields,
     required this.ctaText,
     required this.onSubmit,
+    this.confirmText = 'I confirm the details are correct',
   });
+
+  @override
+  State<FormPageTemplate> createState() => _FormPageTemplateState();
+}
+
+class _FormPageTemplateState extends State<FormPageTemplate> {
+  bool _confirmed = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text(widget.title),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (autoFilledProfile != null) ...[
+            if (widget.autoFilledProfile != null) ...[
               Text('Your Profile (auto-filled)', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               Container(
@@ -38,19 +47,22 @@ class FormPageTemplate extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.grey[300]!),
                 ),
-                child: autoFilledProfile!,
+                child: widget.autoFilledProfile!,
               ),
               const SizedBox(height: 24),
             ],
-            
-            ...formFields,
-            
+
+            ...widget.formFields,
+
             const SizedBox(height: 24),
             Row(
               children: [
-                Checkbox(value: true, onChanged: (v) {}),
-                const Expanded(
-                  child: Text('I confirm the details are correct'),
+                Checkbox(
+                  value: _confirmed,
+                  onChanged: (v) => setState(() => _confirmed = v ?? false),
+                ),
+                Expanded(
+                  child: Text(widget.confirmText),
                 ),
               ],
             ),
@@ -59,8 +71,8 @@ class FormPageTemplate extends StatelessWidget {
               width: double.infinity,
               height: 50,
               child: FilledButton(
-                onPressed: onSubmit,
-                child: Text(ctaText),
+                onPressed: _confirmed ? widget.onSubmit : null,
+                child: Text(widget.ctaText),
               ),
             ),
           ],

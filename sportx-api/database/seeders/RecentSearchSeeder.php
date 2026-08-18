@@ -18,10 +18,10 @@ class RecentSearchSeeder extends Seeder
         }
 
         $searches = [
-            ['user_id' => $users[0]->id, 'search_query' => 'cricket trials ahmedabad'],
-            ['user_id' => $users[0]->id, 'search_query' => 'U-14 football'],
-            ['user_id' => $users[1]->id, 'search_query' => 'swimming academy'],
-            ['user_id' => $users[2]->id, 'search_query' => 'scholarship 2026'],
+            ['user_id' => $users[0]->id, 'query' => 'cricket trials ahmedabad'],
+            ['user_id' => $users[0]->id, 'query' => 'U-14 football'],
+            ['user_id' => $users[1]->id, 'query' => 'swimming academy'],
+            ['user_id' => $users[2]->id, 'query' => 'scholarship 2026'],
         ];
 
         foreach ($searches as $search) {

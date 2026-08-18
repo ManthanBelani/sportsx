@@ -1,10 +1,14 @@
 import 'dart:math';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/features/saved/presentation/providers/saved_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
-class DetailPageTemplate extends StatelessWidget {
+class DetailPageTemplate extends ConsumerWidget {
   final String? heroImageUrl;
   final IconData? heroIcon;
   final String title;
@@ -19,6 +23,12 @@ class DetailPageTemplate extends StatelessWidget {
   final String ctaText;
   final VoidCallback onCtaPressed;
   final VoidCallback? onPhonePressed;
+
+  /// Item type used for the save/unsave heart (e.g. 'trial', 'academy').
+  final String? savedType;
+
+  /// Remote id of the item to save/unsave.
+  final String? savedItemId;
 
   const DetailPageTemplate({
     super.key,
@@ -36,10 +46,21 @@ class DetailPageTemplate extends StatelessWidget {
     required this.ctaText,
     required this.onCtaPressed,
     this.onPhonePressed,
+    this.savedType,
+    this.savedItemId,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final savedState = ref.watch(savedProvider);
+    final canSave = savedType != null && savedItemId != null;
+    final isSaved = canSave && savedState.isSaved(savedType!, savedItemId!);
+
+    // Lazily load saved items once so hearts reflect the real state.
+    if (canSave && savedState.items.isEmpty && !savedState.isLoading && savedState.error == null) {
+      Future.microtask(() => ref.read(savedProvider.notifier).load());
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
@@ -51,11 +72,11 @@ class DetailPageTemplate extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _buildHero(),
-                _buildContent(context),
+                _buildContent(context, ref),
               ],
             ),
           ),
-          
+
           // Header Actions
           Positioned(
             top: MediaQuery.of(context).padding.top + 8,
@@ -75,8 +96,22 @@ class DetailPageTemplate extends StatelessWidget {
                   },
                 ),
                 _buildHeaderBtn(
-                  icon: LucideIcons.heart,
-                  onTap: () {},
+                  // lucide icons don't react to Icon.fill — use the filled
+                  // Material favorite glyph so the saved state is visible.
+                  icon: isSaved ? Icons.favorite : LucideIcons.heart,
+                  iconColor: isSaved ? Colors.red : AppColors.textPrimary,
+                  onTap: canSave
+                      ? () async {
+                          final saved = await ref
+                              .read(savedProvider.notifier)
+                              .toggle(type: savedType!, itemId: savedItemId!);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(saved ? 'Saved to your list' : 'Removed from saved')),
+                            );
+                          }
+                        }
+                      : null,
                 ),
               ],
             ),
@@ -118,7 +153,7 @@ class DetailPageTemplate extends StatelessWidget {
     );
   }
 
-  Widget _buildHeaderBtn({required IconData icon, required VoidCallback onTap}) {
+  Widget _buildHeaderBtn({required IconData icon, required VoidCallback? onTap, Color? iconColor}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -129,12 +164,16 @@ class DetailPageTemplate extends StatelessWidget {
           shape: BoxShape.circle,
         ),
         alignment: Alignment.center,
-        child: Icon(icon, color: AppColors.textPrimary, size: 20),
+        child: Icon(
+          icon,
+          color: iconColor ?? AppColors.textPrimary,
+          size: 20,
+        ),
       ),
     );
   }
 
-  Widget _buildContent(BuildContext context) {
+  Widget _buildContent(BuildContext context, WidgetRef ref) {
     return Transform.translate(
       offset: const Offset(0, -20),
       child: Container(
@@ -271,15 +310,13 @@ class DetailPageTemplate extends StatelessWidget {
 
             Center(
               child: GestureDetector(
-                onTap: () {
-                  // Report Listing
-                },
-                child: Row(
+                onTap: () => _showReportDialog(context, ref),
+                child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(LucideIcons.flag, size: 14, color: AppColors.textSecondary),
-                    const SizedBox(width: 6),
-                    const Text('Report this listing', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                    Icon(LucideIcons.flag, size: 14, color: AppColors.textSecondary),
+                    SizedBox(width: 6),
+                    Text('Report this listing', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                   ],
                 ),
               ),
@@ -290,8 +327,118 @@ class DetailPageTemplate extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomCTA(BuildContext context) {
-    return Container(
+  Future<void> _showReportDialog(BuildContext context, WidgetRef ref) async {
+    if (savedType == null || savedItemId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('This listing cannot be reported')),
+      );
+      return;
+    }
+
+    const reasons = {
+      'fake': 'Fake / misleading',
+      'outdated': 'Outdated',
+      'inappropriate': 'Inappropriate',
+      'other': 'Other',
+    };
+    String selectedReason = 'fake';
+    final commentController = TextEditingController();
+    bool submitting = false;
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          backgroundColor: AppColors.background,
+          title: const Text('Report this listing', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ...reasons.entries.map((e) => RadioListTile<String>(
+                    value: e.key,
+                    groupValue: selectedReason,
+                    activeColor: AppColors.primary,
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                    title: Text(e.value, style: const TextStyle(fontSize: 14)),
+                    onChanged: (v) => setDialogState(() => selectedReason = v!),
+                  )),
+              const SizedBox(height: 8),
+              TextField(
+                controller: commentController,
+                maxLines: 3,
+                enabled: !submitting,
+                decoration: InputDecoration(
+                  hintText: 'Add details (optional)',
+                  hintStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                  filled: true,
+                  fillColor: AppColors.surface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: AppColors.primary),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: submitting ? null : () => Navigator.pop(dialogContext),
+              child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: submitting
+                  ? null
+                  : () async {
+                      setDialogState(() => submitting = true);
+                      try {
+                        await ref.read(dioProvider).post('/reports', data: {
+                          'reportable_type': savedType,
+                          'reportable_id': int.parse(savedItemId!),
+                          'reason': selectedReason,
+                          'comment': commentController.text.trim(),
+                        });
+                        if (dialogContext.mounted) Navigator.pop(dialogContext);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Report submitted. Thank you!')),
+                          );
+                        }
+                      } on DioException catch (e) {
+                        setDialogState(() => submitting = false);
+                        if (dialogContext.mounted) {
+                          ScaffoldMessenger.of(dialogContext).showSnackBar(
+                            SnackBar(content: Text(ApiException.fromDio(e).message)),
+                          );
+                        }
+                      }
+                    },
+              child: submitting
+                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Text('Submit', style: TextStyle(fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomCTA(BuildContext context) {    return Container(
       padding: EdgeInsets.fromLTRB(20, 16, 20, max(16, MediaQuery.of(context).padding.bottom)),
       decoration: const BoxDecoration(
         color: AppColors.background,

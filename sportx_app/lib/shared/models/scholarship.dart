@@ -17,6 +17,9 @@ class Scholarship {
   final String? eligibility;
   final String? benefits;
   final String? applicationLink;
+  final String? contactEmail;
+  final String? contactPhone;
+  final List<String> documentsRequired;
   final String status;
   final DateTime? expiresAt;
   final Sport? sport;
@@ -39,6 +42,9 @@ class Scholarship {
     this.eligibility,
     this.benefits,
     this.applicationLink,
+    this.contactEmail,
+    this.contactPhone,
+    this.documentsRequired = const [],
     required this.status,
     this.expiresAt,
     this.sport,
@@ -65,6 +71,11 @@ class Scholarship {
       eligibility: json['eligibility'] as String?,
       benefits: json['benefits'] as String?,
       applicationLink: json['application_link'] as String?,
+      contactEmail: json['contact_email'] as String?,
+      contactPhone: json['contact_phone'] as String?,
+      documentsRequired: (json['documents_required'] as List? ?? const [])
+          .map((e) => e.toString())
+          .toList(),
       status: json['status'] as String? ?? 'draft',
       expiresAt: json['expires_at'] != null ? DateTime.parse(json['expires_at']) : null,
       sport: json['sport'] != null ? Sport.fromJson(json['sport']) : null,

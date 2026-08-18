@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Academy;
 use App\Models\AthleteProfile;
-use App\Models\CoachProfile;
 use App\Models\Enquiry;
 use Illuminate\Database\Seeder;
 
@@ -14,32 +13,27 @@ class EnquirySeeder extends Seeder
     {
         $athlete = AthleteProfile::first();
         $academy = Academy::first();
-        $coach = CoachProfile::first();
+
+        if (!$athlete || !$academy) {
+            $this->command->warn('Run AthleteProfileSeeder and AcademySeeder first.');
+            return;
+        }
 
         $enquiries = [
             [
-                'athlete_profile_id' => $athlete?->id ?? 1,
+                'athlete_id' => $athlete->id,
                 'subject_type' => 'academy',
-                'subject_id' => $academy?->id ?? 1,
-                'message' => 'I am interested in joining your cricket academy. What are the trial dates?',
-                'status' => 'open',
-            ],
-            [
-                'athlete_profile_id' => $athlete?->id ?? 1,
-                'subject_type' => 'coach_profile',
-                'subject_id' => $coach?->id ?? 1,
-                'message' => 'Can you provide coaching for batting techniques?',
-                'status' => 'replied',
+                'subject_id' => $academy->id,
+                'preferred_datetime' => now()->addDays(7),
             ],
         ];
 
         foreach ($enquiries as $enquiry) {
             Enquiry::updateOrCreate(
                 [
-                    'athlete_profile_id' => $enquiry['athlete_profile_id'],
+                    'athlete_id' => $enquiry['athlete_id'],
                     'subject_type' => $enquiry['subject_type'],
                     'subject_id' => $enquiry['subject_id'],
-                    'message' => $enquiry['message'],
                 ],
                 $enquiry
             );

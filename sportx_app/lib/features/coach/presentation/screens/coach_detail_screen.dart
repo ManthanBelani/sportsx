@@ -41,6 +41,8 @@ class CoachDetailScreen extends ConsumerWidget {
         onPhonePressed: c.contactNumber == null
             ? null
             : () => launchUrl(Uri.parse('tel:${c.contactNumber}')),
+        savedType: 'coach_profile',
+        savedItemId: c.id.toString(),
       ),
     );
   }

@@ -1,9 +1,12 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
+import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class TrialRegistrationScreen extends ConsumerStatefulWidget {
@@ -19,12 +22,23 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
   bool _submitting = false;
   final _roleController = TextEditingController();
   final _medicalController = TextEditingController();
+  final List<int> _documentMediaIds = [];
+  String? _uploadedDocName;
 
   @override
   void dispose() {
     _roleController.dispose();
     _medicalController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickDocument() async {
+    final media = await pickAndUploadMedia(context, ref, mediaType: 'document');
+    if (media == null) return;
+    setState(() {
+      _documentMediaIds.add(media.mediaId);
+      _uploadedDocName = media.file.path.split('/').last;
+    });
   }
 
   Future<void> _submit() async {
@@ -34,25 +48,31 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
         'playing_role': _roleController.text.trim(),
         'medical_conditions': _medicalController.text.trim(),
         'parental_consent': _parentalConsent,
+        if (_documentMediaIds.isNotEmpty) 'document_media_ids': _documentMediaIds,
       });
       if (mounted) {
-        final data = response.data['data'] as Map<String, dynamic>?;
+        final data = response.data is Map ? response.data['data'] as Map<String, dynamic>? : null;
+        final trial = data?['trial'] as Map<String, dynamic>?;
         context.push('/registration-confirmation', extra: {
           'is_trial': true,
           'registration_ref': data?['registration_ref'],
-          'event_name': data?['trial']?['name'],
-          'event_date': data?['trial']?['event_datetime'] != null
-              ? _formatDate(data!['trial']['event_datetime'])
-              : null,
-          'event_time': data?['trial']?['event_datetime'] != null
-              ? _formatTime(data!['trial']['event_datetime'])
-              : null,
-          'venue': data?['trial']?['venue'],
+          'event_name': trial?['name'],
+          'event_date': trial?['event_datetime'] != null ? _formatDate(trial!['event_datetime'].toString()) : null,
+          'event_time': trial?['event_datetime'] != null ? _formatTime(trial!['event_datetime'].toString()) : null,
+          'venue': trial?['venue'],
         });
+      }
+    } on DioException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(ApiException.fromDio(e).message)),
+        );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Registration failed: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Registration failed. Please try again.')),
+        );
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -62,6 +82,11 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authProvider).user;
+    final trialAsync = ref.watch(trialDetailProvider(widget.trialId));
+    final trial = trialAsync.valueOrNull;
+    final entryFee = trial?.registrationFee ?? 0;
+    final platformFee = entryFee > 0 ? 50.0 : 0.0;
+    final total = entryFee + platformFee;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -137,21 +162,32 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
             
             const SizedBox(height: 16),
             _buildLabel('ID Proof (Aadhaar / Passport)'),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                border: Border.all(color: AppColors.border, style: BorderStyle.solid),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(LucideIcons.upload, size: 18, color: AppColors.textSecondary),
-                  const SizedBox(width: 8),
-                  const Text('Upload File', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
-                ],
+            GestureDetector(
+              onTap: _pickDocument,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  border: Border.all(color: AppColors.border, style: BorderStyle.solid),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(LucideIcons.upload, size: 18, color: AppColors.textSecondary),
+                    const SizedBox(width: 8),
+                    Text(
+                      _uploadedDocName ?? 'Upload File',
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (_uploadedDocName != null) ...[
+                      const SizedBox(width: 6),
+                      const Icon(LucideIcons.checkCircle, size: 16, color: Colors.green),
+                    ],
+                  ],
+                ),
               ),
             ),
 
@@ -183,7 +219,7 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Registration Fee', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
-                      const Text('₹200', style: TextStyle(fontSize: 14, color: AppColors.textPrimary)),
+                      Text('₹${entryFee.toStringAsFixed(0)}', style: const TextStyle(fontSize: 14, color: AppColors.textPrimary)),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -191,7 +227,7 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Platform Fee', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
-                      const Text('₹50', style: TextStyle(fontSize: 14, color: AppColors.textPrimary)),
+                      Text('₹${platformFee.toStringAsFixed(0)}', style: const TextStyle(fontSize: 14, color: AppColors.textPrimary)),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -201,7 +237,7 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Total Amount', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                      const Text('₹250', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                      Text('₹${total.toStringAsFixed(0)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.primary)),
                     ],
                   ),
                 ],
@@ -221,7 +257,7 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
               ),
               child: _submitting
                   ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text('Pay ₹250 & Register', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  : Text('Pay ₹${total.toStringAsFixed(0)} & Register', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           ],
         ),
@@ -249,6 +285,9 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
         style: const TextStyle(fontSize: 15, color: AppColors.textPrimary),
         decoration: InputDecoration(
           border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          isDense: true,
           hintText: hint,
           hintStyle: const TextStyle(color: AppColors.textSecondary),
         ),

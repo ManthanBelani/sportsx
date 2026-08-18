@@ -21,33 +21,24 @@ class TournamentResultSeeder extends Seeder
             return;
         }
 
-        $positions = ['Winner', 'Runner-up', 'Third Place'];
-        $results = [];
+        $count = 0;
         foreach ($athletes as $index => $athlete) {
             if ($index < 3) {
-                $results[] = [
-                    'tournament_id' => $tournament->id,
-                    'category_id' => $category->id,
-                    'athlete_profile_id' => $athlete->id,
-                    'position' => $positions[$index],
-                    'team_name' => $index === 0 ? 'Young Strikers' : null,
-                    'score' => $index === 0 ? 'Wins: 5, Losses: 0' : null,
-                    'awards' => $index === 0 ? 'Trophy + Medal' : ($index === 1 ? 'Medal' : 'Certificate'),
-                ];
+                TournamentResult::updateOrCreate(
+                    [
+                        'tournament_id' => $tournament->id,
+                        'category_id' => $category->id,
+                        'place' => $index + 1,
+                    ],
+                    [
+                        'winner_name' => $athlete->full_name,
+                        'published_at' => now(),
+                    ]
+                );
+                $count++;
             }
         }
 
-        foreach ($results as $result) {
-            TournamentResult::updateOrCreate(
-                [
-                    'tournament_id' => $result['tournament_id'],
-                    'category_id' => $result['category_id'],
-                    'athlete_profile_id' => $result['athlete_profile_id'],
-                ],
-                $result
-            );
-        }
-
-        $this->command->info('Tournament results seeded: ' . count($results));
+        $this->command->info('Tournament results seeded: ' . $count);
     }
 }

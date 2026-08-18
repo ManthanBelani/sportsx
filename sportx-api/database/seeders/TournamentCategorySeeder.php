@@ -27,7 +27,6 @@ class TournamentCategorySeeder extends Seeder
                 'name' => $ageGroup->name . ' Boys',
                 'capacity' => 24 + ($index * 4),
                 'waitlist_enabled' => true,
-                'fees' => 500 + ($index * 100),
             ];
         }
 

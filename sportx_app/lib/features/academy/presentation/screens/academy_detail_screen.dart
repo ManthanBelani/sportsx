@@ -43,6 +43,8 @@ class AcademyDetailScreen extends ConsumerWidget {
         onPhonePressed: a.contactNumber == null
             ? null
             : () => launchUrl(Uri.parse('tel:${a.contactNumber}')),
+        savedType: 'academy',
+        savedItemId: a.id.toString(),
       ),
     );
   }

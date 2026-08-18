@@ -49,22 +49,24 @@ class _SavedScreenState extends ConsumerState<SavedScreen> with SingleTickerProv
     switch (item.type) {
       case 'academy':
       case 'academies':
-        return '/academy-detail/${item.id}';
+        return '/academy-detail/${item.itemId}';
       case 'coach':
+      case 'coach_profile':
       case 'coaches':
-        return '/coach-detail/${item.id}';
+        return '/coach-detail/${item.itemId}';
       case 'trial':
       case 'trials':
-        return '/trial-detail/${item.id}';
+        return '/trial-detail/${item.itemId}';
       case 'tournament':
       case 'tournaments':
-        return '/tournament-detail/${item.id}';
+        return '/tournament-detail/${item.itemId}';
       case 'scholarship':
       case 'scholarships':
-        return '/scholarships';
+        return '/scholarship-detail/${item.itemId}';
       case 'sponsorship':
       case 'sponsorships':
-        return '/sponsor-pitch/${item.id}';
+      case 'sponsor':
+        return '/sponsor-pitch/${item.itemId}';
       case 'sports_venue':
       case 'sportsvenue':
         return '/sports-venues';
@@ -149,7 +151,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> with SingleTickerProv
             subtitle: Text(item.subtitle, style: const TextStyle(color: AppColors.textSecondary)),
             trailing: IconButton(
               icon: const Icon(LucideIcons.trash2, color: AppColors.textSecondary, size: 20),
-              onPressed: () => ref.read(savedProvider.notifier).remove(item.id),
+              onPressed: () => ref.read(savedProvider.notifier).remove(item),
             ),
             onTap: () => context.push(_routeFor(item)),
           );

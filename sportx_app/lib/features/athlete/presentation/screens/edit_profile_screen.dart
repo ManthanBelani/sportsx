@@ -6,6 +6,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -29,6 +30,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   String _dominantSide = 'Right';
   
   File? _avatarFile;
+  String? _existingAvatarUrl;
   bool _isSaving = false;
 
   // Required-by-backend fields. These are loaded from the current profile and
@@ -37,6 +39,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   String _gender = '';
   String _skillLevel = '';
   int? _cityId;
+  int? _photoMediaId;
 
   final List<String> _sports = [
     'Cricket',
@@ -70,6 +73,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           _gender = (d['gender'] ?? '') as String;
           _skillLevel = (d['skill_level'] ?? '') as String;
           _cityId = d['city_id'] as int?;
+          _bioController.text = (d['experience'] ?? d['bio'] ?? _bioController.text) as String;
+          final photo = d['photo'] as Map<String, dynamic>?;
+          _existingAvatarUrl = photo?['url'] as String?;
+          _photoMediaId = photo?['id'] as int?;
+          final city = d['city'] as Map<String, dynamic>?;
+          if (city?['name'] != null) {
+            _locationController.text = (city?['name'] as String?)!;
+          }
         });
       }
     } catch (_) {}
@@ -86,19 +97,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Future<void> _pickAvatar() async {
-    final picker = ImagePicker();
-    try {
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
-      if (pickedFile != null) {
-        setState(() => _avatarFile = File(pickedFile.path));
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to pick image: $e')),
-        );
-      }
-    }
+    final media = await pickAndUploadMedia(context, ref, mediaType: 'photo');
+    if (media == null) return;
+    setState(() {
+      _avatarFile = media.file;
+      _photoMediaId = media.mediaId;
+    });
   }
 
   Future<void> _saveProfile() async {
@@ -108,23 +112,31 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     try {
       final dio = ref.read(dioProvider);
-      final formData = FormData.fromMap({
+
+      // Avatar (if newly picked) was already uploaded in _pickAvatar; just
+      // attach the resulting media id to the profile.
+      await dio.put('/me/profile', data: {
         'full_name': _nameController.text.trim(),
         'date_of_birth': _dob,
         'gender': _gender,
         'skill_level': _skillLevel,
         'city_id': _cityId,
         'experience': _bioController.text.trim(),
-        if (_avatarFile != null) 'profile_photo': await MultipartFile.fromFile(
-          _avatarFile!.path,
-          filename: 'avatar.jpg',
-        ),
+        'position': _dominantSide == 'Left' ? 'Left-hand' : 'Right-hand',
+        if (_photoMediaId != null) 'photo_media_id': _photoMediaId,
       });
 
-      await dio.put('/me/profile', data: formData);
-
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile updated')),
+        );
         context.pop();
+      }
+    } on DioException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(ApiException.fromDio(e).message)),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -216,7 +228,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             alignment: Alignment.center,
             child: _avatarFile != null
                 ? ClipOval(child: Image.file(_avatarFile!, width: 96, height: 96, fit: BoxFit.cover))
-                : const Icon(LucideIcons.user, size: 40, color: Colors.white),
+                : (_existingAvatarUrl != null && _existingAvatarUrl!.isNotEmpty
+                    ? ClipOval(
+                        child: Image.network(
+                          _absoluteUrl(_existingAvatarUrl!),
+                          width: 96,
+                          height: 96,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              const Icon(LucideIcons.user, size: 40, color: Colors.white),
+                        ),
+                      )
+                    : const Icon(LucideIcons.user, size: 40, color: Colors.white)),
           ),
           const SizedBox(height: 12),
           GestureDetector(
@@ -243,6 +266,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary, letterSpacing: 0.5),
       ),
     );
+  }
+
+  String _absoluteUrl(String url) {
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    final base = ref.read(dioProvider).options.baseUrl;
+    final origin = base.replaceFirst(RegExp(r'/api/v1/?$'), '');
+    return '$origin$url';
   }
 
   Widget _buildTextField(String label, TextEditingController controller, {bool isNumber = false}) {

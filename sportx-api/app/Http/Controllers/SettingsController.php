@@ -8,19 +8,30 @@ use Illuminate\Support\Facades\Hash;
 
 class SettingsController extends Controller
 {
+    private function prefs(User $user): array
+    {
+        $default = ['email' => true, 'push' => true, 'sms' => false, 'in_app' => true];
+
+        $raw = $user->notification_prefs;
+        if (is_array($raw)) {
+            return array_merge($default, $raw);
+        }
+        if (is_string($raw) && $raw !== '') {
+            $decoded = json_decode($raw, true);
+            if (is_array($decoded)) {
+                return array_merge($default, $decoded);
+            }
+        }
+
+        return $default;
+    }
+
     public function show(Request $request)
     {
-        $user = $request->user();
-
         return response()->json([
             'data' => [
-                'notification_prefs' => $user->notification_prefs ?? [
-                    'email' => true,
-                    'push' => true,
-                    'sms' => false,
-                    'in_app' => true,
-                ],
-                'language' => $user->language ?? 'en',
+                'notification_prefs' => $this->prefs($request->user()),
+                'language' => $request->user()->language ?? 'en',
             ],
         ]);
     }
@@ -40,8 +51,7 @@ class SettingsController extends Controller
 
         $update = [];
         if (isset($validated['notification_prefs'])) {
-            $existing = $user->notification_prefs ?? ['email' => true, 'push' => true, 'sms' => false, 'in_app' => true];
-            $update['notification_prefs'] = array_merge($existing, $validated['notification_prefs']);
+            $update['notification_prefs'] = array_merge($this->prefs($user), $validated['notification_prefs']);
         }
         if (isset($validated['language'])) {
             $update['language'] = $validated['language'];
@@ -50,7 +60,7 @@ class SettingsController extends Controller
         $user->update($update);
 
         return response()->json(['data' => [
-            'notification_prefs' => $user->notification_prefs,
+            'notification_prefs' => $this->prefs($user->fresh()),
             'language' => $user->language,
         ]]);
     }

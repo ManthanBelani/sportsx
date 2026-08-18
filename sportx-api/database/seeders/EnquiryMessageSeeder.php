@@ -19,32 +19,22 @@ class EnquiryMessageSeeder extends Seeder
             return;
         }
 
-        $messages = [
-            [
-                'enquiry_id' => $enquiry->id,
-                'sender_id' => $users->first()?->id ?? 2,
-                'message' => 'I am interested in joining your cricket academy. What are the trial dates?',
-                'is_read' => true,
-            ],
-            [
-                'enquiry_id' => $enquiry->id,
-                'sender_id' => $users->last()?->id ?? 3,
-                'message' => 'Thank you for your interest! We have trials scheduled for next month.',
-                'is_read' => true,
-            ],
-        ];
+        $count = 0;
+        EnquiryMessage::create([
+            'enquiry_id' => $enquiry->id,
+            'sender_user_id' => $users->first()?->id ?? 2,
+            'body' => 'I am interested in joining your cricket academy. What are the trial dates?',
+        ]);
+        $count++;
 
-        foreach ($messages as $message) {
-            EnquiryMessage::updateOrCreate(
-                [
-                    'enquiry_id' => $message['enquiry_id'],
-                    'sender_id' => $message['sender_id'],
-                    'message' => $message['message'],
-                ],
-                $message
-            );
-        }
+        EnquiryMessage::create([
+            'enquiry_id' => $enquiry->id,
+            'sender_user_id' => $users->last()?->id ?? 3,
+            'body' => 'Thank you for your interest! We have trials scheduled for next month.',
+            'read_at' => now(),
+        ]);
+        $count++;
 
-        $this->command->info('Enquiry messages seeded: ' . count($messages));
+        $this->command->info('Enquiry messages seeded: ' . $count);
     }
 }

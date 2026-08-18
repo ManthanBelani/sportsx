@@ -36,8 +36,8 @@ class DirectoryController extends Controller
 
         $query->when($request->sport_id, fn ($q) => $q->where('sport_id', $request->sport_id))
             ->when($request->city_id, fn ($q) => $q->where('city_id', $request->city_id))
-            ->when($request->fee_min, fn ($q) => $q->where('hourly_rate', '>=', $request->fee_min))
-            ->when($request->fee_max, fn ($q) => $q->where('hourly_rate', '<=', $request->fee_max))
+            ->when($request->fee_min, fn ($q) => $q->where('fee_structure', '>=', $request->fee_min))
+            ->when($request->fee_max, fn ($q) => $q->where('fee_structure', '<=', $request->fee_max))
             ->when($request->age_group_id, fn ($q) => $q->whereJsonContains('age_groups', (int) $request->age_group_id))
             ->when($request->q, fn ($q) => $q->where(fn ($sub) => $sub->where('full_name', 'like', "%{$request->q}%")->orWhere('bio', 'like', "%{$request->q}%")));
 

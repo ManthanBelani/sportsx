@@ -20,13 +20,13 @@ class PostCommentSeeder extends Seeder
         }
 
         $comments = [
-            ['post_id' => $post->id, 'user_id' => $users->first()?->id ?? 2, 'content' => 'Great post! Keep it up!'],
-            ['post_id' => $post->id, 'user_id' => $users->last()?->id ?? 3, 'content' => 'Congrats on the achievement!'],
+            ['post_id' => $post->id, 'user_id' => $users->first()?->id ?? 2, 'body' => 'Great post! Keep it up!'],
+            ['post_id' => $post->id, 'user_id' => $users->last()?->id ?? 3, 'body' => 'Congrats on the achievement!'],
         ];
 
         foreach ($comments as $comment) {
             PostComment::updateOrCreate(
-                ['post_id' => $comment['post_id'], 'user_id' => $comment['user_id'], 'content' => $comment['content']],
+                ['post_id' => $comment['post_id'], 'user_id' => $comment['user_id'], 'body' => $comment['body']],
                 $comment
             );
         }

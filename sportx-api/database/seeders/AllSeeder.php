@@ -41,6 +41,7 @@ class AllSeeder extends Seeder
             DeviceTokenSeeder::class,
             RecentSearchSeeder::class,
             AchievementSeeder::class,
+            MediaItemSeeder::class,
         ]);
     }
 }

@@ -12,7 +12,12 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $fillable = ['role', 'name', 'email', 'phone', 'password', 'google_id', 'status', 'email_verified_at', 'admin_2fa_verified_at'];
+    protected $fillable = [
+        'role', 'name', 'email', 'phone', 'password', 'google_id',
+        'status', 'email_verified_at', 'admin_2fa_verified_at',
+        'notification_prefs', 'language',
+        'verification_token', 'reset_password_token', 'reset_password_sent_at',
+    ];
 
     protected $hidden = ['password', 'remember_token', 'google_id'];
 
@@ -22,6 +27,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'admin_2fa_verified_at' => 'datetime',
             'password' => 'hashed',
+            'notification_prefs' => 'array',
         ];
     }
 

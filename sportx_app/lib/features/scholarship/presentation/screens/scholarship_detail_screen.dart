@@ -2,123 +2,123 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:sportx_app/shared/models/models.dart';
+import 'package:sportx_app/shared/presentation/widgets/async_state_view.dart';
+import 'package:sportx_app/shared/presentation/widgets/detail_page_template.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class ScholarshipDetailScreen extends ConsumerWidget {
   final String scholarshipId;
   const ScholarshipDetailScreen({super.key, required this.scholarshipId});
 
+  String _fmt(DateTime d) => '${d.day}/${d.month}/${d.year}';
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final scholarshipAsync = ref.watch(scholarshipDetailProvider(scholarshipId));
+    final async = ref.watch(scholarshipDetailProvider(scholarshipId));
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
-        ),
-        title: const Text('Scholarship Details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-        bottom: PreferredSize(preferredSize: const Size.fromHeight(1), child: Container(color: AppColors.border, height: 1)),
-      ),
-      body: scholarshipAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
-        data: (scholarship) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 56,
-                            height: 56,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE3F2FD),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            alignment: Alignment.center,
-                            child: const Icon(LucideIcons.graduationCap, color: AppColors.primary, size: 28),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(scholarship.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-                                const SizedBox(height: 4),
-                                Text(scholarship.sponsorName ?? '', style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      if (scholarship.benefits != null) ...[
-                        const Text('Benefits', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                        const SizedBox(height: 8),
-                        Text(scholarship.benefits!, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
-                      ],
-                      if (scholarship.eligibility != null) ...[
-                        const SizedBox(height: 16),
-                        const Text('Eligibility', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                        const SizedBox(height: 8),
-                        Text(scholarship.eligibility!, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
-                      ],
-                      if (scholarship.applicationDeadline != null) ...[
-                        const SizedBox(height: 16),
-                        Row(
+    return AsyncDetailBuilder<Scholarship>(
+      async: async,
+      title: 'Scholarship',
+      onRetry: () => ref.invalidate(scholarshipDetailProvider(scholarshipId)),
+      dataBuilder: (s) {
+        final extraSections = <Widget>[
+          if (s.description != null && s.description!.isNotEmpty) ...[
+            _sectionHeader('About'),
+            Text(s.description!, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.5)),
+            const SizedBox(height: 24),
+          ],
+          if (s.eligibility != null && s.eligibility!.isNotEmpty) ...[
+            _sectionHeader('Eligibility'),
+            Text(s.eligibility!, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.5)),
+            const SizedBox(height: 24),
+          ],
+          if (s.documentsRequired.isNotEmpty) ...[
+            _sectionHeader('Documents Required'),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: s.documentsRequired
+                  .map((doc) => Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(LucideIcons.calendar, size: 16, color: AppColors.textSecondary),
-                            const SizedBox(width: 8),
-                            Text('Deadline: ${scholarship.applicationDeadline!.day}/${scholarship.applicationDeadline!.month}/${scholarship.applicationDeadline!.year}', style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                            const Icon(LucideIcons.fileText, size: 14, color: AppColors.primary),
+                            const SizedBox(width: 6),
+                            Text(doc, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
                           ],
                         ),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      final url = Uri.parse(scholarship.applicationLink ?? '');
-                      if (await canLaunchUrl(url)) {
-                        await launchUrl(url, mode: LaunchMode.externalApplication);
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child: const Text('Apply Now', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                  ),
-                ),
-              ],
+                      ))
+                  .toList(),
             ),
-          );
-        },
+            const SizedBox(height: 24),
+          ],
+        ];
+
+        return DetailPageTemplate(
+          heroIcon: LucideIcons.graduationCap,
+          heroImageUrl: null,
+          title: s.title,
+          subtitle: s.sponsorName ?? s.sport?.name ?? '',
+          rating: null,
+          reviewsCount: null,
+          tags: [s.sport?.name].whereType<String>().toList(),
+          details: {
+            if (s.amount != null) 'Amount': '₹${s.amount!.toStringAsFixed(0)}',
+            if (s.amountLabel != null && s.amount == null) 'Amount': s.amountLabel!,
+            if (s.applicationDeadline != null) 'Deadline': _fmt(s.applicationDeadline!),
+            if (s.sport?.name != null) 'Sport': s.sport!.name,
+            if (s.totalSlots != null) 'Slots': '${(s.totalSlots ?? 0) - (s.filledSlots ?? 0)} left',
+            if (s.contactEmail != null) 'Email': s.contactEmail!,
+            if (s.contactPhone != null) 'Contact': s.contactPhone!,
+          },
+          extraSections: extraSections,
+          addressStr: s.sponsorName ?? '',
+          ctaText: 'Apply Now',
+          onCtaPressed: () async {
+            final url = Uri.parse(s.applicationLink ?? '');
+            if (s.applicationLink == null || s.applicationLink!.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('No application link available')),
+              );
+              return;
+            }
+            if (await canLaunchUrl(url)) {
+              await launchUrl(url, mode: LaunchMode.externalApplication);
+            } else {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Could not open application link')),
+                );
+              }
+            }
+          },
+          onPhonePressed: s.contactPhone == null
+              ? null
+              : () => launchUrl(Uri.parse('tel:${s.contactPhone!.replaceAll(' ', '')}')),
+          savedType: 'scholarship',
+          savedItemId: s.id.toString(),
+        );
+      },
+    );
+  }
+
+  Widget _sectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          const Icon(LucideIcons.clipboardList, size: 18, color: AppColors.primary),
+          const SizedBox(width: 8),
+          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        ],
       ),
     );
   }

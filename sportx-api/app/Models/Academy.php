@@ -62,6 +62,11 @@ class Academy extends Model
         return $this->belongsTo(MediaItem::class, 'cover_media_id');
     }
 
+    public function headCoach(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'head_coach_id');
+    }
+
     public function enquiries(): MorphMany
     {
         return $this->morphMany(Enquiry::class, 'subject');

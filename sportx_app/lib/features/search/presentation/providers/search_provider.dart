@@ -10,13 +10,13 @@ import 'package:sportx_app/shared/models/sponsorship.dart';
 
 enum SearchCategory {
   all,
-  athletes,
   coaches,
   academies,
   trials,
   tournaments,
   scholarships,
   sponsors,
+  sportsVenues,
 }
 
 class SearchFilters {
@@ -24,12 +24,26 @@ class SearchFilters {
   final List<String> locations;
   final List<String> achievementLevels;
   final List<String> ageGroups;
+  final int? sportId;
+  final int? cityId;
+  final String gender; // 'all' | 'male' | 'female'
+  final double? feeMin;
+  final double? feeMax;
+  final DateTime? dateFrom;
+  final DateTime? dateTo;
 
   const SearchFilters({
     this.sports = const [],
     this.locations = const [],
     this.achievementLevels = const [],
     this.ageGroups = const [],
+    this.sportId,
+    this.cityId,
+    this.gender = 'all',
+    this.feeMin,
+    this.feeMax,
+    this.dateFrom,
+    this.dateTo,
   });
 
   SearchFilters copyWith({
@@ -37,12 +51,32 @@ class SearchFilters {
     List<String>? locations,
     List<String>? achievementLevels,
     List<String>? ageGroups,
+    int? sportId,
+    bool clearSportId = false,
+    int? cityId,
+    bool clearCityId = false,
+    String? gender,
+    double? feeMin,
+    bool clearFeeMin = false,
+    double? feeMax,
+    bool clearFeeMax = false,
+    DateTime? dateFrom,
+    bool clearDateFrom = false,
+    DateTime? dateTo,
+    bool clearDateTo = false,
   }) {
     return SearchFilters(
       sports: sports ?? this.sports,
       locations: locations ?? this.locations,
       achievementLevels: achievementLevels ?? this.achievementLevels,
       ageGroups: ageGroups ?? this.ageGroups,
+      sportId: clearSportId ? null : (sportId ?? this.sportId),
+      cityId: clearCityId ? null : (cityId ?? this.cityId),
+      gender: gender ?? this.gender,
+      feeMin: clearFeeMin ? null : (feeMin ?? this.feeMin),
+      feeMax: clearFeeMax ? null : (feeMax ?? this.feeMax),
+      dateFrom: clearDateFrom ? null : (dateFrom ?? this.dateFrom),
+      dateTo: clearDateTo ? null : (dateTo ?? this.dateTo),
     );
   }
 
@@ -50,45 +84,59 @@ class SearchFilters {
       sports.isNotEmpty ||
       locations.isNotEmpty ||
       achievementLevels.isNotEmpty ||
-      ageGroups.isNotEmpty;
+      ageGroups.isNotEmpty ||
+      sportId != null ||
+      cityId != null ||
+      gender != 'all' ||
+      feeMin != null ||
+      feeMax != null ||
+      dateFrom != null ||
+      dateTo != null;
 
   Map<String, dynamic> toQueryParams() {
     final params = <String, dynamic>{};
-    if (sports.isNotEmpty) params['sports'] = sports.join(',');
-    if (locations.isNotEmpty) params['locations'] = locations.join(',');
-    if (achievementLevels.isNotEmpty) params['achievement_levels'] = achievementLevels.join(',');
-    if (ageGroups.isNotEmpty) params['age_groups'] = ageGroups.join(',');
+    if (sportId != null) params['sport_id'] = sportId;
+    if (cityId != null) params['city_id'] = cityId;
+    if (gender != 'all') params['gender'] = gender;
+    if (feeMin != null) params['fee_min'] = feeMin;
+    if (feeMax != null) params['fee_max'] = feeMax;
+    if (dateFrom != null) {
+      params['date_from'] = '${dateFrom!.year.toString().padLeft(4, '0')}-${dateFrom!.month.toString().padLeft(2, '0')}-${dateFrom!.day.toString().padLeft(2, '0')}';
+    }
+    if (dateTo != null) {
+      params['date_to'] = '${dateTo!.year.toString().padLeft(4, '0')}-${dateTo!.month.toString().padLeft(2, '0')}-${dateTo!.day.toString().padLeft(2, '0')}';
+    }
     return params;
   }
 }
 
 class SearchResult {
-  final List<Map<String, dynamic>> athletes;
   final List<Map<String, dynamic>> coaches;
   final List<Map<String, dynamic>> academies;
   final List<Map<String, dynamic>> trials;
   final List<Map<String, dynamic>> tournaments;
   final List<Map<String, dynamic>> scholarships;
   final List<Map<String, dynamic>> sponsors;
+  final List<Map<String, dynamic>> sportsVenues;
 
   SearchResult({
-    this.athletes = const [],
     this.coaches = const [],
     this.academies = const [],
     this.trials = const [],
     this.tournaments = const [],
     this.scholarships = const [],
     this.sponsors = const [],
+    this.sportsVenues = const [],
   });
 
   int get totalCount =>
-      athletes.length +
       coaches.length +
       academies.length +
       trials.length +
       tournaments.length +
       scholarships.length +
-      sponsors.length;
+      sponsors.length +
+      sportsVenues.length;
 }
 
 class SearchState {
@@ -144,8 +192,18 @@ class SearchNotifier extends StateNotifier<SearchState> {
 
   SearchNotifier(this._dio) : super(SearchState());
 
+  /// Injects a `type` label into each raw item so the UI can render and
+  /// navigate correctly regardless of which API list it came from.
+  List<Map<String, dynamic>> _typed(List<dynamic>? raw, String type) {
+    return (raw ?? [])
+        .whereType<Map>()
+        .map((e) => {...e, 'type': type})
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
+  }
+
   Future<void> search(String query, {bool appendResults = false}) async {
-    if (query.trim().isEmpty && state.filters.hasActiveFilters) {
+    if (query.trim().isEmpty && !state.filters.hasActiveFilters) {
       return;
     }
 
@@ -153,7 +211,7 @@ class SearchNotifier extends StateNotifier<SearchState> {
 
     try {
       final queryParams = <String, dynamic>{
-        'q': query,
+        if (query.trim().isNotEmpty) 'q': query,
         'page': appendResults ? state.page + 1 : 1,
         'per_page': 20,
       };
@@ -163,53 +221,71 @@ class SearchNotifier extends StateNotifier<SearchState> {
       final data = response.data['data'] as Map<String, dynamic>? ?? {};
 
       final newResults = SearchResult(
-        athletes: List<Map<String, dynamic>>.from(data['athletes'] ?? []),
-        coaches: List<Map<String, dynamic>>.from(data['coaches'] ?? []),
-        academies: List<Map<String, dynamic>>.from(data['academies'] ?? []),
-        trials: List<Map<String, dynamic>>.from(data['trials'] ?? []),
-        tournaments: List<Map<String, dynamic>>.from(data['tournaments'] ?? []),
-        scholarships: List<Map<String, dynamic>>.from(data['scholarships'] ?? []),
-        sponsors: List<Map<String, dynamic>>.from(data['sponsors'] ?? []),
+        coaches: _typed(data['coaches'], 'coach'),
+        academies: _typed(data['academies'], 'academy'),
+        trials: _typed(data['trials'], 'trial'),
+        tournaments: _typed(data['tournaments'], 'tournament'),
+        scholarships: _typed(data['scholarships'], 'scholarship'),
+        // API key is `sponsorships` — map into the sponsors bucket.
+        sponsors: _typed(data['sponsorships'], 'sponsorship'),
+        sportsVenues: _typed(data['sports_venues'], 'sports_venue'),
       );
+
+      SearchResult merged;
+      if (appendResults && state.results != null) {
+        final prev = state.results!;
+        merged = SearchResult(
+          coaches: [...prev.coaches, ...newResults.coaches],
+          academies: [...prev.academies, ...newResults.academies],
+          trials: [...prev.trials, ...newResults.trials],
+          tournaments: [...prev.tournaments, ...newResults.tournaments],
+          scholarships: [...prev.scholarships, ...newResults.scholarships],
+          sponsors: [...prev.sponsors, ...newResults.sponsors],
+          sportsVenues: [...prev.sportsVenues, ...newResults.sportsVenues],
+        );
+      } else {
+        merged = newResults;
+      }
 
       final meta = response.data['meta'] as Map<String, dynamic>?;
       final currentPage = meta?['current_page'] ?? 1;
       final lastPage = meta?['last_page'] ?? 1;
 
-      if (appendResults && state.results != null) {
-        state = state.copyWith(
-          results: SearchResult(
-            athletes: [...state.results!.athletes, ...newResults.athletes],
-            coaches: [...state.results!.coaches, ...newResults.coaches],
-            academies: [...state.results!.academies, ...newResults.academies],
-            trials: [...state.results!.trials, ...newResults.trials],
-            tournaments: [...state.results!.tournaments, ...newResults.tournaments],
-            scholarships: [...state.results!.scholarships, ...newResults.scholarships],
-            sponsors: [...state.results!.sponsors, ...newResults.sponsors],
-          ),
-          isLoading: false,
-          page: currentPage,
-          hasMore: currentPage < lastPage,
-        );
-      } else {
-        state = state.copyWith(
-          results: newResults,
-          isLoading: false,
-          page: currentPage,
-          hasMore: currentPage < lastPage,
-        );
-      }
+      state = state.copyWith(
+        results: merged,
+        isLoading: false,
+        page: currentPage,
+        hasMore: currentPage < lastPage,
+      );
 
       // Save to recent searches
       if (query.trim().isNotEmpty) {
         _saveRecentSearch(query);
       }
-    } catch (e) {
+    } on DioException catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: 'Search failed. Please try again.',
+        error: ApiException.fromDio(e).message,
       );
     }
+  }
+
+  Future<void> loadRecentSearches() async {
+    try {
+      final resp = await _dio.get('/me/recent-searches');
+      final list = (resp.data['data'] as List? ?? [])
+          .map((e) => e.toString())
+          .toList();
+      state = state.copyWith(recentSearches: list);
+    } catch (_) {
+      // Recent searches are non-critical — ignore failures.
+    }
+  }
+
+  Future<void> removeRecentSearch(String query) async {
+    state = state.copyWith(
+      recentSearches: state.recentSearches.where((s) => s != query).toList(),
+    );
   }
 
   void setCategory(SearchCategory category) {

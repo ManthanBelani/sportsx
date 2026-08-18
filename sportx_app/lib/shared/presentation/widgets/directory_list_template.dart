@@ -29,6 +29,15 @@ class DirectoryListTemplate extends StatefulWidget {
   final VoidCallback onLoadMore;
   final IconData defaultIcon;
 
+  /// Called with the current search text (empty string when cleared).
+  final void Function(String query)? onSearchChanged;
+
+  /// Human-readable sport names available for the filter chips.
+  final List<String> sportOptions;
+
+  /// Called when the user taps a sport chip (null = All Sports).
+  final void Function(String? sport)? onSportSelected;
+
   const DirectoryListTemplate({
     super.key,
     required this.title,
@@ -37,6 +46,9 @@ class DirectoryListTemplate extends StatefulWidget {
     required this.onItemTap,
     required this.onLoadMore,
     this.defaultIcon = LucideIcons.circleDot,
+    this.onSearchChanged,
+    this.sportOptions = const ['All Sports'],
+    this.onSportSelected,
   });
 
   @override
@@ -44,15 +56,20 @@ class DirectoryListTemplate extends StatefulWidget {
 }
 
 class _DirectoryListTemplateState extends State<DirectoryListTemplate> {
-  String _selectedSport = 'All Sports';
-  final List<Map<String, dynamic>> _sports = [
-    {'name': 'All Sports', 'icon': null},
-    {'name': 'Cricket', 'icon': LucideIcons.circleDot},
-    {'name': 'Football', 'icon': LucideIcons.goal},
-    {'name': 'Badminton', 'icon': LucideIcons.venetianMask},
-    {'name': 'Swimming', 'icon': LucideIcons.waves},
-    {'name': 'Athletics', 'icon': LucideIcons.footprints},
-  ];
+  final _searchController = TextEditingController();
+  final _focusNode = FocusNode();
+  String? _selectedSport;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _applySearch(String value) {
+    widget.onSearchChanged?.call(value.trim());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -101,62 +118,78 @@ class _DirectoryListTemplateState extends State<DirectoryListTemplate> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
+                      controller: _searchController,
+                      focusNode: _focusNode,
                       style: const TextStyle(fontSize: 15, color: AppColors.textPrimary),
                       decoration: InputDecoration(
                         hintText: 'Search ${widget.title.toLowerCase()}...',
                         hintStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 15),
                         border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
                         isDense: true,
                         contentPadding: EdgeInsets.zero,
                       ),
+                      textInputAction: TextInputAction.search,
+                      onSubmitted: _applySearch,
+                      onChanged: (v) {
+                        if (v.trim().isEmpty) _applySearch(v);
+                      },
                     ),
                   ),
+                  if (_searchController.text.isNotEmpty)
+                    GestureDetector(
+                      onTap: () {
+                        _searchController.clear();
+                        _applySearch('');
+                        _focusNode.unfocus();
+                      },
+                      child: const Icon(LucideIcons.x, color: AppColors.textSecondary, size: 16),
+                    ),
                 ],
               ),
             ),
           ),
-          
-          Container(
-            height: 60,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: _sports.length,
-              itemBuilder: (context, index) {
-                final sport = _sports[index];
-                final isSelected = _selectedSport == sport['name'];
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedSport = sport['name'] as String),
-                  child: Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFFE6F0FF) : AppColors.surface,
-                      border: Border.all(color: isSelected ? AppColors.primary : AppColors.border),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      children: [
-                        if (sport['icon'] != null) ...[
-                          Icon(sport['icon'] as IconData, size: 14, color: isSelected ? AppColors.primary : AppColors.textPrimary),
-                          const SizedBox(width: 6),
-                        ],
-                        Text(
-                          sport['name'] as String,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: isSelected ? AppColors.primary : AppColors.textPrimary,
-                          ),
+
+          if (widget.sportOptions.length > 1)
+            Container(
+              height: 60,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: widget.sportOptions.length,
+                itemBuilder: (context, index) {
+                  final sport = widget.sportOptions[index];
+                  final isAll = sport == 'All Sports';
+                  final isSelected = isAll ? _selectedSport == null : _selectedSport == sport;
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() => _selectedSport = isAll ? null : sport);
+                      widget.onSportSelected?.call(isAll ? null : sport);
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      decoration: BoxDecoration(
+                        color: isSelected ? const Color(0xFFE6F0FF) : AppColors.surface,
+                        border: Border.all(color: isSelected ? AppColors.primary : AppColors.border),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        sport,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: isSelected ? AppColors.primary : AppColors.textPrimary,
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-          
+
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(20),
@@ -171,9 +204,9 @@ class _DirectoryListTemplateState extends State<DirectoryListTemplate> {
                     ),
                   );
                 }
-                
+
                 if (index == widget.items.length + 1) {
-                  return widget.items.isEmpty 
+                  return widget.items.isEmpty
                     ? const SizedBox()
                     : Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -185,7 +218,7 @@ class _DirectoryListTemplateState extends State<DirectoryListTemplate> {
                         ),
                       );
                 }
-                
+
                 final item = widget.items[index - 1];
                 return _buildCard(context, item);
               },

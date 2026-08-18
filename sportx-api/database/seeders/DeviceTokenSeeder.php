@@ -21,16 +21,14 @@ class DeviceTokenSeeder extends Seeder
         foreach ($users as $index => $user) {
             $tokens[] = [
                 'user_id' => $user->id,
-                'device_token' => 'fcm_token_' . $user->id . '_' . bin2hex(random_bytes(8)),
-                'device_type' => $index % 2 === 0 ? 'android' : 'ios',
-                'device_name' => 'Device ' . ($index + 1),
-                'is_active' => true,
+                'token' => 'fcm_token_' . $user->id . '_' . bin2hex(random_bytes(8)),
+                'platform' => $index % 2 === 0 ? 'android' : 'ios',
             ];
         }
 
         foreach ($tokens as $token) {
             DeviceToken::updateOrCreate(
-                ['user_id' => $token['user_id'], 'device_token' => $token['device_token']],
+                ['user_id' => $token['user_id'], 'token' => $token['token']],
                 $token
             );
         }
