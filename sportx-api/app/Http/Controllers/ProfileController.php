@@ -11,7 +11,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         $profile = match ($user->role) {
-            'athlete' => $user->athleteProfile?->load(['sports', 'ageGroup', 'city', 'photo', 'achievements']),
+            'athlete' => $user->athleteProfile?->load(['sports', 'ageGroup', 'city', 'photo', 'achievements', 'mediaItems']),
             'coach' => $user->coachProfile?->load(['sport', 'city', 'photo', 'academy']),
             'academy' => $user->academies?->load(['city', 'sports.sport', 'logo', 'cover']),
             'organizer' => $user->organizerProfile,
@@ -39,6 +39,7 @@ class ProfileController extends Controller
                 'position' => 'nullable|string|max:100',
                 'experience' => 'nullable|string',
                 'achievements' => 'nullable|array',
+                'photo_media_id' => 'nullable|integer|exists:media_items,id',
             ]);
 
             $profile = $user->athleteProfile;
@@ -52,7 +53,7 @@ class ProfileController extends Controller
                 }
             }
 
-            return response()->json(['data' => $profile->fresh(['sports', 'achievements'])]);
+            return response()->json(['data' => $profile->fresh(['sports', 'achievements', 'photo'])]);
         }
 
         return response()->json(['data' => null, 'message' => 'Not implemented for this role'], 501);

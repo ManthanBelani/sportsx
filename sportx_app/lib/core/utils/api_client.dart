@@ -8,7 +8,7 @@ final dioProvider = Provider<Dio>((ref) {
     baseUrl: ApiConfig.baseUrl,
     connectTimeout: ApiConfig.connectTimeout,
     receiveTimeout: ApiConfig.receiveTimeout,
-    headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+    headers: {'Accept': 'application/json'},
   ));
 
   dio.interceptors.add(AuthInterceptor(ref));
@@ -17,6 +17,8 @@ final dioProvider = Provider<Dio>((ref) {
     responseBody: true,
     error: true,
   ));
+
+  dio.options.validateStatus = (status) => status != null && status < 500;
 
   return dio;
 });

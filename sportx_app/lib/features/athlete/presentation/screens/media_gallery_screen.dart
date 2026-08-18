@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
-import 'package:dio/dio.dart';
-import 'dart:io';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class MediaGalleryScreen extends ConsumerStatefulWidget {
@@ -17,80 +15,85 @@ class MediaGalleryScreen extends ConsumerStatefulWidget {
 
 class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
   int _currentTab = 0;
-  
-  // Mock media data
-  final List<Map<String, dynamic>> _mediaItems = [
-    {'id': '1', 'url': 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=300&h=300&fit=crop', 'type': 'photo'},
-    {'id': '2', 'url': 'https://images.unsplash.com/photo-1461896836934-0c70ed8b1e22?w=300&h=300&fit=crop', 'type': 'photo'},
-    {'id': '3', 'url': 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=300&h=300&fit=crop', 'type': 'video'},
-    {'id': '4', 'url': 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=300&h=300&fit=crop', 'type': 'photo'},
-    {'id': '5', 'url': 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=300&h=300&fit=crop', 'type': 'photo'},
-    {'id': '6', 'url': 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=300&h=300&fit=crop', 'type': 'photo'},
-    {'id': '7', 'url': 'https://images.unsplash.com/photo-1547347298-4074fc3086f0?w=300&h=300&fit=crop', 'type': 'photo'},
-    {'id': '8', 'url': 'https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=300&h=300&fit=crop', 'type': 'photo'},
-    {'id': '9', 'url': 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=300&h=300&fit=crop', 'type': 'video'},
-  ];
+  List<Map<String, dynamic>> _mediaItems = [];
+  bool _isReorderMode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMedia();
+  }
+
+  Future<void> _loadMedia() async {
+    try {
+      final resp = await ref.read(dioProvider).get('/me/profile');
+      final data = resp.data['data'] as Map<String, dynamic>?;
+      final items = (data?['media_items'] as List? ?? const [])
+          .whereType<Map>()
+          .map((m) => Map<String, dynamic>.from(m))
+          .toList();
+      if (mounted) setState(() => _mediaItems = items);
+    } catch (_) {}
+  }
 
   List<Map<String, dynamic>> get _filteredItems {
-    if (_currentTab == 0) return _mediaItems.where((i) => i['type'] == 'photo').toList();
-    if (_currentTab == 1) return _mediaItems.where((i) => i['type'] == 'video').toList();
-    return []; // Achievements handled differently or empty for now
+    if (_currentTab == 0) return _mediaItems.where((i) => i['media_type'] == 'photo').toList();
+    if (_currentTab == 1) return _mediaItems.where((i) => i['media_type'] == 'video').toList();
+    return [];
   }
 
-  Future<void> _uploadMedia(ImageSource source) async {
-    final picker = ImagePicker();
-    try {
-      final pickedFile = await picker.pickImage(source: source, imageQuality: 80);
-      if (pickedFile == null) return;
-      final file = File(pickedFile.path);
-      final form = FormData.fromMap({
-        'file': await MultipartFile.fromFile(file.path, filename: pickedFile.name),
-        'media_type': 'photo',
-      });
-      await ref.read(dioProvider).post('/media/upload', data: form);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Media uploaded successfully!')));
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to upload media: $e')));
-      }
-    }
+  Future<void> _uploadMedia() async {
+    final media = await pickAndUploadMedia(context, ref, mediaType: _currentTab == 1 ? 'video' : 'photo');
+    if (media == null) return;
+    await _loadMedia();
   }
 
-  void _showUploadOptions() {
-    showModalBottomSheet(
+  Future<void> _deleteMedia(int mediaId) async {
+    final confirmed = await showDialog<bool>(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(LucideIcons.camera, color: AppColors.primary),
-                title: const Text('Take Photo'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _uploadMedia(ImageSource.camera);
-                },
-              ),
-              ListTile(
-                leading: const Icon(LucideIcons.image, color: AppColors.primary),
-                title: const Text('Choose from Gallery'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _uploadMedia(ImageSource.gallery);
-                },
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Media'),
+        content: const Text('Are you sure you want to delete this item?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
-        ),
+        ],
       ),
     );
+    if (confirmed != true) return;
+
+    final success = await deleteMedia(ref, mediaId);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(success ? 'Deleted' : 'Failed to delete')),
+      );
+    }
+    if (success) await _loadMedia();
+  }
+
+  Future<void> _saveReorder(List<Map<String, dynamic>> newOrder) async {
+    final items = newOrder.asMap().entries.map((e) => {
+      'id': e.value['id'] as int,
+      'sort_order': e.key,
+    }).toList();
+    final success = await reorderMedia(ref, items.cast<Map<String, int>>());
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(success ? 'Order saved' : 'Failed to save order')),
+      );
+    }
+    if (success) setState(() => _isReorderMode = false);
+  }
+
+  String _absoluteUrl(String url) {
+    if (url.isEmpty) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    final base = ref.read(dioProvider).options.baseUrl;
+    final origin = base.replaceFirst(RegExp(r'/api/v1/?$'), '');
+    return '$origin$url';
   }
 
   @override
@@ -118,23 +121,43 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
             ),
           ),
         ),
-        title: const Text('Media Gallery', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text(_isReorderMode ? 'Drag to Reorder' : 'Media Gallery', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
         centerTitle: true,
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Center(
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(LucideIcons.check, color: AppColors.textPrimary, size: 20),
+          if (_isReorderMode) ...[
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: TextButton(
+                onPressed: () => setState(() => _isReorderMode = false),
+                child: const Text('Cancel'),
               ),
             ),
-          ),
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: TextButton(
+                onPressed: () => _saveReorder(_filteredItems),
+                child: const Text('Save'),
+              ),
+            ),
+          ] else ...[
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Center(
+                child: GestureDetector(
+                  onTap: () => setState(() => _isReorderMode = true),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child:                   const Icon(Icons.drag_handle, color: AppColors.textPrimary, size: 20),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
       body: Column(
@@ -147,9 +170,8 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
-                _buildTab('Photos (24)', 0),
-                _buildTab('Videos (3)', 1),
-                _buildTab('Achievements (8)', 2),
+                _buildTab('Photos (${_mediaItems.where((i) => i['media_type'] == 'photo').length})', 0),
+                _buildTab('Videos (${_mediaItems.where((i) => i['media_type'] == 'video').length})', 1),
               ],
             ),
           ),
@@ -199,8 +221,63 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
 
   Widget _buildGrid() {
     final items = _filteredItems;
-    final itemCount = items.length + 1; // +1 for the Add button
 
+    if (_isReorderMode) {
+      return ReorderableListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: items.length,
+        onReorder: (oldIndex, newIndex) {
+          setState(() {
+            if (newIndex > oldIndex) newIndex -= 1;
+            final item = items.removeAt(oldIndex);
+            items.insert(newIndex, item);
+          });
+        },
+        itemBuilder: (context, index) {
+          final item = items[index];
+          return Container(
+            key: ValueKey(item['id']),
+            height: 80,
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: AppColors.surface,
+            ),
+            child: ListTile(
+              leading: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: Image.network(
+                  _absoluteUrl((item['url'] ?? '') as String),
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    width: 60,
+                    height: 60,
+                    color: AppColors.border,
+                    child: const Icon(LucideIcons.image, size: 24),
+                  ),
+                ),
+              ),
+              title: Text(item['media_type'] == 'video' ? 'Video' : 'Photo'),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(LucideIcons.trash2, color: Colors.red),
+                    onPressed: () => _deleteMedia(item['id'] as int),
+                  ),
+                  const Icon(Icons.drag_handle, color: AppColors.textSecondary),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
+
+    final itemCount = items.length + 1;
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -212,12 +289,11 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
       itemCount: itemCount,
       itemBuilder: (context, index) {
         if (index == items.length) {
-          // Add Button
           return GestureDetector(
-            onTap: _showUploadOptions,
+            onTap: _uploadMedia,
             child: Container(
               decoration: BoxDecoration(
-                border: Border.all(color: AppColors.border, style: BorderStyle.solid, width: 2), // Dashed isn't native, solid for now
+                border: Border.all(color: AppColors.border, style: BorderStyle.solid, width: 2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Column(
@@ -233,25 +309,76 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
         }
 
         final item = items[index];
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(item['url'], fit: BoxFit.cover),
-            ),
-            if (item['type'] == 'video')
-              const Center(
-                child: Icon(
-                  Icons.play_arrow,
-                  size: 32,
-                  color: Colors.white,
-                  shadows: [Shadow(blurRadius: 4, color: Colors.black54)],
-                ),
-              ),
-          ],
-        );
+        return _buildMediaTile(item);
       },
+    );
+  }
+
+  Widget _buildMediaTile(Map<String, dynamic> item, {Key? key}) {
+    return Stack(
+      key: key,
+      fit: StackFit.expand,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.network(
+            _absoluteUrl((item['url'] ?? '') as String),
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => Container(
+              color: AppColors.surface,
+              child: const Icon(LucideIcons.image, color: AppColors.textSecondary),
+            ),
+          ),
+        ),
+        if (item['media_type'] == 'video')
+          const Center(
+            child: Icon(
+              Icons.play_arrow,
+              size: 32,
+              color: Colors.white,
+              shadows: [Shadow(blurRadius: 4, color: Colors.black54)],
+            ),
+          ),
+        if (_isReorderMode)
+          Positioned(
+            top: 4,
+            right: 4,
+            child: GestureDetector(
+              onTap: () => _deleteMedia(item['id'] as int),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Icon(LucideIcons.trash2, size: 16, color: Colors.white),
+              ),
+            ),
+          )
+        else
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: GestureDetector(
+              onLongPress: () => _deleteMedia(item['id'] as int),
+              child: Container(
+                height: 40,
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.black.withOpacity(0.5)],
+                  ),
+                ),
+                alignment: Alignment.bottomCenter,
+                padding: const EdgeInsets.only(bottom: 4),
+                child: const Icon(LucideIcons.trash2, size: 16, color: Colors.white70),
+              ),
+            ),
+          ),
+      ],
     );
   }
 

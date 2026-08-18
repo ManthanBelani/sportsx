@@ -108,15 +108,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> verifyOtp({required String email, required String otp}) async {
-    await verifyEmail(otp);
+    state = state.copyWith(status: AuthStatus.error, error: 'OTP verification is not supported - email is auto-verified on registration');
   }
 
   Future<void> resendOtp(String email) async {
-    try {
-      await _dio.post('/auth/resend-verification', data: {'email': email});
-    } catch (_) {
-      // Endpoint may be unavailable; fail silently — UI shows a generic toast.
-    }
+    state = state.copyWith(status: AuthStatus.error, error: 'Resend OTP is not supported - emails are auto-verified on registration');
   }
 
   Future<void> login({required String email, required String password}) async {

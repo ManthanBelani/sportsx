@@ -48,8 +48,8 @@ class MediaController extends Controller
         if (! $ownerType || ! $ownerId) {
             $profile = $request->user()->athleteProfile;
             abort_unless($profile, 422, 'No owner specified and no athlete profile found for this user');
-            $ownerType = $ownerType ?? 'athlete_profile';
-            $ownerId = $ownerId ?? $profile->id;
+            $ownerType = 'athlete_profile';
+            $ownerId = $profile->id;
         }
 
         $path = $file->store("media/{$ownerType}/{$ownerId}", 'public');
@@ -68,9 +68,7 @@ class MediaController extends Controller
         return response()->json([
             'data' => [
                 'id' => $media->id,
-                'url' => \Illuminate\Support\Facades\URL::temporarySignedRoute(
-                    'media.download', now()->addMinutes(60), ['id' => $media->id]
-                ),
+                'url' => $media->url(),
                 'media_type' => $media->media_type,
             ],
         ], 201);
