@@ -18,38 +18,29 @@ class NotificationSeeder extends Seeder
         }
 
         $notifications = [];
-        $types = ['trial', 'tournament', 'scholarship', 'sponsorship', 'system'];
+        $types = ['reminder', 'status_update', 'enquiry_reply'];
         $titles = [
             'New trial available in your city!',
             'Tournament registration closing soon',
             'Scholarship deadline approaching',
-            'Your sponsorship application was approved',
-            'Welcome to SportX!',
         ];
 
+        $count = 0;
         foreach ($users as $index => $user) {
-            $notifications[] = [
-                'user_id' => $user->id,
-                'type' => $types[$index % count($types)],
-                'title' => $titles[$index % count($titles)],
-                'message' => 'This is a test notification message.',
-                'data' => json_encode(['item_id' => $index + 1]),
-                'is_read' => $index === 0,
-                'created_at' => now()->subHours(rand(1, 48)),
-            ];
+            if ($count < 5) {
+                DB::table('notifications')->insert([
+                    'user_id' => $user->id,
+                    'type' => $types[$index % count($types)],
+                    'title' => $titles[$index % count($titles)],
+                    'body' => 'This is a test notification message.',
+                    'read_at' => $index === 0 ? now() : null,
+                    'created_at' => now()->subHours(rand(1, 48)),
+                    'updated_at' => now()->subHours(rand(1, 48)),
+                ]);
+                $count++;
+            }
         }
 
-        foreach ($notifications as $notification) {
-            DB::table('notifications')->updateOrInsert(
-                [
-                    'user_id' => $notification['user_id'],
-                    'type' => $notification['type'],
-                    'title' => $notification['title'],
-                ],
-                $notification
-            );
-        }
-
-        $this->command->info('Notifications seeded: ' . count($notifications));
+        $this->command->info('Notifications seeded: ' . $count);
     }
 }

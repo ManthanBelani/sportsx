@@ -19,29 +19,23 @@ class TrialRegistrationSeeder extends Seeder
             return;
         }
 
-        $registrations = [];
-        foreach ($athletes as $index => $athlete) {
-            $registrations[] = [
-                'trial_id' => $trial->id,
-                'athlete_profile_id' => $athlete->id,
-                'status' => $index === 0 ? 'selected' : 'registered',
-                'registration_date' => now()->subDays(rand(1, 5))->toDateString(),
-                'playing_role' => 'Batsman',
-                'medical_conditions' => null,
-                'parental_consent' => true,
-            ];
-        }
-
-        foreach ($registrations as $registration) {
-            TrialRegistration::updateOrCreate(
+        $count = 0;
+        foreach ($athletes as $athlete) {
+            TrialRegistration::firstOrCreate(
                 [
-                    'trial_id' => $registration['trial_id'],
-                    'athlete_profile_id' => $registration['athlete_profile_id'],
+                    'trial_id' => $trial->id,
+                    'athlete_id' => $athlete->id,
                 ],
-                $registration
+                [
+                    'registration_ref' => 'TR' . strtoupper(uniqid()),
+                    'document_status' => 'pending',
+                    'verification_status' => 'pending',
+                    'reminder_enabled' => true,
+                ]
             );
+            $count++;
         }
 
-        $this->command->info('Trial registrations seeded: ' . count($registrations));
+        $this->command->info('Trial registrations seeded: ' . $count);
     }
 }

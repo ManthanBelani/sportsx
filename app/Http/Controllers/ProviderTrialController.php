@@ -16,7 +16,7 @@ class ProviderTrialController extends Controller
         $user = $request->user();
 
         $trials = Trial::where('posted_by_user_id', $user->id)
-            ->with(['city', 'sports'])
+            ->with(['city', 'sport'])
             ->orderBy('event_datetime', 'desc')
             ->paginate(20);
 
@@ -62,7 +62,7 @@ class ProviderTrialController extends Controller
             'required_documents' => $validated['required_documents'] ?? [],
         ]));
 
-        return response()->json(['data' => $trial->load(['city', 'sports'])], 201);
+        return response()->json(['data' => $trial->load(['city', 'sport'])], 201);
     }
 
     public function update(Request $request, Trial $trial)
@@ -91,7 +91,7 @@ class ProviderTrialController extends Controller
 
         $trial->update($validated);
 
-        return response()->json(['data' => $trial->load(['city', 'sports'])]);
+        return response()->json(['data' => $trial->load(['city', 'sport'])]);
     }
 
     public function publish(Request $request, Trial $trial)

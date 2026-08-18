@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'admin',
                 'email_verified_at' => now(),
-                'is_active' => true,
+                'status' => 'active',
                 'language' => 'en',
             ],
             [
@@ -27,7 +27,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'athlete',
                 'email_verified_at' => now(),
-                'is_active' => true,
+                'status' => 'active',
                 'language' => 'en',
             ],
             [
@@ -36,7 +36,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'coach',
                 'email_verified_at' => now(),
-                'is_active' => true,
+                'status' => 'active',
                 'language' => 'en',
             ],
             [
@@ -45,7 +45,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'academy',
                 'email_verified_at' => now(),
-                'is_active' => true,
+                'status' => 'active',
                 'language' => 'en',
             ],
             [
@@ -54,7 +54,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'organizer',
                 'email_verified_at' => now(),
-                'is_active' => true,
+                'status' => 'active',
                 'language' => 'en',
             ],
             [
@@ -63,7 +63,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'sponsor',
                 'email_verified_at' => now(),
-                'is_active' => true,
+                'status' => 'active',
                 'language' => 'en',
             ],
             [
@@ -72,7 +72,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'athlete',
                 'email_verified_at' => now(),
-                'is_active' => true,
+                'status' => 'active',
                 'language' => 'en',
             ],
             [
@@ -81,7 +81,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'athlete',
                 'email_verified_at' => now(),
-                'is_active' => true,
+                'status' => 'active',
                 'language' => 'en',
             ],
             [
@@ -90,7 +90,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'coach',
                 'email_verified_at' => now(),
-                'is_active' => true,
+                'status' => 'active',
                 'language' => 'en',
             ],
             [
@@ -99,7 +99,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'academy',
                 'email_verified_at' => now(),
-                'is_active' => true,
+                'status' => 'active',
                 'language' => 'en',
             ],
         ];

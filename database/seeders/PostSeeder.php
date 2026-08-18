@@ -20,20 +20,17 @@ class PostSeeder extends Seeder
         $posts = [
             [
                 'user_id' => $users[0]->id,
-                'content' => 'Just completed an amazing training session! #cricket #training',
-                'media_urls' => null,
+                'body' => 'Just completed an amazing training session! #cricket #training',
                 'visibility' => 'public',
             ],
             [
                 'user_id' => $users[1]->id,
-                'content' => 'Excited to announce my participation in the upcoming U-16 State Cup!',
-                'media_urls' => null,
+                'body' => 'Excited to announce my participation in the upcoming U-16 State Cup!',
                 'visibility' => 'public',
             ],
             [
                 'user_id' => $users[2]->id,
-                'content' => 'Looking for teammates for the football tournament. DM if interested!',
-                'media_urls' => null,
+                'body' => 'Looking for teammates for the football tournament. DM if interested!',
                 'visibility' => 'public',
             ],
         ];
@@ -42,9 +39,9 @@ class PostSeeder extends Seeder
             Post::updateOrCreate(
                 [
                     'user_id' => $post['user_id'],
-                    'content' => $post['content'],
+                    'body' => $post['body'],
                 ],
-                array_merge($post, ['created_at' => now()->subDays(rand(1, 5))])
+                $post
             );
         }
 

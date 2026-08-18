@@ -22,14 +22,7 @@ class SponsorProfileSeeder extends Seeder
                 'user_id' => 6,
                 'brand_name' => 'Decathlon India',
                 'category' => 'Sports Retail',
-                'contact_person' => 'Priya Sharma',
-                'phone' => '+91 80 405 67890',
-                'email' => 'sports@decathlon.example.com',
-                'address' => 'Phoenix Marketcity, Pune',
-                'city_id' => 6,
-                'description' => 'Global sports equipment retailer',
-                'website' => 'https://decathlon.example.com',
-                'status' => 'active',
+                'verification_status' => 'verified',
             ],
         ];
 

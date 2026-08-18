@@ -21,10 +21,6 @@ class AdminProfileSeeder extends Seeder
             ['user_id' => $admin->id],
             [
                 'user_id' => $admin->id,
-                'full_name' => 'Admin User',
-                'phone' => '+91 98765 43210',
-                'department' => 'Super Admin',
-                'permissions' => json_encode(['all']),
                 'is_super_admin' => true,
             ]
         );

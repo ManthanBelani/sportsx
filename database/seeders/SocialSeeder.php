@@ -2,11 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\Conversation;
-use App\Models\ConversationParticipant;
-use App\Models\Message;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class SocialSeeder extends Seeder
 {
@@ -19,33 +17,34 @@ class SocialSeeder extends Seeder
             return;
         }
 
-        $conversation = Conversation::updateOrCreate(
-            ['id' => 1],
-            ['created_at' => now()->subDays(2), 'updated_at' => now()]
-        );
+        $conversationId = DB::table('conversations')->insertGetId([
+            'type' => 'private',
+            'created_at' => now()->subDays(2),
+            'updated_at' => now(),
+        ]);
 
         foreach ($users->take(3) as $user) {
-            ConversationParticipant::updateOrCreate(
+            DB::table('conversation_participants')->updateOrInsert(
                 [
-                    'conversation_id' => $conversation->id,
+                    'conversation_id' => $conversationId,
                     'user_id' => $user->id,
                 ],
-                ['joined_at' => now()->subDays(2)]
+                ['last_read_at' => now()->subDays(1), 'updated_at' => now()]
             );
         }
 
         $messages = [
-            ['conversation_id' => 1, 'sender_id' => $users[0]->id, 'message' => 'Hey, anyone interested in cricket trials?', 'created_at' => now()->subDays(2)],
-            ['conversation_id' => 1, 'sender_id' => $users[1]->id, 'message' => 'Yes! I saw the U-14 trials announcement.', 'created_at' => now()->subDays(2)->addMinutes(5)],
-            ['conversation_id' => 1, 'sender_id' => $users[2]->id, 'message' => 'Count me in! When is the registration deadline?', 'created_at' => now()->subDays(1)],
+            ['conversation_id' => $conversationId, 'sender_user_id' => $users[0]->id, 'body' => 'Hey, anyone interested in cricket trials?', 'created_at' => now()->subDays(2)],
+            ['conversation_id' => $conversationId, 'sender_user_id' => $users[1]->id, 'body' => 'Yes! I saw the U-14 trials announcement.', 'created_at' => now()->subDays(2)->addMinutes(5)],
+            ['conversation_id' => $conversationId, 'sender_user_id' => $users[2]->id, 'body' => 'Count me in! When is the registration deadline?', 'created_at' => now()->subDays(1)],
         ];
 
         foreach ($messages as $msg) {
-            Message::updateOrCreate(
+            DB::table('messages')->updateOrInsert(
                 [
                     'conversation_id' => $msg['conversation_id'],
-                    'sender_id' => $msg['sender_id'],
-                    'message' => $msg['message'],
+                    'sender_user_id' => $msg['sender_user_id'],
+                    'body' => $msg['body'],
                 ],
                 $msg
             );

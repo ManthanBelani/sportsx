@@ -18,18 +18,18 @@ class ConnectionSeeder extends Seeder
         }
 
         $connections = [
-            ['follower_id' => $users[1]->id, 'followee_id' => $users[2]->id, 'status' => 'accepted'],
-            ['follower_id' => $users[2]->id, 'followee_id' => $users[1]->id, 'status' => 'accepted'],
-            ['follower_id' => $users[1]->id, 'followee_id' => $users[3]->id, 'status' => 'accepted'],
+            ['follower_user_id' => $users[1]->id, 'followee_user_id' => $users[2]->id, 'status' => 'accepted'],
+            ['follower_user_id' => $users[2]->id, 'followee_user_id' => $users[1]->id, 'status' => 'accepted'],
+            ['follower_user_id' => $users[1]->id, 'followee_user_id' => $users[3]->id, 'status' => 'accepted'],
         ];
 
         foreach ($connections as $connection) {
             Connection::updateOrCreate(
                 [
-                    'follower_id' => $connection['follower_id'],
-                    'followee_id' => $connection['followee_id'],
+                    'follower_user_id' => $connection['follower_user_id'],
+                    'followee_user_id' => $connection['followee_user_id'],
                 ],
-                array_merge($connection, ['connected_at' => now()->subDays(rand(1, 10))])
+                $connection
             );
         }
 
