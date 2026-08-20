@@ -41,7 +41,7 @@ class EnquiryController extends Controller
         $user = $request->user();
         $subjectIds = match ($user->role) {
             'coach' => [$user->coachProfile?->id],
-            'academy' => [$user->academies?->id],
+            'academy' => $user->academies->pluck('id')->toArray(),
             default => [],
         };
 
@@ -50,7 +50,7 @@ class EnquiryController extends Controller
                 ->whereIn('subject_type', ['coach_profile', 'academy']);
         })->with(['athlete.user', 'messages' => fn ($m) => $m->latest()]);
 
-        $query->when($request->filter === 'new', fn ($q) => $q->whereHas('messages', fn ($m) => $m->whereNull('read_at')))
+        $query->when($request->filter === 'new', fn ($q) => $q->whereDoesntHave('messages', fn ($m) => $m->where('sender_user_id', $user->id)))
             ->when($request->filter === 'replied', fn ($q) => $q->whereHas('messages', fn ($m) => $m->where('sender_user_id', $user->id)));
 
         return response()->json($query->latest('updated_at')->paginate(20));
