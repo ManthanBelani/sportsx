@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/coach/presentation/providers/coach_provider.dart';
+import 'package:sportx_app/shared/providers/enquiry_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class CoachDashboardScreen extends ConsumerStatefulWidget {
@@ -19,6 +20,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
   void initState() {
     super.initState();
     ref.read(coachProvider.notifier).loadCoachProfile();
+    ref.read(enquiryInboxProvider.notifier).load();
   }
 
   @override
@@ -72,12 +74,16 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
   }
 
   Widget _buildHomeTab(String name) {
+    final enquiryState = ref.watch(enquiryInboxProvider);
+    final totalEnquiries = enquiryState.items.length;
+    final newEnquiries = enquiryState.items.where((e) => e.status == 'new' && !e.isRead).length;
+    final recentEnquiries = enquiryState.items.take(5).toList();
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Welcome Banner
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -98,7 +104,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
                     children: [
                       Text('Welcome, $name!', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                       const SizedBox(height: 2),
-                      const Text('You have 3 new enquiries this week', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                      Text('You have $newEnquiries new enquiry${newEnquiries != 1 ? 'ies' : 'y'}', style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                     ],
                   ),
                 ),
@@ -107,19 +113,17 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Stats Row
           Row(
             children: [
-              Expanded(child: _buildStatCard('12', 'Total Enquiries')),
+              Expanded(child: _buildStatCard('$totalEnquiries', 'Total Enquiries')),
               const SizedBox(width: 10),
-              Expanded(child: _buildStatCard('8', 'This Month')),
+              Expanded(child: _buildStatCard('$newEnquiries', 'New')),
               const SizedBox(width: 10),
-              Expanded(child: _buildStatCard('4.8', 'Avg Rating', icon: LucideIcons.star)),
+              Expanded(child: _buildStatCard('${totalEnquiries - newEnquiries}', 'Replied')),
             ],
           ),
           const SizedBox(height: 16),
 
-          // Profile Completeness
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -154,7 +158,6 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Quick Actions
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -169,7 +172,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildQuickAction(LucideIcons.user, 'Edit Profile', () {}),
+                    _buildQuickAction(LucideIcons.user, 'Edit Profile', () => context.push('/coach/edit-profile')),
                     _buildQuickAction(LucideIcons.messageCircle, 'Enquiries', () => context.push('/coach/enquiries')),
                     _buildQuickAction(LucideIcons.calendar, 'Schedule', () {}),
                     _buildQuickAction(LucideIcons.barChart2, 'Analytics', () {}),
@@ -180,7 +183,6 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Recent Enquiries
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -201,9 +203,24 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                _buildEnquiryItem('Priya Sharma', 'Hi Raj, I\'m a 14-year-old footballer...', '2 hours ago', true),
-                const Divider(color: AppColors.border),
-                _buildEnquiryItem('Arjun Mehta', 'Looking for personal coaching sessions.', '1 day ago', false),
+                if (recentEnquiries.isEmpty)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Text('No enquiries yet', style: TextStyle(color: AppColors.textSecondary)),
+                    ),
+                  )
+                else
+                  ...recentEnquiries.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final e = entry.value;
+                    return Column(
+                      children: [
+                        if (index > 0) const Divider(color: AppColors.border),
+                        _buildEnquiryItem(e.athleteName, e.message, e.createdAt ?? '', e.status == 'new' && !e.isRead),
+                      ],
+                    );
+                  }),
               ],
             ),
           ),

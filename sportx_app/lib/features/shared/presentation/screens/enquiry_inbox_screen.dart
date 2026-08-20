@@ -15,6 +15,7 @@ class EnquiryInboxScreen extends ConsumerStatefulWidget {
 class _EnquiryInboxScreenState extends ConsumerState<EnquiryInboxScreen> {
   int _selectedIndex = 0;
   final _tabs = ['All', 'New', 'Replied'];
+  final _filterMap = {'All': 'all', 'New': 'new', 'Replied': 'replied'};
 
   @override
   void initState() {
@@ -22,19 +23,16 @@ class _EnquiryInboxScreenState extends ConsumerState<EnquiryInboxScreen> {
     Future.microtask(() => ref.read(enquiryInboxProvider.notifier).load());
   }
 
+  void _onTabChanged(int index) {
+    setState(() => _selectedIndex = index);
+    final filter = _filterMap[_tabs[index]] ?? 'all';
+    ref.read(enquiryInboxProvider.notifier).load(filter: filter);
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(enquiryInboxProvider);
-    final items = state.items.where((e) {
-      switch (_selectedIndex) {
-        case 1:
-          return e.status == 'new' && !e.isRead;
-        case 2:
-          return e.status != 'new' || e.isRead;
-        default:
-          return true;
-      }
-    }).toList();
+    final items = state.items;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -60,7 +58,7 @@ class _EnquiryInboxScreenState extends ConsumerState<EnquiryInboxScreen> {
                   child: FilterChip(
                     label: Text(_tabs[index]),
                     selected: isSelected,
-                    onSelected: (val) => setState(() => _selectedIndex = index),
+                    onSelected: (val) => _onTabChanged(index),
                     selectedColor: AppColors.primary.withOpacity(0.15),
                     checkmarkColor: AppColors.primary,
                   ),
@@ -70,7 +68,7 @@ class _EnquiryInboxScreenState extends ConsumerState<EnquiryInboxScreen> {
           ),
           Expanded(
             child: RefreshIndicator(
-              onRefresh: () => ref.read(enquiryInboxProvider.notifier).load(),
+              onRefresh: () => ref.read(enquiryInboxProvider.notifier).load(filter: _filterMap[_tabs[_selectedIndex]]),
               child: state.isLoading && state.items.isEmpty
                   ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
                   : items.isEmpty

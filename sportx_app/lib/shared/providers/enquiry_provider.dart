@@ -69,6 +69,8 @@ class Enquiry {
       isRead: json['is_read'] == true || json['read_at'] != null,
     );
   }
+
+  bool get hasReplied => messages.any((m) => m.isMe);
 }
 
 class EnquiryState {
@@ -89,13 +91,19 @@ class EnquiryState {
 
 class EnquiryNotifier extends StateNotifier<EnquiryState> {
   final Dio _dio;
+  String? _currentFilter;
 
   EnquiryNotifier(this._dio) : super(EnquiryState());
 
-  Future<void> load() async {
+  Future<void> load({String? filter}) async {
+    _currentFilter = filter;
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final resp = await _dio.get('/me/enquiries');
+      final params = <String, dynamic>{};
+      if (filter != null && filter != 'all') {
+        params['filter'] = filter;
+      }
+      final resp = await _dio.get('/me/enquiries', queryParameters: params);
       final list = (resp.data['data'] as List? ?? [])
           .map((e) => Enquiry.fromJson(e as Map<String, dynamic>))
           .toList();
@@ -104,6 +112,8 @@ class EnquiryNotifier extends StateNotifier<EnquiryState> {
       state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
     }
   }
+
+  Future<void> loadAll() => load(filter: 'all');
 }
 
 final enquiryInboxProvider =
@@ -139,7 +149,7 @@ final enquiryDetailProvider =
 
 Future<bool> replyEnquiry(WidgetRef ref, String id, String message) async {
   try {
-    await ref.read(dioProvider).post('/enquiries/$id/messages', data: {'message': message});
+    await ref.read(dioProvider).post('/enquiries/$id/messages', data: {'body': message});
     ref.invalidate(enquiryDetailProvider(id));
     return true;
   } on DioException {

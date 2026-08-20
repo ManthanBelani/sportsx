@@ -14,20 +14,16 @@ class CoachProfilePostingScreen extends ConsumerStatefulWidget {
 
 class _CoachProfilePostingScreenState extends ConsumerState<CoachProfilePostingScreen> {
   final _name = TextEditingController();
-  final _sport = TextEditingController();
   final _experience = TextEditingController();
   final _fee = TextEditingController();
-  final _location = TextEditingController();
   final _bio = TextEditingController();
   bool _saving = false;
 
   @override
   void dispose() {
     _name.dispose();
-    _sport.dispose();
     _experience.dispose();
     _fee.dispose();
-    _location.dispose();
     _bio.dispose();
     super.dispose();
   }
@@ -37,10 +33,8 @@ class _CoachProfilePostingScreenState extends ConsumerState<CoachProfilePostingS
     try {
       await ref.read(dioProvider).put('/me/coach-profile', data: {
         'full_name': _name.text.trim(),
-        'sport': _sport.text.trim(),
         'experience': int.tryParse(_experience.text.trim()) ?? 0,
-        'hourly_rate': num.tryParse(_fee.text.trim()) ?? 0,
-        'city': _location.text.trim(),
+        'fee_structure': _fee.text.trim(),
         'bio': _bio.text.trim(),
       });
       if (mounted) {
@@ -72,13 +66,9 @@ class _CoachProfilePostingScreenState extends ConsumerState<CoachProfilePostingS
           children: [
             TextField(controller: _name, decoration: const InputDecoration(labelText: 'Name')),
             const SizedBox(height: 16),
-            TextField(controller: _sport, decoration: const InputDecoration(labelText: 'Sport(s)')),
-            const SizedBox(height: 16),
             TextField(controller: _experience, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Experience (years)')),
             const SizedBox(height: 16),
-            TextField(controller: _fee, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Fee per session')),
-            const SizedBox(height: 16),
-            TextField(controller: _location, decoration: const InputDecoration(labelText: 'Location')),
+            TextField(controller: _fee, decoration: const InputDecoration(labelText: 'Fee Structure')),
             const SizedBox(height: 16),
             TextField(controller: _bio, decoration: const InputDecoration(labelText: 'Bio'), maxLines: 4),
             const SizedBox(height: 32),

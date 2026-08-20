@@ -28,7 +28,6 @@ class CoachProfileController extends Controller
             'fee_structure' => 'nullable|string|max:120',
             'bio' => 'nullable|string',
             'photo_media_id' => 'nullable|exists:media_items,id',
-            'listing_status' => 'in:draft,published,closed',
         ]);
 
         $profile = $request->user()->coachProfile;
