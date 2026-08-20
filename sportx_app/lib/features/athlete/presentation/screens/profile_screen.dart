@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:lucide_flutter/lucide_icons.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/core/config/api_config.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/connections/presentation/providers/connections_provider.dart';
@@ -19,6 +20,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _isLoading = true;
 
   // Profile data
+  int _userId = 0;
   String _name = '';
   String _bio = '';
   String _sport = '';
@@ -96,6 +98,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Future<void> _loadProfile() async {
     final authUser = ref.read(authProvider).user;
     setState(() {
+      _userId = authUser?.id ?? 0;
       _name = authUser?.name ?? '';
       _isLoading = false;
     });
@@ -504,8 +507,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         height: 48,
         child: OutlinedButton.icon(
           onPressed: () {
+            final shareUrl = '${ApiConfig.webBaseUrl}/profile/$_userId';
             Share.share(
-              'Check out my profile on SportX India!\nhttps://sportx.in/profile/$_name',
+              'Check out my profile on SportX India!\n$shareUrl',
             );
           },
           icon: const Icon(LucideIcons.share2, size: 20),

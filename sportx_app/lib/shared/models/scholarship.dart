@@ -1,6 +1,13 @@
 import 'sport.dart';
 import 'city.dart';
 
+int? _parseInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is String) return int.tryParse(value);
+  return null;
+}
+
 class Scholarship {
   final int id;
   final String title;
@@ -54,17 +61,17 @@ class Scholarship {
 
   factory Scholarship.fromJson(Map<String, dynamic> json) {
     return Scholarship(
-      id: json['id'] as int,
+      id: _parseInt(json['id'])!,
       title: (json['title'] ?? json['name'] ?? '') as String,
       description: json['description'] as String?,
-      sportId: json['sport_id'] as int,
-      cityId: json['city_id'] as int?,
+      sportId: _parseInt(json['sport_id'])!,
+      cityId: _parseInt(json['city_id']),
       sponsorName: (json['sponsor_name'] ?? json['organization_name']) as String?,
       sponsorLogoUrl: (json['sponsor_logo_url'] ?? json['logo_url']) as String?,
       amount: (json['amount'] as num?)?.toDouble(),
       amountLabel: json['amount_label'] as String?,
-      totalSlots: json['total_slots'] as int?,
-      filledSlots: json['filled_slots'] as int?,
+      totalSlots: _parseInt(json['total_slots']),
+      filledSlots: _parseInt(json['filled_slots']),
       applicationDeadline: (json['application_deadline'] ?? json['deadline']) != null
           ? DateTime.parse(json['application_deadline'] ?? json['deadline'])
           : null,

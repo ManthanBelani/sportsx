@@ -6,6 +6,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
+import 'package:sportx_app/shared/providers/activity_provider.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -53,6 +54,7 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
       if (mounted) {
         final data = response.data is Map ? response.data['data'] as Map<String, dynamic>? : null;
         final trial = data?['trial'] as Map<String, dynamic>?;
+        ref.invalidate(activityProvider);
         context.push('/registration-confirmation', extra: {
           'is_trial': true,
           'registration_ref': data?['registration_ref'],

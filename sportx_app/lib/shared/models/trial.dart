@@ -2,6 +2,13 @@ import 'sport.dart';
 import 'city.dart';
 import 'age_group.dart';
 
+int? _parseInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is String) return int.tryParse(value);
+  return null;
+}
+
 class Trial {
   final int id;
   final String title;
@@ -59,24 +66,24 @@ class Trial {
 
   factory Trial.fromJson(Map<String, dynamic> json) {
     return Trial(
-      id: json['id'] as int,
+      id: _parseInt(json['id'])!,
       title: (json['title'] ?? json['name'] ?? '') as String,
       description: (json['description'] ?? json['benefits']) as String?,
-      sportId: json['sport_id'] as int,
-      cityId: json['city_id'] as int?,
-      academyId: json['academy_id'] as int?,
+      sportId: _parseInt(json['sport_id'])!,
+      cityId: _parseInt(json['city_id']),
+      academyId: _parseInt(json['academy_id']),
       venue: json['venue'] as String?,
       googleMapsUrl: json['google_maps_url'] as String?,
       trialDate: (json['trial_date'] ?? json['event_datetime']) != null
           ? DateTime.parse(json['trial_date'] ?? json['event_datetime'])
           : null,
       registrationDeadline: json['registration_deadline'] != null ? DateTime.parse(json['registration_deadline']) : null,
-      totalSpots: (json['total_spots'] ?? json['vacancies']) as int?,
-      filledSpots: json['filled_spots'] as int?,
+      totalSpots: _parseInt(json['total_spots'] ?? json['vacancies']),
+      filledSpots: _parseInt(json['filled_spots']),
       // entry_fee is a varchar on the backend → arrives as a String; parse defensively.
       registrationFee: _parseNum(json['registration_fee'] ?? json['entry_fee'])?.toDouble(),
       ageGroupLabel: (json['age_group_label'] ?? json['eligibility']) as String?,
-      ageGroupId: json['age_group_id'] as int?,
+      ageGroupId: _parseInt(json['age_group_id']),
       contactName: json['contact_name'] as String?,
       contactNumber: json['contact_number'] as String?,
       // required_documents is a JSON column → arrives as a List, not a String.

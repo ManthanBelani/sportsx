@@ -1,3 +1,10 @@
+int? _parseInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is String) return int.tryParse(value);
+  return null;
+}
+
 class City {
   final int id;
   final String name;
@@ -8,7 +15,7 @@ class City {
 
   factory City.fromJson(Map<String, dynamic> json) {
     return City(
-      id: json['id'] as int,
+      id: _parseInt(json['id'])!,
       name: json['name'] as String,
       state: json['state'] as String? ?? '',
       isActive: (json['is_active'] ?? 1) == 1,

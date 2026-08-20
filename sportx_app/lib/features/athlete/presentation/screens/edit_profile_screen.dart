@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
+import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -26,7 +27,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _heightController = TextEditingController(text: '165');
   final _weightController = TextEditingController(text: '58');
   
-  String _selectedSport = 'Cricket';
+  int? _selectedSportId;
+  String? _selectedSportName;
   String _dominantSide = 'Right';
   
   File? _avatarFile;
@@ -41,19 +43,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   int? _cityId;
   int? _photoMediaId;
 
-  final List<String> _sports = [
-    'Cricket',
-    'Football',
-    'Badminton',
-    'Tennis',
-    'Hockey',
-    'Kabaddi',
-    'Athletics',
-    'Swimming',
-    'Boxing',
-    'Wrestling',
-  ];
-  
   final List<String> _dominantSides = ['Right', 'Left', 'Both'];
 
   @override
@@ -81,6 +70,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           if (city?['name'] != null) {
             _locationController.text = (city?['name'] as String?)!;
           }
+          // Load sport
+          final sport = d['sport'] as Map<String, dynamic>?;
+          if (sport != null) {
+            _selectedSportId = sport['id'] as int?;
+            _selectedSportName = sport['name'] as String?;
+          } else {
+            _selectedSportId = d['sport_id'] as int?;
+          }
+          // Load physical attributes
+          _heightController.text = (d['height'] ?? '').toString();
+          _weightController.text = (d['weight'] ?? '').toString();
         });
       }
     } catch (_) {}
@@ -121,8 +121,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         'gender': _gender,
         'skill_level': _skillLevel,
         'city_id': _cityId,
+        'sport_id': _selectedSportId,
         'experience': _bioController.text.trim(),
         'position': _dominantSide == 'Left' ? 'Left-hand' : 'Right-hand',
+        'height': _heightController.text.trim().isNotEmpty ? double.tryParse(_heightController.text.trim()) : null,
+        'weight': _weightController.text.trim().isNotEmpty ? double.tryParse(_weightController.text.trim()) : null,
         if (_photoMediaId != null) 'photo_media_id': _photoMediaId,
       });
 
@@ -151,6 +154,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final meta = ref.watch(metaProvider);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -191,7 +196,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               _buildSectionTitle('Basic Information'),
               _buildTextField('Full Name', _nameController),
               _buildBioField(),
-              _buildDropdown('Primary Sport', _selectedSport, _sports, (val) => setState(() => _selectedSport = val!)),
+              _buildSportDropdown(meta),
               _buildTextField('Location', _locationController),
               const SizedBox(height: 24),
               _buildSectionTitle('Physical Attributes'),
@@ -355,6 +360,52 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             value: value,
             items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
             onChanged: onChanged,
+            icon: const Icon(LucideIcons.chevronDown, size: 20),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: AppColors.surface,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: AppColors.primary),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSportDropdown(MetaState meta) {
+    final sportList = meta.sports;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Primary Sport', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
+          const SizedBox(height: 6),
+          DropdownButtonFormField<int>(
+            value: _selectedSportId,
+            items: sportList.map((sport) {
+              return DropdownMenuItem(
+                value: sport.id,
+                child: Text(sport.name),
+              );
+            }).toList(),
+            onChanged: (val) => setState(() {
+              _selectedSportId = val;
+              _selectedSportName = sportList.where((s) => s.id == val).firstOrNull?.name;
+            }),
+            hint: Text(_selectedSportName ?? 'Select Sport'),
             icon: const Icon(LucideIcons.chevronDown, size: 20),
             decoration: InputDecoration(
               filled: true,

@@ -1,6 +1,13 @@
 import 'sport.dart';
 import 'city.dart';
 
+int? _parseInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is String) return int.tryParse(value);
+  return null;
+}
+
 class Sponsorship {
   final int id;
   final String title;
@@ -48,11 +55,11 @@ class Sponsorship {
 
   factory Sponsorship.fromJson(Map<String, dynamic> json) {
     return Sponsorship(
-      id: json['id'] as int,
+      id: _parseInt(json['id'])!,
       title: json['title'] as String,
       description: json['description'] as String?,
-      sportId: json['sport_id'] as int,
-      cityId: json['city_id'] as int?,
+      sportId: _parseInt(json['sport_id'])!,
+      cityId: _parseInt(json['city_id']),
       sponsorName: json['sponsor_name'] as String?,
       sponsorLogoUrl: json['sponsor_logo_url'] as String?,
       sponsorshipType: json['sponsorship_type'] as String?,

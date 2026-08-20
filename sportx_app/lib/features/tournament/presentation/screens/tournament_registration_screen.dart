@@ -6,6 +6,7 @@ import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/shared/presentation/widgets/async_state_view.dart';
 import 'package:sportx_app/shared/presentation/widgets/form_page_template.dart';
+import 'package:sportx_app/shared/providers/activity_provider.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -57,6 +58,7 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
       if (!mounted) return;
       final data = response.data is Map ? response.data['data'] as Map<String, dynamic>? : null;
       final tournamentData = data?['tournament'] as Map<String, dynamic>?;
+      ref.invalidate(activityProvider);
       context.push('/registration-confirmation', extra: {
         'is_trial': false,
         'registration_ref': 'TRN-${data?['id'] ?? ''}',

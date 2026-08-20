@@ -1,3 +1,10 @@
+int? _parseInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is String) return int.tryParse(value);
+  return null;
+}
+
 class AgeGroup {
   final int id;
   final String label;
@@ -9,10 +16,10 @@ class AgeGroup {
 
   factory AgeGroup.fromJson(Map<String, dynamic> json) {
     return AgeGroup(
-      id: json['id'] as int,
+      id: _parseInt(json['id'])!,
       label: (json['name'] ?? json['label']) as String,
-      minAge: json['min_age'] as int? ?? 0,
-      maxAge: json['max_age'] as int? ?? 99,
+      minAge: _parseInt(json['min_age']) ?? 0,
+      maxAge: _parseInt(json['max_age']) ?? 99,
       isActive: (json['is_active'] ?? 1) == 1,
     );
   }

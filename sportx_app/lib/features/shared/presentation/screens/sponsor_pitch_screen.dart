@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/shared/providers/activity_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class SponsorPitchScreen extends ConsumerStatefulWidget {
@@ -34,6 +35,7 @@ class _SponsorPitchScreenState extends ConsumerState<SponsorPitchScreen> {
         'link': _linkController.text.trim(),
       });
       if (mounted) {
+        ref.invalidate(activityProvider);
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Application submitted!')));
         context.push('/registration-confirmation');
       }

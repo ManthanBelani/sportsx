@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 
 class SportsVenueListScreen extends ConsumerWidget {
@@ -31,7 +32,7 @@ class SportsVenueListScreen extends ConsumerWidget {
                         trailing: item.bookingAvailable == true
                             ? Chip(label: const Text('Bookable'), backgroundColor: Colors.green.withAlpha(26), labelStyle: const TextStyle(fontSize: 12, color: Colors.green))
                             : null,
-                        onTap: () {},
+                        onTap: () => context.push('/sports-venue-detail/${item.id}'),
                       );
                     },
                   ),

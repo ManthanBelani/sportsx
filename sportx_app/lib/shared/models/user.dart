@@ -1,5 +1,12 @@
 enum UserRole { athlete, coach, academy, organizer, sponsor, admin }
 
+int? _parseInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is String) return int.tryParse(value);
+  return null;
+}
+
 class User {
   final int id;
   final String name;
@@ -21,7 +28,7 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] as int,
+      id: _parseInt(json['id'])!,
       name: json['name'] as String? ?? '',
       email: json['email'] as String,
       phone: json['phone'] as String?,

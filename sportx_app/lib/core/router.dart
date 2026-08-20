@@ -62,6 +62,7 @@ import 'package:sportx_app/features/settings/presentation/screens/help_support_s
 import 'package:sportx_app/features/scholarship/presentation/screens/scholarship_list_screen.dart';
 import 'package:sportx_app/features/scholarship/presentation/screens/scholarship_detail_screen.dart';
 import 'package:sportx_app/features/sports_venue/presentation/screens/sports_venue_list_screen.dart';
+import 'package:sportx_app/features/sports_venue/presentation/screens/sports_venue_detail_screen.dart';
 import 'package:sportx_app/features/social/presentation/screens/create_post_screen.dart';
 import 'package:sportx_app/features/chat/presentation/screens/chat_list_screen.dart';
 import 'package:sportx_app/features/chat/presentation/screens/chat_screen.dart';
@@ -271,6 +272,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/scholarships', builder: (context, state) => const ScholarshipListScreen()),
       GoRoute(path: '/scholarship-detail/:id', builder: (context, state) => ScholarshipDetailScreen(scholarshipId: state.pathParameters['id']!)),
       GoRoute(path: '/sports-venues', builder: (context, state) => const SportsVenueListScreen()),
+      GoRoute(path: '/sports-venue-detail/:id', builder: (context, state) => SportsVenueDetailScreen(id: state.pathParameters['id']!)),
       GoRoute(path: '/create-post', builder: (context, state) => const CreatePostScreen()),
       GoRoute(path: '/chat-list', builder: (context, state) => const ChatListScreen()),
       GoRoute(path: '/chat-screen', builder: (context, state) {

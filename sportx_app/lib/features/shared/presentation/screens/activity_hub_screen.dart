@@ -34,10 +34,11 @@ class ActivityHubScreen extends ConsumerWidget {
       'trial': state.items.where((e) => e.category == 'trial').toList(),
       'tournament': state.items.where((e) => e.category == 'tournament').toList(),
       'sponsorship': state.items.where((e) => e.category == 'sponsorship').toList(),
+      'enquiry': state.items.where((e) => e.category == 'enquiry').toList(),
     };
 
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
@@ -47,16 +48,24 @@ class ActivityHubScreen extends ConsumerWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
           leading: IconButton(
             icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
-            onPressed: () => context.pop(),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/home');
+              }
+            },
           ),
           bottom: const TabBar(
             labelColor: AppColors.primary,
             unselectedLabelColor: AppColors.textSecondary,
             indicatorColor: AppColors.primary,
+            isScrollable: true,
             tabs: [
               Tab(text: 'Trials'),
               Tab(text: 'Tournaments'),
               Tab(text: 'Sponsorships'),
+              Tab(text: 'Enquiries'),
             ],
           ),
         ),
@@ -67,6 +76,7 @@ class ActivityHubScreen extends ConsumerWidget {
                   _buildList(context, ref, byCategory['trial']!),
                   _buildList(context, ref, byCategory['tournament']!),
                   _buildList(context, ref, byCategory['sponsorship']!),
+                  _buildList(context, ref, byCategory['enquiry']!),
                 ],
               ),
       ),

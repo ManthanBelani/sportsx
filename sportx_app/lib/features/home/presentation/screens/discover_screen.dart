@@ -205,19 +205,32 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
     final athletes = ref.watch(athletesProvider);
 
     return athletes.when(
-      data: (items) => GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 0.85,
-        ),
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          return _buildAthleteCard(items[index]);
-        },
-      ),
+      data: (items) {
+        final filtered = items.where((a) {
+          final sport = a['sport'] as Map<String, dynamic>?;
+          final city = a['city'] as Map<String, dynamic>?;
+          if (_selectedSport != null && sport?['name'] != _selectedSport) return false;
+          if (_selectedState != null && city?['name'] != _selectedState) return false;
+          return true;
+        }).toList();
+
+        if (filtered.isEmpty) {
+          return const Center(child: Text('No athletes found with selected filters'));
+        }
+        return GridView.builder(
+          padding: const EdgeInsets.all(16),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 0.85,
+          ),
+          itemCount: filtered.length,
+          itemBuilder: (context, index) {
+            return _buildAthleteCard(filtered[index]);
+          },
+        );
+      },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('Error: $e')),
     );
@@ -302,8 +315,15 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
     if (coaches.isLoading && coaches.items.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (coaches.items.isEmpty) {
-      return const Center(child: Text('No coaches found'));
+
+    final filtered = coaches.items.where((c) {
+      if (_selectedSport != null && c.sport?.name != _selectedSport) return false;
+      if (_selectedState != null && c.city?.name != _selectedState) return false;
+      return true;
+    }).toList();
+
+    if (filtered.isEmpty) {
+      return const Center(child: Text('No coaches found with selected filters'));
     }
     return GridView.builder(
       padding: const EdgeInsets.all(16),
@@ -313,9 +333,9 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
         crossAxisSpacing: 12,
         childAspectRatio: 0.85,
       ),
-      itemCount: coaches.items.length,
+      itemCount: filtered.length,
       itemBuilder: (context, index) {
-        return _buildCoachCard(coaches.items[index]);
+        return _buildCoachCard(filtered[index]);
       },
     );
   }

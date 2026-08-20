@@ -1,6 +1,13 @@
 import 'sport.dart';
 import 'city.dart';
 
+int? _parseInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is String) return int.tryParse(value);
+  return null;
+}
+
 class SportsVenue {
   final int id;
   final String name;
@@ -46,7 +53,7 @@ class SportsVenue {
 
   factory SportsVenue.fromJson(Map<String, dynamic> json) {
     return SportsVenue(
-      id: json['id'] as int,
+      id: _parseInt(json['id'])!,
       name: json['name'] as String,
       description: json['description'] as String?,
       address: json['address'] as String?,
@@ -54,8 +61,8 @@ class SportsVenue {
       contactNumber: json['contact_number'] as String?,
       email: json['email'] as String?,
       website: json['website'] as String?,
-      cityId: json['city_id'] as int?,
-      sportId: json['sport_id'] as int?,
+      cityId: _parseInt(json['city_id']),
+      sportId: _parseInt(json['sport_id']),
       bookingAvailable: json['booking_available'] == true || json['booking_available'] == 1,
       hourlyRate: (json['hourly_rate'] as num?)?.toDouble(),
       dailyRate: (json['daily_rate'] as num?)?.toDouble(),
