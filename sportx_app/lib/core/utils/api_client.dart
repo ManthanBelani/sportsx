@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/core/config/api_config.dart';
 import 'package:sportx_app/core/utils/storage_service.dart';
+import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 
 final dioProvider = Provider<Dio>((ref) {
   final dio = Dio(BaseOptions(
@@ -39,10 +40,13 @@ class AuthInterceptor extends Interceptor {
   }
 
   @override
-  void onError(DioException err, ErrorInterceptorHandler handler) {
+  void onError(DioException err, ErrorInterceptorHandler handler) async {
     if (err.response?.statusCode == 401) {
-      // Token expired or invalid — clear storage
-      ref.read(storageServiceProvider).deleteToken();
+      final storage = ref.read(storageServiceProvider);
+      await storage.deleteToken();
+      try {
+        ref.read(authProvider.notifier).forceLogout();
+      } catch (_) {}
     }
     handler.next(err);
   }

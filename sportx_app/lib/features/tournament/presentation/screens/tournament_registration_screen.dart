@@ -20,6 +20,10 @@ class TournamentRegistrationScreen extends ConsumerStatefulWidget {
 
 class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistrationScreen> {
   final _teamController = TextEditingController();
+  final _teamManagerController = TextEditingController();
+  final _captainNameController = TextEditingController();
+  final _coachNameController = TextEditingController();
+  final _numberOfPlayersController = TextEditingController();
   int? _categoryId;
   String _participationType = 'individual'; // individual | team
   bool _submitting = false;
@@ -27,6 +31,10 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
   @override
   void dispose() {
     _teamController.dispose();
+    _teamManagerController.dispose();
+    _captainNameController.dispose();
+    _coachNameController.dispose();
+    _numberOfPlayersController.dispose();
     super.dispose();
   }
 
@@ -44,6 +52,20 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
       );
       return;
     }
+    if (_participationType == 'team') {
+      if (_numberOfPlayersController.text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter number of players')),
+        );
+        return;
+      }
+      if (_captainNameController.text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter captain name')),
+        );
+        return;
+      }
+    }
 
     setState(() => _submitting = true);
     try {
@@ -52,7 +74,13 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
           .post('/tournaments/${widget.tournamentId}/register', data: {
             'category_id': category.id,
             'participation_type': _participationType,
-            if (_participationType == 'team') 'team_name': _teamController.text.trim(),
+            if (_participationType == 'team') ...{
+              'team_name': _teamController.text.trim(),
+              'team_manager': _teamManagerController.text.trim(),
+              'captain_name': _captainNameController.text.trim(),
+              'coach_name': _coachNameController.text.trim(),
+              'number_of_players': int.tryParse(_numberOfPlayersController.text.trim()) ?? 0,
+            },
           });
 
       if (!mounted) return;
@@ -116,6 +144,95 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
                 controller: _teamController,
                 decoration: InputDecoration(
                   hintText: 'e.g. Elite Tigers',
+                  filled: true,
+                  fillColor: AppColors.surface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: AppColors.primary),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildLabel('Team Manager'),
+              TextField(
+                controller: _teamManagerController,
+                decoration: InputDecoration(
+                  hintText: 'Manager name (optional)',
+                  filled: true,
+                  fillColor: AppColors.surface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: AppColors.primary),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildLabel('Number of Players'),
+              TextField(
+                controller: _numberOfPlayersController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  hintText: 'e.g. 15',
+                  filled: true,
+                  fillColor: AppColors.surface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: AppColors.primary),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildLabel('Captain Name'),
+              TextField(
+                controller: _captainNameController,
+                decoration: InputDecoration(
+                  hintText: 'Captain name',
+                  filled: true,
+                  fillColor: AppColors.surface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: AppColors.primary),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildLabel('Coach Name'),
+              TextField(
+                controller: _coachNameController,
+                decoration: InputDecoration(
+                  hintText: 'Coach name (optional)',
                   filled: true,
                   fillColor: AppColors.surface,
                   border: OutlineInputBorder(

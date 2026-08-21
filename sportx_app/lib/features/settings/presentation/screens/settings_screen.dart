@@ -104,6 +104,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           {...state.notificationPrefs, 'sms': v},
                         ),
                       ),
+                      _buildSettingsToggleItem(
+                        icon: LucideIcons.calendarClock,
+                        title: 'Deadline Reminders',
+                        subtitle: 'Get reminded 2 days and 1 day before deadlines',
+                        value: state.notificationPrefs['deadline_reminders'] ?? true,
+                        onChanged: (v) => ref.read(settingsProvider.notifier).updatePrefs(
+                          {...state.notificationPrefs, 'deadline_reminders': v},
+                        ),
+                      ),
                     ],
                   ),
 

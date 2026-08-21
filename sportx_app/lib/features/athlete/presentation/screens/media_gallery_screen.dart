@@ -16,6 +16,7 @@ class MediaGalleryScreen extends ConsumerStatefulWidget {
 class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
   int _currentTab = 0;
   List<Map<String, dynamic>> _mediaItems = [];
+  List<Map<String, dynamic>> _achievements = [];
   bool _isReorderMode = false;
 
   @override
@@ -32,13 +33,23 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
           .whereType<Map>()
           .map((m) => Map<String, dynamic>.from(m))
           .toList();
-      if (mounted) setState(() => _mediaItems = items);
+      final ach = (data?['achievements'] as List? ?? const [])
+          .whereType<Map>()
+          .map((m) => Map<String, dynamic>.from(m))
+          .toList();
+      if (mounted) {
+        setState(() {
+          _mediaItems = items;
+          _achievements = ach;
+        });
+      }
     } catch (_) {}
   }
 
   List<Map<String, dynamic>> get _filteredItems {
     if (_currentTab == 0) return _mediaItems.where((i) => i['media_type'] == 'photo').toList();
     if (_currentTab == 1) return _mediaItems.where((i) => i['media_type'] == 'video').toList();
+    if (_currentTab == 2) return _achievements;
     return [];
   }
 
@@ -172,6 +183,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
               children: [
                 _buildTab('Photos (${_mediaItems.where((i) => i['media_type'] == 'photo').length})', 0),
                 _buildTab('Videos (${_mediaItems.where((i) => i['media_type'] == 'video').length})', 1),
+                _buildTab('Achievements (${_achievements.length})', 2),
               ],
             ),
           ),
@@ -221,6 +233,10 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
 
   Widget _buildGrid() {
     final items = _filteredItems;
+
+    if (_currentTab == 2) {
+      return _buildAchievementsList();
+    }
 
     if (_isReorderMode) {
       return ReorderableListView.builder(
@@ -400,6 +416,109 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildAchievementsList() {
+    final items = _filteredItems;
+
+    if (items.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(32),
+        child: Center(
+          child: Column(
+            children: [
+              const Icon(LucideIcons.trophy, size: 48, color: AppColors.textSecondary),
+              const SizedBox(height: 16),
+              const Text(
+                'No achievements yet',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Add your achievements to showcase your accomplishments',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: () => context.push('/add-achievement'),
+                icon: const Icon(LucideIcons.plus),
+                label: const Text('Add Achievement'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: items.asMap().entries.map((entry) {
+        final index = entry.key;
+        final achievement = entry.value;
+        return Container(
+          key: ValueKey(achievement['id'] ?? index),
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  achievement['icon']?.toString() ?? '🏆',
+                  style: const TextStyle(fontSize: 24),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      achievement['title']?.toString() ?? achievement['text']?.toString() ?? 'Achievement',
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                    ),
+                    if (achievement['year'] != null || achievement['date'] != null)
+                      Text(
+                        achievement['year']?.toString() ?? achievement['date']?.toString() ?? '',
+                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      ),
+                    if (achievement['description'] != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          achievement['description'].toString(),
+                          style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              if (_isReorderMode)
+                IconButton(
+                  icon: const Icon(LucideIcons.trash2, color: Colors.red),
+                  onPressed: () => _deleteMedia(achievement['id'] as int),
+                )
+              else
+                const Icon(LucideIcons.chevronRight, color: AppColors.textSecondary),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 }

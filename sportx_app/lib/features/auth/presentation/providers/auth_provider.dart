@@ -167,6 +167,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = AuthState(status: AuthStatus.unauthenticated);
   }
 
+  void forceLogout() {
+    _storage.deleteToken();
+    state = AuthState(status: AuthStatus.unauthenticated);
+  }
+
   void clearError() {
     state = state.copyWith(status: AuthStatus.unauthenticated, error: null, fieldErrors: const {});
   }

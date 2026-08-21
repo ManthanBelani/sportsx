@@ -6,7 +6,6 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/config/api_config.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
-import 'package:sportx_app/features/connections/presentation/providers/connections_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -31,63 +30,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   int _connectsCount = 0;
   int _achievementsCount = 0;
 
-  List<Map<String, dynamic>> _achievements = [
-    {
-      'id': '1',
-      'title': 'State-level U-14 Selection',
-      'year': '2025',
-      'icon': '🏆',
-    },
-    {
-      'id': '2',
-      'title': 'District Top Scorer',
-      'year': '2024',
-      'icon': '🥇',
-    },
-    {
-      'id': '3',
-      'title': 'Best Batsman Award',
-      'year': '2024',
-      'icon': '🏏',
-    },
-  ];
+  List<Map<String, dynamic>> _achievements = [];
 
   String? _avatarUrl;
 
   List<Map<String, dynamic>> _uploadedMedia = const [];
 
-  final List<Map<String, dynamic>> _tournamentHistory = [
-    {
-      'id': '1',
-      'name': 'Gujarat State U-14 Championship',
-      'year': '2025',
-      'result': 'Semi-finalist',
-      'icon': '🏆',
-    },
-    {
-      'id': '2',
-      'name': 'Ahmedabad District Cricket League',
-      'year': '2024',
-      'result': 'Winner',
-      'icon': '🥇',
-    },
-  ];
+  List<Map<String, dynamic>> _tournamentHistory = [];
 
-  final List<Map<String, dynamic>> _performanceStats = [
-    {'label': 'Matches', 'value': '42'},
-    {'label': 'Runs', 'value': '1,250'},
-    {'label': 'Average', 'value': '35.7'},
-    {'label': 'Wickets', 'value': '12'},
-  ];
-
-  final List<String> _mediaGallery = [
-    'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=200&h=200&fit=crop',
-    'https://images.unsplash.com/photo-1518605368461-1ee7e53c23cb?w=200&h=200&fit=crop',
-    'https://images.unsplash.com/photo-1587280501635-6cb10ee2d133?w=200&h=200&fit=crop',
-    'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=200&h=200&fit=crop',
-    'https://images.unsplash.com/photo-1516130441908-16e917d23f33?w=200&h=200&fit=crop',
-    'https://images.unsplash.com/photo-1624526267942-ab0f0b580898?w=200&h=200&fit=crop',
-  ];
+  List<Map<String, dynamic>> _performanceStats = [];
 
   @override
   void initState() {
@@ -367,6 +318,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildTournamentHistorySection() {
+    if (_tournamentHistory.isEmpty) {
+      return _buildSection(
+        title: 'Tournament History',
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child: Column(
+              children: [
+                const Icon(LucideIcons.trophy, size: 40, color: AppColors.textSecondary),
+                const SizedBox(height: 12),
+                const Text(
+                  'No tournament history yet',
+                  style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Register for trials and tournaments to build your history',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary.withOpacity(0.7)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     return _buildSection(
       title: 'Tournament History',
       child: Column(
@@ -383,7 +360,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   alignment: Alignment.center,
-                  child: Text(tournament['icon'], style: const TextStyle(fontSize: 20)),
+                  child: Text(tournament['icon'] ?? '🏆', style: const TextStyle(fontSize: 20)),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -391,12 +368,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        tournament['name'],
+                        tournament['name'] ?? '',
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '${tournament['year']} • ${tournament['result']}',
+                        '${tournament['year'] ?? ''} • ${tournament['result'] ?? ''}',
                         style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                       ),
                     ],
@@ -411,6 +388,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildPerformanceStatsSection() {
+    if (_performanceStats.isEmpty) {
+      return _buildSection(
+        title: 'Performance Stats',
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child: Column(
+              children: [
+                const Icon(LucideIcons.barChart3, size: 40, color: AppColors.textSecondary),
+                const SizedBox(height: 12),
+                const Text(
+                  'No stats available',
+                  style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Your performance stats will appear here after tournaments',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary.withOpacity(0.7)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     return _buildSection(
       title: 'Performance Stats',
       child: GridView.count(
@@ -433,11 +436,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  stat['value'],
+                  stat['value'] ?? '0',
                   style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.primary),
                 ),
                 Text(
-                  stat['label'],
+                  stat['label'] ?? '',
                   style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                 ),
               ],
@@ -449,9 +452,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildMediaGallerySection() {
-    final images = _uploadedMedia.isNotEmpty
-        ? _uploadedMedia.map((m) => _absoluteUrl((m['url'] ?? '') as String)).where((u) => u.isNotEmpty).toList()
-        : _mediaGallery;
+    final images = _uploadedMedia
+        .map((m) => _absoluteUrl((m['url'] ?? '') as String))
+        .where((u) => u.isNotEmpty)
+        .toList();
+
     return _buildSection(
       title: 'Media Gallery',
       action: GestureDetector(
@@ -461,30 +466,52 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         },
         child: const Text('See all', style: TextStyle(fontSize: 13, color: AppColors.primary)),
       ),
-      child: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          mainAxisSpacing: 8,
-          crossAxisSpacing: 8,
-        ),
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: EdgeInsets.zero,
-        itemCount: images.length,
-        itemBuilder: (context, index) {
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              images[index],
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                color: AppColors.surface,
-                child: const Icon(LucideIcons.image, color: AppColors.textSecondary),
+      child: images.isEmpty
+          ? Container(
+              padding: const EdgeInsets.all(24),
+              child: Center(
+                child: Column(
+                  children: [
+                    const Icon(LucideIcons.image, size: 40, color: AppColors.textSecondary),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'No media yet',
+                      style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Add photos and videos to your gallery',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 12, color: AppColors.textSecondary.withOpacity(0.7)),
+                    ),
+                  ],
+                ),
               ),
+            )
+          : GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+              ),
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              itemCount: images.length,
+              itemBuilder: (context, index) {
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    images[index],
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: AppColors.surface,
+                      child: const Icon(LucideIcons.image, color: AppColors.textSecondary),
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 
