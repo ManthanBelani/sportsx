@@ -46,7 +46,9 @@ class SportsVenueDetailScreen extends ConsumerWidget {
               const SnackBar(content: Text('Booking feature coming soon!')),
             );
           } else {
-            context.push('/enquire/${Uri.encodeComponent(v.name)}');
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Enquiries for venues coming soon!')),
+            );
           }
         },
         onPhonePressed: v.contactNumber == null

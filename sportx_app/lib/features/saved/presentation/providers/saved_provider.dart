@@ -55,15 +55,18 @@ class SavedState {
   }
 
   bool isSaved(String type, String itemId) =>
-      items.any((i) => i.type == type && i.itemId == itemId);
+      items.any((i) => i.type.toLowerCase() == type.toLowerCase() && i.itemId == itemId);
 }
 
 class SavedNotifier extends StateNotifier<SavedState> {
   final Dio _dio;
 
-  SavedNotifier(this._dio) : super(SavedState());
+  SavedNotifier(this._dio) : super(SavedState()) {
+    load();
+  }
 
   Future<void> load() async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null);
     try {
       final resp = await _dio.get('/me/saved');
@@ -78,17 +81,19 @@ class SavedNotifier extends StateNotifier<SavedState> {
 
   /// Toggle save state for an item. Returns true when saved, false when unsaved.
   Future<bool> toggle({required String type, required String itemId}) async {
-    final existing = state.items.where((i) => i.itemId == itemId && i.type == type);
+    final lowerType = type.toLowerCase();
+    final parsedItemId = int.tryParse(itemId) ?? 0;
+    final existing = state.items.where((i) => i.itemId == itemId && i.type.toLowerCase() == lowerType);
     final isSaved = existing.isNotEmpty;
     try {
       if (isSaved) {
-        await _dio.delete('/me/saved', data: {'item_type': type, 'item_id': itemId});
+        await _dio.delete('/me/saved', data: {'item_type': lowerType, 'item_id': parsedItemId});
         state = state.copyWith(
-          items: state.items.where((i) => !(i.itemId == itemId && i.type == type)).toList(),
+          items: state.items.where((i) => !(i.itemId == itemId && i.type.toLowerCase() == lowerType)).toList(),
         );
         return false;
       } else {
-        await _dio.post('/me/saved', data: {'item_type': type, 'item_id': itemId});
+        await _dio.post('/me/saved', data: {'item_type': lowerType, 'item_id': parsedItemId});
         await load();
         return true;
       }
@@ -100,7 +105,8 @@ class SavedNotifier extends StateNotifier<SavedState> {
 
   Future<void> remove(SavedItem item) async {
     try {
-      await _dio.delete('/me/saved', data: {'item_type': item.type, 'item_id': item.itemId});
+      final parsedItemId = int.tryParse(item.itemId) ?? 0;
+      await _dio.delete('/me/saved', data: {'item_type': item.type.toLowerCase(), 'item_id': parsedItemId});
       state = state.copyWith(items: state.items.where((i) => i.id != item.id).toList());
     } on DioException catch (e) {
       state = state.copyWith(error: ApiException.fromDio(e).message);

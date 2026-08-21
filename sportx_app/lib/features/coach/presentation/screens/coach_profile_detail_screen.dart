@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/features/saved/presentation/providers/saved_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class CoachProfileDetailScreen extends ConsumerStatefulWidget {
@@ -17,6 +18,9 @@ class CoachProfileDetailScreen extends ConsumerStatefulWidget {
 class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScreen> {
   bool _isLoading = true;
   Map<String, dynamic>? _coachData;
+  String _connectionStatus = 'none';
+  bool _isConnecting = false;
+  bool _isSaved = false;
 
   @override
   void initState() {
@@ -29,10 +33,14 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
       final dio = ref.read(dioProvider);
       final response = await dio.get('/coaches/${widget.coachId}');
       if (mounted) {
+        final data = response.data['data'];
+        final savedState = ref.read(savedProvider);
         setState(() {
-          _coachData = response.data['data'];
+          _coachData = data;
+          _isSaved = savedState.isSaved('coach_profile', widget.coachId);
           _isLoading = false;
         });
+        _loadConnectionStatus();
       }
     } catch (e) {
       if (mounted) {
@@ -64,6 +72,50 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
           ],
         };
       }
+    }
+  }
+
+  Future<void> _handleConnect() async {
+    if (_connectionStatus == 'pending' || _connectionStatus == 'accepted') return;
+
+    final userId = _coachData?['user_id'];
+    if (userId == null) return;
+
+    setState(() => _isConnecting = true);
+
+    try {
+      final dio = ref.read(dioProvider);
+      await dio.post('/me/connections/request', data: {'user_id': userId});
+      if (mounted) {
+        setState(() => _connectionStatus = 'pending');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Connection request sent!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to send connection request')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isConnecting = false);
+    }
+  }
+
+  Future<void> _loadConnectionStatus() async {
+    final userId = _coachData?['user_id'];
+    if (userId == null) return;
+
+    try {
+      final resp = await ref.read(dioProvider).get('/me/connections/status/$userId');
+      if (mounted) {
+        setState(() {
+          _connectionStatus = resp.data['data']['status'] ?? 'none';
+        });
+      }
+    } catch (e) {
+      // Stay with 'none' status
     }
   }
 
@@ -184,14 +236,55 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.favorite_border, color: Colors.white),
-          onPressed: () {},
+          icon: Icon(_isSaved ? Icons.favorite : Icons.favorite_border, color: Colors.white),
+          onPressed: () async {
+            final saved = await ref.read(savedProvider.notifier).toggle(type: 'coach_profile', itemId: widget.coachId);
+            if (mounted) {
+              setState(() => _isSaved = saved);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(saved ? 'Saved to your list' : 'Removed from saved')),
+              );
+            }
+          },
         ),
         IconButton(
           icon: const Icon(Icons.more_vert, color: Colors.white),
-          onPressed: () {},
+          onPressed: () => _showMoreMenu(context),
         ),
       ],
+    );
+  }
+
+  void _showMoreMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.share),
+              title: const Text('Share Profile'),
+              onTap: () {
+                Navigator.pop(context);
+                Share.share(
+                  'Check out this coach on SportX India!\nhttps://sportx.in/coach/${widget.coachId}',
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.link),
+              title: const Text('Copy Link'),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Link copied to clipboard')),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -473,6 +566,9 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
   }
 
   Widget _buildBottomCTA() {
+    final isPending = _connectionStatus == 'pending';
+    final isConnected = _connectionStatus == 'accepted';
+
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -486,15 +582,27 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
             ),
           ],
         ),
-        child: SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: FilledButton(
-            onPressed: () {
-              context.push('/enquire/${_coachData!['full_name'] ?? 'Coach'}');
-            },
-            child: const Text('Enquire / Book'),
-          ),
+        child: Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: (_isConnecting || isPending || isConnected) ? null : _handleConnect,
+                icon: _isConnecting
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                    : Icon(isPending ? Icons.hourglass_empty : isConnected ? Icons.check : Icons.person_add),
+                label: Text(isPending ? 'Pending' : isConnected ? 'Connected' : 'Connect'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: FilledButton(
+                onPressed: () {
+                  context.push('/enquire/coach_profile/${widget.coachId}/${Uri.encodeComponent(_coachData!['full_name'] ?? 'Coach')}');
+                },
+                child: const Text('Enquire / Book'),
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -180,7 +180,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/trial-detail/:id', builder: (context, state) => TrialDetailScreen(id: state.pathParameters['id']!)),
       GoRoute(path: '/tournaments', builder: (context, state) => const TournamentDirectoryScreen()),
       GoRoute(path: '/tournament-detail/:id', builder: (context, state) => TournamentDetailScreen(id: state.pathParameters['id']!)),
-      GoRoute(path: '/enquire/:title', builder: (context, state) => EnquireScreen(title: state.pathParameters['title']!)),
+      GoRoute(path: '/enquire/:subjectType/:subjectId/:title', builder: (context, state) => EnquireScreen(
+        subjectType: state.pathParameters['subjectType']!,
+        subjectId: int.parse(state.pathParameters['subjectId']!),
+        title: state.pathParameters['title']!,
+      )),
       GoRoute(path: '/trial-registration/:id', builder: (context, state) => TrialRegistrationScreen(trialId: state.pathParameters['id']!)),
       GoRoute(path: '/tournament-registration/:id', builder: (context, state) => TournamentRegistrationScreen(tournamentId: state.pathParameters['id']!)),
       GoRoute(path: '/registration-confirmation', builder: (context, state) {

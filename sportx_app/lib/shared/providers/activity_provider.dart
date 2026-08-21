@@ -44,7 +44,7 @@ class ActivityEntry {
     return ActivityEntry(
       id: json['id']?.toString() ?? '',
       title: trial['title'] as String? ?? trial['name'] as String? ?? 'Trial',
-      status: json['status'] as String? ?? 'registered',
+      status: json['verification_status'] as String? ?? json['document_status'] as String? ?? 'registered',
       date: trial['trial_date'] as String? ?? trial['event_datetime'] as String? ?? json['created_at'] as String?,
       category: 'trial',
       entityType: 'trial',
@@ -115,25 +115,22 @@ class ActivityNotifier extends StateNotifier<ActivityState> {
   }
 
   Future<void> load() async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null);
     try {
       final List<ActivityEntry> allItems = [];
 
-      // Fetch trial registrations
+      // Fetch all registrations (trials + tournaments) from unified endpoint
       try {
-        final trialResp = await _dio.get('/me/trial-registrations');
-        final trialList = (trialResp.data['data'] as List? ?? trialResp.data as List? ?? []);
-        for (final item in trialList) {
-          allItems.add(ActivityEntry.fromTrialRegistration(item as Map<String, dynamic>));
-        }
-      } catch (_) {}
-
-      // Fetch tournament registrations
-      try {
-        final tournamentResp = await _dio.get('/me/tournament-registrations');
-        final tournamentList = (tournamentResp.data['data'] as List? ?? tournamentResp.data as List? ?? []);
-        for (final item in tournamentList) {
-          allItems.add(ActivityEntry.fromTournamentRegistration(item as Map<String, dynamic>));
+        final regResp = await _dio.get('/me/registrations');
+        final regList = (regResp.data['data'] as List? ?? []);
+        for (final item in regList) {
+          final type = item['type'] as String? ?? '';
+          if (type == 'trial') {
+            allItems.add(ActivityEntry.fromTrialRegistration(item as Map<String, dynamic>));
+          } else if (type == 'tournament') {
+            allItems.add(ActivityEntry.fromTournamentRegistration(item as Map<String, dynamic>));
+          }
         }
       } catch (_) {}
 

@@ -11,35 +11,35 @@ class TournamentCategorySeeder extends Seeder
 {
     public function run(): void
     {
-        $tournament = Tournament::first();
+        $tournaments = Tournament::published()->get();
         $ageGroups = AgeGroup::limit(4)->get();
 
-        if (!$tournament) {
-            $this->command->warn('No tournament found. Run TournamentSeeder first.');
+        if ($tournaments->isEmpty()) {
+            $this->command->warn('No published tournaments found. Run TournamentSeeder first.');
             return;
         }
 
-        $categories = [];
-        foreach ($ageGroups as $index => $ageGroup) {
-            $categories[] = [
-                'tournament_id' => $tournament->id,
-                'age_group_id' => $ageGroup->id,
-                'name' => $ageGroup->name . ' Boys',
-                'capacity' => 24 + ($index * 4),
-                'waitlist_enabled' => true,
-            ];
+        $totalCategories = 0;
+        foreach ($tournaments as $tournament) {
+            foreach ($ageGroups as $index => $ageGroup) {
+                $category = [
+                    'tournament_id' => $tournament->id,
+                    'age_group_id' => $ageGroup->id,
+                    'name' => $ageGroup->name . ' Boys',
+                    'capacity' => 24 + ($index * 4),
+                    'waitlist_enabled' => true,
+                ];
+                TournamentCategory::updateOrCreate(
+                    [
+                        'tournament_id' => $category['tournament_id'],
+                        'age_group_id' => $category['age_group_id'],
+                    ],
+                    $category
+                );
+                $totalCategories++;
+            }
         }
 
-        foreach ($categories as $category) {
-            TournamentCategory::updateOrCreate(
-                [
-                    'tournament_id' => $category['tournament_id'],
-                    'age_group_id' => $category['age_group_id'],
-                ],
-                $category
-            );
-        }
-
-        $this->command->info('Tournament categories seeded: ' . count($categories));
+        $this->command->info("Tournament categories seeded: {$totalCategories} for {$tournaments->count()} tournaments");
     }
 }

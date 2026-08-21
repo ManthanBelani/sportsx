@@ -96,6 +96,7 @@ class EnquiryNotifier extends StateNotifier<EnquiryState> {
   EnquiryNotifier(this._dio) : super(EnquiryState());
 
   Future<void> load({String? filter}) async {
+    if (state.isLoading) return;
     _currentFilter = filter;
     state = state.copyWith(isLoading: true, error: null);
     try {

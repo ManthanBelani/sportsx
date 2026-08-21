@@ -24,6 +24,11 @@ class DetailPageTemplate extends ConsumerWidget {
   final VoidCallback onCtaPressed;
   final VoidCallback? onPhonePressed;
 
+  /// Optional secondary CTA (e.g., "Connect" button).
+  final String? secondaryCtaText;
+  final VoidCallback? onSecondaryCtaPressed;
+  final bool isSecondaryCtaLoading;
+
   /// Item type used for the save/unsave heart (e.g. 'trial', 'academy').
   final String? savedType;
 
@@ -46,6 +51,9 @@ class DetailPageTemplate extends ConsumerWidget {
     required this.ctaText,
     required this.onCtaPressed,
     this.onPhonePressed,
+    this.secondaryCtaText,
+    this.onSecondaryCtaPressed,
+    this.isSecondaryCtaLoading = false,
     this.savedType,
     this.savedItemId,
   });
@@ -55,11 +63,6 @@ class DetailPageTemplate extends ConsumerWidget {
     final savedState = ref.watch(savedProvider);
     final canSave = savedType != null && savedItemId != null;
     final isSaved = canSave && savedState.isSaved(savedType!, savedItemId!);
-
-    // Lazily load saved items once so hearts reflect the real state.
-    if (canSave && savedState.items.isEmpty && !savedState.isLoading && savedState.error == null) {
-      Future.microtask(() => ref.read(savedProvider.notifier).load());
-    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -438,7 +441,10 @@ class DetailPageTemplate extends ConsumerWidget {
     );
   }
 
-  Widget _buildBottomCTA(BuildContext context) {    return Container(
+  Widget _buildBottomCTA(BuildContext context) {
+    final hasSecondary = secondaryCtaText != null && onSecondaryCtaPressed != null;
+
+    return Container(
       padding: EdgeInsets.fromLTRB(20, 16, 20, max(16, MediaQuery.of(context).padding.bottom)),
       decoration: const BoxDecoration(
         color: AppColors.background,
@@ -446,34 +452,66 @@ class DetailPageTemplate extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: onPhonePressed,
-            child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                border: Border.all(color: AppColors.border),
-                borderRadius: BorderRadius.circular(8),
+          if (onPhonePressed != null && !hasSecondary) ...[
+            GestureDetector(
+              onTap: onPhonePressed,
+              child: Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                alignment: Alignment.center,
+                child: const Icon(LucideIcons.phone, size: 20, color: AppColors.textSecondary),
               ),
-              alignment: Alignment.center,
-              child: const Icon(LucideIcons.phone, size: 20, color: AppColors.textSecondary),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: onCtaPressed,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 48),
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            const SizedBox(width: 12),
+          ],
+          if (hasSecondary) ...[
+            Expanded(
+              child: OutlinedButton(
+                onPressed: isSecondaryCtaLoading ? null : onSecondaryCtaPressed,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(0, 48),
+                  side: const BorderSide(color: AppColors.border),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: isSecondaryCtaLoading
+                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    : Text(secondaryCtaText!, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
               ),
-              child: Text(ctaText, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
-          ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: onCtaPressed,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(0, 48),
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: Text(ctaText, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ] else ...[
+            Expanded(
+              child: ElevatedButton(
+                onPressed: onCtaPressed,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 48),
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: Text(ctaText, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ],
         ],
       ),
     );

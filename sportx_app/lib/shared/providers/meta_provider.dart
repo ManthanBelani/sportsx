@@ -37,6 +37,7 @@ class MetaNotifier extends StateNotifier<MetaState> {
   }
 
   Future<void> loadMeta() async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true);
     try {
       final futures = await Future.wait([

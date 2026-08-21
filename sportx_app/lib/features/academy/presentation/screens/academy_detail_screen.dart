@@ -39,7 +39,7 @@ class AcademyDetailScreen extends ConsumerWidget {
         },
         addressStr: a.address ?? a.city?.name ?? '',
         ctaText: 'Enquire Now',
-        onCtaPressed: () => context.push('/enquire/${Uri.encodeComponent(a.name)}'),
+        onCtaPressed: () => context.push('/enquire/academy/${a.id}/${Uri.encodeComponent(a.name)}'),
         onPhonePressed: a.contactNumber == null
             ? null
             : () => launchUrl(Uri.parse('tel:${a.contactNumber}')),
