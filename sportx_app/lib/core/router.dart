@@ -40,6 +40,9 @@ import 'package:sportx_app/features/sponsor/presentation/screens/sponsorship_pos
 import 'package:sportx_app/features/shared/presentation/screens/sponsor_pitch_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/registrant_detail_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/coach_onboarding_screen.dart';
+import 'package:sportx_app/features/coach/presentation/screens/coach_enquiry_inbox_screen.dart';
+import 'package:sportx_app/features/coach/presentation/screens/coach_enquiry_detail_screen.dart';
+import 'package:sportx_app/features/coach/presentation/screens/coach_profile_edit_screen.dart';
 import 'package:sportx_app/features/academy/presentation/screens/academy_onboarding_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/registrant_list_screen.dart';
 import 'package:sportx_app/features/organizer/presentation/screens/registration_management_screen.dart';
@@ -112,6 +115,24 @@ String? _onboardingRouteFor(String? role) {
   }
 }
 
+/// Maps a user role to their dashboard screen.
+String _dashboardRouteFor(String? role) {
+  switch (role) {
+    case 'coach':
+      return '/coach-dashboard';
+    case 'academy':
+      return '/academy-dashboard';
+    case 'organizer':
+      return '/organizer-dashboard';
+    case 'sponsor':
+      return '/sponsor-dashboard';
+    case 'admin':
+      return '/admin/dashboard';
+    default:
+      return '/home';
+  }
+}
+
 class RouterNotifier extends ChangeNotifier {
   RouterNotifier(Ref ref) {
     ref.listen<AuthState>(authProvider, (previous, next) {
@@ -132,15 +153,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       final loc = state.matchedLocation;
       final authState = ref.read(authProvider);
       final status = authState.status;
+      final role = authState.user?.role;
       const authScreens = ['/splash', '/role-selection', '/sign-up', '/login'];
       const onboardingScreens = [
         '/onboarding-1', '/onboarding-2',
         '/coach-onboarding', '/academy-onboarding',
         '/organizer-onboarding', '/sponsor-onboarding',
       ];
+      const shellRouteScreens = ['/home', '/universal-search', '/saved', '/activity-hub', '/profile'];
 
       if (status == AuthStatus.authenticated) {
-        final onboardingRoute = _onboardingRouteFor(authState.user?.role);
+        final onboardingRoute = _onboardingRouteFor(role);
+        final dashboardRoute = _dashboardRouteFor(role);
+
         // Needs onboarding → force the user through their role onboarding first.
         if (authState.needsOnboarding && onboardingRoute != null) {
           if (onboardingScreens.contains(loc)) {
@@ -148,14 +173,27 @@ final routerProvider = Provider<GoRouter>((ref) {
           }
           return onboardingRoute; // Otherwise, force them to start onboarding
         }
-        // Fully set up → never show auth / onboarding screens.
+
+        // Fully set up → redirect auth/onboarding screens to role-specific dashboard.
         if (authScreens.contains(loc) || onboardingScreens.contains(loc)) {
-          return '/home';
+          return dashboardRoute;
         }
+
+        // Redirect non-athlete roles away from shell route screens to their dashboard.
+        if (role != null && role != 'athlete' && shellRouteScreens.contains(loc)) {
+          return dashboardRoute;
+        }
+
+        // Redirect away from athlete profile screen if not an athlete.
+        if (loc == '/profile' && role != null && role != 'athlete') {
+          return dashboardRoute;
+        }
+
         return null;
       }
 
       if (status == AuthStatus.unauthenticated) {
+        if (loc == '/splash') return '/role-selection';
         if (authScreens.contains(loc)) return null;
         return '/role-selection';
       }
@@ -199,6 +237,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         );
       }),
       GoRoute(path: '/coach-dashboard', builder: (context, state) => const CoachDashboardScreen()),
+      GoRoute(path: '/coach-enquiry-inbox', builder: (context, state) => const CoachEnquiryInboxScreen()),
+      GoRoute(path: '/coach-enquiry-detail', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return CoachEnquiryDetailScreen(id: extra?['id'] as String? ?? '');
+      }),
+      GoRoute(path: '/coach-profile-edit', builder: (context, state) => const CoachProfileEditScreen()),
       GoRoute(path: '/academy-dashboard', builder: (context, state) => const AcademyDashboardScreen()),
       GoRoute(path: '/organizer-dashboard', builder: (context, state) => const OrganizerDashboardScreen()),
       GoRoute(path: '/enquiry-inbox', builder: (context, state) => const EnquiryInboxScreen()),
@@ -345,12 +389,13 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
-class MainShell extends StatelessWidget {
+class MainShell extends ConsumerWidget {
   final Widget child;
   const MainShell({super.key, required this.child});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final role = ref.watch(authProvider).user?.role;
     return Scaffold(
       body: child,
       bottomNavigationBar: Container(
@@ -364,11 +409,11 @@ class MainShell extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(context, 0, Icons.home_outlined, Icons.home, 'Home'),
-                _buildNavItem(context, 1, Icons.search_outlined, Icons.search, 'Search'),
-                _buildNavItem(context, 2, Icons.bookmark_outline, Icons.bookmark, 'Saved'),
-                _buildNavItem(context, 3, Icons.list_alt_outlined, Icons.list_alt, 'Activity'),
-                _buildNavItem(context, 4, Icons.person_outline, Icons.person, 'Profile'),
+                _buildNavItem(context, role, 0, Icons.home_outlined, Icons.home, 'Home'),
+                _buildNavItem(context, role, 1, Icons.search_outlined, Icons.search, 'Search'),
+                _buildNavItem(context, role, 2, Icons.bookmark_outline, Icons.bookmark, 'Saved'),
+                _buildNavItem(context, role, 3, Icons.list_alt_outlined, Icons.list_alt, 'Activity'),
+                _buildNavItem(context, role, 4, Icons.person_outline, Icons.person, 'Profile'),
               ],
             ),
           ),
@@ -377,13 +422,13 @@ class MainShell extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(BuildContext context, int index, IconData icon, IconData activeIcon, String label) {
+  Widget _buildNavItem(BuildContext context, String? role, int index, IconData icon, IconData activeIcon, String label) {
     final isSelected = _calculateSelectedIndex(context) == index;
     final color = isSelected ? const Color(0xFF1677ff) : const Color(0xFF6b7280);
-    
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => _onItemTapped(index, context),
+      onTap: () => _onItemTapped(index, context, role),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -412,13 +457,19 @@ class MainShell extends StatelessWidget {
     return 0;
   }
 
-  void _onItemTapped(int index, BuildContext context) {
+  void _onItemTapped(int index, BuildContext context, String? role) {
     switch (index) {
       case 0: context.go('/home'); break;
       case 1: context.go('/universal-search'); break;
       case 2: context.go('/saved'); break;
       case 3: context.go('/activity-hub'); break;
-      case 4: context.go('/profile'); break;
+      case 4:
+        if (role == 'athlete') {
+          context.go('/profile');
+        } else {
+          context.go(_dashboardRouteFor(role));
+        }
+        break;
     }
   }
 }

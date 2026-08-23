@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/core/config/api_config.dart';
 
 class EnquiryMessage {
   final String id;
@@ -23,7 +25,7 @@ class EnquiryMessage {
       sender: json['sender_name'] as String? ?? json['sender'] as String? ?? 'Unknown',
       body: json['body'] as String? ?? json['message'] as String? ?? '',
       createdAt: json['created_at'] as String?,
-      isMe: json['sender_id']?.toString() == currentUserId,
+      isMe: (json['sender_id']?.toString() ?? json['sender_user_id']?.toString()) == currentUserId,
     );
   }
 }
@@ -31,6 +33,7 @@ class EnquiryMessage {
 class Enquiry {
   final String id;
   final String athleteName;
+  final String? athletePhotoUrl;
   final String? sport;
   final String subject;
   final String message;
@@ -42,6 +45,7 @@ class Enquiry {
   Enquiry({
     required this.id,
     required this.athleteName,
+    this.athletePhotoUrl,
     this.sport,
     required this.subject,
     required this.message,
@@ -51,22 +55,39 @@ class Enquiry {
     this.isRead = false,
   });
 
-  factory Enquiry.fromJson(Map<String, dynamic> json) {
+  factory Enquiry.fromJson(Map<String, dynamic> json, {String? currentUserId}) {
     final sportRaw = json['sport'];
     final sport = sportRaw is String
         ? sportRaw
         : sportRaw is Map
             ? sportRaw['name'] as String?
             : null;
+
+    final athleteData = json['athlete'] as Map<String, dynamic>?;
+    final athleteName = athleteData != null
+        ? athleteData['full_name'] as String? ?? 'Unknown'
+        : json['athlete_name'] as String? ?? json['sender_name'] as String? ?? 'Unknown';
+    String? athletePhotoUrl = json['athlete_photo_url'] as String? ??
+        (athleteData != null ? athleteData['photo_media_id'] as String? : null) ??
+        json['sender_photo_url'] as String?;
+    
+    if (athletePhotoUrl != null && athletePhotoUrl.startsWith('/')) {
+      athletePhotoUrl = '${ApiConfig.baseUrl}$athletePhotoUrl';
+    }
+
     return Enquiry(
       id: json['id']?.toString() ?? '',
-      athleteName: json['athlete_name'] as String? ?? json['sender_name'] as String? ?? 'Unknown',
+      athleteName: athleteName,
+      athletePhotoUrl: athletePhotoUrl,
       sport: sport,
-      subject: json['subject'] as String? ?? '',
+      subject: json['subject_type'] as String? ?? json['subject'] as String? ?? '',
       message: json['message'] as String? ?? json['body'] as String? ?? '',
       status: json['status'] as String? ?? 'new',
       createdAt: json['created_at'] as String?,
       isRead: json['is_read'] == true || json['read_at'] != null,
+      messages: (json['messages'] as List? ?? [])
+          .map((m) => EnquiryMessage.fromJson(m as Map<String, dynamic>, currentUserId: currentUserId))
+          .toList(),
     );
   }
 
@@ -91,9 +112,10 @@ class EnquiryState {
 
 class EnquiryNotifier extends StateNotifier<EnquiryState> {
   final Dio _dio;
+  final Ref _ref;
   String? _currentFilter;
 
-  EnquiryNotifier(this._dio) : super(EnquiryState());
+  EnquiryNotifier(this._dio, this._ref) : super(EnquiryState());
 
   Future<void> load({String? filter}) async {
     if (state.isLoading) return;
@@ -105,8 +127,10 @@ class EnquiryNotifier extends StateNotifier<EnquiryState> {
         params['filter'] = filter;
       }
       final resp = await _dio.get('/me/enquiries', queryParameters: params);
+      final user = _ref.read(authProvider).user;
+      final currentUserId = user?.id.toString();
       final list = (resp.data['data'] as List? ?? [])
-          .map((e) => Enquiry.fromJson(e as Map<String, dynamic>))
+          .map((e) => Enquiry.fromJson(e as Map<String, dynamic>, currentUserId: currentUserId))
           .toList();
       state = EnquiryState(items: list);
     } on DioException catch (e) {
@@ -119,25 +143,29 @@ class EnquiryNotifier extends StateNotifier<EnquiryState> {
 
 final enquiryInboxProvider =
     StateNotifierProvider<EnquiryNotifier, EnquiryState>((ref) {
-  final n = EnquiryNotifier(ref.watch(dioProvider));
+  final n = EnquiryNotifier(ref.watch(dioProvider), ref);
   return n;
 });
 
 final enquiryDetailProvider =
     FutureProvider.family<Enquiry, String>((ref, id) async {
   final dio = ref.watch(dioProvider);
+  final user = ref.read(authProvider).user;
+  final currentUserId = user?.id.toString();
+
   final resp = await dio.get('/enquiries/$id');
   final body = resp.data;
   final data = body is Map && body['data'] is Map
       ? body['data'] as Map<String, dynamic>
       : body as Map<String, dynamic>;
-  final enquiry = Enquiry.fromJson(data);
+  final enquiry = Enquiry.fromJson(data, currentUserId: currentUserId);
   final msgs = (data['messages'] as List? ?? [])
-      .map((m) => EnquiryMessage.fromJson(m as Map<String, dynamic>))
+      .map((m) => EnquiryMessage.fromJson(m as Map<String, dynamic>, currentUserId: currentUserId))
       .toList();
   return Enquiry(
     id: enquiry.id,
     athleteName: enquiry.athleteName,
+    athletePhotoUrl: enquiry.athletePhotoUrl,
     sport: enquiry.sport,
     subject: enquiry.subject,
     message: enquiry.message,

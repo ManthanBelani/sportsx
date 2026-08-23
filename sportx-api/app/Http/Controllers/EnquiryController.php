@@ -48,17 +48,14 @@ class EnquiryController extends Controller
         $query = Enquiry::where(function ($q) use ($subjectIds, $request) {
             $q->whereIn('subject_id', $subjectIds)
                 ->whereIn('subject_type', ['coach_profile', 'academy']);
-        })->with(['athlete.user', 'messages' => fn ($m) => $m->latest()]);
-
-        $query->when($request->filter === 'new', fn ($q) => $q->whereDoesntHave('messages', fn ($m) => $m->where('sender_user_id', $user->id)))
-            ->when($request->filter === 'replied', fn ($q) => $q->whereHas('messages', fn ($m) => $m->where('sender_user_id', $user->id)));
+        })->with(['athlete.user', 'athlete.photo', 'messages' => fn ($m) => $m->latest()]);
 
         return response()->json($query->latest('updated_at')->paginate(20));
     }
 
     public function show(Request $request, string $id)
     {
-        $enquiry = Enquiry::with(['athlete.user', 'messages.sender'])->findOrFail($id);
+        $enquiry = Enquiry::with(['athlete.user', 'athlete.photo', 'messages.sender'])->findOrFail($id);
         $this->authorizeAccess($request->user(), $enquiry);
 
         return response()->json(['data' => $enquiry]);

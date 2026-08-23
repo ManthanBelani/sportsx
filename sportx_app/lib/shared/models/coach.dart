@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'sport.dart';
 import 'city.dart';
 
@@ -17,11 +18,17 @@ class Coach {
   final int? cityId;
   final String? contactNumber;
   final String? email;
-  final int? experience;
+  final String? experience;
   final String? specialization;
   final String? achievements;
   final String? bio;
   final double? hourlyRate;
+  final double? feePerSession;
+  final double? feeMonthly;
+  final double? feeQuarterly;
+  final String? location;
+  final String? headline;
+  final Map<String, List<String>>? availability;
   final String? registrationLink;
   final String status;
   final Sport? sport;
@@ -42,6 +49,12 @@ class Coach {
     this.achievements,
     this.bio,
     this.hourlyRate,
+    this.feePerSession,
+    this.feeMonthly,
+    this.feeQuarterly,
+    this.location,
+    this.headline,
+    this.availability,
     this.registrationLink,
     required this.status,
     this.sport,
@@ -50,20 +63,58 @@ class Coach {
   });
 
   factory Coach.fromJson(Map<String, dynamic> json) {
+    Map<String, List<String>>? parseAvailability(dynamic val) {
+      if (val == null) return null;
+      if (val is Map) {
+        return val.map((key, value) {
+          if (value is List) {
+            return MapEntry(key as String, value.map((e) => e.toString()).toList());
+          }
+          return MapEntry(key as String, <String>[]);
+        });
+      }
+      if (val is String) {
+        try {
+          final decoded = jsonDecode(val);
+          if (decoded is Map) {
+            return (decoded as Map).map((key, value) {
+              if (value is List) {
+                return MapEntry(key as String, value.map((e) => e.toString()).toList());
+              }
+              return MapEntry(key as String, <String>[]);
+            });
+          }
+        } catch (_) {}
+      }
+      return null;
+    }
+
     return Coach(
       id: _parseInt(json['id'])!,
       userId: _parseInt(json['user_id'])!,
       fullName: json['full_name'] as String,
-      profilePhotoUrl: json['profile_photo_url'] as String?,
+      profilePhotoUrl: json['profile_photo_url'] as String? ?? json['photo']?['url'] as String?,
       sportId: _parseInt(json['sport_id'])!,
       cityId: _parseInt(json['city_id']),
       contactNumber: json['contact_number'] as String?,
       email: json['email'] as String?,
-      experience: _parseInt(json['experience']),
+      experience: json['experience'] as String?,
       specialization: json['specialization'] as String?,
       achievements: json['achievements'] as String?,
       bio: json['bio'] as String?,
       hourlyRate: (json['hourly_rate'] as num?)?.toDouble(),
+      feePerSession: (json['fee_per_session'] is String)
+          ? double.tryParse(json['fee_per_session'] as String)
+          : (json['fee_per_session'] as num?)?.toDouble(),
+      feeMonthly: (json['fee_monthly'] is String)
+          ? double.tryParse(json['fee_monthly'] as String)
+          : (json['fee_monthly'] as num?)?.toDouble(),
+      feeQuarterly: (json['fee_quarterly'] is String)
+          ? double.tryParse(json['fee_quarterly'] as String)
+          : (json['fee_quarterly'] as num?)?.toDouble(),
+      location: json['location'] as String?,
+      headline: json['headline'] as String?,
+      availability: parseAvailability(json['availability']),
       registrationLink: json['registration_link'] as String?,
       status: json['status'] as String? ?? 'draft',
       sport: json['sport'] != null ? Sport.fromJson(json['sport']) : null,
@@ -78,6 +129,8 @@ class Coach {
     'city_id': cityId, 'contact_number': contactNumber, 'email': email,
     'experience': experience, 'specialization': specialization,
     'achievements': achievements, 'bio': bio, 'hourly_rate': hourlyRate,
+    'fee_per_session': feePerSession, 'fee_monthly': feeMonthly, 'fee_quarterly': feeQuarterly,
+    'location': location, 'headline': headline, 'availability': availability,
     'registration_link': registrationLink, 'status': status,
   };
 }

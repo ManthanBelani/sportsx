@@ -27,6 +27,12 @@ return new class extends Migration
             $table->foreignId('photo_media_id')->nullable()->constrained('media_items')->nullOnDelete();
             $table->enum('listing_status', ['draft', 'published', 'closed', 'removed'])->default('draft');
             $table->unsignedTinyInteger('profile_completeness')->default(0);
+            $table->string('headline')->nullable();
+            $table->string('location')->nullable();
+            $table->decimal('fee_per_session', 8, 2)->nullable();
+            $table->decimal('fee_monthly', 8, 2)->nullable();
+            $table->decimal('fee_quarterly', 8, 2)->nullable();
+            $table->json('availability')->nullable();
             $table->timestamps();
 
             $table->index(['listing_status', 'city_id']);

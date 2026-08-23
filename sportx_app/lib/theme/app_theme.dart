@@ -62,7 +62,7 @@ class AppTheme {
           elevation: 0,
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          minimumSize: const Size(double.infinity, 48),
+          minimumSize: const Size(0, 48),
           textStyle: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
         ),
       ),
@@ -72,7 +72,7 @@ class AppTheme {
           side: const BorderSide(color: AppColors.primary, width: 1.5),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          minimumSize: const Size(double.infinity, 48),
+          minimumSize: const Size(0, 48),
           textStyle: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
         ),
       ),
@@ -139,6 +139,17 @@ class AppTheme {
         contentTextStyle: GoogleFonts.inter(fontSize: 14, color: Colors.white),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         behavior: SnackBarBehavior.floating,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        indicatorColor: AppColors.primary.withOpacity(0.15),
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        labelTextStyle: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
+            return GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary);
+          }
+          return GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondary);
+        }),
       ),
     );
   }

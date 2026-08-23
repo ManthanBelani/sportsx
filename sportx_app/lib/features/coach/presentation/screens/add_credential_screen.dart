@@ -52,13 +52,7 @@ class _AddCredentialScreenState extends ConsumerState<AddCredentialScreen> {
     setState(() => _isSaving = true);
 
     try {
-      final credential = {
-        'title': _titleController.text.trim(),
-        'issuing_authority': _authorityController.text.trim(),
-        'year': _selectedYear,
-        'certificate_url': _certificateFile?.path,
-      };
-
+      final credential = _titleController.text.trim();
       await ref.read(coachProvider.notifier).addCredential(credential);
 
       if (mounted) {

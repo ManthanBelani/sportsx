@@ -22,6 +22,11 @@ class _CoachDetailScreenState extends ConsumerState<CoachDetailScreen> {
   bool _isConnecting = false;
   bool _connectionLoaded = false;
 
+  @override
+  void initState() {
+    super.initState();
+  }
+
   Future<void> _handleConnect(Coach c) async {
     if (_connectionStatus == 'pending' || _connectionStatus == 'accepted') return;
 
@@ -72,7 +77,12 @@ class _CoachDetailScreenState extends ConsumerState<CoachDetailScreen> {
       title: 'Coach',
       onRetry: () => ref.invalidate(coachDetailProvider(widget.id)),
       dataBuilder: (c) {
-        _loadConnectionStatus(c);
+        if (!_connectionLoaded) {
+          _connectionLoaded = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _loadConnectionStatus(c);
+          });
+        }
 
         final isPending = _connectionStatus == 'pending';
         final isConnected = _connectionStatus == 'accepted';

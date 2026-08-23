@@ -28,11 +28,17 @@ class CoachProfileController extends Controller
             'fee_structure' => 'nullable|string|max:120',
             'bio' => 'nullable|string',
             'photo_media_id' => 'nullable|exists:media_items,id',
+            'headline' => 'nullable|string|max:200',
+            'location' => 'nullable|string|max:200',
+            'fee_per_session' => 'nullable|numeric',
+            'fee_monthly' => 'nullable|numeric',
+            'fee_quarterly' => 'nullable|numeric',
+            'availability' => 'nullable|array',
         ]);
 
         $profile = $request->user()->coachProfile;
         $profile->update($validated);
 
-        return response()->json(['data' => $profile->fresh()]);
+        return response()->json(['data' => $profile->fresh()->load(['sport', 'city', 'photo'])]);
     }
 }

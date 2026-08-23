@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
@@ -5,7 +6,7 @@ import 'package:sportx_app/shared/models/coach.dart';
 
 class CoachState {
   final Coach? coachProfile;
-  final List<Map<String, dynamic>> credentials;
+  final List<String> certifications;
   final List<Map<String, dynamic>> facilities;
   final List<Map<String, dynamic>> showcaseAthletes;
   final bool isLoading;
@@ -13,7 +14,7 @@ class CoachState {
 
   CoachState({
     this.coachProfile,
-    this.credentials = const [],
+    this.certifications = const [],
     this.facilities = const [],
     this.showcaseAthletes = const [],
     this.isLoading = false,
@@ -22,7 +23,7 @@ class CoachState {
 
   CoachState copyWith({
     Coach? coachProfile,
-    List<Map<String, dynamic>>? credentials,
+    List<String>? certifications,
     List<Map<String, dynamic>>? facilities,
     List<Map<String, dynamic>>? showcaseAthletes,
     bool? isLoading,
@@ -30,13 +31,26 @@ class CoachState {
   }) {
     return CoachState(
       coachProfile: coachProfile ?? this.coachProfile,
-      credentials: credentials ?? this.credentials,
+      certifications: certifications ?? this.certifications,
       facilities: facilities ?? this.facilities,
       showcaseAthletes: showcaseAthletes ?? this.showcaseAthletes,
       isLoading: isLoading ?? this.isLoading,
       error: error,
     );
   }
+}
+
+List<String> _parseStringList(dynamic value) {
+  if (value == null) return [];
+  if (value is List) return value.map((e) => e.toString()).toList();
+  if (value is String) {
+    try {
+      final decoded = jsonDecode(value);
+      if (decoded is List) return decoded.map((e) => e.toString()).toList();
+    } catch (_) {}
+    return [];
+  }
+  return [];
 }
 
 class CoachNotifier extends StateNotifier<CoachState> {
@@ -52,8 +66,8 @@ class CoachNotifier extends StateNotifier<CoachState> {
       if (data != null) {
         state = state.copyWith(
           coachProfile: Coach.fromJson(data),
-          credentials: List<Map<String, dynamic>>.from(data['credentials'] ?? []),
-          facilities: List<Map<String, dynamic>>.from(data['facilities'] ?? []),
+          certifications: _parseStringList(data['certifications']),
+          facilities: _parseStringList(data['facilities']).map((e) => {'name': e}).toList(),
           showcaseAthletes: List<Map<String, dynamic>>.from(data['showcase_athletes'] ?? []),
           isLoading: false,
         );
@@ -65,15 +79,15 @@ class CoachNotifier extends StateNotifier<CoachState> {
     }
   }
 
-  Future<void> addCredential(Map<String, dynamic> credential) async {
+  Future<void> addCredential(String credential) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final updatedCredentials = [...state.credentials, credential];
+      final updatedCredentials = [...state.certifications, credential];
       await _dio.put('/me/coach-profile', data: {
-        'credentials': updatedCredentials,
+        'certifications': updatedCredentials,
       });
       state = state.copyWith(
-        credentials: updatedCredentials,
+        certifications: updatedCredentials,
         isLoading: false,
       );
     } catch (e) {
@@ -84,13 +98,13 @@ class CoachNotifier extends StateNotifier<CoachState> {
   Future<void> removeCredential(int index) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final updatedCredentials = List<Map<String, dynamic>>.from(state.credentials);
+      final updatedCredentials = List<String>.from(state.certifications);
       updatedCredentials.removeAt(index);
       await _dio.put('/me/coach-profile', data: {
-        'credentials': updatedCredentials,
+        'certifications': updatedCredentials,
       });
       state = state.copyWith(
-        credentials: updatedCredentials,
+        certifications: updatedCredentials,
         isLoading: false,
       );
     } catch (e) {

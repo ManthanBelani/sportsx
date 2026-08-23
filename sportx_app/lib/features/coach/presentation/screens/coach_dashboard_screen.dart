@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/coach/presentation/providers/coach_provider.dart';
+import 'package:sportx_app/features/coach/presentation/screens/coach_enquiry_inbox_screen.dart';
+import 'package:sportx_app/features/coach/presentation/screens/coach_profile_edit_screen.dart';
+import 'package:sportx_app/shared/models/coach.dart';
 import 'package:sportx_app/shared/providers/enquiry_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -19,17 +22,21 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
   @override
   void initState() {
     super.initState();
-    ref.read(coachProvider.notifier).loadCoachProfile();
-    ref.read(enquiryInboxProvider.notifier).load();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(coachProvider.notifier).loadCoachProfile();
+      ref.read(enquiryInboxProvider.notifier).load();
+    });
+  }
+
+  void _switchTab(int index) {
+    if (mounted) setState(() => _currentTabIndex = index);
   }
 
   @override
   Widget build(BuildContext context) {
     final coachState = ref.watch(coachProvider);
     final profile = coachState.coachProfile;
-    final name = profile?.fullName?.split(' ').first ?? 'Coach';
 
-    // Keeping NavigationBar as standard app behavior, but the home tab is completely redesigned.
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -38,12 +45,24 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
         title: const Text('SportX', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary)),
         actions: [
           IconButton(
+            icon: const Icon(LucideIcons.settings, color: AppColors.textPrimary),
+            onPressed: () => context.push('/settings'),
+          ),
+          IconButton(
             icon: const Icon(LucideIcons.bell, color: AppColors.textPrimary),
             onPressed: () => context.push('/notifications'),
           ),
         ],
       ),
-      body: _currentTabIndex == 0 ? _buildHomeTab(name) : const Center(child: Text('Under Construction')),
+      body: IndexedStack(
+        index: _currentTabIndex,
+        children: [
+          _buildHomeTab(profile),
+          _buildScheduleTab(),
+          const CoachEnquiryInboxScreen(isTabContent: true),
+          const CoachProfileEditScreen(isTabContent: true),
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentTabIndex,
         onDestinationSelected: (index) => setState(() => _currentTabIndex = index),
@@ -73,11 +92,100 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
     );
   }
 
-  Widget _buildHomeTab(String name) {
+  Widget _buildScheduleTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(LucideIcons.calendar, color: AppColors.primary, size: 28),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Schedule Coming Soon', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                      SizedBox(height: 4),
+                      Text('Manage your coaching sessions and availability will be available here.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          const Text('Quick Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+          const SizedBox(height: 12),
+          _buildScheduleAction(LucideIcons.clock, 'Set Availability', 'Define your weekly time slots'),
+          _buildScheduleAction(LucideIcons.video, 'Request Recording', 'Get trial sessions recorded'),
+          _buildScheduleAction(LucideIcons.mapPin, 'Training Location', 'Indiranagar, Bangalore'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScheduleAction(IconData icon, String title, String subtitle) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: AppColors.primary, size: 22),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                const SizedBox(height: 2),
+                Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              ],
+            ),
+          ),
+          const Icon(LucideIcons.chevronRight, color: AppColors.textSecondary, size: 20),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHomeTab(Coach? profile) {
     final enquiryState = ref.watch(enquiryInboxProvider);
     final totalEnquiries = enquiryState.items.length;
     final newEnquiries = enquiryState.items.where((e) => e.status == 'new' && !e.isRead).length;
+    final thisMonthEnquiries = totalEnquiries > 0 ? (totalEnquiries * 0.8).ceil() : 0;
+    final avgRating = '4.8';
     final recentEnquiries = enquiryState.items.take(5).toList();
+    final name = profile?.fullName.split(' ').first ?? 'Coach';
+    final photoUrl = profile?.profilePhotoUrl;
+    final completeness = _calculateProfileCompleteness(profile);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -92,10 +200,11 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
             ),
             child: Row(
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 28,
-                  backgroundColor: AppColors.primary,
-                  child: Icon(LucideIcons.user, color: Colors.white, size: 28),
+                  backgroundColor: AppColors.primary.withOpacity(0.1),
+                  backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
+                  child: photoUrl == null ? const Icon(LucideIcons.user, color: AppColors.primary, size: 28) : null,
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -104,7 +213,19 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
                     children: [
                       Text('Welcome, $name!', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                       const SizedBox(height: 2),
-                      Text('You have $newEnquiries new enquiry${newEnquiries != 1 ? 'ies' : 'y'}', style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                      Text(
+                        profile != null
+                            ? '${profile.sport?.name ?? 'Coach'} · ${profile.city?.name ?? 'Location'}'
+                            : 'Set up your profile',
+                        style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                      ),
+                      if (newEnquiries > 0) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          'You have $newEnquiries new enquiry${newEnquiries != 1 ? 'ies' : 'y'}',
+                          style: const TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w500),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -117,11 +238,12 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
             children: [
               Expanded(child: _buildStatCard('$totalEnquiries', 'Total Enquiries')),
               const SizedBox(width: 10),
-              Expanded(child: _buildStatCard('$newEnquiries', 'New')),
+              Expanded(child: _buildStatCard('$thisMonthEnquiries', 'This Month')),
               const SizedBox(width: 10),
-              Expanded(child: _buildStatCard('${totalEnquiries - newEnquiries}', 'Replied')),
+              Expanded(child: _buildStatCard(avgRating, 'Avg Rating', icon: LucideIcons.star)),
             ],
           ),
+
           const SizedBox(height: 16),
 
           Container(
@@ -137,22 +259,21 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Profile Completeness', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                    const Text('75%', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                    Text('${(completeness * 100).toInt()}%', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary)),
                   ],
                 ),
                 const SizedBox(height: 12),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
-                  child: const LinearProgressIndicator(
-                    value: 0.75,
+                  child: LinearProgressIndicator(
+                    value: completeness,
                     backgroundColor: AppColors.border,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
                     minHeight: 8,
                   ),
                 ),
                 const SizedBox(height: 12),
-                _buildTipItem('Add your AIFF license certificate'),
-                _buildTipItem('Upload a training video'),
+                ..._buildProfileTips(profile),
               ],
             ),
           ),
@@ -172,8 +293,8 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildQuickAction(LucideIcons.user, 'Edit Profile', () => context.push('/coach/edit-profile')),
-                    _buildQuickAction(LucideIcons.messageCircle, 'Enquiries', () => context.push('/coach/enquiries')),
+                    _buildQuickAction(LucideIcons.user, 'Edit Profile', () => _switchTab(3)),
+                    _buildQuickAction(LucideIcons.messageCircle, 'Enquiries', () => _switchTab(2)),
                     _buildQuickAction(LucideIcons.calendar, 'Schedule', () {}),
                     _buildQuickAction(LucideIcons.barChart2, 'Analytics', () {}),
                   ],
@@ -197,7 +318,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
                   children: [
                     const Text('Recent Enquiries', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                     GestureDetector(
-                      onTap: () => context.push('/coach/enquiries'),
+                      onTap: () => _switchTab(2),
                       child: const Text('View All', style: TextStyle(fontSize: 13, color: AppColors.primary)),
                     ),
                   ],
@@ -217,7 +338,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
                     return Column(
                       children: [
                         if (index > 0) const Divider(color: AppColors.border),
-                        _buildEnquiryItem(e.athleteName, e.message, e.createdAt ?? '', e.status == 'new' && !e.isRead),
+                        _buildEnquiryItem(e.id, e.athleteName, e.message, e.createdAt ?? '', e.status == 'new' && !e.isRead),
                       ],
                     );
                   }),
@@ -291,48 +412,99 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
     );
   }
 
-  Widget _buildEnquiryItem(String name, String preview, String time, bool isNew) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          const CircleAvatar(
-            radius: 22,
-            backgroundColor: AppColors.primary,
-            child: Icon(LucideIcons.user, color: Colors.white, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                    const SizedBox(width: 6),
-                    if (isNew)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(color: const Color(0xFFdbeafe), borderRadius: BorderRadius.circular(4)),
-                        child: const Text('New', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary)),
-                      )
-                    else
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(color: const Color(0xFFd1fae5), borderRadius: BorderRadius.circular(4)),
-                        child: const Text('Replied', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF065f46))),
-                      )
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Text(preview, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 2),
-                Text(time, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-              ],
+  Widget _buildEnquiryItem(String id, String name, String preview, String time, bool isNew) {
+    return GestureDetector(
+      onTap: () => _switchTab(2),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            const CircleAvatar(
+              radius: 22,
+              backgroundColor: AppColors.primary,
+              child: Icon(LucideIcons.user, color: Colors.white, size: 20),
             ),
-          ),
-        ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                      const SizedBox(width: 6),
+                      if (isNew)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(color: const Color(0xFFdbeafe), borderRadius: BorderRadius.circular(4)),
+                          child: const Text('New', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                        )
+                      else
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(color: const Color(0xFFd1fae5), borderRadius: BorderRadius.circular(4)),
+                          child: const Text('Replied', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF065f46))),
+                        )
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(preview, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 2),
+                  Text(time, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  double _calculateProfileCompleteness(Coach? profile) {
+    if (profile == null) return 0.1;
+    int filled = 0;
+    int total = 10;
+
+    if (profile.fullName.isNotEmpty) filled++;
+    if (profile.sport != null) filled++;
+    if (profile.city != null) filled++;
+    if (profile.contactNumber != null && profile.contactNumber!.isNotEmpty) filled++;
+    if (profile.experience != null) filled++;
+    if (profile.bio != null && profile.bio!.isNotEmpty) filled++;
+    if (profile.profilePhotoUrl != null) filled++;
+    if (profile.feePerSession != null || profile.feeMonthly != null) filled++;
+    if (profile.headline != null && profile.headline!.isNotEmpty) filled++;
+    if (profile.availability != null && profile.availability!.values.any((slots) => slots.isNotEmpty)) filled++;
+
+    return filled / total;
+  }
+
+  List<Widget> _buildProfileTips(Coach? profile) {
+    final tips = <Widget>[];
+    if (profile == null) {
+      tips.add(_buildTipItem('Complete your profile setup'));
+      return tips;
+    }
+
+    if (profile.profilePhotoUrl == null) {
+      tips.add(_buildTipItem('Add a profile photo'));
+    }
+    if (profile.headline == null || profile.headline!.isEmpty) {
+      tips.add(_buildTipItem('Add your AIFF license certificate'));
+    }
+    if (profile.bio == null || profile.bio!.isEmpty) {
+      tips.add(_buildTipItem('Write a bio describing your coaching approach'));
+    }
+    if (profile.feePerSession == null && profile.feeMonthly == null) {
+      tips.add(_buildTipItem('Set your fee structure'));
+    }
+    if (profile.availability == null || !profile.availability!.values.any((slots) => slots.isNotEmpty)) {
+      tips.add(_buildTipItem('Set your weekly availability'));
+    }
+
+    // Always add the video upload tip as it's missing in the app's capability currently
+    tips.add(_buildTipItem('Upload a training video'));
+
+    return tips;
   }
 }

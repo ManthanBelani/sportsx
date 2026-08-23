@@ -136,23 +136,58 @@ class _EnquiryDetailScreenState extends ConsumerState<EnquiryDetailScreen> {
     required bool isMe,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-        children: [
-          Text(sender, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[700])),
-          const SizedBox(height: 4),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isMe ? AppColors.primary.withOpacity(0.1) : AppColors.surface,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(message),
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Align(
+        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.8,
           ),
-          const SizedBox(height: 4),
-          Text(time, style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-        ],
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: isMe ? AppColors.primary : AppColors.surface,
+            borderRadius: BorderRadius.only(
+              topLeft: const Radius.circular(12),
+              topRight: const Radius.circular(12),
+              bottomLeft: Radius.circular(isMe ? 12 : 4),
+              bottomRight: Radius.circular(isMe ? 4 : 12),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            children: [
+              if (!isMe) ...[
+                Text(sender, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
+                const SizedBox(height: 4),
+              ],
+              Text(
+                message,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isMe ? Colors.white : AppColors.textPrimary,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!isMe) ...[
+                    Icon(LucideIcons.clock, size: 10, color: AppColors.textSecondary),
+                    const SizedBox(width: 2),
+                  ],
+                  Text(
+                    time,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isMe ? Colors.white.withOpacity(0.7) : AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

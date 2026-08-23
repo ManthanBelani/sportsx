@@ -47,16 +47,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> checkAuth() async {
+    final startTime = DateTime.now();
     final token = await _storage.getToken();
+    
     if (token == null) {
+      await _ensureMinSplashDuration(startTime);
       state = state.copyWith(status: AuthStatus.unauthenticated);
       return;
     }
+    
     try {
       final resp = await _dio.get('/auth/me');
-      // Backend returns { "data": { <user fields…>, "needs_onboarding": bool } }
-      // with the user fields flattened into `data` (no nested `data.user`).
       final data = resp.data['data'] as Map<String, dynamic>;
+      
+      await _ensureMinSplashDuration(startTime);
       state = AuthState(
         status: AuthStatus.authenticated,
         user: User.fromJson(data),
@@ -64,7 +68,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
     } catch (_) {
       await _storage.deleteToken();
+      
+      await _ensureMinSplashDuration(startTime);
       state = state.copyWith(status: AuthStatus.unauthenticated);
+    }
+  }
+
+  Future<void> _ensureMinSplashDuration(DateTime startTime) async {
+    final elapsed = DateTime.now().difference(startTime);
+    if (elapsed.inMilliseconds < 1500) {
+      await Future.delayed(Duration(milliseconds: 1500 - elapsed.inMilliseconds));
     }
   }
 
