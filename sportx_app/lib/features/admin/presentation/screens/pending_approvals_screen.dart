@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_web_layout.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class PendingApprovalsScreen extends ConsumerStatefulWidget {
   const PendingApprovalsScreen({super.key});
@@ -209,13 +210,7 @@ class _PendingApprovalsScreenState extends ConsumerState<PendingApprovalsScreen>
     }
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            action == 'approve' ? 'Application approved' : 'Application rejected',
-          ),
-        ),
-      );
+      SnackBarUtils.showSuccess(context, action == 'approve' ? 'Application approved' : 'Application rejected',);
     }
   }
 }

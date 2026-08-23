@@ -5,6 +5,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class ResultsPublishingScreen extends ConsumerStatefulWidget {
   final String tournamentId;
@@ -44,12 +45,12 @@ class _ResultsPublishingScreenState extends ConsumerState<ResultsPublishingScree
         'third_place': _thirdController.text.trim(),
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Results saved!')));
+        SnackBarUtils.showSuccess(context, 'Results saved!');
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+        SnackBarUtils.showError(context, e);
       }
     } finally {
       if (mounted) setState(() => _saving = false);

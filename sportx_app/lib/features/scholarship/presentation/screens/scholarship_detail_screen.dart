@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:sportx_app/shared/models/models.dart';
@@ -8,6 +7,7 @@ import 'package:sportx_app/shared/presentation/widgets/async_state_view.dart';
 import 'package:sportx_app/shared/presentation/widgets/detail_page_template.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class ScholarshipDetailScreen extends ConsumerWidget {
   final String scholarshipId;
@@ -35,6 +35,9 @@ class ScholarshipDetailScreen extends ConsumerWidget {
             Text(s.eligibility!, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.5)),
             const SizedBox(height: 24),
           ],
+          _sectionHeader('Application Steps'),
+          ...List.generate(4, (i) => _buildStep(i + 1, _getStepText(i))),
+          const SizedBox(height: 24),
           if (s.documentsRequired.isNotEmpty) ...[
             _sectionHeader('Documents Required'),
             Wrap(
@@ -85,18 +88,14 @@ class ScholarshipDetailScreen extends ConsumerWidget {
           onCtaPressed: () async {
             final url = Uri.parse(s.applicationLink ?? '');
             if (s.applicationLink == null || s.applicationLink!.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('No application link available')),
-              );
+              SnackBarUtils.showSuccess(context, 'No application link available');
               return;
             }
             if (await canLaunchUrl(url)) {
               await launchUrl(url, mode: LaunchMode.externalApplication);
             } else {
               if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Could not open application link')),
-                );
+                SnackBarUtils.showSuccess(context, 'Could not open application link');
               }
             }
           },
@@ -118,6 +117,60 @@ class ScholarshipDetailScreen extends ConsumerWidget {
           const Icon(LucideIcons.clipboardList, size: 18, color: AppColors.primary),
           const SizedBox(width: 8),
           Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        ],
+      ),
+    );
+  }
+
+  String _getStepText(int index) {
+    switch (index) {
+      case 0:
+        return 'Fill out the application form on the official portal';
+      case 1:
+        return 'Upload required documents (age proof, income certificate, sports achievements)';
+      case 2:
+        return 'Submit your SportX profile link for verification';
+      case 3:
+        return 'Wait for selection announcement on registered email';
+      default:
+        return '';
+    }
+  }
+
+  Widget _buildStep(int number, String content) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            decoration: const BoxDecoration(
+              color: AppColors.primary,
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                '$number',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                content,
+                style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+              ),
+            ),
+          ),
         ],
       ),
     );

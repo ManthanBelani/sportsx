@@ -8,6 +8,7 @@ import 'package:sportx_app/shared/presentation/widgets/async_state_view.dart';
 import 'package:sportx_app/shared/presentation/widgets/detail_page_template.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class SportsVenueDetailScreen extends ConsumerWidget {
   final String id;
@@ -42,13 +43,9 @@ class SportsVenueDetailScreen extends ConsumerWidget {
         ctaText: v.bookingAvailable ? 'Book Now' : 'Enquire',
         onCtaPressed: () {
           if (v.bookingAvailable) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Booking feature coming soon!')),
-            );
+            SnackBarUtils.showSuccess(context, 'Booking feature coming soon!');
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Enquiries for venues coming soon!')),
-            );
+            SnackBarUtils.showSuccess(context, 'Enquiries for venues coming soon!');
           }
         },
         onPhonePressed: v.contactNumber == null

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/sponsor/presentation/providers/sponsor_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class SponsorshipPostingScreen extends ConsumerStatefulWidget {
   const SponsorshipPostingScreen({super.key});
@@ -42,10 +43,10 @@ class _SponsorshipPostingScreenState extends ConsumerState<SponsorshipPostingScr
     if (!mounted) return;
     setState(() => _saving = false);
     if (ok) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sponsorship saved!')));
+      SnackBarUtils.showSuccess(context, 'Sponsorship saved!');
       context.pop();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to save')));
+      SnackBarUtils.showError(context, 'Failed to save');
     }
   }
 

@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/saved/presentation/providers/saved_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class CoachProfileDetailScreen extends ConsumerStatefulWidget {
   final String coachId;
@@ -88,15 +89,11 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
       await dio.post('/me/connections/request', data: {'user_id': userId});
       if (mounted) {
         setState(() => _connectionStatus = 'pending');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Connection request sent!')),
-        );
+        SnackBarUtils.showSuccess(context, 'Connection request sent!');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to send connection request')),
-        );
+        SnackBarUtils.showError(context, 'Failed to send connection request');
       }
     } finally {
       if (mounted) setState(() => _isConnecting = false);
@@ -241,9 +238,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
             final saved = await ref.read(savedProvider.notifier).toggle(type: 'coach_profile', itemId: widget.coachId);
             if (mounted) {
               setState(() => _isSaved = saved);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(saved ? 'Saved to your list' : 'Removed from saved')),
-              );
+              SnackBarUtils.showSuccess(context, saved ? 'Saved to your list' : 'Removed from saved');
             }
           },
         ),
@@ -277,9 +272,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
               title: const Text('Copy Link'),
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Link copied to clipboard')),
-                );
+                SnackBarUtils.showSuccess(context, 'Link copied to clipboard');
               },
             ),
           ],

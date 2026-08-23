@@ -5,6 +5,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class MediaGalleryScreen extends ConsumerStatefulWidget {
   const MediaGalleryScreen({super.key});
@@ -78,9 +79,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
 
     final success = await deleteMedia(ref, mediaId);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(success ? 'Deleted' : 'Failed to delete')),
-      );
+      SnackBarUtils.showError(context, success ? 'Deleted' : 'Failed to delete');
     }
     if (success) await _loadMedia();
   }
@@ -92,9 +91,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
     }).toList();
     final success = await reorderMedia(ref, items.cast<Map<String, int>>());
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(success ? 'Order saved' : 'Failed to save order')),
-      );
+      SnackBarUtils.showError(context, success ? 'Order saved' : 'Failed to save order');
     }
     if (success) setState(() => _isReorderMode = false);
   }

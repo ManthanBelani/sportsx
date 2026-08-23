@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/social/presentation/providers/posts_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
   final String postId;
@@ -28,7 +29,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     _commentController.clear();
     final ok = await commentOnPost(ref, widget.postId, text);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ok ? 'Comment posted!' : 'Failed to comment')));
+      SnackBarUtils.showError(context, ok ? 'Comment posted!' : 'Failed to comment');
     }
   }
 

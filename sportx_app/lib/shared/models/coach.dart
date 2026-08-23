@@ -26,9 +26,13 @@ class Coach {
   final double? feePerSession;
   final double? feeMonthly;
   final double? feeQuarterly;
+  final String? feeStructure;
   final String? location;
   final String? headline;
   final Map<String, List<String>>? availability;
+  final List<String>? certifications;
+  final List<String>? languages;
+  final bool personalCoaching;
   final String? registrationLink;
   final String status;
   final Sport? sport;
@@ -52,9 +56,13 @@ class Coach {
     this.feePerSession,
     this.feeMonthly,
     this.feeQuarterly,
+    this.feeStructure,
     this.location,
     this.headline,
     this.availability,
+    this.certifications,
+    this.languages,
+    this.personalCoaching = false,
     this.registrationLink,
     required this.status,
     this.sport,
@@ -89,6 +97,19 @@ class Coach {
       return null;
     }
 
+    List<String>? parseListString(dynamic val) {
+      if (val == null) return null;
+      if (val is List) return val.map((e) => e.toString()).toList();
+      if (val is String) {
+        try {
+          final decoded = jsonDecode(val);
+          if (decoded is List) return decoded.map((e) => e.toString()).toList();
+        } catch (_) {}
+        return val.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      }
+      return null;
+    }
+
     return Coach(
       id: _parseInt(json['id'])!,
       userId: _parseInt(json['user_id'])!,
@@ -99,7 +120,7 @@ class Coach {
       contactNumber: json['contact_number'] as String?,
       email: json['email'] as String?,
       experience: json['experience'] as String?,
-      specialization: json['specialization'] as String?,
+      specialization: json['qualification'] as String? ?? json['specialization'] as String?,
       achievements: json['achievements'] as String?,
       bio: json['bio'] as String?,
       hourlyRate: (json['hourly_rate'] as num?)?.toDouble(),
@@ -112,9 +133,13 @@ class Coach {
       feeQuarterly: (json['fee_quarterly'] is String)
           ? double.tryParse(json['fee_quarterly'] as String)
           : (json['fee_quarterly'] as num?)?.toDouble(),
+      feeStructure: json['fee_structure'] as String?,
       location: json['location'] as String?,
       headline: json['headline'] as String?,
       availability: parseAvailability(json['availability']),
+      certifications: parseListString(json['certifications']),
+      languages: parseListString(json['languages']),
+      personalCoaching: json['personal_coaching'] == true || json['personal_coaching'] == 1,
       registrationLink: json['registration_link'] as String?,
       status: json['status'] as String? ?? 'draft',
       sport: json['sport'] != null ? Sport.fromJson(json['sport']) : null,

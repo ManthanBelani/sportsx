@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_web_layout.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class ManageUsersScreen extends ConsumerStatefulWidget {
   const ManageUsersScreen({super.key});
@@ -122,33 +123,25 @@ class _ManageUsersScreenState extends ConsumerState<ManageUsersScreen> {
       case 'verify':
         await notifier.approveUser(userId);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('User verified')),
-          );
+          SnackBarUtils.showSuccess(context, 'User verified');
         }
         break;
       case 'suspend':
         await notifier.suspendUser(userId);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('User suspended')),
-          );
+          SnackBarUtils.showSuccess(context, 'User suspended');
         }
         break;
       case 'activate':
         await notifier.approveUser(userId);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('User activated')),
-          );
+          SnackBarUtils.showSuccess(context, 'User activated');
         }
         break;
       case 'delete':
         await notifier.deleteUser(userId);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('User deleted')),
-          );
+          SnackBarUtils.showSuccess(context, 'User deleted');
         }
         break;
     }

@@ -15,7 +15,7 @@ class SavedScreen extends ConsumerStatefulWidget {
 class _SavedScreenState extends ConsumerState<SavedScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  static const _tabs = ['All', 'Academies', 'Trials', 'Tournaments', 'Scholarships'];
+  static const _tabs = ['All', 'Academies', 'Coaches', 'Trials', 'Tournaments', 'Scholarships', 'Sponsorships'];
 
   @override
   void initState() {
@@ -35,11 +35,15 @@ class _SavedScreenState extends ConsumerState<SavedScreen> with SingleTickerProv
       case 1:
         return 'academy';
       case 2:
-        return 'trial';
+        return 'coach';
       case 3:
-        return 'tournament';
+        return 'trial';
       case 4:
+        return 'tournament';
+      case 5:
         return 'scholarship';
+      case 6:
+        return 'sponsorship';
       default:
         return null;
     }
@@ -66,7 +70,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> with SingleTickerProv
       case 'sponsorship':
       case 'sponsorships':
       case 'sponsor':
-        return '/sponsor-pitch/${item.itemId}';
+        return '/sponsorship-detail/${item.itemId}';
       case 'sports_venue':
       case 'sportsvenue':
         return '/sports-venues';

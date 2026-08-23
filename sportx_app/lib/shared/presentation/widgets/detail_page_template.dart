@@ -7,6 +7,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/saved/presentation/providers/saved_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class DetailPageTemplate extends ConsumerWidget {
   final String? heroImageUrl;
@@ -109,9 +110,7 @@ class DetailPageTemplate extends ConsumerWidget {
                               .read(savedProvider.notifier)
                               .toggle(type: savedType!, itemId: savedItemId!);
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(saved ? 'Saved to your list' : 'Removed from saved')),
-                            );
+                            SnackBarUtils.showSuccess(context, saved ? 'Saved to your list' : 'Removed from saved');
                           }
                         }
                       : null,
@@ -332,9 +331,7 @@ class DetailPageTemplate extends ConsumerWidget {
 
   Future<void> _showReportDialog(BuildContext context, WidgetRef ref) async {
     if (savedType == null || savedItemId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('This listing cannot be reported')),
-      );
+      SnackBarUtils.showSuccess(context, 'This listing cannot be reported');
       return;
     }
 
@@ -418,9 +415,7 @@ class DetailPageTemplate extends ConsumerWidget {
                         });
                         if (dialogContext.mounted) Navigator.pop(dialogContext);
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Report submitted. Thank you!')),
-                          );
+                          SnackBarUtils.showSuccess(context, 'Report submitted. Thank you!');
                         }
                       } on DioException catch (e) {
                         setDialogState(() => submitting = false);

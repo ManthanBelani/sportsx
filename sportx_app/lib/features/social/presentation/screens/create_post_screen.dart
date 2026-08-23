@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class CreatePostScreen extends ConsumerStatefulWidget {
   const CreatePostScreen({super.key});
@@ -52,9 +53,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to pick image: $e')),
-        );
+        SnackBarUtils.showError(context, e);
       }
     }
   }
@@ -71,9 +70,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
   Future<void> _submitPost() async {
     if (_captionController.text.trim().isEmpty && _selectedMedia.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add a caption or media')),
-      );
+      SnackBarUtils.showSuccess(context, 'Please add a caption or media');
       return;
     }
 
@@ -98,16 +95,12 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       await dio.post('/posts', data: formData);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Post created successfully!')),
-        );
+        SnackBarUtils.showSuccess(context, 'Post created successfully!');
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to create post: $e')),
-        );
+        SnackBarUtils.showError(context, e);
       }
     } finally {
       if (mounted) setState(() => _isPosting = false);

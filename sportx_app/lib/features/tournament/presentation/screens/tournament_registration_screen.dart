@@ -9,6 +9,7 @@ import 'package:sportx_app/shared/presentation/widgets/form_page_template.dart';
 import 'package:sportx_app/shared/providers/activity_provider.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class TournamentRegistrationScreen extends ConsumerStatefulWidget {
   final String tournamentId;
@@ -41,28 +42,20 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
   Future<void> _submit(Tournament tournament) async {
     final category = tournament.categories.where((c) => c.id == _categoryId).firstOrNull;
     if (category == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a category')),
-      );
+      SnackBarUtils.showSuccess(context, 'Please select a category');
       return;
     }
     if (_participationType == 'team' && _teamController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a team name')),
-      );
+      SnackBarUtils.showSuccess(context, 'Please enter a team name');
       return;
     }
     if (_participationType == 'team') {
       if (_numberOfPlayersController.text.trim().isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please enter number of players')),
-        );
+        SnackBarUtils.showSuccess(context, 'Please enter number of players');
         return;
       }
       if (_captainNameController.text.trim().isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please enter captain name')),
-        );
+        SnackBarUtils.showSuccess(context, 'Please enter captain name');
         return;
       }
     }
@@ -97,15 +90,11 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
       });
     } on DioException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(ApiException.fromDio(e).message)),
-        );
+        SnackBarUtils.showError(context, ApiException.fromDio(e));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration failed. Please try again.')),
-        );
+        SnackBarUtils.showError(context, 'Registration failed. Please try again.');
       }
     } finally {
       if (mounted) setState(() => _submitting = false);

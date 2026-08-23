@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_web_layout.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class ReportDetailScreen extends ConsumerStatefulWidget {
   final Report report;
@@ -264,9 +265,7 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
   Future<void> _handleResolve() async {
     await ref.read(adminProvider.notifier).approveReport(widget.report.id);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Report marked as resolved')),
-      );
+      SnackBarUtils.showSuccess(context, 'Report marked as resolved');
       context.pop();
     }
   }
@@ -274,9 +273,7 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
   Future<void> _handleDismiss() async {
     await ref.read(adminProvider.notifier).dismissReport(widget.report.id);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Report dismissed')),
-      );
+      SnackBarUtils.showSuccess(context, 'Report dismissed');
       context.pop();
     }
   }

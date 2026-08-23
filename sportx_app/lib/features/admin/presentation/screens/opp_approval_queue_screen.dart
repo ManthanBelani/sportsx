@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_web_layout.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class OppApprovalQueueScreen extends ConsumerStatefulWidget {
   const OppApprovalQueueScreen({super.key});
@@ -142,15 +143,9 @@ class _OppApprovalQueueScreenState extends ConsumerState<OppApprovalQueueScreen>
     }
 
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            action == 'approve'
+      SnackBarUtils.showSuccess(context, action == 'approve'
                 ? 'Opportunity approved'
-                : 'Opportunity rejected',
-          ),
-        ),
-      );
+                : 'Opportunity rejected',);
     }
   }
 }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class CoachProfilePostingScreen extends ConsumerStatefulWidget {
   const CoachProfilePostingScreen({super.key});
@@ -38,11 +39,11 @@ class _CoachProfilePostingScreenState extends ConsumerState<CoachProfilePostingS
         'bio': _bio.text.trim(),
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile Updated!')));
+        SnackBarUtils.showSuccess(context, 'Profile Updated!');
         context.pop();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+      if (mounted) SnackBarUtils.showError(context, e);
     } finally {
       if (mounted) setState(() => _saving = false);
     }

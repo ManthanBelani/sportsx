@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/academy/presentation/providers/academy_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class TrialPostingScreen extends ConsumerStatefulWidget {
   const TrialPostingScreen({super.key});
@@ -53,10 +54,10 @@ class _TrialPostingScreenState extends ConsumerState<TrialPostingScreen> {
     if (!mounted) return;
     setState(() => _saving = false);
     if (ok) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_publish ? 'Trial Published!' : 'Draft saved')));
+      SnackBarUtils.showSuccess(context, _publish ? 'Trial Published!' : 'Draft saved');
       context.pop();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to save')));
+      SnackBarUtils.showError(context, 'Failed to save');
     }
   }
 

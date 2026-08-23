@@ -9,6 +9,7 @@ import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
 import 'package:sportx_app/shared/providers/activity_provider.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class TrialRegistrationScreen extends ConsumerStatefulWidget {
   final String trialId;
@@ -66,15 +67,11 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
       }
     } on DioException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(ApiException.fromDio(e).message)),
-        );
+        SnackBarUtils.showError(context, ApiException.fromDio(e));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration failed. Please try again.')),
-        );
+        SnackBarUtils.showError(context, 'Registration failed. Please try again.');
       }
     } finally {
       if (mounted) setState(() => _submitting = false);

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class TournamentPostingScreen extends ConsumerStatefulWidget {
   const TournamentPostingScreen({super.key});
@@ -47,10 +48,10 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
     if (!mounted) return;
     setState(() => _saving = false);
     if (ok) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tournament saved!')));
+      SnackBarUtils.showSuccess(context, 'Tournament saved!');
       context.pop();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to save')));
+      SnackBarUtils.showError(context, 'Failed to save');
     }
   }
 

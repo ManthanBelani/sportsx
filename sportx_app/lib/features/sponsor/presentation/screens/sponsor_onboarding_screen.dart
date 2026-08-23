@@ -5,6 +5,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class SponsorOnboardingScreen extends ConsumerStatefulWidget {
   const SponsorOnboardingScreen({super.key});
@@ -34,11 +35,11 @@ class _SponsorOnboardingScreenState extends ConsumerState<SponsorOnboardingScree
       if (mounted) {
         ref.read(authProvider.notifier).markOnboardingComplete();
         await ref.read(authProvider.notifier).refreshUser();
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile Submitted for Review')));
+        SnackBarUtils.showSuccess(context, 'Profile Submitted for Review');
         context.go('/sponsor-dashboard');
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+      if (mounted) SnackBarUtils.showError(context, e);
     } finally {
       if (mounted) setState(() => _saving = false);
     }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class AdminLoginScreen extends ConsumerStatefulWidget {
   const AdminLoginScreen({super.key});
@@ -39,7 +40,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
     if (state.isLoggedIn) {
       context.go('/admin/dashboard');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.error ?? 'Login failed')));
+      SnackBarUtils.showError(context, state.error ?? 'Login failed');
     }
   }
 

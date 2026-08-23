@@ -108,7 +108,13 @@ class HomeScreen extends ConsumerWidget {
                         children: [
                           Icon(LucideIcons.search, color: AppColors.textSecondary, size: 18),
                           SizedBox(width: 10),
-                          Text('Search academies, trials, coaches...', style: TextStyle(color: AppColors.textSecondary, fontSize: 15)),
+                          Expanded(
+                            child: Text(
+                              'Search academies, trials, coaches...',
+                              style: TextStyle(color: AppColors.textSecondary, fontSize: 15),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                         ],
                       ),
                     ),

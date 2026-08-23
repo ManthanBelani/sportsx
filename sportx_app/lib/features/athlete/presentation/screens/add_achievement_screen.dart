@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class AddAchievementScreen extends ConsumerStatefulWidget {
   const AddAchievementScreen({super.key});
@@ -63,9 +64,7 @@ class _AddAchievementScreenState extends ConsumerState<AddAchievementScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to pick image: $e')),
-        );
+        SnackBarUtils.showError(context, e);
       }
     }
   }
@@ -99,16 +98,12 @@ class _AddAchievementScreenState extends ConsumerState<AddAchievementScreen> {
       await dio.put('/me/profile', data: formData);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Achievement added successfully!')),
-        );
+        SnackBarUtils.showSuccess(context, 'Achievement added successfully!');
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add achievement: $e')),
-        );
+        SnackBarUtils.showError(context, e);
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);

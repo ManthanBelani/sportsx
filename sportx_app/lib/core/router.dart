@@ -21,6 +21,7 @@ import 'package:sportx_app/features/trial/presentation/screens/trial_directory_s
 import 'package:sportx_app/features/trial/presentation/screens/trial_detail_screen.dart';
 import 'package:sportx_app/features/tournament/presentation/screens/tournament_directory_screen.dart';
 import 'package:sportx_app/features/tournament/presentation/screens/tournament_detail_screen.dart';
+import 'package:sportx_app/features/tournament/presentation/screens/tournament_calendar_screen.dart';
 import 'package:sportx_app/shared/presentation/screens/enquire_screen.dart';
 import 'package:sportx_app/features/trial/presentation/screens/trial_registration_screen.dart';
 import 'package:sportx_app/features/tournament/presentation/screens/tournament_registration_screen.dart';
@@ -64,6 +65,9 @@ import 'package:sportx_app/features/settings/presentation/screens/settings_scree
 import 'package:sportx_app/features/settings/presentation/screens/help_support_screen.dart';
 import 'package:sportx_app/features/scholarship/presentation/screens/scholarship_list_screen.dart';
 import 'package:sportx_app/features/scholarship/presentation/screens/scholarship_detail_screen.dart';
+import 'package:sportx_app/features/sponsorship/presentation/screens/sponsorship_list_screen.dart';
+import 'package:sportx_app/features/sponsorship/presentation/screens/sponsorship_detail_screen.dart';
+import 'package:sportx_app/features/sponsorship/presentation/screens/apply_sponsor_screen.dart';
 import 'package:sportx_app/features/sports_venue/presentation/screens/sports_venue_list_screen.dart';
 import 'package:sportx_app/features/sports_venue/presentation/screens/sports_venue_detail_screen.dart';
 import 'package:sportx_app/features/social/presentation/screens/create_post_screen.dart';
@@ -217,6 +221,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/trials', builder: (context, state) => const TrialDirectoryScreen()),
       GoRoute(path: '/trial-detail/:id', builder: (context, state) => TrialDetailScreen(id: state.pathParameters['id']!)),
       GoRoute(path: '/tournaments', builder: (context, state) => const TournamentDirectoryScreen()),
+      GoRoute(path: '/tournament-calendar', builder: (context, state) => const TournamentCalendarScreen()),
       GoRoute(path: '/tournament-detail/:id', builder: (context, state) => TournamentDetailScreen(id: state.pathParameters['id']!)),
       GoRoute(path: '/enquire/:subjectType/:subjectId/:title', builder: (context, state) => EnquireScreen(
         subjectType: state.pathParameters['subjectType']!,
@@ -319,6 +324,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/help-support', builder: (context, state) => const HelpSupportScreen()),
       GoRoute(path: '/scholarships', builder: (context, state) => const ScholarshipListScreen()),
       GoRoute(path: '/scholarship-detail/:id', builder: (context, state) => ScholarshipDetailScreen(scholarshipId: state.pathParameters['id']!)),
+      GoRoute(path: '/sponsorships', builder: (context, state) => const SponsorshipListScreen()),
+      GoRoute(path: '/sponsorship-detail/:id', builder: (context, state) => SponsorshipDetailScreen(sponsorshipId: state.pathParameters['id']!)),
+      GoRoute(path: '/apply-sponsor/:id', builder: (context, state) => ApplySponsorScreen(sponsorshipId: state.pathParameters['id']!)),
       GoRoute(path: '/sports-venues', builder: (context, state) => const SportsVenueListScreen()),
       GoRoute(path: '/sports-venue-detail/:id', builder: (context, state) => SportsVenueDetailScreen(id: state.pathParameters['id']!)),
       GoRoute(path: '/create-post', builder: (context, state) => const CreatePostScreen()),

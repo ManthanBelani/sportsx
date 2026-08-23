@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/settings/presentation/providers/settings_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -449,7 +450,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Navigator.pop(ctx);
               final success = await ref.read(settingsProvider.notifier).deleteAccount(passwordController.text);
               if (success && context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Account deleted')));
+                SnackBarUtils.showSuccess(context, 'Account deleted');
               }
             },
             child: const Text('Delete', style: TextStyle(color: AppColors.error)),

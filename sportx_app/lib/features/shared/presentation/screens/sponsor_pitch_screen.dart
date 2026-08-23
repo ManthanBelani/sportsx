@@ -5,6 +5,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/shared/providers/activity_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class SponsorPitchScreen extends ConsumerStatefulWidget {
   final String sponsorId;
@@ -36,12 +37,12 @@ class _SponsorPitchScreenState extends ConsumerState<SponsorPitchScreen> {
       });
       if (mounted) {
         ref.invalidate(activityProvider);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Application submitted!')));
+        SnackBarUtils.showSuccess(context, 'Application submitted!');
         context.push('/registration-confirmation');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+        SnackBarUtils.showError(context, e);
       }
     } finally {
       if (mounted) setState(() => _submitting = false);

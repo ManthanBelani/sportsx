@@ -7,6 +7,7 @@ import 'package:sportx_app/core/config/api_config.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -95,6 +96,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       }
     } catch (e) {
       debugPrint('Failed to load profile: $e');
+      if (mounted) SnackBarUtils.showError(context, e, 'Failed to load profile');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -113,6 +115,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       }
     } catch (e) {
       debugPrint('Failed to load connection count: $e');
+      if (mounted) SnackBarUtils.showError(context, e, 'Failed to load connection count');
     }
   }
 
@@ -686,7 +689,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           _QuickLink('Media', '/media-gallery', LucideIcons.image),
           _QuickLink('Activity', '/activity-hub', LucideIcons.activity),
           _QuickLink('Scholarships', '/scholarships', LucideIcons.graduationCap),
-          _QuickLink('Venues', '/sports-venues', LucideIcons.mapPin),
+          _QuickLink('Sponsorships', '/sponsorships', LucideIcons.star),
+          _QuickLink('Tournaments', '/tournament-calendar', LucideIcons.calendar),
           _QuickLink('Connections', '/my-connections', LucideIcons.users),
         ];
     }

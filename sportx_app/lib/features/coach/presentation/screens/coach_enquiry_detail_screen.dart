@@ -5,6 +5,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/shared/providers/enquiry_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class CoachEnquiryDetailScreen extends ConsumerStatefulWidget {
   final String id;
@@ -55,7 +56,7 @@ class _CoachEnquiryDetailScreenState extends ConsumerState<CoachEnquiryDetailScr
       ref.read(enquiryInboxProvider.notifier).load();
       _scrollToBottom();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to send message')));
+      SnackBarUtils.showError(context, 'Failed to send message');
     }
   }
 

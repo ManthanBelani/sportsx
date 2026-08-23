@@ -8,6 +8,7 @@ import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/shared/presentation/widgets/async_state_view.dart';
 import 'package:sportx_app/shared/presentation/widgets/detail_page_template.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class CoachDetailScreen extends ConsumerStatefulWidget {
   final String id;
@@ -37,15 +38,11 @@ class _CoachDetailScreenState extends ConsumerState<CoachDetailScreen> {
       await dio.post('/me/connections/request', data: {'user_id': c.userId});
       if (mounted) {
         setState(() => _connectionStatus = 'pending');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Connection request sent!')),
-        );
+        SnackBarUtils.showSuccess(context, 'Connection request sent!');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to send connection request')),
-        );
+        SnackBarUtils.showError(context, 'Failed to send connection request');
       }
     } finally {
       if (mounted) setState(() => _isConnecting = false);

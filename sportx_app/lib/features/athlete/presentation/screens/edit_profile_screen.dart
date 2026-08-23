@@ -9,6 +9,7 @@ import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -130,22 +131,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated')),
-        );
+        SnackBarUtils.showSuccess(context, 'Profile updated');
         context.pop();
       }
     } on DioException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(ApiException.fromDio(e).message)),
-        );
+        SnackBarUtils.showError(context, ApiException.fromDio(e));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update profile: $e')),
-        );
+        SnackBarUtils.showError(context, e);
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);

@@ -12,7 +12,7 @@ class Scholarship {
   final int id;
   final String title;
   final String? description;
-  final int sportId;
+  final int? sportId;
   final int? cityId;
   final String? sponsorName;
   final String? sponsorLogoUrl;
@@ -37,7 +37,7 @@ class Scholarship {
     required this.id,
     required this.title,
     this.description,
-    required this.sportId,
+    this.sportId,
     this.cityId,
     this.sponsorName,
     this.sponsorLogoUrl,
@@ -60,21 +60,20 @@ class Scholarship {
   });
 
   factory Scholarship.fromJson(Map<String, dynamic> json) {
+    final logo = json['logo'] as Map<String, dynamic>?;
     return Scholarship(
       id: _parseInt(json['id'])!,
-      title: (json['title'] ?? json['name'] ?? '') as String,
+      title: (json['name'] ?? json['title'] ?? '') as String,
       description: json['description'] as String?,
-      sportId: _parseInt(json['sport_id'])!,
+      sportId: _parseInt(json['sport_id']),
       cityId: _parseInt(json['city_id']),
-      sponsorName: (json['sponsor_name'] ?? json['organization_name']) as String?,
-      sponsorLogoUrl: (json['sponsor_logo_url'] ?? json['logo_url']) as String?,
+      sponsorName: (json['organization_name'] ?? json['sponsor_name']) as String?,
+      sponsorLogoUrl: (logo?['url'] as String?) ?? json['sponsor_logo_url'] as String?,
       amount: (json['amount'] as num?)?.toDouble(),
-      amountLabel: json['amount_label'] as String?,
+      amountLabel: json['amount'] != null ? '₹${_formatAmount(json['amount'])}' : null,
       totalSlots: _parseInt(json['total_slots']),
       filledSlots: _parseInt(json['filled_slots']),
-      applicationDeadline: (json['application_deadline'] ?? json['deadline']) != null
-          ? DateTime.parse(json['application_deadline'] ?? json['deadline'])
-          : null,
+      applicationDeadline: json['deadline'] != null ? DateTime.parse(json['deadline']) : null,
       eligibility: json['eligibility'] as String?,
       benefits: json['benefits'] as String?,
       applicationLink: json['application_link'] as String?,
@@ -89,5 +88,18 @@ class Scholarship {
       city: json['city'] != null ? City.fromJson(json['city']) : null,
       isSaved: json['is_saved'] == true || json['is_saved'] == 1,
     );
+  }
+
+  static String _formatAmount(dynamic amount) {
+    if (amount == null) return '0';
+    final num amountVal = amount is num ? amount : num.tryParse(amount.toString()) ?? 0;
+    if (amountVal >= 10000000) {
+      return '${(amountVal / 10000000).toStringAsFixed(1)}Cr';
+    } else if (amountVal >= 100000) {
+      return '${(amountVal / 100000).toStringAsFixed(1)}L';
+    } else if (amountVal >= 1000) {
+      return '${(amountVal / 1000).toStringAsFixed(0)}K';
+    }
+    return amountVal.toStringAsFixed(0);
   }
 }

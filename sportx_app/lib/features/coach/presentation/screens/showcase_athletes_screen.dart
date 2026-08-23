@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sportx_app/features/coach/presentation/providers/coach_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class ShowcaseAthletesScreen extends ConsumerStatefulWidget {
   const ShowcaseAthletesScreen({super.key});
@@ -81,16 +82,12 @@ class _ShowcaseAthletesScreenState extends ConsumerState<ShowcaseAthletesScreen>
       await ref.read(coachProvider.notifier).updateShowcaseAthletes(_selectedAthletes);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Showcase athletes updated!')),
-        );
+        SnackBarUtils.showSuccess(context, 'Showcase athletes updated!');
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update showcase: $e')),
-        );
+        SnackBarUtils.showError(context, e);
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/shared/providers/enquiry_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class EnquiryDetailScreen extends ConsumerStatefulWidget {
   final String id;
@@ -33,9 +34,9 @@ class _EnquiryDetailScreenState extends ConsumerState<EnquiryDetailScreen> {
     if (ok) {
       _replyController.clear();
       ref.read(enquiryInboxProvider.notifier).load();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Message sent')));
+      SnackBarUtils.showSuccess(context, 'Message sent');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to send')));
+      SnackBarUtils.showError(context, 'Failed to send');
     }
   }
 

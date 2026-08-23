@@ -235,8 +235,9 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
               _buildQuickLink('Coaches', LucideIcons.user, '/coaches'),
               _buildQuickLink('Trials', LucideIcons.circleDot, '/trials'),
               _buildQuickLink('Tournaments', LucideIcons.trophy, '/tournaments'),
+              _buildQuickLink('Tournament Calendar', LucideIcons.calendar, '/tournament-calendar'),
               _buildQuickLink('Scholarships', LucideIcons.graduationCap, '/scholarships'),
-              _buildQuickLink('Sponsorships', LucideIcons.briefcase, '/sponsorships'), // Fallback route
+              _buildQuickLink('Sponsorships', LucideIcons.star, '/sponsorships'),
             ],
           ),
         ],
@@ -282,7 +283,14 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
           children: [
             Icon(icon, color: AppColors.primary, size: 24),
             const SizedBox(width: 10),
-            Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
       ),
@@ -552,7 +560,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
         context.push('/scholarship-detail/$id');
         break;
       case 'sponsorship':
-        context.push('/sponsor-pitch/$id');
+        context.push('/sponsorship-detail/$id');
         break;
       case 'sports_venue':
         context.push('/sports-venues');

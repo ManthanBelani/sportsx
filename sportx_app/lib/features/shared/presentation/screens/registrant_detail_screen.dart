@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class RegistrantDetailScreen extends ConsumerWidget {
   final String registrationId;
@@ -13,12 +14,12 @@ class RegistrantDetailScreen extends ConsumerWidget {
     try {
       await ref.read(dioProvider).post('/registrations/trials/$registrationId/$action');
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+        SnackBarUtils.showSuccess(context, msg);
         context.pop();
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+        SnackBarUtils.showError(context, e);
       }
     }
   }

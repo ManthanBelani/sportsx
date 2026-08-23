@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sportx_app/features/coach/presentation/providers/coach_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class EditFacilitiesScreen extends ConsumerStatefulWidget {
   const EditFacilitiesScreen({super.key});
@@ -55,9 +56,7 @@ class _EditFacilitiesScreenState extends ConsumerState<EditFacilitiesScreen> {
     // Validate all facilities
     for (int i = 0; i < _facilities.length; i++) {
       if (_facilities[i]['name'].toString().trim().isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Please enter a name for facility ${i + 1}')),
-        );
+        SnackBarUtils.showSuccess(context, 'Please enter a name for facility ${i + 1}');
         return;
       }
     }
@@ -68,16 +67,12 @@ class _EditFacilitiesScreenState extends ConsumerState<EditFacilitiesScreen> {
       await ref.read(coachProvider.notifier).updateFacilities(_facilities);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Facilities updated successfully!')),
-        );
+        SnackBarUtils.showSuccess(context, 'Facilities updated successfully!');
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update facilities: $e')),
-        );
+        SnackBarUtils.showError(context, e);
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_web_layout.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class ComposeNotificationScreen extends ConsumerStatefulWidget {
   const ComposeNotificationScreen({super.key});
@@ -332,9 +333,7 @@ class _ComposeNotificationScreenState
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Notification sent successfully')),
-        );
+        SnackBarUtils.showSuccess(context, 'Notification sent successfully');
         context.pop();
       }
     } finally {

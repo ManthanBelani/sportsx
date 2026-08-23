@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class CapacityManagementScreen extends ConsumerStatefulWidget {
   final String tournamentId;
@@ -42,12 +43,12 @@ class _CapacityManagementScreenState extends ConsumerState<CapacityManagementScr
         'total_spots': _totalSpots,
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Capacity saved')));
+        SnackBarUtils.showSuccess(context, 'Capacity saved');
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+        SnackBarUtils.showError(context, e);
       }
     } finally {
       if (mounted) setState(() => _saving = false);

@@ -54,21 +54,24 @@ class Sponsorship {
   });
 
   factory Sponsorship.fromJson(Map<String, dynamic> json) {
+    final logo = json['logo'] as Map<String, dynamic>?;
+    final sponsor = json['sponsor'] as Map<String, dynamic>?;
+
     return Sponsorship(
       id: _parseInt(json['id'])!,
       title: json['title'] as String,
       description: json['description'] as String?,
       sportId: _parseInt(json['sport_id'])!,
       cityId: _parseInt(json['city_id']),
-      sponsorName: json['sponsor_name'] as String?,
-      sponsorLogoUrl: json['sponsor_logo_url'] as String?,
+      sponsorName: json['organization_name'] as String? ?? sponsor?['organization_name'] as String?,
+      sponsorLogoUrl: logo?['url'] as String?,
       sponsorshipType: json['sponsorship_type'] as String?,
-      amountLabel: json['amount_label'] as String?,
+      amountLabel: json['amount'] != null ? '₹${_formatAmount(json['amount'])}' : null,
       minAmount: (json['min_amount'] as num?)?.toDouble(),
       maxAmount: (json['max_amount'] as num?)?.toDouble(),
-      applicationDeadline: json['application_deadline'] != null ? DateTime.parse(json['application_deadline']) : null,
-      eligibility: json['eligibility'] as String?,
-      benefits: json['benefits'] as String?,
+      applicationDeadline: json['deadline'] != null ? DateTime.parse(json['deadline']) : null,
+      eligibility: json['eligibility_criteria'] as String?,
+      benefits: json['benefits_offered'] as String?,
       applicationLink: json['application_link'] as String?,
       status: json['status'] as String? ?? 'draft',
       expiresAt: json['expires_at'] != null ? DateTime.parse(json['expires_at']) : null,
@@ -76,5 +79,18 @@ class Sponsorship {
       city: json['city'] != null ? City.fromJson(json['city']) : null,
       isSaved: json['is_saved'] == true || json['is_saved'] == 1,
     );
+  }
+
+  static String _formatAmount(dynamic amount) {
+    if (amount == null) return '0';
+    final num amountVal = amount is num ? amount : num.tryParse(amount.toString()) ?? 0;
+    if (amountVal >= 10000000) {
+      return '${(amountVal / 10000000).toStringAsFixed(1)}Cr';
+    } else if (amountVal >= 100000) {
+      return '${(amountVal / 100000).toStringAsFixed(1)}L';
+    } else if (amountVal >= 1000) {
+      return '${(amountVal / 1000).toStringAsFixed(0)}K';
+    }
+    return amountVal.toStringAsFixed(0);
   }
 }

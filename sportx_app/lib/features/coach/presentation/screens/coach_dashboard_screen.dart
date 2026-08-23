@@ -6,6 +6,7 @@ import 'package:sportx_app/features/coach/presentation/providers/coach_provider.
 import 'package:sportx_app/features/coach/presentation/screens/coach_enquiry_inbox_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/coach_profile_edit_screen.dart';
 import 'package:sportx_app/shared/models/coach.dart';
+import 'package:sportx_app/core/config/api_config.dart';
 import 'package:sportx_app/shared/providers/enquiry_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -184,7 +185,12 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
     final avgRating = '4.8';
     final recentEnquiries = enquiryState.items.take(5).toList();
     final name = profile?.fullName.split(' ').first ?? 'Coach';
-    final photoUrl = profile?.profilePhotoUrl;
+    
+    String? photoUrl = profile?.profilePhotoUrl;
+    if (photoUrl != null && photoUrl.startsWith('/')) {
+      final base = ApiConfig.baseUrl.replaceAll('/api/v1', '');
+      photoUrl = '$base$photoUrl';
+    }
     final completeness = _calculateProfileCompleteness(profile);
 
     return SingleChildScrollView(

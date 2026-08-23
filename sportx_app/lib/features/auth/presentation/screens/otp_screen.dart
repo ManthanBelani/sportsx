@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/theme/colors.dart';
 import '../providers/auth_provider.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class OtpScreen extends ConsumerStatefulWidget {
   final String email;
@@ -57,7 +58,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       if (state.status == AuthStatus.authenticated) {
         context.go('/home');
       } else if (state.status == AuthStatus.error) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.error ?? 'Invalid OTP')));
+        SnackBarUtils.showError(context, state.error ?? 'Invalid OTP');
       }
     }
   }
@@ -66,7 +67,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     if (_secondsLeft > 0) return;
     await ref.read(authProvider.notifier).resendOtp(widget.email);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('OTP resent')));
+      SnackBarUtils.showSuccess(context, 'OTP resent');
       _startTimer();
     }
   }

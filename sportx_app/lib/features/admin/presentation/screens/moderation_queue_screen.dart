@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_web_layout.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class ModerationQueueScreen extends ConsumerStatefulWidget {
   const ModerationQueueScreen({super.key});
@@ -248,9 +249,7 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
   Future<void> _handleDismiss(String reportId) async {
     await ref.read(adminProvider.notifier).dismissReport(reportId);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Report dismissed')),
-      );
+      SnackBarUtils.showSuccess(context, 'Report dismissed');
     }
   }
 }

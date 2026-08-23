@@ -6,6 +6,7 @@ import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/providers/activity_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class EnquireScreen extends ConsumerStatefulWidget {
   final String subjectType;
@@ -65,9 +66,7 @@ class _EnquireScreenState extends ConsumerState<EnquireScreen> {
 
   Future<void> _submit() async {
     if (_messageController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a message')),
-      );
+      SnackBarUtils.showSuccess(context, 'Please enter a message');
       return;
     }
 
@@ -92,22 +91,16 @@ class _EnquireScreenState extends ConsumerState<EnquireScreen> {
       });
       ref.invalidate(activityProvider);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Enquiry Sent Successfully!')),
-        );
+        SnackBarUtils.showSuccess(context, 'Enquiry Sent Successfully!');
         context.pop();
       }
     } on DioException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(ApiException.fromDio(e).message)),
-        );
+        SnackBarUtils.showError(context, ApiException.fromDio(e));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to send enquiry. Please try again.')),
-        );
+        SnackBarUtils.showError(context, 'Failed to send enquiry. Please try again.');
       }
     } finally {
       if (mounted) setState(() => _submitting = false);

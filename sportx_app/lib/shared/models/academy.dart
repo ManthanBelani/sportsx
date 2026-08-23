@@ -52,6 +52,8 @@ class Academy {
   });
 
   factory Academy.fromJson(Map<String, dynamic> json) {
+    final logo = json['logo'] as Map<String, dynamic>?;
+    final cover = json['cover'] as Map<String, dynamic>?;
     return Academy(
       id: _parseInt(json['id'])!,
       name: json['name'] as String,
@@ -61,8 +63,8 @@ class Academy {
       contactNumber: json['contact_number'] as String?,
       email: json['email'] as String?,
       website: json['website'] as String?,
-      logoUrl: json['logo_url'] as String?,
-      coverImageUrl: json['cover_image_url'] as String?,
+      logoUrl: (logo?['url'] as String?) ?? json['logo_url'] as String?,
+      coverImageUrl: (cover?['url'] as String?) ?? json['cover_image_url'] as String?,
       cityId: _parseInt(json['city_id']),
       sportId: _parseInt(json['sport_id']),
       hourlyRate: (json['hourly_rate'] as num?)?.toDouble(),

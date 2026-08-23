@@ -11,6 +11,7 @@ import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/models/coach.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 class CoachProfileEditScreen extends ConsumerStatefulWidget {
   final bool isTabContent;
 
@@ -98,10 +99,14 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
     _qualificationController.text = profile.specialization ?? '';
 
     _experience = profile.experience;
-    _personalCoaching = profile.hourlyRate != null;
+    _personalCoaching = profile.personalCoaching;
+    _certifications = profile.certifications ?? [];
+    _languages = profile.languages ?? [];
 
     if (profile.feePerSession != null) {
       _feePerSessionController.text = profile.feePerSession!.toStringAsFixed(0);
+    } else if (profile.feeStructure != null) {
+      _feePerSessionController.text = profile.feeStructure!;
     }
     if (profile.feeMonthly != null) {
       _feeMonthlyController.text = profile.feeMonthly!.toStringAsFixed(0);
@@ -184,11 +189,11 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile photo updated')));
+        SnackBarUtils.showSuccess(context, 'Profile photo updated');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to upload photo')));
+        SnackBarUtils.showError(context, 'Failed to upload photo');
       }
     } finally {
       if (mounted) setState(() => _uploadingPhoto = false);
@@ -228,15 +233,11 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
       ref.read(coachProvider.notifier).loadCoachProfile();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully')),
-        );
+        SnackBarUtils.showSuccess(context, 'Profile updated successfully');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save: $e')),
-        );
+        SnackBarUtils.showError(context, e);
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -348,7 +349,7 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
                 runSpacing: 8,
                 children: _certifications.map((cert) {
                   return Chip(
-                    label: Text(cert, style: const TextStyle(fontSize: 12)),
+                    label: Text(cert, style: const TextStyle(fontSize: 12, color: AppColors.textPrimary)),
                     deleteIcon: const Icon(LucideIcons.x, size: 14),
                     onDeleted: () => _removeCertification(cert),
                     backgroundColor: AppColors.surface,
@@ -379,7 +380,7 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
                 runSpacing: 8,
                 children: _languages.map((lang) {
                   return Chip(
-                    label: Text(lang, style: const TextStyle(fontSize: 12)),
+                    label: Text(lang, style: const TextStyle(fontSize: 12, color: AppColors.textPrimary)),
                     deleteIcon: const Icon(LucideIcons.x, size: 14),
                     onDeleted: () => _removeLanguage(lang),
                     backgroundColor: AppColors.surface,

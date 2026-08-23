@@ -6,6 +6,7 @@ import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/connections/presentation/providers/connections_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class ViewProfileScreen extends ConsumerStatefulWidget {
   final String type;
@@ -91,9 +92,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to send connection request')),
-        );
+        SnackBarUtils.showError(context, 'Failed to send connection request');
       }
     } finally {
       if (mounted) {
@@ -307,6 +306,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
 
     return Row(
       children: [
+        /*
         Expanded(
           child: ElevatedButton.icon(
             onPressed: _isConnecting ? null : _handleConnect,
@@ -333,6 +333,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
           ),
         ),
         const SizedBox(width: 12),
+        */
         Expanded(
           child: OutlinedButton.icon(
             onPressed: () {
@@ -609,6 +610,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
         ),
         child: Row(
           children: [
+            /*
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: _isConnecting ? null : _handleConnect,
@@ -635,6 +637,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
               ),
             ),
             const SizedBox(width: 12),
+            */
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: () {

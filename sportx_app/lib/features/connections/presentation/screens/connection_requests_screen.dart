@@ -4,6 +4,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/connections/presentation/providers/connections_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class ConnectionRequestsScreen extends ConsumerStatefulWidget {
   const ConnectionRequestsScreen({super.key});
@@ -123,7 +124,7 @@ class _ConnectionRequestsScreenState extends ConsumerState<ConnectionRequestsScr
             onPressed: () async {
               await removeConnection(ref, request.id, currentUserId);
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Request from ${request.other.name} declined')));
+                SnackBarUtils.showSuccess(context, 'Request from ${request.other.name} declined');
               }
             },
             style: OutlinedButton.styleFrom(foregroundColor: AppColors.textSecondary),
@@ -136,7 +137,7 @@ class _ConnectionRequestsScreenState extends ConsumerState<ConnectionRequestsScr
             onPressed: () async {
               await acceptConnection(ref, request.id, currentUserId);
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Connected with ${request.other.name}')));
+                SnackBarUtils.showSuccess(context, 'Connected with ${request.other.name}');
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),

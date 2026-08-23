@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/sponsor/presentation/providers/sponsor_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class ApplicationDetailScreen extends ConsumerWidget {
   final String sponsorshipId;
@@ -17,7 +18,11 @@ class ApplicationDetailScreen extends ConsumerWidget {
   Future<void> _act(WidgetRef ref, BuildContext context, String status, String msg) async {
     final ok = await ref.read(sponsorshipActionsProvider).updateApplication(sponsorshipId, applicationId, status);
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ok ? msg : 'Action failed')));
+      if (ok) {
+  SnackBarUtils.showSuccess(context, msg);
+} else {
+  SnackBarUtils.showError(context, 'Action failed');
+}
       if (ok) context.pop();
     }
   }

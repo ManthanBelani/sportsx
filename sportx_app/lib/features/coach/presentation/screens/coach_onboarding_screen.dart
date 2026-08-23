@@ -6,6 +6,7 @@ import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class CoachOnboardingScreen extends ConsumerStatefulWidget {
   const CoachOnboardingScreen({super.key});
@@ -76,9 +77,7 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_sportId == null || _cityId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select sport and city')),
-      );
+      SnackBarUtils.showSuccess(context, 'Please select sport and city');
       return;
     }
     setState(() => _saving = true);
@@ -104,9 +103,7 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
       if (mounted) context.go('/coach-dashboard');
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed: $e')),
-        );
+        SnackBarUtils.showError(context, e);
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -419,13 +416,6 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
           Expanded(
             child: Container(
               height: 4,
-              decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.5), borderRadius: BorderRadius.circular(2)),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Container(
-              height: 4,
               decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(2)),
             ),
           ),
@@ -521,7 +511,7 @@ class _DropdownField extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 borderRadius: BorderRadius.circular(8),
@@ -529,21 +519,23 @@ class _DropdownField extends StatelessWidget {
                   color: state.hasError ? Colors.red : AppColors.border,
                 ),
               ),
-              child: DropdownButtonFormField<int>(
-                value: value,
-                decoration: const InputDecoration(border: InputBorder.none),
-                hint: Text(hint, style: const TextStyle(color: AppColors.textSecondary, fontSize: 15)),
-                isExpanded: true,
-                items: items
-                    .map((i) => DropdownMenuItem<int>(
-                          value: i.value,
-                          child: Text(i.label, style: const TextStyle(fontSize: 15)),
-                        ))
-                    .toList(),
-                onChanged: (v) {
-                  onChanged(v);
-                  state.didChange(v);
-                },
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<int>(
+                  value: value,
+                  hint: Text(hint, style: const TextStyle(color: AppColors.textSecondary, fontSize: 15)),
+                  isExpanded: true,
+                  icon: const Icon(LucideIcons.chevronDown, size: 20, color: AppColors.textSecondary),
+                  items: items
+                      .map((i) => DropdownMenuItem<int>(
+                            value: i.value,
+                            child: Text(i.label, style: const TextStyle(fontSize: 15, color: AppColors.textPrimary)),
+                          ))
+                      .toList(),
+                  onChanged: (v) {
+                    onChanged(v);
+                    state.didChange(v);
+                  },
+                ),
               ),
             ),
             if (state.hasError)

@@ -5,6 +5,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/sponsor/presentation/providers/sponsor_provider.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class AthleteProfileViewScreen extends ConsumerWidget {
   final String athleteId;
@@ -111,9 +112,11 @@ class AthleteProfileViewScreen extends ConsumerWidget {
                         onPressed: () async {
                           final ok = await ref.read(shortlistProvider.notifier).add(athleteId);
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(ok ? 'Added to Shortlist' : 'Already shortlisted or failed')),
-                            );
+                            if (ok) {
+  SnackBarUtils.showSuccess(context, 'Added to Shortlist');
+} else {
+  SnackBarUtils.showError(context, 'Already shortlisted or failed');
+}
                           }
                         },
                         style: FilledButton.styleFrom(backgroundColor: AppColors.primary),

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_web_layout.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class UserDetailVerifyScreen extends ConsumerStatefulWidget {
   final AdminUser user;
@@ -311,9 +312,7 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
   Future<void> _verifyUser(String userId) async {
     await ref.read(adminProvider.notifier).approveUser(userId);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User verified successfully')),
-      );
+      SnackBarUtils.showSuccess(context, 'User verified successfully');
       context.pop();
     }
   }
@@ -321,9 +320,7 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
   Future<void> _rejectVerification(String userId) async {
     await ref.read(adminProvider.notifier).rejectUser(userId);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Verification rejected')),
-      );
+      SnackBarUtils.showSuccess(context, 'Verification rejected');
       context.pop();
     }
   }

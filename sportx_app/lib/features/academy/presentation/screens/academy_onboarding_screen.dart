@@ -6,6 +6,7 @@ import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class AcademyOnboardingScreen extends ConsumerStatefulWidget {
   const AcademyOnboardingScreen({super.key});
@@ -38,7 +39,7 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_cityId == null || _sportIds.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select city and at least one sport')));
+      SnackBarUtils.showSuccess(context, 'Please select city and at least one sport');
       return;
     }
     setState(() => _saving = true);
@@ -56,7 +57,7 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
       await ref.read(authProvider.notifier).refreshUser();
       if (mounted) context.go('/academy-dashboard');
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+      if (mounted) SnackBarUtils.showError(context, e);
     } finally {
       if (mounted) setState(() => _saving = false);
     }

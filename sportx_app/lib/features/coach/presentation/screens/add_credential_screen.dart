@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:sportx_app/features/coach/presentation/providers/coach_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class AddCredentialScreen extends ConsumerStatefulWidget {
   const AddCredentialScreen({super.key});
@@ -39,9 +40,7 @@ class _AddCredentialScreenState extends ConsumerState<AddCredentialScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to pick image: $e')),
-        );
+        SnackBarUtils.showError(context, e);
       }
     }
   }
@@ -56,16 +55,12 @@ class _AddCredentialScreenState extends ConsumerState<AddCredentialScreen> {
       await ref.read(coachProvider.notifier).addCredential(credential);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Credential added successfully!')),
-        );
+        SnackBarUtils.showSuccess(context, 'Credential added successfully!');
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add credential: $e')),
-        );
+        SnackBarUtils.showError(context, e);
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);

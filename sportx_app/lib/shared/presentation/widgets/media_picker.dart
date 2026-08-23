@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class PickedMedia {
   final File file;
@@ -118,16 +119,12 @@ Future<PickedMedia?> pickAndUploadMedia(
   } on DioException catch (e) {
     if (context.mounted) {
       final apiEx = ApiException.fromDio(e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Upload error: ${apiEx.message} (${apiEx.statusCode})')),
-      );
+      SnackBarUtils.showError(context, 'Upload error: ${apiEx.message} (${apiEx.statusCode})');
     }
     return null;
   } catch (e) {
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to upload: $e')),
-      );
+      SnackBarUtils.showError(context, e);
     }
     return null;
   }
