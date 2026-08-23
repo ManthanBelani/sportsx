@@ -11,6 +11,18 @@ class EnquiryMessage extends Model
 
     protected $casts = ['read_at' => 'datetime'];
 
+    protected $appends = ['sender_photo_url', 'sender_name'];
+
+    public function getSenderPhotoUrlAttribute(): ?string
+    {
+        return $this->sender?->profile_photo_url;
+    }
+
+    public function getSenderNameAttribute(): ?string
+    {
+        return $this->sender?->name;
+    }
+
     public function enquiry(): BelongsTo
     {
         return $this->belongsTo(Enquiry::class);

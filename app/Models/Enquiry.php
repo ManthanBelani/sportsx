@@ -13,6 +13,50 @@ class Enquiry extends Model
 
     protected $casts = ['preferred_datetime' => 'datetime'];
 
+    protected $appends = ['athlete_photo_url', 'status', 'is_read'];
+
+    public function getAthletePhotoUrlAttribute(): ?string
+    {
+        return $this->athlete?->photo?->url;
+    }
+
+    public function getStatusAttribute(): string
+    {
+        $messages = $this->messages->sortByDesc('id');
+        if ($messages->isEmpty()) {
+            return 'new';
+        }
+
+        $coach = $this->subject;
+        if (!$coach) {
+            return 'new';
+        }
+
+        $latestMessage = $messages->first();
+        $coachUserId = $coach->user_id ?? $coach->owner_user_id;
+
+        if ($latestMessage->sender_user_id === $coachUserId) {
+            return 'replied';
+        }
+
+        return 'new';
+    }
+
+    public function getIsReadAttribute(): bool
+    {
+        $messages = $this->messages->sortByDesc('id');
+        if ($messages->isEmpty()) {
+            return false;
+        }
+
+        $latestFromAthlete = $messages->firstWhere('sender_user_id', $this->athlete?->user_id);
+        if ($latestFromAthlete) {
+            return $latestFromAthlete->read_at !== null;
+        }
+
+        return true;
+    }
+
     public function athlete(): BelongsTo
     {
         return $this->belongsTo(AthleteProfile::class, 'athlete_id');

@@ -15,7 +15,8 @@ class CoachProfile extends Model
         'user_id', 'full_name', 'sport_id', 'contact_number', 'experience',
         'qualification', 'certifications', 'academy_id', 'languages', 'email',
         'personal_coaching', 'fee_structure', 'bio', 'city_id', 'photo_media_id',
-        'listing_status', 'profile_completeness',
+        'listing_status', 'profile_completeness', 'headline', 'location',
+        'fee_per_session', 'fee_monthly', 'fee_quarterly', 'availability',
     ];
 
     protected $appends = ['connections_count'];
@@ -25,6 +26,7 @@ class CoachProfile extends Model
         'languages' => 'array',
         'personal_coaching' => 'boolean',
         'profile_completeness' => 'integer',
+        'availability' => 'array',
     ];
 
     public function user(): BelongsTo

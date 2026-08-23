@@ -11,7 +11,21 @@ class ConnectionController extends Controller
     public function request(Request $request)
     {
         $validated = $request->validate([
-            'user_id' => 'required|integer|exists:users,id|not_in:' . $request->user()->id,
+            'user_id' => [
+                'required',
+                'integer',
+                function ($attribute, $value, $fail) use ($request) {
+                    $user = \App\Models\User::where('id', $value)
+                        ->where('status', 'active')
+                        ->first();
+                    if (!$user) {
+                        $fail('The selected user id is invalid or inactive.');
+                    }
+                    if ($value === $request->user()->id) {
+                        $fail('You cannot send a connection request to yourself.');
+                    }
+                },
+            ],
         ]);
 
         $userId = $request->user()->id;
