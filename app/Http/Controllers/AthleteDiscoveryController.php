@@ -16,7 +16,8 @@ class AthleteDiscoveryController extends Controller
             ->when($request->age_group_id, fn ($q) => $q->where('age_group_id', $request->age_group_id))
             ->when($request->city_id, fn ($q) => $q->where('city_id', $request->city_id))
             ->when($request->skill_level, fn ($q) => $q->where('skill_level', $request->skill_level))
-            ->when($request->q, fn ($q) => $q->where('full_name', 'like', "%{$request->q}%"));
+            ->when($request->q, fn ($q) => $q->where('full_name', 'like', "%{$request->q}%"))
+            ->when($request->boolean('has_achievements'), fn ($q) => $q->has('achievements'));
 
         return response()->json($query->paginate(min((int) ($request->per_page ?? 20), 50)));
     }

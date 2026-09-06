@@ -8,6 +8,7 @@ use App\Models\AthleteProfile;
 use App\Models\CoachProfile;
 use App\Models\OrganizerProfile;
 use App\Models\SponsorProfile;
+use App\Models\TalentScoutProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 
@@ -150,6 +151,30 @@ class OnboardingController extends Controller
         return response()->json(['data' => $profile], 201);
     }
 
+    public function talentScout(Request $request)
+    {
+        $user = $request->user();
+        abort_if($user->role !== 'talent_scout', 403);
+
+        $validated = $request->validate([
+            'organization' => 'nullable|string|max:150',
+            'affiliation' => 'nullable|string|max:150',
+            'sports_specialization' => 'required|array|min:1',
+            'sports_specialization.*' => 'exists:sports,id',
+            'experience_years' => 'nullable|integer|min:0',
+            'city_id' => 'nullable|exists:cities,id',
+            'bio' => 'nullable|string|max:1000',
+            'photo_media_id' => 'nullable|exists:media_items,id',
+        ]);
+
+        $profile = TalentScoutProfile::updateOrCreate(
+            ['user_id' => $user->id],
+            $validated
+        );
+
+        return response()->json(['data' => $profile], 201);
+    }
+
     public function schema(Request $request, string $role)
     {
         $schemas = [
@@ -209,6 +234,18 @@ class OnboardingController extends Controller
                     ['name' => 'brand_name', 'type' => 'text', 'required' => true, 'label' => 'Brand Name'],
                     ['name' => 'category', 'type' => 'text', 'required' => false, 'label' => 'Category'],
                     ['name' => 'logo_media_id', 'type' => 'file', 'required' => false, 'label' => 'Logo'],
+                ],
+                'step' => 1,
+            ],
+            'talent_scout' => [
+                'fields' => [
+                    ['name' => 'organization', 'type' => 'text', 'required' => false, 'label' => 'Organization'],
+                    ['name' => 'affiliation', 'type' => 'text', 'required' => false, 'label' => 'Affiliation'],
+                    ['name' => 'sports_specialization', 'type' => 'multi-select', 'required' => true, 'label' => 'Sports Specialization'],
+                    ['name' => 'experience_years', 'type' => 'number', 'required' => false, 'label' => 'Years of Experience'],
+                    ['name' => 'city_id', 'type' => 'select', 'required' => false, 'label' => 'City'],
+                    ['name' => 'bio', 'type' => 'textarea', 'required' => false, 'label' => 'Bio'],
+                    ['name' => 'photo_media_id', 'type' => 'file', 'required' => false, 'label' => 'Profile Photo'],
                 ],
                 'step' => 1,
             ],

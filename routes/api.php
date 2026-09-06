@@ -28,6 +28,9 @@ use App\Http\Controllers\SponsorEngagementController;
 use App\Http\Controllers\SponsorshipController;
 use App\Http\Controllers\SportsVenueController;
 use App\Http\Controllers\TournamentController;
+use App\Http\Controllers\TalentScoutController;
+use App\Http\Controllers\ScoutShortlistController;
+use App\Http\Controllers\ScoutConnectionController;
 use App\Http\Controllers\TrialController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
@@ -88,6 +91,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/onboarding/academy', [OnboardingController::class, 'academy'])->middleware('auth:sanctum');
     Route::post('/onboarding/organizer', [OnboardingController::class, 'organizer'])->middleware('auth:sanctum');
     Route::post('/onboarding/sponsor', [OnboardingController::class, 'sponsor'])->middleware('auth:sanctum');
+    Route::post('/onboarding/talent-scout', [OnboardingController::class, 'talentScout'])->middleware('auth:sanctum');
 
     // ── Directories (public read) ──
     Route::get('/academies', [DirectoryController::class, 'academies']);
@@ -141,8 +145,29 @@ Route::prefix('v1')->group(function () {
     Route::put('/enquiries/{id}/read', [EnquiryController::class, 'markRead'])->middleware('auth:sanctum');
 
     // ── Athlete Discovery (sponsor) ──
-    Route::get('/athletes', [AthleteDiscoveryController::class, 'index'])->middleware(['auth:sanctum', 'role:sponsor']);
+    Route::get('/athletes', [AthleteDiscoveryController::class, 'index'])->middleware(['auth:sanctum', 'role:sponsor,talent_scout']);
     Route::get('/athletes/{id}', [AthleteDiscoveryController::class, 'show'])->middleware('auth:sanctum');
+
+    // ── Talent Scout routes ──
+    Route::middleware(['auth:sanctum', 'role:talent_scout'])->group(function () {
+        // Scout Profile
+        Route::get('/me/scout-profile', [TalentScoutController::class, 'show']);
+        Route::put('/me/scout-profile', [TalentScoutController::class, 'update']);
+
+        // Shortlist
+        Route::get('/me/shortlist', [ScoutShortlistController::class, 'index']);
+        Route::post('/me/shortlist/{athlete}', [ScoutShortlistController::class, 'store']);
+        Route::delete('/me/shortlist/{athlete}', [ScoutShortlistController::class, 'destroy']);
+        Route::patch('/me/shortlist/{athlete}', [ScoutShortlistController::class, 'update']);
+
+        // Connections
+        Route::get('/me/connections', [ScoutConnectionController::class, 'index']);
+        Route::delete('/me/connections/{connection}', [ScoutConnectionController::class, 'destroy']);
+    });
+
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::post('/athletes/{athlete}/connect', [ScoutConnectionController::class, 'store']);
+    });
 
     // ── Registrations (Phase 2) ──
     Route::post('/trials/{trial}/register', [RegistrationController::class, 'storeTrial'])->middleware(['auth:sanctum', 'role:athlete']);
