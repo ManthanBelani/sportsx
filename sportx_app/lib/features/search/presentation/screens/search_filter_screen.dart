@@ -176,7 +176,7 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
                               ),
                               Switch(
                                 value: _feeEnabled,
-                                activeColor: AppColors.primary,
+                                activeThumbColor: AppColors.primary,
                                 onChanged: (v) => setState(() {
                                   _feeEnabled = v;
                                   if (!v) {
@@ -197,7 +197,7 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
                                 activeTrackColor: AppColors.primary,
                                 inactiveTrackColor: AppColors.border,
                                 thumbColor: AppColors.primary,
-                                overlayColor: AppColors.primary.withOpacity(0.2),
+                                overlayColor: AppColors.primary.withValues(alpha: 0.2),
                                 trackHeight: 4,
                               ),
                               child: RangeSlider(

@@ -92,7 +92,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                       ])
                     : ListView.separated(
                         itemCount: chats.length,
-                        separatorBuilder: (_, __) => const Divider(height: 1, indent: 76),
+                        separatorBuilder: (_, _) => const Divider(height: 1, indent: 76),
                         itemBuilder: (context, index) => _buildChatTile(chats[index]),
                       ),
               ),
@@ -104,7 +104,6 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   }
 
   Widget _buildChatTile(ConversationItem chat) {
-    final hasUnread = (chat.lastMessage?.isNotEmpty ?? false);
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: const CircleAvatar(

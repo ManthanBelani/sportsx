@@ -178,7 +178,7 @@ class _EditFacilitiesScreenState extends ConsumerState<EditFacilitiesScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: facility['type'] ?? 'facility',
+              initialValue: facility['type'] ?? 'facility',
               decoration: const InputDecoration(labelText: 'Type'),
               items: const [
                 DropdownMenuItem(value: 'facility', child: Text('Facility')),

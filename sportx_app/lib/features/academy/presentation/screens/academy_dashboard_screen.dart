@@ -95,9 +95,17 @@ class _AcademyDashboardScreenState extends ConsumerState<AcademyDashboardScreen>
                   decoration: BoxDecoration(
                     color: AppColors.primary,
                     borderRadius: BorderRadius.circular(8),
+                    image: academy?.logoUrl != null
+                        ? DecorationImage(
+                            image: NetworkImage(academy!.logoUrl!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
                   ),
                   alignment: Alignment.center,
-                  child: const Icon(LucideIcons.building2, color: Colors.white, size: 28),
+                  child: academy?.logoUrl == null
+                      ? const Icon(LucideIcons.building2, color: Colors.white, size: 28)
+                      : null,
                 ),
                 const SizedBox(width: 14),
                 Expanded(

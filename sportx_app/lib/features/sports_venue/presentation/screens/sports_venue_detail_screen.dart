@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/shared/presentation/widgets/async_state_view.dart';
 import 'package:sportx_app/shared/presentation/widgets/detail_page_template.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
-import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class SportsVenueDetailScreen extends ConsumerWidget {

@@ -86,7 +86,7 @@ class MySponsorshipsManagementScreen extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(12)),
+                  decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
                   child: Text(_capitalize(status), style: TextStyle(color: color, fontSize: 12)),
                 ),
               ],

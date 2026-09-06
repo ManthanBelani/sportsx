@@ -14,6 +14,7 @@ Actors and use case descriptions derived from the MVP Overview, Screen Inventory
 | **Academy** | Primary | Organization with a public listing; posts trials, manages registrants, answers enquiries. |
 | **Organizer** | Primary | Runs standalone trials/tournaments; manages registrations, capacity, results. |
 | **Sponsor / Brand** | Primary | Posts sponsorships, discovers athletes, reviews applications, shortlists. |
+| **Talent Scout** | Primary | Discovers athletes, shortlists prospects, sends connection requests to athletes/parents. |
 | **Admin** | Secondary (internal) | Platform team: seeds/corrects data, moderates reports, configures expiry, manages master categories. |
 | **Scheduler / System** | System | Automated jobs: auto-expiry sweeps, reminder generation. *(Implementation detail surfaced as an actor for completeness.)* |
 
@@ -32,6 +33,7 @@ flowchart LR
         Academy([Academy])
         Organizer([Organizer])
         Sponsor([Sponsor / Brand])
+        Scout([Talent Scout])
         Admin([Admin])
         System([Scheduler / System])
     end
@@ -52,6 +54,7 @@ flowchart LR
             UC6(Manage athlete profile & media gallery)
             UC7(Manage coach listing)
             UC8(Manage academy listing)
+            UC41(Manage scout profile)
         end
 
         subgraph Discovery["Discovery"]
@@ -61,6 +64,7 @@ flowchart LR
             UC12(View listing detail)
             UC13(Save / bookmark listings)
             UC14(Report a listing)
+            UC42(Discover athletes with advanced filters)
         end
 
         subgraph Actions["Athlete Actions"]
@@ -85,6 +89,8 @@ flowchart LR
             UC30(Discover athletes)
             UC31(Review applications)
             UC32(Shortlist athletes with notes)
+            UC43(Shortlist athlete)
+            UC44(Send connection request)
         end
 
         subgraph AdminMgmt["Administration"]
@@ -145,6 +151,12 @@ flowchart LR
     Sponsor --> UC31
     Sponsor --> UC32
 
+    Scout --> UC41
+    Scout --> UC42
+    Scout --> UC43
+    Scout --> UC44
+    Scout -.browse like any user.-> UC11
+
     Admin --> UC33
     Admin --> UC34
     Admin --> UC35
@@ -187,7 +199,7 @@ flowchart LR
 | | |
 |---|---|
 | **Actor** | Newly registered user (any role) |
-| **Main flow** | Per role: Athlete → sport(s) + age group, then skill level + city (A1/A2). Coach → sport(s), certifications, experience (C1). Academy → name, sport(s), city (AC1). Organizer → org name, type, verification docs (O1). Sponsor → brand name, logo, category, verification docs (SP1). |
+| **Main flow** | Per role: Athlete → sport(s) + age group, then skill level + city (A1/A2). Coach → sport(s), certifications, experience (C1). Academy → name, sport(s), city (AC1). Organizer → org name, type, verification docs (O1). Sponsor → brand name, logo, category, verification docs (SP1). Talent Scout → organization, sports specialization, experience, location (TS1). |
 | **Postcondition** | Role profile exists; user lands on role dashboard/home |
 
 ### UC6 — Manage Athlete Profile & Media Gallery
@@ -320,6 +332,38 @@ flowchart LR
 |---|---|
 | **Actor** | Sponsor / Brand |
 | **Main flow** | Applications inbox (SP7) → application detail (SP8): pitch note, full profile link → **Shortlist / Reject / Reply**. Shortlist (SP9) shows grouped athletes with editable notes. |
+
+### UC41 — Manage Scout Profile
+
+| | |
+|---|---|
+| **Actor** | Talent Scout |
+| **Main flow** | View/edit scout profile (TS2): organization/affiliation, sports specialization, experience, location. |
+| **Postcondition** | Scout profile publicly viewable |
+
+### UC42 — Discover Athletes with Advanced Filters
+
+| | |
+|---|---|
+| **Actor** | Talent Scout |
+| **Main flow** | Scout dashboard (TS2) → Discover Athletes → filter by sport, age group, location, skill level, achievements (TS3). Results show athlete cards with key info. Load more pagination. |
+| **Extensions** | UC10 (global filters) applies. |
+
+### UC43 — Shortlist Athlete
+
+| | |
+|---|---|
+| **Actor** | Talent Scout |
+| **Main flow** | From athlete profile view (TS4) → tap "Shortlist" → athlete added to scout's shortlist (TS5). Shortlist accessible from dashboard. Remove available. |
+| **Postcondition** | Athlete appears in scout's shortlist |
+
+### UC44 — Send Connection Request
+
+| | |
+|---|---|
+| **Actor** | Talent Scout |
+| **Main flow** | From athlete profile view (TS4) → tap "Connect" → connection/enquiry form (TS6): message box + submit → confirmation. Enquiry sent to athlete/parent through platform. |
+| **Postcondition** | Connection request visible in athlete's connection requests |
 
 ### UC33 — Admin Login
 

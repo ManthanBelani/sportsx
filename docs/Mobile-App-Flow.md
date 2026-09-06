@@ -64,6 +64,7 @@ Each role collects its profile info right after signup. On success the screen ca
 | **Academy** | `/academy-onboarding` | academy name, sport, city | `/academy-dashboard` |
 | **Organizer** | `/organizer-onboarding` | organization name, type | `/organizer-dashboard` |
 | **Sponsor** | `/sponsor-onboarding` | brand name, category | `/sponsor-dashboard` |
+| **Talent Scout** | `/scout-onboarding` | organization, sports specialization, experience, location | `/scout-dashboard` |
 | Admin | — (no onboarding) | separate portal at `/admin/login` | `/admin/dashboard` |
 
 ---
@@ -142,6 +143,23 @@ Each role collects its profile info right after signup. On success the screen ca
  Athletes apply via /sponsor-pitch/:id (athlete side) → appear in Applications.
 ```
 
+### 🔍 Talent Scout
+**Landing:** `/scout-dashboard`.
+
+```
+ Onboarding done ──► /scout-dashboard
+ Profile tab Quick Links:
+   ├─ Dashboard (/scout-dashboard)        → search shortcut, saved athletes, activity
+   ├─ Discover Athletes (/scout-discovery) → filterable athlete cards
+   ├─ Shortlist (/scout-shortlist)         → saved athletes with remove option
+   └─ My Profile (/scout-profile-edit)
+ Discover flow:
+   Athlete cards ──► Athlete Profile View ──► Shortlist / Connect
+   └─► Shortlist ──► Athlete Profile View ──► Remove
+   └─► Connect ──► Connection/Enquiry Form ──► Confirmation
+ Browse tabs (Home/Search/Saved) reuse the same public directories as athletes.
+```
+
 ### 🛡️ Admin (separate portal)
 **Entry:** `/admin/login` (email + password + any 6-digit 2FA).
 
@@ -180,6 +198,7 @@ redirect(context, state):
 | academy | `/academy-onboarding` |
 | organizer | `/organizer-onboarding` |
 | sponsor | `/sponsor-onboarding` |
+| talent_scout | `/scout-onboarding` |
 | (other) | `null` |
 
 Each onboarding screen calls `authProvider.notifier.markOnboardingComplete()` on success so the redirect releases the user to their landing screen.

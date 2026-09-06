@@ -203,7 +203,7 @@ class _TournamentCalendarScreenState extends ConsumerState<TournamentCalendarScr
                   child: Container(
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppColors.primary.withOpacity(0.1)
+                          ? AppColors.primary.withValues(alpha: 0.1)
                           : hasEvent
                               ? const Color(0xFFe6f0ff)
                               : Colors.transparent,
@@ -220,7 +220,7 @@ class _TournamentCalendarScreenState extends ConsumerState<TournamentCalendarScr
                               fontWeight: isToday || hasEvent ? FontWeight.w600 : FontWeight.normal,
                               color: isCurrentMonth
                                   ? (isSelected ? AppColors.primary : AppColors.textPrimary)
-                                  : AppColors.textSecondary.withOpacity(0.4),
+                                   : AppColors.textSecondary.withValues(alpha: 0.4),
                             ),
                           ),
                           if (hasEvent)
@@ -263,7 +263,7 @@ class _TournamentCalendarScreenState extends ConsumerState<TournamentCalendarScr
           borderRadius: BorderRadius.circular(6),
           boxShadow: isActive ? [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 2,
               offset: const Offset(0, 1),
             ),
@@ -287,7 +287,7 @@ class _TournamentCalendarScreenState extends ConsumerState<TournamentCalendarScr
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(LucideIcons.calendar, size: 48, color: AppColors.textSecondary.withOpacity(0.5)),
+            Icon(LucideIcons.calendar, size: 48, color: AppColors.textSecondary.withValues(alpha: 0.5)),
             const SizedBox(height: 12),
             Text(
               _selectedDate != null ? 'No tournaments on this date' : 'No tournaments this month',
@@ -318,7 +318,7 @@ class _TournamentCalendarScreenState extends ConsumerState<TournamentCalendarScr
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(LucideIcons.trophy, size: 48, color: AppColors.textSecondary.withOpacity(0.5)),
+            Icon(LucideIcons.trophy, size: 48, color: AppColors.textSecondary.withValues(alpha: 0.5)),
             const SizedBox(height: 12),
             const Text(
               'No tournaments found',

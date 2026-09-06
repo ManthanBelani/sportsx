@@ -14,7 +14,7 @@
 
 SportX India is a **discovery and connection platform for India's sports ecosystem**.
 
-It brings together **athletes and parents**, **coaches**, **academies**, **trial/tournament organizers**, and **sponsors/brands** in one place — so athletes can find opportunities (academies, coaches, trials, tournaments, scholarships, sponsorships) and the supply side (coaches, academies, organizers, sponsors) can find, engage, and manage athletes.
+It brings together **athletes and parents**, **coaches**, **academies**, **trial/tournament organizers**, **sponsors/brands**, and **talent scouts** in one place — so athletes can find opportunities (academies, coaches, trials, tournaments, scholarships, sponsorships) and the supply side (coaches, academies, organizers, sponsors, talent scouts) can find, engage, and manage athletes.
 
 An **Admin** team operates behind the scenes to keep the data clean, moderate listings, and manage master categories (sports, cities, age groups).
 
@@ -32,6 +32,7 @@ India's sports ecosystem is fragmented:
 - **Coaches and academies** have no structured channel to market themselves or manage incoming interest beyond phone calls and messages.
 - **Organizers** of trials and tournaments lack a distribution channel to reach athletes, and track registrations through ad-hoc spreadsheets and forms.
 - **Sponsors/brands** looking to back promising athletes have no searchable pool of verified athlete profiles.
+- **Talent scouts** looking for promising athletes have no structured way to discover and connect with talent across sports and regions.
 - **Fake, stale, or out-of-date listings** erode trust in every one of these interactions.
 
 SportX India solves this by being the single, moderated, searchable marketplace for the Indian sports ecosystem.
@@ -108,7 +109,15 @@ Six roles are defined in the MVP Overview. Personas below are consistent with th
 - Discovers athletes via filtered search (sport, age, city, level, achievements).
 - Reviews incoming applications/pitches, shortlists candidates with notes.
 
-### 4.6 Admin (Internal / Platform team)
+### 4.6 Talent Scout
+
+> **Persona: "Priya Sharma", talent scout for a sports academy, 5 years experience, Mumbai**
+
+- Searches for promising athletes across sports, age groups, locations, and skill levels.
+- Reviews athlete profiles including sports history, achievements, and media.
+- Shortlists promising athletes for follow-up and sends connection requests through the platform.
+
+### 4.7 Admin (Internal / Platform team)
 
 - Not a marketplace end-user. Secured behind a dedicated admin login with 2FA.
 - Seeds and corrects data across all categories, reviews flagged listings, configures auto-expiry rules, manages master lists (sports, cities, age groups).
@@ -128,7 +137,8 @@ Mapped one-to-one from the MVP Overview feature lists:
 - **Academy:** Own listing creation, trial posting (create/edit/publish/close), registrant management (incl. document viewing and verify/reject actions), enquiry inbox.
 - **Organizer:** Trial listing management, tournament listing management, registration management (incl. capacity/spot management, waitlist toggle, payment-status flag), results publishing (bracket/placements + public results view).
 - **Sponsor/Brand:** Sponsorship posting, athlete discovery, applications inbox (accept/reject/shortlist/reply), shortlist with notes.
-- **Admin:** Content CRUD across all six content categories, listing moderation queue + actions (approve/edit/remove/warn), content expiry rules configuration + expiry monitor with override/restore, category management (sports/cities/age groups), admin dashboard counters. **Full documentation, build scheduled in a later phase (by decision).**
+- **Talent Scout:** Scout profile creation, athlete discovery with advanced filters, athlete profile view, shortlist management, connection/enquiry to athletes.
+- **Admin:** Content CRUD across all content categories, listing moderation queue + actions (approve/edit/remove/warn), content expiry rules configuration + expiry monitor with override/restore, category management (sports/cities/age groups), admin dashboard counters. **Full documentation, build scheduled in a later phase (by decision).**
 - **Shared:** Universal search results across categories, shared filter panel (sport, city/state, age group, price range, date range), notifications center, settings (notification prefs, language, logout, delete account), help/support (FAQ + contact form).
 
 ### 5.2 Out of Scope (MVP)

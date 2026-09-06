@@ -15,7 +15,7 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'role' => 'required|in:athlete,coach,academy,organizer,sponsor',
+            'role' => 'required|in:athlete,coach,academy,organizer,sponsor,talent_scout',
             'email' => 'required|email|unique:users,email',
             'name' => 'nullable|string|max:100',
             'phone' => 'nullable|string|max:20',
@@ -67,7 +67,7 @@ class AuthController extends Controller
             'message' => 'Email verified successfully',
             'token' => $token,
             'user' => $this->userResource($user),
-            'needs_onboarding' => ! in_array($user->role, ['athlete', 'coach', 'academy', 'organizer', 'sponsor'])
+            'needs_onboarding' => ! in_array($user->role, ['athlete', 'coach', 'academy', 'organizer', 'sponsor', 'talent_scout'])
                     || ! $user->{$user->role.'Profile'},
         ]);
     }

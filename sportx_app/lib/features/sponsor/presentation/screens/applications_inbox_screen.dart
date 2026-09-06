@@ -81,7 +81,7 @@ class ApplicationsInboxScreen extends ConsumerWidget {
         decoration: BoxDecoration(
           border: Border.all(color: AppColors.border),
           borderRadius: BorderRadius.circular(12),
-          color: isNew ? AppColors.primary.withOpacity(0.05) : AppColors.surface,
+          color: isNew ? AppColors.primary.withValues(alpha: 0.05) : AppColors.surface,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

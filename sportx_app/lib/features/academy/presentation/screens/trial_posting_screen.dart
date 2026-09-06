@@ -99,10 +99,17 @@ class _TrialPostingScreenState extends ConsumerState<TrialPostingScreen> {
             Row(
               children: [
                 const Text('Status: ', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
-                Radio(value: false, groupValue: _publish, onChanged: (v) => setState(() => _publish = v ?? false)),
-                const Text('Draft'),
-                Radio(value: true, groupValue: _publish, onChanged: (v) => setState(() => _publish = v ?? true)),
-                const Text('Published'),
+                RadioGroup<bool>(
+                  onChanged: (v) => setState(() => _publish = v ?? false),
+                  child: Row(
+                    children: [
+                      Radio<bool>(value: false),
+                      const Text('Draft'),
+                      Radio<bool>(value: true),
+                      const Text('Published'),
+                    ],
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 24),

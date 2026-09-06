@@ -118,7 +118,7 @@ class _ApplySponsorScreenState extends ConsumerState<ApplySponsorScreen> {
                                 width: 56,
                                 height: 56,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const Icon(
+                                errorBuilder: (_, _, ___) => const Icon(
                                   LucideIcons.star,
                                   color: AppColors.primary,
                                 ),
@@ -176,7 +176,7 @@ class _ApplySponsorScreenState extends ConsumerState<ApplySponsorScreen> {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: AppColors.primary.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: user?.profilePhotoUrl != null
@@ -186,7 +186,7 @@ class _ApplySponsorScreenState extends ConsumerState<ApplySponsorScreen> {
                                 width: 48,
                                 height: 48,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const Icon(
+                                errorBuilder: (_, _, ___) => const Icon(
                                   LucideIcons.user,
                                   color: AppColors.primary,
                                 ),
@@ -246,7 +246,7 @@ class _ApplySponsorScreenState extends ConsumerState<ApplySponsorScreen> {
                 decoration: InputDecoration(
                   hintText: 'Hi ${sponsorship.sponsorName ?? 'Sponsor'},\n\nI\'m [Your Name], a [age]-year-old [sport] player from [city]. I\'ve been playing for [years] years and recently [achievement]. I train [frequency] at [academy/club] and dream of [goal].\n\nThis sponsorship would help me access better equipment and training opportunities...',
                   hintStyle: TextStyle(
-                    color: AppColors.textTertiary.withOpacity(0.6),
+                    color: AppColors.textTertiary.withValues(alpha: 0.6),
                     fontSize: 14,
                   ),
                   border: OutlineInputBorder(
@@ -286,14 +286,14 @@ class _ApplySponsorScreenState extends ConsumerState<ApplySponsorScreen> {
                     Icon(
                       LucideIcons.upload,
                       size: 32,
-                      color: AppColors.textSecondary.withOpacity(0.5),
+                      color: AppColors.textSecondary.withValues(alpha: 0.5),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       '+ Upload Certificates / Achievements',
                       style: TextStyle(
                         fontSize: 14,
-                        color: AppColors.textSecondary.withOpacity(0.7),
+                        color: AppColors.textSecondary.withValues(alpha: 0.7),
                         fontWeight: FontWeight.w500,
                       ),
                     ),

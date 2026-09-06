@@ -38,7 +38,7 @@ class SponsorshipDetailScreen extends ConsumerWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(LucideIcons.arrowLeft, size: 20),
@@ -50,7 +50,7 @@ class SponsorshipDetailScreen extends ConsumerWidget {
                     margin: const EdgeInsets.only(right: 16),
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Row(
@@ -95,7 +95,7 @@ class SponsorshipDetailScreen extends ConsumerWidget {
                                         width: 48,
                                         height: 48,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) => const Icon(
+                                        errorBuilder: (_, _, ___) => const Icon(
                                           LucideIcons.star,
                                           color: AppColors.primary,
                                         ),
@@ -132,7 +132,7 @@ class SponsorshipDetailScreen extends ConsumerWidget {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.15),
+                                      color: Colors.white.withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Text(
@@ -148,7 +148,7 @@ class SponsorshipDetailScreen extends ConsumerWidget {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.15),
+                                      color: Colors.white.withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Text(

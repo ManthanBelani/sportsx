@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
-import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
@@ -77,7 +76,7 @@ class _ResultsPublishingScreenState extends ConsumerState<ResultsPublishingScree
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             DropdownButtonFormField<String>(
-              value: _category,
+              initialValue: _category,
               decoration: const InputDecoration(labelText: 'Category'),
               items: const [
                 DropdownMenuItem(value: 'u14', child: Text('U-14')),

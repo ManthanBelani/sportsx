@@ -135,8 +135,8 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: isPending
-                          ? AppColors.warning.withOpacity(0.1)
-                          : AppColors.success.withOpacity(0.1),
+                          ? AppColors.warning.withValues(alpha: 0.1)
+                          : AppColors.success.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -239,7 +239,7 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Icon(icon, color: color, size: 20),

@@ -4,6 +4,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 Future<void> main() async {
   final dio = Dio(BaseOptions(
@@ -20,7 +21,7 @@ Future<void> main() async {
   });
   final token = login.data['token'] as String;
   dio.options.headers['Authorization'] = 'Bearer $token';
-  print('1. LOGIN ok, token ${token.substring(0, 6)}...');
+  debugPrint('1. LOGIN ok, token ${token.substring(0, 6)}...');
 
   // 2. Multipart upload (same shape as pickAndUploadMedia)
   final png = File('/tmp/kilo/avatar.png');
@@ -34,7 +35,7 @@ Future<void> main() async {
   });
   final upload = await dio.post('/media/upload', data: form);
   final mediaId = upload.data['data']['id'] as int;
-  print('2. UPLOAD ok -> media id $mediaId');
+  debugPrint('2. UPLOAD ok -> media id $mediaId');
 
   // 3. Link to profile
   await dio.put('/me/profile', data: {
@@ -46,16 +47,16 @@ Future<void> main() async {
     'experience': 'Passionate cricketer with 3 years of experience',
     'photo_media_id': mediaId,
   });
-  print('3. PROFILE LINK ok');
+  debugPrint('3. PROFILE LINK ok');
 
   // 4. Read back
   final profile = await dio.get('/me/profile');
   final photo = profile.data['data']['photo'];
-  print('4. PROFILE READ -> photo id ${photo?['id']}, url ${photo?['url']}');
+  debugPrint('4. PROFILE READ -> photo id ${photo?['id']}, url ${photo?['url']}');
 
   // 5. Serve the file
   final img = await Dio().get('http://127.0.0.1:8002${photo['url']}');
-  print('5. SERVE -> HTTP ${img.statusCode}, ${img.data.toString().length} bytes');
+  debugPrint('5. SERVE -> HTTP ${img.statusCode}, ${img.data.toString().length} bytes');
 
-  print('ALL STEPS PASSED');
+  debugPrint('ALL STEPS PASSED');
 }

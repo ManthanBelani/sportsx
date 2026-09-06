@@ -27,7 +27,7 @@ class SportsVenueListScreen extends ConsumerWidget {
                           backgroundColor: Colors.blue.withAlpha(26),
                           child: const Icon(Icons.location_city_outlined, color: Colors.blue),
                         ),
-                        title: Text(item.name ?? ''),
+                        title: Text(item.name),
                         subtitle: Text(item.city?.name ?? ''),
                         trailing: item.bookingAvailable == true
                             ? Chip(label: const Text('Bookable'), backgroundColor: Colors.green.withAlpha(26), labelStyle: const TextStyle(fontSize: 12, color: Colors.green))

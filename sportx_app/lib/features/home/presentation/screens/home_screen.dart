@@ -41,7 +41,7 @@ class HomeScreen extends ConsumerWidget {
                         Row(
                           children: [
                             Text(
-                              'Hi ${user?.name?.split(' ').first ?? 'Athlete'}!',
+                              'Hi ${user?.name.split(' ').first ?? 'Athlete'}!',
                               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
                             ),
                             const SizedBox(width: 8),
@@ -61,7 +61,7 @@ class HomeScreen extends ConsumerWidget {
                             );
                           },
                           loading: () => const Text('Loading profile...', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-                          error: (_, __) => const Text('Athlete', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                          error: (_, _) => const Text('Athlete', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                         ),
                       ],
                     ),
@@ -311,7 +311,7 @@ class _TrialSection extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(item.title ?? '', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        Text(item.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
                         const SizedBox(height: 4),
                         Text(item.venue ?? '', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
                         const Text('Aug 15 · ₹200', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
@@ -372,7 +372,7 @@ class _TournamentSection extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item.title ?? '', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                      Text(item.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                       const SizedBox(height: 2),
                       Text('Aug 15–20 · ${item.venue ?? ''}', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 4),
@@ -440,7 +440,7 @@ class _ScholarshipSection extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item.title ?? '', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                      Text(item.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                       const SizedBox(height: 2),
                       const Text('Up to ₹50,000 · Deadline: Aug 30', style: TextStyle(fontSize: 12, color: AppColors.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 4),

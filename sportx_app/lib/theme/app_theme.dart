@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'colors.dart';
+import 'package:sportx_app/theme/colors.dart';
 
 class AppTheme {
   static ThemeData get lightTheme {
@@ -141,11 +141,11 @@ class AppTheme {
         behavior: SnackBarBehavior.floating,
       ),
       navigationBarTheme: NavigationBarThemeData(
-        indicatorColor: AppColors.primary.withOpacity(0.15),
+        indicatorColor: AppColors.primary.withValues(alpha: 0.15),
         backgroundColor: AppColors.background,
         elevation: 0,
-        labelTextStyle: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary);
           }
           return GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondary);

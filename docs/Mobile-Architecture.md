@@ -204,7 +204,7 @@ Auth redirect logic: authenticated → redirect to `/home`, unauthenticated → 
 | Path | Screen | Auth | Notes |
 |---|---|---|---|
 | `/splash` | S1 Splash | — | Auto-redirect |
-| `/role-selection` | S2 Role Selection | — | 5 role cards |
+| `/role-selection` | S2 Role Selection | — | 6 role cards |
 | `/sign-up` | S3 Sign Up | — | Role passed via extra |
 | `/otp` | S4 OTP Verification | — | email+role via extra |
 | `/login` | S5 Login | — | Email/password + Google placeholder |

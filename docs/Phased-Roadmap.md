@@ -20,9 +20,9 @@ Break the build into demo-able phases. Each phase has a feature list and a clear
 | P0-3 | Master data seeders | Sports, cities, age groups, expiry rules |
 | P0-4 | Flutter project scaffolding | `flutter create`, folder structure per `Mobile-Architecture.md`, Dio setup, go_router shell |
 | P0-5 | API auth endpoints (register, OTP, login, logout) | Working auth flow: email OTP → token → logout |
-| P0-6 | Onboarding endpoints (all 5 roles) | Post-verify profile creation per role |
+| P0-6 | Onboarding endpoints (all 6 roles) | Post-verify profile creation per role (Athlete, Coach, Academy, Organizer, Sponsor, Talent Scout) |
 | P0-7 | CI/CD skeleton (GitHub Actions / equivalent) | Lint + test on push; staging deploy on merge |
-| P0-8 | Dev data seeding script | Seed sample academies, coaches, trials for testing |
+| P0-8 | Dev data seeding script | Seed sample academies, coaches, trials, athletes for testing |
 
 **Milestone:** Flutter app can sign up → verify OTP → complete onboarding for any role → get token → hit a test API endpoint. Laravel has all migrations running and seeds loaded.
 
@@ -37,24 +37,25 @@ Break the build into demo-able phases. Each phase has a feature list and a clear
 
 | # | Feature | FR References | Screens |
 |---|---|---|---|
-| P1-1 | **Auth UI:** Splash (S1), Role Selection (S2), Sign Up (S3), OTP Verify (S4), Login (S5) | FR-AUTH-1–5 | S1–S5 |
+| P1-1 | **Auth UI:** Splash (S1), Role Selection (S2, now 6 roles), Sign Up (S3), OTP Verify (S4), Login (S5) | FR-AUTH-1–5 | S1–S5 |
 | P1-2 | **Athlete onboarding:** Sport + age group (A1), skill level + city (A2) → Home dashboard (A3) | FR-AUTH-6 | A1–A3 |
 | P1-3 | **Athlete profile:** View (A4), edit (A5), media gallery upload/delete/reorder (A6) | FR-ATH-1,2 | A4–A6 |
 | P1-4 | **Coach onboarding** (C1) + **Coach profile creation/edit** (C2) | FR-AUTH-7, FR-COACH-1 | C1–C2 |
 | P1-5 | **Academy onboarding** (AC1) + **Academy listing creation/edit** (AC2) | FR-AUTH-8, FR-ACAD-1 | AC1–AC2 |
-| P1-6 | **Universal search:** Search screen (S6), unified results with category tabs (S7) | FR-DISC-1,2 | S6–S7 |
-| P1-7 | **Global filters:** Filter panel (S8) — sport, city, age group, price range, date range | FR-DISC-3,4 | S8 |
-| P1-8 | **Academy directory:** List (A7/T1) + detail page (A8/T2) | FR-ATH-4 | A7–A8 |
-| P1-9 | **Coach directory:** List (A9/T1) + detail page (A10/T2) | FR-ATH-5 | A9–A10 |
-| P1-10 | **Trial listings:** List (A12/T1) + detail page (A13/T2) | FR-ATH-7 | A12–A13 |
-| P1-11 | **Tournament calendar:** Calendar/list toggle (A16) + detail page (A17/T2) | FR-ATH-9 | A16–A17 |
-| P1-12 | **Scholarship feed:** List (A19/T1) + detail page (A20/T2 with external link) | FR-ATH-11 | A19–A20 |
-| P1-13 | **Sponsorship opportunities:** List (A21/T1) + detail page (A22/T2) | FR-ATH-12 | A21–A22 |
-| P1-13b | **Sports venue directory:** List + detail page (new from Mandatory Fields PDF — AS-47). Uses T1/T2 templates. | AS-47 | New screens |
-| P1-14 | **Saved/bookmarked items:** Save from detail (T2 ♡), saved items list (A25) | FR-ATH-15 | A25 |
-| P1-15 | **Report a listing:** Report modal (S10) | FR-TRUST-1 | S10 |
-| P1-16 | **Bottom navigation bar** — Home / Search / Saved / Profile shell | FR-PLAT-3 | T1 etc. |
-| P1-17 | **Settings shell:** Edit profile link, logout, delete account | FR-PLAT-1 | S11 |
+| P1-6 | **Talent Scout onboarding** (TS1) + **Scout profile creation/edit** (TS2) | FR-AUTH-10 (new) | TS1–TS2 |
+| P1-7 | **Universal search:** Search screen (S6), unified results with category tabs (S7) | FR-DISC-1,2 | S6–S7 |
+| P1-8 | **Global filters:** Filter panel (S8) — sport, city, age group, price range, date range | FR-DISC-3,4 | S8 |
+| P1-9 | **Academy directory:** List (A7/T1) + detail page (A8/T2) | FR-ATH-4 | A7–A8 |
+| P1-10 | **Coach directory:** List (A9/T1) + detail page (A10/T2) | FR-ATH-5 | A9–A10 |
+| P1-11 | **Trial listings:** List (A12/T1) + detail page (A13/T2) | FR-ATH-7 | A12–A13 |
+| P1-12 | **Tournament calendar:** Calendar/list toggle (A16) + detail page (A17/T2) | FR-ATH-9 | A16–A17 |
+| P1-13 | **Scholarship feed:** List (A19/T1) + detail page (A20/T2 with external link) | FR-ATH-11 | A19–A20 |
+| P1-14 | **Sponsorship opportunities:** List (A21/T1) + detail page (A22/T2) | FR-ATH-12 | A21–A22 |
+| P1-14b | **Sports venue directory:** List + detail page (new from Mandatory Fields PDF — AS-47). Uses T1/T2 templates. | AS-47 | New screens |
+| P1-15 | **Saved/bookmarked items:** Save from detail (T2 ♡), saved items list (A25) | FR-ATH-15 | A25 |
+| P1-16 | **Report a listing:** Report modal (S10) | FR-TRUST-1 | S10 |
+| P1-17 | **Bottom navigation bar** — Home / Search / Saved / Profile shell | FR-PLAT-3 | T1 etc. |
+| P1-18 | **Settings shell:** Edit profile link, logout, delete account | FR-PLAT-1 | S11 |
 
 ### "Client Can See / Test"
 
@@ -66,6 +67,7 @@ Break the build into demo-able phases. Each phase has a feature list and a clear
 6. Sign up as Coach → create listing → see it in Coach Directory.
 7. Sign up as Academy → create listing → see it in Academy Directory.
 8. Browse Sports Venues → filter by sport/city → see venue details with Google Maps link.
+9. Sign up as Talent Scout → create scout profile → land on Scout Dashboard → discover athletes.
 
 ---
 
@@ -98,7 +100,12 @@ Break the build into demo-able phases. Each phase has a feature list and a clear
 | P2-18 | **Sponsor athlete discovery** — search/filter athletes (SP5) + profile view (SP6) | FR-SPON-4,5 | SP5, SP6 |
 | P2-19 | **Sponsor applications inbox** (SP7) + detail/reply/shortlist/reject (SP8) | FR-SPON-6,7 | SP7, SP8 |
 | P2-20 | **Sponsor shortlist** with notes (SP9) | FR-SPON-8 | SP9 |
-| P2-21 | **Coach browse mode** — reuse all athlete-facing directory screens | FR-COACH-5 | C6 |
+| P2-21 | **Talent Scout dashboard** (TS2) — search shortcut, saved athletes, activity summary | FR-TS-2 | TS2 |
+| P2-22 | **Talent Scout athlete discovery** — filterable athlete cards by sport, age, location, skill, achievements (TS3) | FR-TS-3,4 | TS3 |
+| P2-23 | **Talent Scout athlete profile view** (TS4) — sports history, achievements, media, shortlist/connect CTAs | FR-TS-5 | TS4 |
+| P2-24 | **Talent Scout shortlist** (TS5) — saved athlete cards with remove option | FR-TS-6 | TS5 |
+| P2-25 | **Talent Scout connection/enquiry** (TS6) — contact athlete/parent through platform | FR-TS-7 | TS6 |
+| P2-26 | **Coach browse mode** — reuse all athlete-facing directory screens | FR-COACH-5 | C6 |
 
 ### "Client Can See / Test"
 
@@ -108,6 +115,7 @@ Break the build into demo-able phases. Each phase has a feature list and a clear
 4. Organizer publishes results → public results view shows bracket.
 5. Sponsor creates sponsorship listing → athlete pitches → sponsor shortlists → shortlist shows with notes.
 6. Academy posts trial → athlete registers → academy sees registrant list → verifies documents → athlete sees "Confirmed" in My Activity.
+7. Talent Scout logs in → lands on Scout Dashboard → searches athletes by sport/age/location → views athlete profile → shortlists athlete → sends connection request.
 
 ---
 
@@ -180,8 +188,10 @@ Break the build into demo-able phases. Each phase has a feature list and a clear
 | Phase | Duration (target) | Key Deliverable | New Endpoints (approx) |
 |---|---|---|---|
 | P0 Foundation | 1 week | Working auth + DB + seeds | ~15 (auth + meta) |
-| P1 Discovery | 5 weeks | Full browse + search + profile + save/report | ~35 (directories, profile, search, saved, reports) |
-| P2 Actions | 6 weeks | All transactions + provider management | ~50 (enquiries, registrations, provider CRUD, activity) |
+| P1 Discovery | 5 weeks | Full browse + search + profile + save/report + Talent Scout onboarding | ~40 (directories, profile, search, saved, reports, scout) |
+| P2 Actions | 6 weeks | All transactions + provider management + Talent Scout discovery/shortlist | ~55 (enquiries, registrations, provider CRUD, activity, scout) |
 | P3 Admin + Reminders | 4 weeks | Admin console + expiry + notifications | ~30 (admin, notifications, settings/help) |
 | P4 Polish | 3 weeks | Production-ready, Google sign-in, hardening | ~5 (Google OAuth, password reset) |
-| **Total** | **~19 weeks** | **Complete MVP** | **~137** |
+| **Total** | **~19 weeks** | **Complete MVP** | **~147** |
+
+> **Note:** MVP now includes **6 roles** (previously 5): Athlete/Parent, Coach, Academy, Organizer, Sponsor/Brand, **Talent Scout**

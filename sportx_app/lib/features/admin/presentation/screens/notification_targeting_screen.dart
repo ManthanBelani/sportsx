@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_web_layout.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -211,7 +209,7 @@ class _NotificationTargetingScreenState
           }
         });
       },
-      selectedColor: AppColors.primary.withOpacity(0.1),
+      selectedColor: AppColors.primary.withValues(alpha: 0.1),
       checkmarkColor: AppColors.primary,
     );
   }

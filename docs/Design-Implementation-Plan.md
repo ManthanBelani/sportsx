@@ -39,6 +39,7 @@ This plan outlines how to implement the new mobile and admin panel designs from 
 | **Academy** | Academy Dashboard, Listing Edit, Onboarding, My Trials, Registrants | `academy/` |
 | **Organizer** | Organizer Dashboard, Capacity Management, My Tournaments, Tournament Create, Registration Management, Results Publishing | `organizer/` |
 | **Sponsor** | Sponsor Dashboard, Onboarding, Athlete Discovery, Applications Inbox, Sponsorship Create | `sponsor/` |
+| **Talent Scout** | Scout Dashboard, Onboarding, Athlete Discovery, Shortlist, Connection | `scout/` |
 | **Profile/Settings** | Profile View/Edit, Settings, Help Support, Notifications | `profile-*.html`, `settings.html`, `help-support.html`, `notifications.html` |
 | **Activity** | Activity Hub, Saved Items, Report Listing | `activity-hub.html`, `saved-items.html`, `report-listing.html` |
 
@@ -140,6 +141,11 @@ class AppColors {
 | `sponsor/applications-inbox.html` | `applications_inbox_screen.dart` | Update |
 | `sponsor/application-detail.html` | `application_detail_screen.dart` | Update |
 | `sponsor/athlete-profile-view.html` | `athlete_profile_view_screen.dart` | Update |
+| `scout/scout-dashboard.html` | `talent_scout_dashboard_screen.dart` | Create |
+| `scout/scout-onboarding.html` | `talent_scout_onboarding_screen.dart` | Create |
+| `scout/scout-discovery.html` | `talent_scout_athlete_discovery_screen.dart` | Create |
+| `scout/scout-shortlist.html` | `talent_scout_shortlist_screen.dart` | Create |
+| `scout/scout-connection.html` | `talent_scout_connection_screen.dart` | Create |
 | `profile-view.html` | `profile_screen.dart` | Update |
 | `profile-edit.html` | `edit_profile_screen.dart` | Update |
 | `settings.html` | `settings_screen.dart` | Update |
@@ -209,6 +215,7 @@ class AppColors {
 - [ ] Academy dashboard + trials + registrants
 - [ ] Organizer dashboard + tournaments + capacity
 - [ ] Sponsor dashboard + applications
+- [ ] Talent Scout dashboard + discovery + shortlist
 
 ### Phase 6: Athlete Features
 **Duration:** 2-3 days
@@ -355,6 +362,7 @@ sportx_app/
 │       ├── sponsorship/              # Phase 6
 │       ├── organizer/                # Phase 5
 │       ├── sponsor/                  # Phase 5
+│       ├── talent_scout/             # Phase 5 (new)
 │       ├── admin/                    # Phase 8
 │       ├── saved/                    # Phase 7
 │       ├── activity/                 # Phase 7

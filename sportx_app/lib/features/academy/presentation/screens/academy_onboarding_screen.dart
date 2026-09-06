@@ -5,6 +5,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
@@ -25,6 +26,10 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
   int? _cityId;
   final Set<int> _sportIds = {};
   bool _saving = false;
+  int? _logoMediaId;
+  String? _logoUrl;
+  int? _coverMediaId;
+  String? _coverUrl;
 
   @override
   void dispose() {
@@ -39,7 +44,7 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_cityId == null || _sportIds.isEmpty) {
-      SnackBarUtils.showSuccess(context, 'Please select city and at least one sport');
+      SnackBarUtils.showError(context, 'Please select city and at least one sport');
       return;
     }
     setState(() => _saving = true);
@@ -52,6 +57,8 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
         'contact_number': _contact.text.trim(),
         'sports': _sportIds.toList(),
         if (_fee.text.trim().isNotEmpty) 'fee_range': _fee.text.trim(),
+        if (_logoMediaId != null) 'logo_media_id': _logoMediaId,
+        if (_coverMediaId != null) 'cover_image_media_id': _coverMediaId,
       });
       ref.read(authProvider.notifier).markOnboardingComplete();
       await ref.read(authProvider.notifier).refreshUser();
@@ -90,6 +97,28 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
                 const SizedBox(height: 16),
                 _label('Description'),
                 TextFormField(controller: _description, maxLines: 3, decoration: _dec('Short description of your academy'), validator: _req),
+                const SizedBox(height: 16),
+                _label('Academy Logo'),
+                _buildMediaPicker(
+                  url: _logoUrl,
+                  icon: LucideIcons.building2,
+                  label: 'Upload Logo',
+                  onTap: () async {
+                    final media = await pickAndUploadMedia(context, ref);
+                    if (media != null) setState(() { _logoMediaId = media.mediaId; _logoUrl = media.url; });
+                  },
+                ),
+                const SizedBox(height: 16),
+                _label('Cover Image'),
+                _buildMediaPicker(
+                  url: _coverUrl,
+                  icon: LucideIcons.image,
+                  label: 'Upload Cover',
+                  onTap: () async {
+                    final media = await pickAndUploadMedia(context, ref);
+                    if (media != null) setState(() { _coverMediaId = media.mediaId; _coverUrl = media.url; });
+                  },
+                ),
                 const SizedBox(height: 16),
                 _label('Address'),
                 TextFormField(controller: _address, decoration: _dec('Full address'), validator: _req),
@@ -163,6 +192,40 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
 
   String? _req(String? v) => (v == null || v.trim().isEmpty) ? 'Required' : null;
 
+  Widget _buildMediaPicker({required String? url, required IconData icon, required String label, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 120,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.border),
+          image: url != null ? DecorationImage(image: NetworkImage(url), fit: BoxFit.cover) : null,
+        ),
+        alignment: Alignment.center,
+        child: url == null
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: 32, color: AppColors.textSecondary),
+                  const SizedBox(height: 8),
+                  Text(label, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                ],
+              )
+            : Container(
+                alignment: Alignment.topRight,
+                padding: const EdgeInsets.all(8),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.5), shape: BoxShape.circle),
+                  child: const Icon(LucideIcons.pencil, size: 14, color: Colors.white),
+                ),
+              ),
+      ),
+    );
+  }
+
   Widget _dropdown({
     required int? value,
     required String hint,
@@ -172,7 +235,7 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.border)),
-      child: DropdownButtonFormField<int>(
+      child:       DropdownButtonFormField<int>(
         value: value,
         decoration: const InputDecoration(border: InputBorder.none),
         hint: Text(hint, style: const TextStyle(color: AppColors.textSecondary, fontSize: 15)),

@@ -173,8 +173,8 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(0.3),
-                    Colors.black.withOpacity(0.7),
+                    Colors.black.withValues(alpha: 0.3),
+                    Colors.black.withValues(alpha: 0.7),
                   ],
                 ),
               ),
@@ -468,7 +468,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: athletes.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            separatorBuilder: (_, _) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
               final athlete = athletes[index];
               return Column(
@@ -569,7 +569,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
           color: AppColors.background,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, -5),
             ),

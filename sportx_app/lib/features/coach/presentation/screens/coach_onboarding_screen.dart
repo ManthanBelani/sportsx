@@ -207,7 +207,7 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
                             onPressed: _addCertification,
                             icon: const Icon(LucideIcons.plus, color: AppColors.primary),
                             style: IconButton.styleFrom(
-                              backgroundColor: AppColors.primary.withOpacity(0.1),
+                              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                             ),
                           ),
                         ],
@@ -243,7 +243,7 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
                             onPressed: _addLanguage,
                             icon: const Icon(LucideIcons.plus, color: AppColors.primary),
                             style: IconButton.styleFrom(
-                              backgroundColor: AppColors.primary.withOpacity(0.1),
+                              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                             ),
                           ),
                         ],
@@ -313,7 +313,7 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
                             Switch(
                               value: _personalCoaching,
                               onChanged: (v) => setState(() => _personalCoaching = v),
-                              activeColor: AppColors.primary,
+                              activeThumbColor: AppColors.primary,
                             ),
                           ],
                         ),

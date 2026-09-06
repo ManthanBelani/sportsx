@@ -1,4 +1,4 @@
-enum UserRole { athlete, coach, academy, organizer, sponsor, admin }
+enum UserRole { athlete, coach, academy, organizer, sponsor, admin, talent_scout }
 
 int? _parseInt(dynamic value) {
   if (value == null) return null;
@@ -45,6 +45,7 @@ class User {
       case 'organizer': return UserRole.organizer;
       case 'sponsor': return UserRole.sponsor;
       case 'admin': return UserRole.admin;
+      case 'talent_scout': return UserRole.talent_scout;
       default: return UserRole.athlete;
     }
   }

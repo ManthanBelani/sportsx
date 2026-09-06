@@ -2,7 +2,7 @@
 
 Trackable checklist organized by phase and module. Maps to Jira ticket IDs in `Jira-Tickets.md` and feature IDs in `Functional-Requirements.md`.
 
-> **Last Updated:** 2026-08-09
+> **Last Updated:** 2026-09-04
 >
 > **Design Source:** `sportsx-design-v1/` (78 HTML screens - mobile + admin)
 >
@@ -61,7 +61,7 @@ Trackable checklist organized by phase and module. Maps to Jira ticket IDs in `J
 ### Auth UI (Flutter)
 
 - [x] S1 Splash screen (3-dot pulse animation implemented)
-- [x] S2 Role Selection (60px top padding, 5 role cards)
+- [x] S2 Role Selection (60px top padding, 6 role cards)
 - [x] S3 Sign Up (Full Name field first, Email, Phone, Password order)
 - [x] S4 OTP Verification (email-based verification)
 - [x] S5 Login (email/password only)
@@ -76,6 +76,7 @@ Trackable checklist organized by phase and module. Maps to Jira ticket IDs in `J
 - [x] A6 Media Gallery Manager
 - [x] C1/C2 Coach onboarding
 - [x] AC1/AC2 Academy onboarding
+- [ ] TS1/TS2 Talent Scout onboarding + profile creation
 
 ### Search & Directories
 
@@ -132,6 +133,13 @@ Trackable checklist organized by phase and module. Maps to Jira ticket IDs in `J
 ### Coach Browse Mode
 
 - [x] C6 Coach Browse Mode
+
+### Talent Scout
+
+- [ ] TS2/TS3 Talent Scout Dashboard + Athlete Discovery (search/filter)
+- [ ] TS4 Talent Scout Athlete Profile View
+- [ ] TS5 Talent Scout Shortlist
+- [ ] TS6 Talent Scout Connection/Enquiry
 
 ---
 

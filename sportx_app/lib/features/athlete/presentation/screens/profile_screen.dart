@@ -27,7 +27,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   String _ageGroup = '';
   String _location = '';
   bool _isVerified = false;
-  int _postsCount = 0;
+  final int _postsCount = 0;
   int _connectsCount = 0;
   int _achievementsCount = 0;
 
@@ -37,9 +37,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   List<Map<String, dynamic>> _uploadedMedia = const [];
 
-  List<Map<String, dynamic>> _tournamentHistory = [];
+  final List<Map<String, dynamic>> _tournamentHistory = [];
 
-  List<Map<String, dynamic>> _performanceStats = [];
+  final List<Map<String, dynamic>> _performanceStats = [];
 
   @override
   void initState() {
@@ -200,7 +200,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       width: 96,
                       height: 96,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
+                      errorBuilder: (_, _, ___) =>
                           const Icon(LucideIcons.user, size: 48, color: Colors.white),
                     )
                   : const Icon(LucideIcons.user, size: 48, color: Colors.white),
@@ -339,7 +339,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 Text(
                   'Register for trials and tournaments to build your history',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary.withOpacity(0.7)),
+                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary.withValues(alpha: 0.7)),
                 ),
               ],
             ),
@@ -409,7 +409,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 Text(
                   'Your performance stats will appear here after tournaments',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary.withOpacity(0.7)),
+                      style: TextStyle(fontSize: 12, color: AppColors.textSecondary.withValues(alpha: 0.7)),
                 ),
               ],
             ),
@@ -485,7 +485,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     Text(
                       'Add photos and videos to your gallery',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12, color: AppColors.textSecondary.withOpacity(0.7)),
+                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary.withValues(alpha: 0.7)),
                     ),
                   ],
                 ),
@@ -507,7 +507,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   child: Image.network(
                     images[index],
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
+                    errorBuilder: (_, _, ___) => Container(
                       color: AppColors.surface,
                       child: const Icon(LucideIcons.image, color: AppColors.textSecondary),
                     ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
@@ -15,7 +14,6 @@ class SponsorDirectoryCoachScreen extends ConsumerStatefulWidget {
 
 class _SponsorDirectoryCoachScreenState extends ConsumerState<SponsorDirectoryCoachScreen> {
   String _selectedIndustry = 'All';
-  String? _selectedLocation;
   final _searchController = TextEditingController();
 
   final List<String> _industries = ['All', 'Sportswear', 'Nutrition', 'Finance', 'Technology', 'Media'];
@@ -80,7 +78,7 @@ class _SponsorDirectoryCoachScreenState extends ConsumerState<SponsorDirectoryCo
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: _industries.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
                 final industry = _industries[index];
                 final isSelected = _selectedIndustry == industry;

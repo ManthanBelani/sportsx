@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'core/router.dart';
-import 'theme/app_theme.dart';
+import 'package:sportx_app/core/router.dart';
+import 'package:sportx_app/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

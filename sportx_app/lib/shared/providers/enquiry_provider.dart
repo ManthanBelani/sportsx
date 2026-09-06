@@ -113,13 +113,11 @@ class EnquiryState {
 class EnquiryNotifier extends StateNotifier<EnquiryState> {
   final Dio _dio;
   final Ref _ref;
-  String? _currentFilter;
 
   EnquiryNotifier(this._dio, this._ref) : super(EnquiryState());
 
   Future<void> load({String? filter}) async {
     if (state.isLoading) return;
-    _currentFilter = filter;
     state = state.copyWith(isLoading: true, error: null);
     try {
       final params = <String, dynamic>{};

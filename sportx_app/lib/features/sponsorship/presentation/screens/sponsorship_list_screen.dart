@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
-import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -150,7 +149,7 @@ class _SponsorshipListScreenState extends ConsumerState<SponsorshipListScreen> {
                                                     width: 48,
                                                     height: 48,
                                                     fit: BoxFit.cover,
-                                                    errorBuilder: (_, __, ___) => const Icon(
+                                                    errorBuilder: (_, _, ___) => const Icon(
                                                       LucideIcons.star,
                                                       color: AppColors.primary,
                                                       size: 24,

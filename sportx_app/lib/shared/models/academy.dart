@@ -1,5 +1,5 @@
-import 'sport.dart';
-import 'city.dart';
+import 'package:sportx_app/shared/models/sport.dart';
+import 'package:sportx_app/shared/models/city.dart';
 
 int? _parseInt(dynamic value) {
   if (value == null) return null;

@@ -3,10 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
-import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
-import 'package:sportx_app/features/connections/presentation/providers/connections_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
-import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class ViewProfileScreen extends ConsumerStatefulWidget {
   final String type;
@@ -24,10 +21,7 @@ class ViewProfileScreen extends ConsumerStatefulWidget {
 
 class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
   bool _isLoading = true;
-  bool _isConnecting = false;
   Map<String, dynamic>? _profileData;
-  String _connectionStatus = 'none';
-  String? _connectionId;
 
   @override
   void initState() {
@@ -48,55 +42,12 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
           _isLoading = false;
         });
       }
-      _loadConnectionStatus();
     } catch (e) {
       if (mounted) {
         setState(() {
           _isLoading = false;
           _profileData = _getMockData();
         });
-      }
-    }
-  }
-
-  Future<void> _loadConnectionStatus() async {
-    try {
-      final resp = await ref.read(dioProvider).get('/me/connections/status/${widget.id}');
-      if (mounted) {
-        setState(() {
-          _connectionStatus = resp.data['data']['status'] ?? 'none';
-          _connectionId = resp.data['data']['connection_id']?.toString();
-        });
-      }
-    } catch (e) {
-      // User not logged in or other error - stay with 'none' status
-    }
-  }
-
-  Future<void> _handleConnect() async {
-    if (_connectionStatus == 'pending' || _connectionStatus == 'accepted') return;
-
-    setState(() => _isConnecting = true);
-
-    try {
-      final dio = ref.read(dioProvider);
-      await dio.post('/me/connections/request', data: {'user_id': int.parse(widget.id)});
-      if (mounted) {
-        setState(() {
-          _connectionStatus = 'pending';
-        });
-        ref.invalidate(connectionStatusProvider(widget.id));
-        final currentUserId = ref.read(authProvider).user?.id.toString() ?? '';
-        ref.invalidate(myConnectionsProvider(currentUserId));
-        ref.invalidate(connectionRequestsProvider(currentUserId));
-      }
-    } catch (e) {
-      if (mounted) {
-        SnackBarUtils.showError(context, 'Failed to send connection request');
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isConnecting = false);
       }
     }
   }
@@ -187,8 +138,8 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(0.3),
-                    Colors.black.withOpacity(0.7),
+                    Colors.black.withValues(alpha: 0.3),
+                    Colors.black.withValues(alpha: 0.7),
                   ],
                 ),
               ),
@@ -301,9 +252,6 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
   }
 
   Widget _buildActionButtons() {
-    final isPending = _connectionStatus == 'pending';
-    final isConnected = _connectionStatus == 'accepted';
-
     return Row(
       children: [
         /*
@@ -592,9 +540,6 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
   }
 
   Widget _buildBottomActions() {
-    final isPending = _connectionStatus == 'pending';
-    final isConnected = _connectionStatus == 'accepted';
-
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -602,7 +547,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
           color: AppColors.background,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, -5),
             ),

@@ -61,6 +61,11 @@ class User extends Authenticatable
         return $this->hasOne(SponsorProfile::class);
     }
 
+    public function talentScoutProfile(): HasOne
+    {
+        return $this->hasOne(TalentScoutProfile::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';

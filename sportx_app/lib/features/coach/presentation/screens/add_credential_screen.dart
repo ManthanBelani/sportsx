@@ -114,7 +114,7 @@ class _AddCredentialScreenState extends ConsumerState<AddCredentialScreen> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: _selectedYear,
+                initialValue: _selectedYear,
                 decoration: const InputDecoration(labelText: 'Year Obtained'),
                 items: _years.map((year) {
                   return DropdownMenuItem(value: year, child: Text(year));

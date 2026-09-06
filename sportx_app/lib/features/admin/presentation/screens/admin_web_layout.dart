@@ -71,7 +71,7 @@ class AdminStatCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(icon, color: color, size: 20),
@@ -132,7 +132,7 @@ class AdminSectionLabel extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -248,7 +248,7 @@ class AdminUserCard extends StatelessWidget {
                 margin: const EdgeInsets.only(left: 4),
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppColors.error.withOpacity(0.1),
+                  color: AppColors.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: const Text(
@@ -319,8 +319,8 @@ class AdminReportCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: status == 'pending'
-                        ? AppColors.warning.withOpacity(0.1)
-                        : AppColors.success.withOpacity(0.1),
+                        ? AppColors.warning.withValues(alpha: 0.1)
+                        : AppColors.success.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
@@ -468,7 +468,7 @@ class AdminOpportunityCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: _getStatusColor(status).withOpacity(0.1),
+                      color: _getStatusColor(status).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(

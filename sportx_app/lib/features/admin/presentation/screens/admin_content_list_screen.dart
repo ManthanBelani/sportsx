@@ -84,7 +84,7 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
                                 Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary))),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                                  decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
                                   child: Text(status, style: const TextStyle(fontSize: 11, color: AppColors.primary)),
                                 ),
                               ],

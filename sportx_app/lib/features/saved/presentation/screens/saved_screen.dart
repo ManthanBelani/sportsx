@@ -144,7 +144,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> with SingleTickerProv
       child: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: items.length,
-        separatorBuilder: (_, __) => const Divider(height: 1),
+        separatorBuilder: (_, _) => const Divider(height: 1),
         itemBuilder: (context, i) {
           final item = items[i];
           return ListTile(

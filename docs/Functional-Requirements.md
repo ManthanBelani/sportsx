@@ -18,7 +18,7 @@ Requirements are numbered `FR-<MODULE>-<n>` / `NFR-<n>` and prioritized **MoSCoW
 | ID | Requirement | Priority | Source |
 |---|---|---|---|
 | FR-AUTH-1 | The app shall present a splash screen on launch with branding and a loading state. | S | S1 |
-| FR-AUTH-2 | The app shall present role selection with five cards: Athlete/Parent, Coach, Academy, Organizer, Sponsor/Brand. | M | S2 |
+| FR-AUTH-2 | The app shall present role selection with six cards: Athlete/Parent, Coach, Academy, Organizer, Sponsor/Brand, Talent Scout. | M | S2 |
 | FR-AUTH-3 | The app shall allow sign-up with phone number **or** email input, a terms & privacy checkbox, and a "Continue with Google" option. | M | S3 |
 | FR-AUTH-4 | The app shall verify the account with a 6-digit OTP code screen including a resend-with-timer. **Primary channel: email. Phone OTP: deferred.** | M | S4 + decision |
 | FR-AUTH-5 | The app shall provide login with phone/email + password or OTP toggle, forgot-password, and sign-up links. | M | S5 |
@@ -100,7 +100,20 @@ Requirements are numbered `FR-<MODULE>-<n>` / `NFR-<n>` and prioritized **MoSCoW
 | FR-SPON-7 | Sponsors shall view an application detail (pitch note, applied-to listing, date, view-full-profile) with actions: Shortlist / Reject / Reply. | M | SP8 |
 | FR-SPON-8 | Sponsors shall maintain a shortlist grouped list with a free-text note per athlete. | M | SP9 |
 
-## 7. ADMIN — Admin (full spec, later build phase)
+## 7. TS — Talent Scout
+
+| ID | Requirement | Priority | Source |
+|---|---|---|---|
+| FR-TS-1 | On first sign-up, talent scouts shall complete onboarding capturing organization/affiliation, sports specialization, experience, and location. | M | TS1 |
+| FR-TS-2 | Talent scouts shall see a dashboard with search shortcut, saved athletes count, and activity summary tiles. | M | TS2 |
+| FR-TS-3 | Talent scouts shall discover athletes via filterable cards by sport, age group, location, skill level, and achievements. | M | TS3 |
+| FR-TS-4 | Talent scouts shall use advanced filters (category, competition level, achievements) alongside the global filter panel. | M | TS3 |
+| FR-TS-5 | Talent scouts shall view an athlete's public profile: sports history, achievements, media gallery, with shortlist and connect CTAs. | M | TS4 |
+| FR-TS-6 | Talent scouts shall maintain a shortlist of saved athlete profiles with remove option. | M | TS5 |
+| FR-TS-7 | Talent scouts shall send an enquiry or connection request to an athlete/parent through the platform. | M | TS6 |
+| FR-TS-8 | Talent scouts shall browse the full app like an athlete/parent (reusing all directory/detail screens). | M | TS3 (reused) |
+
+## 8. ADMIN — Admin (full spec, later build phase)
 
 | ID | Requirement | Priority | Source |
 |---|---|---|---|
@@ -116,7 +129,7 @@ Requirements are numbered `FR-<MODULE>-<n>` / `NFR-<n>` and prioritized **MoSCoW
 | FR-ADMIN-10 | Admins shall manage master categories: sports, cities/states, age groups (add/edit/remove). | M | AD10–AD12 |
 | FR-ADMIN-11 | **Scholarships are created and maintained exclusively by admins** ("curated, admin-maintained list") — there is no self-serve scholarship posting role. | M | MVP Overview §1 feature list |
 
-## 8. DISC — Discovery, Search & Filters (shared)
+## 9. DISC — Discovery, Search & Filters (shared)
 
 | ID | Requirement | Priority | Source |
 |---|---|---|---|
@@ -126,7 +139,7 @@ Requirements are numbered `FR-<MODULE>-<n>` / `NFR-<n>` and prioritized **MoSCoW
 | FR-DISC-4 | The same filter/facet semantics shall apply consistently across all listing types. | M | Global Filters feature |
 | FR-DISC-5 | All list views shall support pagination ("Load more"). | M | T1, S7 |
 
-## 9. ENQ — Enquiry & Messaging (shared pattern)
+## 10. ENQ — Enquiry & Messaging (shared pattern)
 
 | ID | Requirement | Priority | Source |
 |---|---|---|---|
@@ -134,7 +147,7 @@ Requirements are numbered `FR-<MODULE>-<n>` / `NFR-<n>` and prioritized **MoSCoW
 | FR-ENQ-2 | Inbox rows shall distinguish unread/new vs replied states. | M | T4 |
 | FR-ENQ-3 | Sponsor "Message" (SP6) and sponsor application "Reply" (SP8) shall reuse the same enquiry/thread infrastructure. **Assumption: no separate chat system exists.** | S | SP6, SP8 |
 
-## 10. NOTIF — Notifications
+## 11. NOTIF — Notifications
 
 | ID | Requirement | Priority | Source |
 |---|---|---|---|
@@ -144,14 +157,14 @@ Requirements are numbered `FR-<MODULE>-<n>` / `NFR-<n>` and prioritized **MoSCoW
 | FR-NOTIF-4 | Users shall be able to toggle notifications in Settings. | M | S11 |
 | FR-NOTIF-5 | The delivery mechanism (push provider, in-app badge) is abstracted behind a `NotificationProvider` interface — vendor undecided. | M | Decision |
 
-## 11. TRUST — Reporting & Moderation (user side)
+## 12. TRUST — Reporting & Moderation (user side)
 
 | ID | Requirement | Priority | Source |
 |---|---|---|---|
 | FR-TRUST-1 | Users shall be able to report any listing from its detail page via a modal with reasons (Fake/Scam, Outdated information, Inappropriate content, Other) and optional comment. | M | S10, T2 |
 | FR-TRUST-2 | Multiple reports on the same listing shall be aggregated for the admin queue (report count shown). | M | AD6 |
 
-## 12. PLAT — Platform / Shared UI
+## 13. PLAT — Platform / Shared UI
 
 | ID | Requirement | Priority | Source |
 |---|---|---|---|

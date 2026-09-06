@@ -150,7 +150,7 @@ class DetailPageTemplate extends ConsumerWidget {
             ),
       alignment: Alignment.center,
       child: heroImageUrl == null && heroIcon != null
-          ? Icon(heroIcon, size: 72, color: Colors.white.withOpacity(0.8))
+          ? Icon(heroIcon, size: 72, color: Colors.white.withValues(alpha: 0.8))
           : null,
     );
   }
@@ -162,7 +162,7 @@ class DetailPageTemplate extends ConsumerWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
+          color: Colors.white.withValues(alpha: 0.9),
           shape: BoxShape.circle,
         ),
         alignment: Alignment.center,
@@ -355,14 +355,15 @@ class DetailPageTemplate extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ...reasons.entries.map((e) => RadioListTile<String>(
-                    value: e.key,
-                    groupValue: selectedReason,
-                    activeColor: AppColors.primary,
-                    contentPadding: EdgeInsets.zero,
-                    dense: true,
-                    title: Text(e.value, style: const TextStyle(fontSize: 14)),
+              ...reasons.entries.map((e) => RadioGroup<String>(
                     onChanged: (v) => setDialogState(() => selectedReason = v!),
+                    child: RadioListTile<String>(
+                      value: e.key,
+                      activeColor: AppColors.primary,
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      title: Text(e.value, style: const TextStyle(fontSize: 14)),
+                    ),
                   )),
               const SizedBox(height: 8),
               TextField(

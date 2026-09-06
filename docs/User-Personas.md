@@ -109,7 +109,23 @@ One primary persona per role, grounded in the platform's MVP scope (India-first 
 
 ---
 
-# 6. Admin
+# 6. Talent Scout
+
+## 🔍 Primary: Kiran — independent talent scout
+| | |
+|---|---|
+| **Profile** | Kiran Patel, 42, freelance talent scout specializing in cricket and kabaddi, based in Ahmedabad. Works with academies and clubs to identify promising athletes for trials and scholarships. |
+| **Background** | Has relationships with local academies and occasionally gets referral fees when athletes get selected. Needs to track promising athletes over time and share profiles with contacts. |
+| **Goals** | Discover promising athletes by sport, age, location, and achievements; build a shortlist of prospects; efficiently share athlete profiles with academy contacts. |
+| **Frustrations** | No systematic way to discover athletes outside his immediate network; WhatsApp forwards get lost; can't easily share athlete media with coaches. |
+| **Tech comfort** | Medium. Uses WhatsApp and spreadsheets; values simple, fast interfaces. |
+| **Key tasks** | Onboard (org, sports, experience) → Scout Dashboard → Discover Athletes (filters: sport, age, location, skill) → View Athlete Profile → Shortlist → Send Connection Request. |
+| **Success looks like** | Shortlists 15 promising athletes, sends 5 connection requests, shares 3 profiles with academy contacts this month. |
+| **Quote** | _"I know talent when I see it — I just need a better way to track and share what I find."_ |
+
+---
+
+# 7. Admin
 
 ## 🛡️ Primary: Vikram — platform operations admin
 | | |
@@ -134,6 +150,7 @@ One primary persona per role, grounded in the platform's MVP scope (India-first 
 | Academy | Priya (34) | "Run trials and manage admissions without chaos." |
 | Organizer | Sameer (45) | "Run tournaments with capacity, registration, and published results." |
 | Sponsor/Brand | Anita (31) | "Find and sponsor the right athletes, with a clean audit trail." |
+| Talent Scout | Kiran (42) | "Discover and shortlist promising athletes to share with my contacts." |
 | Admin | Vikram (29) | "Keep the platform trustworthy, clean, and up to date." |
 
 ---

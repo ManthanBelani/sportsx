@@ -35,6 +35,7 @@ class _SponsorOnboardingScreenState extends ConsumerState<SponsorOnboardingScree
       if (mounted) {
         ref.read(authProvider.notifier).markOnboardingComplete();
         await ref.read(authProvider.notifier).refreshUser();
+        if (!mounted) return;
         SnackBarUtils.showSuccess(context, 'Profile Submitted for Review');
         context.go('/sponsor-dashboard');
       }
@@ -64,7 +65,7 @@ class _SponsorOnboardingScreenState extends ConsumerState<SponsorOnboardingScree
             TextField(controller: _brand, decoration: const InputDecoration(labelText: 'Brand Name')),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: _category,
+              initialValue: _category,
               decoration: const InputDecoration(labelText: 'Category'),
               items: const [
                 DropdownMenuItem(value: 'sportswear', child: Text('Sportswear')),

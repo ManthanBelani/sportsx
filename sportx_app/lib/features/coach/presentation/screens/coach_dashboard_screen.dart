@@ -111,7 +111,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
+                    color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(LucideIcons.calendar, color: AppColors.primary, size: 28),
@@ -155,7 +155,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: AppColors.primary, size: 22),
@@ -208,7 +208,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
               children: [
                 CircleAvatar(
                   radius: 28,
-                  backgroundColor: AppColors.primary.withOpacity(0.1),
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                   backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
                   child: photoUrl == null ? const Icon(LucideIcons.user, color: AppColors.primary, size: 28) : null,
                 ),

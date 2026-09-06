@@ -23,7 +23,7 @@ class AcademyDetailScreen extends ConsumerWidget {
       onRetry: () => ref.invalidate(academyDetailProvider(id)),
       dataBuilder: (a) => DetailPageTemplate(
         heroIcon: LucideIcons.building2,
-        heroImageUrl: a.coverImageUrl,
+        heroImageUrl: a.coverImageUrl ?? a.logoUrl,
         title: a.name,
         subtitle: a.city?.name ?? a.address ?? '',
         rating: null,
@@ -37,6 +37,19 @@ class AcademyDetailScreen extends ConsumerWidget {
           if (a.email != null) 'Email': a.email!,
           if (a.website != null) 'Website': a.website!,
         },
+        extraSections: [
+          if (a.description != null && a.description!.isNotEmpty) ...[
+            Row(
+              children: [
+                Icon(LucideIcons.alignLeft, size: 18, color: AppColors.primary),
+                const SizedBox(width: 8),
+                Text('About', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(a.description!, style: TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.5)),
+          ],
+        ],
         addressStr: a.address ?? a.city?.name ?? '',
         ctaText: 'Enquire Now',
         onCtaPressed: () => context.push('/enquire/academy/${a.id}/${Uri.encodeComponent(a.name)}'),

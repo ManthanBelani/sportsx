@@ -104,6 +104,14 @@ Each sub-phase is independent — can be assigned to separate Agent Manager work
 - [ ] `activity_hub_screen.dart` → `/me/activity` (+ registrations/applications tabs)
 - [ ] `athlete/.../media_gallery_screen.dart` → `mediaProvider`
 
+### 2F Talent Scout *(≈1 day)*
+- [ ] `talent_scout_onboarding_screen.dart` → `POST /onboarding/talent-scout`
+- [ ] `talent_scout_dashboard_screen.dart` → `/me/scout-profile` + stats
+- [ ] `talent_scout_athlete_discovery_screen.dart` → `/athletes` with advanced filters (sport, age, location, skill, achievements)
+- [ ] `talent_scout_athlete_profile_view_screen.dart` → `/athletes/{id}` (public view)
+- [ ] `talent_scout_shortlist_screen.dart` → `/me/shortlist` (scout's saved athletes)
+- [ ] `talent_scout_connection_screen.dart` → `/athletes/{id}/connect` (enquiry/connection request)
+
 **Exit criteria:** all provider-suite screens show live data; `grep ref.watch|ref.read` count ≥ 80.
 
 ---
@@ -132,7 +140,7 @@ These design features have **no API yet**.
 ### 4B Connections  *[NEW BACKEND]*
 - [ ] Migrations: `connections` (follower/followee, status)
 - [ ] `ConnectionController`: request, accept, list, requests
-- [ ] Wire `my_connections_screen.dart` + `connection_requests_screen.dart`
+- [ ] Wire `my_connections_screen.dart` + `connection_requests_screen.dart` + Talent Scout connection flow (TS6)
 
 ### 4C Social feed  *[NEW BACKEND]* *(scope decision needed)*
 - [ ] Posts + likes/comments models + `PostController`
@@ -161,18 +169,18 @@ Carry-over from the wiring plan; do in parallel with Phase 4.
 | Milestone | Phases | Effort | Cumulative |
 |-----------|--------|--------|------------|
 | M1 — Foundation + directories wired | 0 + 1 | 2–2.5 d | 2–2.5 d |
-| M2 — Provider suites wired | 2 | 3–4 d | 5–6.5 d |
-| M3 — Admin complete | 3 | 0.5 d | 5.5–7 d |
-| M4 — Chat/Connections/Social live | 4 | 3–4 d | 8.5–11 d |
-| M5 — Production ready | 5 | 2–3 d | 10.5–14 d |
+| M2 — Provider suites wired (6 roles including Talent Scout) | 2A–2F | 4–5 d | 6–7.5 d |
+| M3 — Admin complete | 3 | 0.5 d | 6.5–8 d |
+| M4 — Chat/Connections/Social live | 4 | 3–4 d | 9.5–12 d |
+| M5 — Production ready | 5 | 2–3 d | 11.5–15 d |
 
-A single dev: ~2–2.5 weeks. **Parallelized (Agent Manager, one worktree per module for Phase 2): ~1–1.5 weeks.**
+A single dev: ~2.5–3 weeks. **Parallelized (Agent Manager, one worktree per module for Phase 2): ~1.5–2 weeks.**
 
 ---
 
 ## Parallelization strategy (Agent Manager)
 
-Phase 2 sub-phases (2A Academy, 2B Coach, 2C Organizer, 2D Sponsor, 2E Athlete/shared) touch **disjoint file sets** and all depend only on Phase 0. Run them as 5 parallel worktree sessions, each with:
+Phase 2 sub-phases (2A Academy, 2B Coach, 2C Organizer, 2D Sponsor, 2E Athlete/shared, 2F Talent Scout) touch **disjoint file sets** and all depend only on Phase 0. Run them as 6 parallel worktree sessions, each with:
 - The provider file from Phase 0.x as a dependency (merge Phase 0 to base branch first),
 - Module-specific screen list,
 - Exit grep check + `flutter analyze` on the module.

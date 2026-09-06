@@ -338,7 +338,7 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
                 IconButton(
                   onPressed: _addCertification,
                   icon: const Icon(LucideIcons.plus, color: AppColors.primary),
-                  style: IconButton.styleFrom(backgroundColor: AppColors.primary.withOpacity(0.1)),
+                  style: IconButton.styleFrom(backgroundColor: AppColors.primary.withValues(alpha: 0.1)),
                 ),
               ],
             ),
@@ -369,7 +369,7 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
                 IconButton(
                   onPressed: _addLanguage,
                   icon: const Icon(LucideIcons.plus, color: AppColors.primary),
-                  style: IconButton.styleFrom(backgroundColor: AppColors.primary.withOpacity(0.1)),
+                  style: IconButton.styleFrom(backgroundColor: AppColors.primary.withValues(alpha: 0.1)),
                 ),
               ],
             ),
@@ -413,7 +413,7 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
                   Switch(
                     value: _personalCoaching,
                     onChanged: (v) => setState(() => _personalCoaching = v),
-                    activeColor: AppColors.primary,
+                    activeThumbColor: AppColors.primary,
                   ),
                 ],
               ),
@@ -510,7 +510,7 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
       children: [
         CircleAvatar(
           radius: 40,
-          backgroundColor: AppColors.primary.withOpacity(0.1),
+          backgroundColor: AppColors.primary.withValues(alpha: 0.1),
           backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
           child: photoUrl == null ? const Icon(LucideIcons.user, color: AppColors.primary, size: 32) : null,
         ),
@@ -575,7 +575,7 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
         Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
-          value: safeValue as String?,
+          initialValue: safeValue as String?,
           decoration: InputDecoration(
             hintText: 'Select $label',
             hintStyle: const TextStyle(color: AppColors.textSecondary),
@@ -604,7 +604,7 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
         Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
         const SizedBox(height: 6),
         DropdownButtonFormField<int>(
-          value: safeValue,
+          initialValue: safeValue,
           decoration: InputDecoration(
             hintText: 'Select $label',
             hintStyle: const TextStyle(color: AppColors.textSecondary),

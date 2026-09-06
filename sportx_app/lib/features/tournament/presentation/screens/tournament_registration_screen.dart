@@ -242,7 +242,7 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
             ],
             _buildLabel('Category'),
             DropdownButtonFormField<int>(
-              value: _categoryId,
+              initialValue: _categoryId,
               isExpanded: true,
               decoration: InputDecoration(
                 filled: true,

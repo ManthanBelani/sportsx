@@ -70,8 +70,8 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: isPending
-                        ? AppColors.warning.withOpacity(0.1)
-                        : AppColors.success.withOpacity(0.1),
+                        ? AppColors.warning.withValues(alpha: 0.1)
+                        : AppColors.success.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(

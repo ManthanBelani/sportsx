@@ -52,9 +52,9 @@ class ShortlistScreen extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.amber.withOpacity(0.5)),
+          border: Border.all(color: Colors.amber.withValues(alpha: 0.5)),
           borderRadius: BorderRadius.circular(12),
-          color: Colors.amber.withOpacity(0.05),
+          color: Colors.amber.withValues(alpha: 0.05),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

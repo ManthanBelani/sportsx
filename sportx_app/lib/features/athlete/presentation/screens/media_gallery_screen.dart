@@ -240,9 +240,8 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: items.length,
-        onReorder: (oldIndex, newIndex) {
+        onReorderItem: (oldIndex, newIndex) {
           setState(() {
-            if (newIndex > oldIndex) newIndex -= 1;
             final item = items.removeAt(oldIndex);
             items.insert(newIndex, item);
           });
@@ -265,7 +264,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
                   width: 60,
                   height: 60,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (_, _, ___) => Container(
                     width: 60,
                     height: 60,
                     color: AppColors.border,
@@ -337,7 +336,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
           child: Image.network(
             _absoluteUrl((item['url'] ?? '') as String),
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => Container(
+            errorBuilder: (_, _, ___) => Container(
               color: AppColors.surface,
               child: const Icon(LucideIcons.image, color: AppColors.textSecondary),
             ),
@@ -361,7 +360,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.8),
+                  color: Colors.red.withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: const Icon(LucideIcons.trash2, size: 16, color: Colors.white),
@@ -382,7 +381,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Colors.black.withOpacity(0.5)],
+                    colors: [Colors.transparent, Colors.black.withValues(alpha: 0.5)],
                   ),
                 ),
                 alignment: Alignment.bottomCenter,
@@ -471,7 +470,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 alignment: Alignment.center,

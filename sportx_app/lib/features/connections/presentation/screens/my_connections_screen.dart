@@ -80,7 +80,7 @@ class _MyConnectionsScreenState extends ConsumerState<MyConnectionsScreen> {
                     : ListView.separated(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         itemCount: connections.length,
-                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        separatorBuilder: (_, _) => const Divider(height: 1),
                         itemBuilder: (context, index) => _buildConnectionTile(connections[index], currentUserId),
                       ),
               ),

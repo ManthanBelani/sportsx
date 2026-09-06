@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sportx_app/features/search/presentation/providers/search_provider.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 

@@ -1,12 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
-import 'package:sportx_app/shared/models/coach.dart';
-import 'package:sportx_app/shared/models/academy.dart';
-import 'package:sportx_app/shared/models/trial.dart';
-import 'package:sportx_app/shared/models/tournament.dart';
-import 'package:sportx_app/shared/models/scholarship.dart';
-import 'package:sportx_app/shared/models/sponsorship.dart';
 
 enum SearchCategory {
   all,

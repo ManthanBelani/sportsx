@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'dart:io';
 import 'package:dio/dio.dart';
@@ -235,7 +234,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           width: 96,
                           height: 96,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
+                          errorBuilder: (_, _, ___) =>
                               const Icon(LucideIcons.user, size: 40, color: Colors.white),
                         ),
                       )
@@ -352,7 +351,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
           const SizedBox(height: 6),
           DropdownButtonFormField<String>(
-            value: value,
+            initialValue: value,
             items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
             onChanged: onChanged,
             icon: const Icon(LucideIcons.chevronDown, size: 20),
@@ -389,7 +388,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           const Text('Primary Sport', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
           const SizedBox(height: 6),
           DropdownButtonFormField<int>(
-            value: _selectedSportId,
+            initialValue: _selectedSportId,
             items: sportList.map((sport) {
               return DropdownMenuItem(
                 value: sport.id,

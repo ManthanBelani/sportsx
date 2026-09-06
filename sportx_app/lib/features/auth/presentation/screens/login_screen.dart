@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/theme/colors.dart';
-import '../providers/auth_provider.dart';
+import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {

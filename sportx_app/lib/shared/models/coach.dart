@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'sport.dart';
-import 'city.dart';
+import 'package:sportx_app/shared/models/sport.dart';
+import 'package:sportx_app/shared/models/city.dart';
 
 int? _parseInt(dynamic value) {
   if (value == null) return null;
@@ -85,7 +85,7 @@ class Coach {
         try {
           final decoded = jsonDecode(val);
           if (decoded is Map) {
-            return (decoded as Map).map((key, value) {
+            return decoded.map((key, value) {
               if (value is List) {
                 return MapEntry(key as String, value.map((e) => e.toString()).toList());
               }

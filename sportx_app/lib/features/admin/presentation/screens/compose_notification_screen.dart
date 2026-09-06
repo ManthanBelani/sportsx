@@ -133,29 +133,42 @@ class _ComposeNotificationScreenState
           children: [
             const AdminSectionLabel(label: 'Target Audience'),
             const SizedBox(height: 16),
-            _buildTargetOption(
-              value: 'all',
-              title: 'All Users',
-              description: 'Send to all registered users',
-              icon: Icons.people_outline,
-            ),
-            _buildTargetOption(
-              value: 'athletes',
-              title: 'Athletes Only',
-              description: 'Send to athlete accounts',
-              icon: Icons.sports,
-            ),
-            _buildTargetOption(
-              value: 'coaches',
-              title: 'Coaches Only',
-              description: 'Send to coach accounts',
-              icon: Icons.fitness_center,
-            ),
-            _buildTargetOption(
-              value: 'sponsors',
-              title: 'Sponsors Only',
-              description: 'Send to sponsor accounts',
-              icon: Icons.business,
+            RadioGroup<String>(
+              onChanged: (val) {
+                if (val != null) {
+                  setState(() {
+                    _selectedTarget = val;
+                  });
+                }
+              },
+              child: Column(
+                children: [
+                  _buildTargetOption(
+                    value: 'all',
+                    title: 'All Users',
+                    description: 'Send to all registered users',
+                    icon: Icons.people_outline,
+                  ),
+                  _buildTargetOption(
+                    value: 'athletes',
+                    title: 'Athletes Only',
+                    description: 'Send to athlete accounts',
+                    icon: Icons.sports,
+                  ),
+                  _buildTargetOption(
+                    value: 'coaches',
+                    title: 'Coaches Only',
+                    description: 'Send to coach accounts',
+                    icon: Icons.fitness_center,
+                  ),
+                  _buildTargetOption(
+                    value: 'sponsors',
+                    title: 'Sponsors Only',
+                    description: 'Send to sponsor accounts',
+                    icon: Icons.business,
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
             SizedBox(
@@ -182,12 +195,6 @@ class _ComposeNotificationScreenState
 
     return RadioListTile<String>(
       value: value,
-      groupValue: _selectedTarget,
-      onChanged: (val) {
-        setState(() {
-          _selectedTarget = val!;
-        });
-      },
       title: Row(
         children: [
           Icon(icon, color: isSelected ? AppColors.primary : AppColors.textSecondary),
@@ -199,7 +206,6 @@ class _ComposeNotificationScreenState
         padding: const EdgeInsets.only(left: 44),
         child: Text(description),
       ),
-      activeColor: AppColors.primary,
     );
   }
 

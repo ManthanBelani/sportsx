@@ -77,7 +77,7 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
             TextField(controller: _name, decoration: const InputDecoration(labelText: 'Tournament Name', hintText: 'e.g. U-16 State Cup')),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: _format,
+              initialValue: _format,
               decoration: const InputDecoration(labelText: 'Format'),
               items: const [
                 DropdownMenuItem(value: 'knockout', child: Text('Knockout')),

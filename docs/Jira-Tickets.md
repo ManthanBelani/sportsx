@@ -25,7 +25,7 @@ P0,P0-E1: Project Setup,Task,"Set up CI/CD pipeline","GitHub Actions: lint + tes
 Phase,Epic,Issue Type,Summary,Description,Acceptance Criteria,Priority,Story Points
 P0,P0-E2: Auth API,Story,"Implement email OTP registration","POST /auth/register creates user (unverified) + POST /auth/verify-otp validates code + issues token. OTP stored hashed, 5-min expiry, resend rate-limited.","Register with email → 202; verify valid OTP → 200 with token; wrong OTP → 422; expired OTP → 422; resend within 60s → 429.",Must,5
 P0,P0-E2: Auth API,Story,"Implement login (password + OTP)","POST /auth/login with password OR OTP code. Token issued. Logout revokes token.","Password login works; OTP login sends code then verifies; invalid credentials → 401; logout deletes token → 401 on next request.",Must,5
-P0,P0-E2: Auth API,Story,"Implement role onboarding for all 5 roles","POST /auth/register sets role; POST /onboarding/{role} creates the role profile. Athlete: sports + age group + skill + city. Coach: sports + certs + experience. Academy: name + sports + city. Organizer: org name + type + docs. Sponsor: brand + logo + category + docs.","Each role onboarding creates correct profile; athlete profile links sports; academy profile created with listing_status=draft; verification docs stored as media_items.",Must,5
+P0,P0-E2: Auth API,Story,"Implement role onboarding for all 6 roles","POST /auth/register sets role; POST /onboarding/{role} creates the role profile. Athlete: sports + age group + skill + city. Coach: sports + certs + experience. Academy: name + sports + city. Organizer: org name + type + docs. Sponsor: brand + logo + category + docs. Talent Scout: organization, sports specialization, experience, location.","Each role onboarding creates correct profile; athlete profile links sports; academy profile created with listing_status=draft; verification docs stored as media_items.",Must,5
 P0,P0-E2: Auth API,Task,"Implement auth middleware and role middleware","auth:sanctum on all authenticated routes; role:xxx middleware checking user->role.","Unauthenticated request → 401; wrong-role request → 403.",Must,2
 ```
 
@@ -77,6 +77,14 @@ Phase,Epic,Issue Type,Summary,Description,Acceptance Criteria,Priority,Story Poi
 P1,P1-E4: Save & Report,Story,"Implement saved/bookmarked items","Save from detail page (♡), saved items list (A25) grouped by type with tabs (All/Academies/Coaches/Trials/Tournaments/Scholarships/Sponsorships/Venues).","Save toggles; unsave removes; saved list shows correct items; tabs filter by type; empty state shown.",Must,3
 P1,P1-E4: Save & Report,Story,"Implement report-a-listing modal","S10: reason radio (Fake/Scam, Outdated, Inappropriate, Other) + optional comment + Cancel/Submit.","Modal opens from detail page; submit calls API; success shows confirmation.",Must,2
 P1,P1-E4: Save & Report,Task,"Implement bottom navigation bar","Persistent bottom nav: Home, Search, Saved, Profile — renders on all primary athlete screens per T1.","Bar visible on all 4 primary tabs; active tab highlighted; tapping switches screen.",Must,1
+```
+
+### Epic P1-E5: Talent Scout Onboarding & Profile
+
+```csv
+Phase,Epic,Issue Type,Summary,Description,Acceptance Criteria,Priority,Story Points
+P1,P1-E5: Talent Scout,Story,"Build talent scout onboarding","TS1: organization/affiliation, sports specialization, experience, location. Multi-step form.","Form validates all fields; submit creates scout profile; routes to Scout Dashboard.",Must,3
+P1,P1-E5: Talent Scout,Story,"Build talent scout profile view/edit","TS2: scout profile with organization, sports, experience, location. Edit capability.","Profile shows all scout info; edit form pre-populated; save persists.",Must,2
 ```
 
 ---
@@ -140,6 +148,17 @@ P2,P2-E6: Sponsor,Story,"Build sponsor applications inbox + detail","SP7: inbox 
 P2,P2-E6: Sponsor,Story,"Build sponsor shortlist","SP9: shortlisted athletes with editable notes per entry.","Shortlist shows all shortlisted athletes; note can be added/edited; athletes can be removed.",Must,3
 ```
 
+### Epic P2-E7: Talent Scout — Discovery & Connections
+
+```csv
+Phase,Epic,Issue Type,Summary,Description,Acceptance Criteria,Priority,Story Points
+P2,P2-E7: Talent Scout,Story,"Build talent scout dashboard","TS2: search shortcut, saved athletes count, activity summary tiles.","Dashboard shows quick actions and summary stats; search shortcut navigates to discovery.",Must,2
+P2,P2-E7: Talent Scout,Story,"Build athlete discovery with advanced filters","TS3: filterable athlete cards by sport, age group, location, skill level, achievements. Uses global filter panel.","Filters return relevant athletes; cards show key info; load more pagination works.",Must,5
+P2,P2-E7: Talent Scout,Story,"Build athlete profile view for scouts","TS4: public athlete profile showing sports history, achievements, media gallery, shortlist and connect CTAs.","Profile renders all sections; Shortlist and Connect buttons functional.",Must,3
+P2,P2-E7: Talent Scout,Story,"Build talent scout shortlist","TS5: shortlisted athlete cards with remove option.","Shortlist shows saved athletes; remove removes from list; empty state shown when empty.",Must,2
+P2,P2-E7: Talent Scout,Story,"Build talent scout connection/enquiry","TS6: connection/enquiry form to contact athlete/parent through platform.","Form validates; submit sends enquiry; confirmation shown.",Must,3
+```
+
 ---
 
 ## Phase 3 — Admin & Reminders
@@ -188,10 +207,12 @@ P4,P4-E1: Polish,Task,"Load testing","Simulate 1000+ concurrent users on key end
 | Phase | Stories | Tasks | Total |
 |---|---|---|---|
 | P0 Foundation | 7 | 1 | 8 |
-| P1 Discovery | 18 | 2 | 20 |
-| P2 Actions | 18 | 0 | 18 |
+| P1 Discovery | 20 | 2 | 22 |
+| P2 Actions | 23 | 0 | 23 |
 | P3 Admin + Reminders | 11 | 0 | 11 |
 | P4 Polish | 3 | 4 | 7 |
-| **Total** | **57** | **7** | **64** |
+| **Total** | **64** | **7** | **71** |
 
 > Story points are directional estimates (1=trivial, 2=small, 3=medium, 5=large, 8=complex). Adjust based on team velocity.
+>
+> **Note:** Phase 1 and Phase 2 include Talent Scout (6th role) with 4 new stories in Phase 1 and 5 new stories in Phase 2.

@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/academy/presentation/providers/academy_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
+import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
@@ -22,6 +24,11 @@ class _AcademyProfilePostingScreenState extends ConsumerState<AcademyProfilePost
   final _ageGroups = TextEditingController();
   final _timings = TextEditingController();
   bool _saving = false;
+  int? _logoMediaId;
+  String? _logoUrl;
+  int? _coverMediaId;
+  String? _coverUrl;
+  int? _cityId;
 
   @override
   void initState() {
@@ -31,6 +38,9 @@ class _AcademyProfilePostingScreenState extends ConsumerState<AcademyProfilePost
       _name.text = academy.name;
       _sport.text = academy.sport?.name ?? '';
       _fee.text = academy.monthlyRate?.toString() ?? '';
+      _logoUrl = academy.logoUrl;
+      _coverUrl = academy.coverImageUrl;
+      _cityId = academy.cityId;
     }
   }
 
@@ -55,6 +65,9 @@ class _AcademyProfilePostingScreenState extends ConsumerState<AcademyProfilePost
         'monthly_rate': num.tryParse(_fee.text.trim()) ?? 0,
         'age_groups': _ageGroups.text.trim(),
         'timings': _timings.text.trim(),
+        if (_logoMediaId != null) 'logo_media_id': _logoMediaId,
+        if (_coverMediaId != null) 'cover_image_media_id': _coverMediaId,
+        if (_cityId != null) 'city_id': _cityId,
       });
       ref.invalidate(myAcademyProvider);
       if (mounted) {
@@ -84,9 +97,34 @@ class _AcademyProfilePostingScreenState extends ConsumerState<AcademyProfilePost
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            _label('Academy Logo'),
+            _buildMediaPicker(
+              url: _logoUrl,
+              icon: LucideIcons.building2,
+              label: 'Upload Logo',
+              onTap: () async {
+                final media = await pickAndUploadMedia(context, ref);
+                if (media != null) setState(() { _logoMediaId = media.mediaId; _logoUrl = media.url; });
+              },
+            ),
+            const SizedBox(height: 16),
+            _label('Cover Image'),
+            _buildMediaPicker(
+              url: _coverUrl,
+              icon: LucideIcons.image,
+              label: 'Upload Cover',
+              onTap: () async {
+                final media = await pickAndUploadMedia(context, ref);
+                if (media != null) setState(() { _coverMediaId = media.mediaId; _coverUrl = media.url; });
+              },
+            ),
+            const SizedBox(height: 16),
             TextField(controller: _name, decoration: const InputDecoration(labelText: 'Name')),
             const SizedBox(height: 16),
             TextField(controller: _sport, decoration: const InputDecoration(labelText: 'Sport(s)')),
+            const SizedBox(height: 16),
+            _label('City'),
+            _buildCityDropdown(),
             const SizedBox(height: 16),
             TextField(controller: _facilities, decoration: const InputDecoration(labelText: 'Facilities')),
             const SizedBox(height: 16),
@@ -108,6 +146,65 @@ class _AcademyProfilePostingScreenState extends ConsumerState<AcademyProfilePost
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _label(String text) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
+      );
+
+  Widget _buildMediaPicker({required String? url, required IconData icon, required String label, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 120,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.border),
+          image: url != null ? DecorationImage(image: NetworkImage(url), fit: BoxFit.cover) : null,
+        ),
+        alignment: Alignment.center,
+        child: url == null
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: 32, color: AppColors.textSecondary),
+                  const SizedBox(height: 8),
+                  Text(label, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                ],
+              )
+            : Container(
+                alignment: Alignment.topRight,
+                padding: const EdgeInsets.all(8),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.5), shape: BoxShape.circle),
+                  child: const Icon(LucideIcons.pencil, size: 14, color: Colors.white),
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildCityDropdown() {
+    final meta = ref.watch(metaProvider);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: DropdownButtonFormField<int>(
+        value: _cityId,
+        decoration: const InputDecoration(border: InputBorder.none),
+        hint: const Text('Select city', style: TextStyle(color: AppColors.textSecondary, fontSize: 15)),
+        isExpanded: true,
+        items: meta.cities.map((c) => DropdownMenuItem<int>(value: c.id, child: Text('${c.name}, ${c.state}'))).toList(),
+        onChanged: (v) => setState(() => _cityId = v),
       ),
     );
   }

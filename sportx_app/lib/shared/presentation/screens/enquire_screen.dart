@@ -145,7 +145,7 @@ class _EnquireScreenState extends ConsumerState<EnquireScreen> {
                       height: 56,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(28),
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: AppColors.primary.withValues(alpha: 0.1),
                       ),
                       child: widget.coachAvatarUrl != null
                           ? ClipRRect(
@@ -271,7 +271,7 @@ class _EnquireScreenState extends ConsumerState<EnquireScreen> {
                       ),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
-                        value: _ageController.text.isEmpty ? null : _ageController.text,
+                        initialValue: _ageController.text.isEmpty ? null : _ageController.text,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),

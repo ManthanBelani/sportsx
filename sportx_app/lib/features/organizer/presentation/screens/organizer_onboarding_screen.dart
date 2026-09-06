@@ -37,6 +37,7 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
       if (mounted) {
         ref.read(authProvider.notifier).markOnboardingComplete();
         await ref.read(authProvider.notifier).refreshUser();
+        if (!mounted) return;
         SnackBarUtils.showSuccess(context, 'Profile Submitted for Review');
         context.go('/organizer-dashboard');
       }
@@ -68,7 +69,10 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
             const Text('Type', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
             Row(
               children: _types.map((t) => Row(children: [
-                    Radio<String>(value: t, groupValue: _type, onChanged: (v) => setState(() => _type = v ?? _type)),
+                    RadioGroup<String>(
+                      onChanged: (v) => setState(() => _type = v ?? _type),
+                      child: Radio<String>(value: t),
+                    ),
                     Text(t[0].toUpperCase() + t.substring(1)),
                   ])).toList(),
             ),

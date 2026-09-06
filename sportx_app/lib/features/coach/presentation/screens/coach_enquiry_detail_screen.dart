@@ -157,7 +157,7 @@ class _CoachEnquiryDetailScreenState extends ConsumerState<CoachEnquiryDetailScr
         children: [
           CircleAvatar(
             radius: 28,
-            backgroundColor: AppColors.primary.withOpacity(0.1),
+            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
             child: enquiry.athletePhotoUrl != null
                 ? ClipOval(
                     child: Image.network(
@@ -165,7 +165,7 @@ class _CoachEnquiryDetailScreenState extends ConsumerState<CoachEnquiryDetailScr
                       width: 56,
                       height: 56,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(LucideIcons.user, color: AppColors.primary),
+                      errorBuilder: (_, _, ___) => const Icon(LucideIcons.user, color: AppColors.primary),
                     ),
                   )
                 : const Icon(LucideIcons.user, color: AppColors.primary),
@@ -218,7 +218,7 @@ class _CoachEnquiryDetailScreenState extends ConsumerState<CoachEnquiryDetailScr
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: _quickReplies.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           return OutlinedButton(
             onPressed: () => _useQuickReply(_quickReplies[index]),
@@ -299,7 +299,7 @@ class _CoachEnquiryDetailScreenState extends ConsumerState<CoachEnquiryDetailScr
                     time,
                     style: TextStyle(
                       fontSize: 11,
-                      color: isMe ? Colors.white.withOpacity(0.7) : AppColors.textSecondary,
+                      color: isMe ? Colors.white.withValues(alpha: 0.7) : AppColors.textSecondary,
                     ),
                   ),
                 ],

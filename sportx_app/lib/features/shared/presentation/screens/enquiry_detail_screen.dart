@@ -181,7 +181,7 @@ class _EnquiryDetailScreenState extends ConsumerState<EnquiryDetailScreen> {
                     time,
                     style: TextStyle(
                       fontSize: 11,
-                      color: isMe ? Colors.white.withOpacity(0.7) : AppColors.textSecondary,
+                      color: isMe ? Colors.white.withValues(alpha: 0.7) : AppColors.textSecondary,
                     ),
                   ),
                 ],

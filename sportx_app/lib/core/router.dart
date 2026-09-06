@@ -99,6 +99,13 @@ import 'package:sportx_app/features/admin/presentation/screens/opp_approval_queu
 import 'package:sportx_app/features/admin/presentation/screens/opp_review_detail_screen.dart';
 import 'package:sportx_app/features/admin/presentation/screens/notification_targeting_screen.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
+import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_onboarding_screen.dart';
+import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_dashboard_screen.dart';
+import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_athlete_discovery_screen.dart';
+import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_athlete_profile_view_screen.dart';
+import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_shortlist_screen.dart';
+import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_connection_screen.dart';
+import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_connections_screen.dart';
 
 /// Maps a user role to the first onboarding screen they must complete.
 /// Returns null for roles with no onboarding (e.g. admin).
@@ -114,6 +121,8 @@ String? _onboardingRouteFor(String? role) {
       return '/organizer-onboarding';
     case 'sponsor':
       return '/sponsor-onboarding';
+    case 'talent_scout':
+      return '/scout-onboarding';
     default:
       return null;
   }
@@ -130,6 +139,8 @@ String _dashboardRouteFor(String? role) {
       return '/organizer-dashboard';
     case 'sponsor':
       return '/sponsor-dashboard';
+    case 'talent_scout':
+      return '/scout-dashboard';
     case 'admin':
       return '/admin/dashboard';
     default:
@@ -163,6 +174,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         '/onboarding-1', '/onboarding-2',
         '/coach-onboarding', '/academy-onboarding',
         '/organizer-onboarding', '/sponsor-onboarding',
+        '/scout-onboarding',
       ];
       const shellRouteScreens = ['/home', '/universal-search', '/saved', '/activity-hub', '/profile'];
 
@@ -261,6 +273,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/edit-academy-profile', builder: (context, state) => const AcademyProfilePostingScreen()),
       GoRoute(path: '/organizer-onboarding', builder: (context, state) => const OrganizerOnboardingScreen()),
       GoRoute(path: '/sponsor-onboarding', builder: (context, state) => const SponsorOnboardingScreen()),
+      GoRoute(path: '/scout-onboarding', builder: (context, state) => const TalentScoutOnboardingScreen()),
+      GoRoute(path: '/scout-dashboard', builder: (context, state) => const TalentScoutDashboardScreen()),
+      GoRoute(path: '/scout-discovery', builder: (context, state) => const TalentScoutAthleteDiscoveryScreen()),
+      GoRoute(path: '/scout-athlete/:id', builder: (context, state) => TalentScoutAthleteProfileViewScreen(athleteId: state.pathParameters['id']!)),
+      GoRoute(path: '/scout-shortlist', builder: (context, state) => const TalentScoutShortlistScreen()),
+      GoRoute(path: '/scout-connect/:athleteId', builder: (context, state) => TalentScoutConnectionScreen(athleteId: state.pathParameters['athleteId']!)),
+      GoRoute(path: '/scout-connections', builder: (context, state) => const TalentScoutConnectionsScreen()),
+      GoRoute(path: '/scout-profile', builder: (context, state) => const TalentScoutDashboardScreen()),
       GoRoute(path: '/sponsor-posting', builder: (context, state) => const SponsorshipPostingScreen()),
       GoRoute(path: '/sponsor-pitch/:id', builder: (context, state) => SponsorPitchScreen(sponsorId: state.pathParameters['id']!)),
       GoRoute(path: '/registrant-detail', builder: (context, state) {

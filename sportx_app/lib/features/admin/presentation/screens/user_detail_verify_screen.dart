@@ -180,9 +180,9 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.warning.withOpacity(0.1),
+        color: AppColors.warning.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+        border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [

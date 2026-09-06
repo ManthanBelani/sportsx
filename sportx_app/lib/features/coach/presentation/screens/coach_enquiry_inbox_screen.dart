@@ -162,7 +162,6 @@ class _CoachEnquiryInboxScreenState extends ConsumerState<CoachEnquiryInboxScree
   }
 
   Widget _buildEnquiryItem(Enquiry e) {
-    final isNew = e.status == 'new' && !e.isRead;
     final status = e.status;
 
     return InkWell(
@@ -177,7 +176,7 @@ class _CoachEnquiryInboxScreenState extends ConsumerState<CoachEnquiryInboxScree
           children: [
             CircleAvatar(
               radius: 24,
-              backgroundColor: AppColors.primary.withOpacity(0.1),
+              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
               child: e.athletePhotoUrl != null
                   ? ClipOval(
                       child: Image.network(
@@ -185,7 +184,7 @@ class _CoachEnquiryInboxScreenState extends ConsumerState<CoachEnquiryInboxScree
                         width: 48,
                         height: 48,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Icon(LucideIcons.user, color: AppColors.primary),
+                        errorBuilder: (_, _, ___) => const Icon(LucideIcons.user, color: AppColors.primary),
                       ),
                     )
                   : const Icon(LucideIcons.user, color: AppColors.primary),

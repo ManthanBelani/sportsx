@@ -59,7 +59,7 @@ class _EnquiryInboxScreenState extends ConsumerState<EnquiryInboxScreen> {
                     label: Text(_tabs[index]),
                     selected: isSelected,
                     onSelected: (val) => _onTabChanged(index),
-                    selectedColor: AppColors.primary.withOpacity(0.15),
+                    selectedColor: AppColors.primary.withValues(alpha: 0.15),
                     checkmarkColor: AppColors.primary,
                   ),
                 );
@@ -101,7 +101,7 @@ class _EnquiryInboxScreenState extends ConsumerState<EnquiryInboxScreen> {
         decoration: BoxDecoration(
           border: Border.all(color: AppColors.border),
           borderRadius: BorderRadius.circular(12),
-          color: isNew ? AppColors.primary.withOpacity(0.05) : AppColors.surface,
+          color: isNew ? AppColors.primary.withValues(alpha: 0.05) : AppColors.surface,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
