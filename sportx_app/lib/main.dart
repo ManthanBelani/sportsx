@@ -6,7 +6,13 @@ import 'package:sportx_app/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.env');
+
+  try {
+    await dotenv.load(fileName: 'assets/env');
+  } catch (_) {
+    // Env asset missing — ApiConfig falls back to its built-in defaults.
+  }
+
   runApp(const ProviderScope(child: SportXApp()));
 }
 

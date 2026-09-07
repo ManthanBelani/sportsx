@@ -240,8 +240,11 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: items.length,
-        onReorderItem: (oldIndex, newIndex) {
+        onReorder: (oldIndex, newIndex) {
           setState(() {
+            if (oldIndex < newIndex) {
+              newIndex -= 1;
+            }
             final item = items.removeAt(oldIndex);
             items.insert(newIndex, item);
           });

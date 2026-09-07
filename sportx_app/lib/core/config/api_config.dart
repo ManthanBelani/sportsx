@@ -1,7 +1,7 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiConfig {
-  static const String _defaultBaseUrl = 'http://127.0.0.1:8002/api/v1';
+  static const String _defaultBaseUrl = 'https://hedgier-shayne-unnotioned.ngrok-free.dev/api/v1';
 
   /// Base URL of the SportX backend API (read from .env at runtime).
   /// Falls back to the default if .env is missing or the key is absent.
