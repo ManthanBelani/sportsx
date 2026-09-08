@@ -43,7 +43,15 @@ class _SponsorDashboardScreenState extends ConsumerState<SponsorDashboardScreen>
       body: _currentTabIndex == 0 ? _buildHomeTab() : const Center(child: Text('Under Construction')),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentTabIndex,
-        onDestinationSelected: (index) => setState(() => _currentTabIndex = index),
+        onDestinationSelected: (index) {
+          if (index == 1) {
+            context.push('/my-sponsorships');
+          } else if (index == 2) {
+            context.push('/applications-inbox');
+          } else {
+            setState(() => _currentTabIndex = index);
+          }
+        },
         destinations: const [
           NavigationDestination(
             icon: Icon(LucideIcons.home),

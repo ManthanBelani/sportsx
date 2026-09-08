@@ -66,7 +66,15 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentTabIndex,
-        onDestinationSelected: (index) => setState(() => _currentTabIndex = index),
+        onDestinationSelected: (index) {
+          if (index == 2) {
+            context.push('/coach-enquiry-inbox');
+          } else if (index == 3) {
+            context.push('/coach-profile-edit');
+          } else {
+            setState(() => _currentTabIndex = index);
+          }
+        },
         destinations: const [
           NavigationDestination(
             icon: Icon(LucideIcons.home),

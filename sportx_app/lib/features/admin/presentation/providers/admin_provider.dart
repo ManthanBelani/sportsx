@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/core/utils/storage_service.dart';
 
 class PlatformStats {
   final int activeListings;
@@ -261,8 +262,9 @@ class AdminState {
 
 class AdminNotifier extends StateNotifier<AdminState> {
   final Dio _dio;
+  final StorageService _storage;
 
-  AdminNotifier(this._dio) : super(AdminState());
+  AdminNotifier(this._dio, this._storage) : super(AdminState());
 
   Future<bool> login(String email, String password) async {
     state = state.copyWith(isLoading: true, error: null);
@@ -274,6 +276,10 @@ class AdminNotifier extends StateNotifier<AdminState> {
 
       if (response.statusCode == 200) {
         final data = response.data['data'];
+        final token = data['token'] as String?;
+        if (token != null) {
+          await _storage.saveToken(token);
+        }
         state = state.copyWith(
           isLoading: false,
           isLoggedIn: true,
@@ -324,6 +330,7 @@ class AdminNotifier extends StateNotifier<AdminState> {
     try {
       await _dio.post('/admin/logout');
     } catch (_) {}
+    await _storage.deleteToken();
     state = AdminState();
   }
 
@@ -669,5 +676,6 @@ class AdminNotifier extends StateNotifier<AdminState> {
 
 final adminProvider = StateNotifierProvider<AdminNotifier, AdminState>((ref) {
   final dio = ref.watch(dioProvider);
-  return AdminNotifier(dio);
+  final storage = ref.watch(storageServiceProvider);
+  return AdminNotifier(dio, storage);
 });

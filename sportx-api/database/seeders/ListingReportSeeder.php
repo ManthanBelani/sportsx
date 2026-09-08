@@ -15,7 +15,7 @@ class ListingReportSeeder extends Seeder
         $reports = [
             [
                 'reporter_user_id' => $user?->id ?? 2,
-                'reportable_type' => 'trial',
+                'reportable_type' => 'App\Models\Trial',
                 'reportable_id' => 1,
                 'reason' => 'fake',
                 'comment' => 'This listing appears to be fake with misleading information.',

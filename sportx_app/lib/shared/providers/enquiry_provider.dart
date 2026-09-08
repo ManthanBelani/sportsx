@@ -67,12 +67,32 @@ class Enquiry {
     final athleteName = athleteData != null
         ? athleteData['full_name'] as String? ?? 'Unknown'
         : json['athlete_name'] as String? ?? json['sender_name'] as String? ?? 'Unknown';
+    final photo = athleteData?['photo'];
     String? athletePhotoUrl = json['athlete_photo_url'] as String? ??
-        (athleteData != null ? athleteData['photo_media_id'] as String? : null) ??
+        (photo is Map ? photo['url'] as String? : null) ??
         json['sender_photo_url'] as String?;
-    
+
     if (athletePhotoUrl != null && athletePhotoUrl.startsWith('/')) {
       athletePhotoUrl = '${ApiConfig.baseUrl}$athletePhotoUrl';
+    }
+
+    final messages = (json['messages'] as List? ?? [])
+        .map((m) => EnquiryMessage.fromJson(m as Map<String, dynamic>, currentUserId: currentUserId))
+        .toList();
+
+    // The enquiries table has no status column: derive it from who sent the
+    // latest message (inbox returns messages latest-first).
+    final String status;
+    if (messages.isNotEmpty) {
+      status = messages.first.isMe ? 'replied' : 'new';
+    } else {
+      status = json['status'] as String? ?? 'new';
+    }
+
+    // Preview = the enquiry's opening message (last in the latest-first list).
+    String message = (json['message'] ?? json['body']) as String? ?? '';
+    if (message.isEmpty && messages.isNotEmpty) {
+      message = messages.last.body;
     }
 
     return Enquiry(
@@ -81,13 +101,11 @@ class Enquiry {
       athletePhotoUrl: athletePhotoUrl,
       sport: sport,
       subject: json['subject_type'] as String? ?? json['subject'] as String? ?? '',
-      message: json['message'] as String? ?? json['body'] as String? ?? '',
-      status: json['status'] as String? ?? 'new',
+      message: message,
+      status: status,
       createdAt: json['created_at'] as String?,
       isRead: json['is_read'] == true || json['read_at'] != null,
-      messages: (json['messages'] as List? ?? [])
-          .map((m) => EnquiryMessage.fromJson(m as Map<String, dynamic>, currentUserId: currentUserId))
-          .toList(),
+      messages: messages,
     );
   }
 

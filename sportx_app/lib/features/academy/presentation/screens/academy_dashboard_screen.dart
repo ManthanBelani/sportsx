@@ -42,7 +42,17 @@ class _AcademyDashboardScreenState extends ConsumerState<AcademyDashboardScreen>
       body: _currentTabIndex == 0 ? _buildHomeTab() : const Center(child: Text('Under Construction')),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentTabIndex,
-        onDestinationSelected: (index) => setState(() => _currentTabIndex = index),
+        onDestinationSelected: (index) {
+          if (index == 1) {
+            context.push('/my-trials');
+          } else if (index == 2) {
+            context.push('/enquiry-inbox');
+          } else if (index == 3) {
+            context.push('/academy-profile');
+          } else {
+            setState(() => _currentTabIndex = index);
+          }
+        },
         destinations: const [
           NavigationDestination(
             icon: Icon(LucideIcons.home),

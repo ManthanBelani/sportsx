@@ -24,6 +24,11 @@ class Academy {
   final double? hourlyRate;
   final double? monthlyRate;
   final String? registrationLink;
+  final String? feeRange;
+  final String? timings;
+  final List<String> facilities;
+  final List<String> ageGroups;
+  final List<Sport> sports;
   final String status;
   final City? city;
   final Sport? sport;
@@ -45,6 +50,11 @@ class Academy {
     this.hourlyRate,
     this.monthlyRate,
     this.registrationLink,
+    this.feeRange,
+    this.timings,
+    this.facilities = const [],
+    this.ageGroups = const [],
+    this.sports = const [],
     required this.status,
     this.city,
     this.sport,
@@ -70,6 +80,14 @@ class Academy {
       hourlyRate: (json['hourly_rate'] as num?)?.toDouble(),
       monthlyRate: (json['monthly_rate'] as num?)?.toDouble(),
       registrationLink: json['registration_link'] as String?,
+      feeRange: json['fee_range'] as String?,
+      timings: json['timings'] as String?,
+      facilities: _toStringList(json['facilities']),
+      ageGroups: _toStringList(json['age_groups']),
+      sports: (json['sports'] as List? ?? [])
+          .map((s) => s is Map && s['sport'] is Map ? Sport.fromJson(s['sport'] as Map<String, dynamic>) : null)
+          .whereType<Sport>()
+          .toList(),
       status: json['status'] as String? ?? 'draft',
       city: json['city'] != null ? City.fromJson(json['city']) : null,
       sport: json['sport'] != null ? Sport.fromJson(json['sport']) : null,
@@ -83,6 +101,13 @@ class Academy {
     'email': email, 'website': website, 'logo_url': logoUrl,
     'cover_image_url': coverImageUrl, 'city_id': cityId, 'sport_id': sportId,
     'hourly_rate': hourlyRate, 'monthly_rate': monthlyRate,
-    'registration_link': registrationLink, 'status': status,
+    'registration_link': registrationLink, 'fee_range': feeRange,
+    'timings': timings, 'facilities': facilities, 'age_groups': ageGroups,
+    'status': status,
   };
+
+  static List<String> _toStringList(dynamic v) {
+    if (v is List) return v.map((e) => e.toString()).toList();
+    return [];
+  }
 }

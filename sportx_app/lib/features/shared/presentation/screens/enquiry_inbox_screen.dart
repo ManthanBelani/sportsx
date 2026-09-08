@@ -14,8 +14,7 @@ class EnquiryInboxScreen extends ConsumerStatefulWidget {
 
 class _EnquiryInboxScreenState extends ConsumerState<EnquiryInboxScreen> {
   int _selectedIndex = 0;
-  final _tabs = ['All', 'New', 'Replied'];
-  final _filterMap = {'All': 'all', 'New': 'new', 'Replied': 'replied'};
+  bool get _loading => ref.read(enquiryInboxProvider).isLoading;
 
   @override
   void initState() {
@@ -23,44 +22,84 @@ class _EnquiryInboxScreenState extends ConsumerState<EnquiryInboxScreen> {
     Future.microtask(() => ref.read(enquiryInboxProvider.notifier).load());
   }
 
-  void _onTabChanged(int index) {
-    setState(() => _selectedIndex = index);
-    final filter = _filterMap[_tabs[index]] ?? 'all';
-    ref.read(enquiryInboxProvider.notifier).load(filter: filter);
+  Future<void> _refresh() => ref.read(enquiryInboxProvider.notifier).load();
+
+  List<Enquiry> _filtered(List<Enquiry> items) {
+    switch (_selectedIndex) {
+      case 1:
+        return items.where((e) => e.status == 'new').toList();
+      case 2:
+        return items.where((e) => e.status == 'replied').toList();
+      default:
+        return items;
+    }
+  }
+
+  String _relativeTime(String? iso) {
+    if (iso == null) return '';
+    final t = DateTime.tryParse(iso);
+    if (t == null) return '';
+    final diff = DateTime.now().difference(t);
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays == 1) return 'Yesterday';
+    if (diff.inDays < 7) return '${diff.inDays} days ago';
+    return '${t.day}/${t.month}/${t.year}';
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(enquiryInboxProvider);
-    final items = state.items;
+    final all = state.items;
+    final newCount = all.where((e) => e.status == 'new').length;
+    final repliedCount = all.where((e) => e.status == 'replied').length;
+    final tabs = ['All (${all.length})', 'New ($newCount)', 'Replied ($repliedCount)'];
+    final items = _filtered(all);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        title: const Text('Enquiry Inbox',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        automaticallyImplyLeading: false,
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: () => context.canPop() ? context.pop() : context.go('/academy-dashboard'),
         ),
+        title: const Text('Enquiry Inbox',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
       ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
-              children: List.generate(_tabs.length, (index) {
+              children: List.generate(tabs.length, (index) {
                 final isSelected = _selectedIndex == index;
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(_tabs[index]),
-                    selected: isSelected,
-                    onSelected: (val) => _onTabChanged(index),
-                    selectedColor: AppColors.primary.withValues(alpha: 0.15),
-                    checkmarkColor: AppColors.primary,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => setState(() => _selectedIndex = index),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppColors.infoLight : AppColors.surface,
+                        border: Border.all(
+                          color: isSelected ? AppColors.primary : AppColors.border,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        tabs[index],
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                          color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
                   ),
                 );
               }),
@@ -68,69 +107,155 @@ class _EnquiryInboxScreenState extends ConsumerState<EnquiryInboxScreen> {
           ),
           Expanded(
             child: RefreshIndicator(
-              onRefresh: () => ref.read(enquiryInboxProvider.notifier).load(filter: _filterMap[_tabs[_selectedIndex]]),
-              child: state.isLoading && state.items.isEmpty
+              onRefresh: _refresh,
+              child: _loading && all.isEmpty
                   ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-                  : items.isEmpty
-                      ? const Center(
-                          child: Text('No enquiries', style: TextStyle(color: AppColors.textSecondary)))
-                      : ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: items.length,
-                          itemBuilder: (context, i) {
-                            final e = items[i];
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: _buildMessageCard(e, context, ref),
-                            );
-                          },
-                        ),
+                  : state.error != null && all.isEmpty
+                      ? ListView(children: [
+                          Padding(
+                            padding: const EdgeInsets.all(32),
+                            child: Center(
+                              child: Text(state.error!,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(color: AppColors.textSecondary)),
+                            ),
+                          ),
+                        ])
+                      : items.isEmpty
+                          ? ListView(children: const [
+                              Padding(
+                                padding: EdgeInsets.all(32),
+                                child: Center(
+                                  child: Text('No enquiries yet',
+                                      style: TextStyle(color: AppColors.textSecondary)),
+                                ),
+                              ),
+                            ])
+                          : ListView.builder(
+                              padding: const EdgeInsets.all(16),
+                              itemCount: items.length,
+                              itemBuilder: (context, i) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _EnquiryCard(
+                                  enquiry: items[i],
+                                  timeLabel: _relativeTime(items[i].createdAt),
+                                ),
+                              ),
+                            ),
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildMessageCard(Enquiry e, BuildContext context, WidgetRef ref) {
-    final isNew = e.status == 'new' && !e.isRead;
+class _EnquiryCard extends StatelessWidget {
+  final Enquiry enquiry;
+  final String timeLabel;
+
+  const _EnquiryCard({required this.enquiry, required this.timeLabel});
+
+  Color get _badgeBg {
+    switch (enquiry.status) {
+      case 'replied':
+        return const Color(0xFFd1fae5);
+      default:
+        return const Color(0xFFdbeafe);
+    }
+  }
+
+  Color get _badgeFg {
+    switch (enquiry.status) {
+      case 'replied':
+        return const Color(0xFF065f46);
+      default:
+        return const Color(0xFF1e40af);
+    }
+  }
+
+  String get _badgeLabel => enquiry.status == 'replied' ? 'Replied' : 'New';
+
+  @override
+  Widget build(BuildContext context) {
+    final e = enquiry;
+    final isNew = e.status == 'new';
     return InkWell(
+      borderRadius: BorderRadius.circular(12),
       onTap: () => context.push('/enquiry-detail', extra: {'id': e.id}),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: isNew ? AppColors.primary.withValues(alpha: 0.4) : AppColors.border),
           borderRadius: BorderRadius.circular(12),
-          color: isNew ? AppColors.primary.withValues(alpha: 0.05) : AppColors.surface,
+          color: AppColors.surface,
         ),
-        child: Column(
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(Icons.circle,
-                    size: 12, color: isNew ? AppColors.primary : AppColors.textSecondary),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text('${e.athleteName} · ${e.sport ?? ''}',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary)),
-                ),
-              ],
+            CircleAvatar(
+              radius: 24,
+              backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+              backgroundImage: e.athletePhotoUrl != null ? NetworkImage(e.athletePhotoUrl!) : null,
+              child: e.athletePhotoUrl == null
+                  ? Text(
+                      e.athleteName.isNotEmpty ? e.athleteName[0].toUpperCase() : '?',
+                      style: const TextStyle(
+                          color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 18),
+                    )
+                  : null,
             ),
-            const SizedBox(height: 8),
-            Text('"${e.message}"', style: TextStyle(color: Colors.grey[700])),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(e.createdAt ?? '',
-                    style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                if (isNew)
-                  TextButton(
-                    onPressed: () => context.push('/enquiry-detail', extra: {'id': e.id}),
-                    child: const Text('Reply'),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(e.athleteName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w600, fontSize: 15, color: AppColors.textPrimary)),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _badgeBg,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(_badgeLabel,
+                            style: TextStyle(
+                                fontSize: 11, fontWeight: FontWeight.w600, color: _badgeFg)),
+                      ),
+                    ],
                   ),
-              ],
+                  const SizedBox(height: 4),
+                  Text(e.message,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 13, color: Colors.grey[700], height: 1.3)),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(LucideIcons.circleDot, size: 13, color: AppColors.textSecondary),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          e.sport ?? e.subject.replaceAll('_', ' '),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                        ),
+                      ),
+                      Text(timeLabel,
+                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),

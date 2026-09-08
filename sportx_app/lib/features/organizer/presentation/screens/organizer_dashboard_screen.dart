@@ -43,7 +43,13 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
       body: _currentTabIndex == 0 ? _buildHomeTab() : const Center(child: Text('Under Construction')),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentTabIndex,
-        onDestinationSelected: (index) => setState(() => _currentTabIndex = index),
+        onDestinationSelected: (index) {
+          if (index == 1) {
+            context.push('/my-tournaments');
+          } else {
+            setState(() => _currentTabIndex = index);
+          }
+        },
         destinations: const [
           NavigationDestination(
             icon: Icon(LucideIcons.home),

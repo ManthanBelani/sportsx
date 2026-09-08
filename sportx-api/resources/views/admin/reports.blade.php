@@ -14,7 +14,7 @@
           <div class="report-title">{{ $r->reason ?: 'Report on '.$morphName.' #'.$r->reportable_id }}</div>
           <div class="report-meta">Filed {{ $r->created_at?->diffForHumans() }} • By User #{{ $r->reporter_user_id ?? 'Anon' }}</div>
         </div>
-        <span class="report-badge {{ $r->status==='pending'?'pending':'resolved' }}">{{ ucfirst($r->status) }}</span>
+        <span class="report-badge {{ $r->status==='pending'?'pending':'active' }}">{{ ucfirst($r->status) }}</span>
       </div>
       <div class="card-body">
         <div class="report-detail">{{ $r->comment ?: 'No additional detail.' }}</div>
@@ -24,7 +24,7 @@
             <form method="POST" action="{{ route('admin.reports.action', $r->id) }}">@csrf<input type="hidden" name="action" value="resolve"><button class="action-btn resolve"><i data-lucide="check"></i> Resolve</button></form>
             <form method="POST" action="{{ route('admin.reports.action', $r->id) }}">@csrf<input type="hidden" name="action" value="escalate"><button class="action-btn escalate"><i data-lucide="alert-triangle"></i> Escalate</button></form>
           @endif
-          <a href="{{ route('admin.moderation') }}" class="action-btn view"><i data-lucide="eye"></i> View</a>
+          <a href="{{ route('admin.reports.detail', $r->id) }}" class="action-btn view"><i data-lucide="eye"></i> View</a>
         </div>
       </div>
     </div>

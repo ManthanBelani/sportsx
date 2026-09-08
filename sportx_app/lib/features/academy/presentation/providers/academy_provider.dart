@@ -34,14 +34,11 @@ class ProviderTrialActions {
   final Ref _ref;
   ProviderTrialActions(this._dio, this._ref);
 
-  Future<bool> create(Map<String, dynamic> data) async {
-    try {
-      await _dio.post('/me/trials', data: data);
-      _ref.read(myTrialsProvider.notifier).refresh();
-      return true;
-    } on DioException {
-      return false;
-    }
+  /// Creates a trial. Throws [DioException] on failure so callers can surface
+  /// the API's validation message.
+  Future<void> create(Map<String, dynamic> data) async {
+    await _dio.post('/me/trials', data: data);
+    _ref.read(myTrialsProvider.notifier).refresh();
   }
 
   Future<bool> publish(String id) async {

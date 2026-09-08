@@ -70,4 +70,22 @@ class User extends Authenticatable
     {
         return $this->role === 'admin';
     }
+
+    /**
+     * Whether the user has completed their role-specific profile.
+     * Used to derive `needs_onboarding`. Roles without a profile
+     * (e.g. admin) are treated as onboarded.
+     */
+    public function hasRoleProfile(): bool
+    {
+        return match ($this->role) {
+            'athlete' => (bool) $this->athleteProfile,
+            'coach' => (bool) $this->coachProfile,
+            'academy' => (bool) $this->academies,
+            'organizer' => (bool) $this->organizerProfile,
+            'sponsor' => (bool) $this->sponsorProfile,
+            'talent_scout' => (bool) $this->talentScoutProfile,
+            default => true,
+        };
+    }
 }

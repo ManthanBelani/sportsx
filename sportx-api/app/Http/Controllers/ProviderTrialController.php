@@ -37,30 +37,30 @@ class ProviderTrialController extends Controller
         abort_unless(in_array($user->role, ['organizer', 'academy', 'coach']), 403, 'Only providers can create trials');
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'name' => 'required|string|max:150',
             'sport_id' => 'required|integer|exists:sports,id',
-            'city_id' => 'required|integer|exists:cities,id',
-            'venue' => 'required|string|max:500',
+            'city_id' => 'nullable|integer|exists:cities,id',
+            'venue' => 'required|string|max:190',
             'event_datetime' => 'required|date|after:now',
             'registration_deadline' => 'nullable|date|before:event_datetime',
-            'age_group_id' => 'nullable|integer|exists:age_groups,id',
-            'skill_level' => 'nullable|in:beginner,intermediate,advanced,all',
-            'max_participants' => 'nullable|integer|min:1',
-            'fee' => 'nullable|numeric|min:0',
+            'contact_number' => 'required|string|max:20',
+            'eligibility' => 'nullable|string|max:500',
+            'vacancies' => 'nullable|integer|min:1',
+            'entry_fee' => 'nullable|string|max:60',
             'required_documents' => 'nullable|array',
             'required_documents.*' => 'string',
-            'contact_name' => 'nullable|string|max:255',
-            'contact_phone' => 'nullable|string|max:20',
-            'contact_email' => 'nullable|email',
-            'listing_status' => 'nullable|in:draft,published,closed',
+            'status' => 'nullable|in:draft,published,closed',
         ]);
 
         $trial = Trial::create(array_merge($validated, [
             'posted_by_user_id' => $user->id,
-            'registration_deadline' => $validated['registration_deadline'] ?? null,
             'required_documents' => $validated['required_documents'] ?? [],
+            'status' => $validated['status'] ?? 'draft',
         ]));
+
+        if ($trial->status === 'published') {
+            $this->expiryService->onPublish($trial, 'trial');
+        }
 
         return response()->json(['data' => $trial->load(['city', 'sport'])], 201);
     }
@@ -70,23 +70,19 @@ class ProviderTrialController extends Controller
         $this->authorizeOwner($request, $trial);
 
         $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'description' => 'nullable|string',
+            'name' => 'sometimes|string|max:150',
             'sport_id' => 'sometimes|integer|exists:sports,id',
-            'city_id' => 'sometimes|integer|exists:cities,id',
-            'venue' => 'sometimes|string|max:500',
+            'city_id' => 'nullable|integer|exists:cities,id',
+            'venue' => 'sometimes|string|max:190',
             'event_datetime' => 'sometimes|date|after:now',
             'registration_deadline' => 'nullable|date|before:event_datetime',
-            'age_group_id' => 'nullable|integer|exists:age_groups,id',
-            'skill_level' => 'nullable|in:beginner,intermediate,advanced,all',
-            'max_participants' => 'nullable|integer|min:1',
-            'fee' => 'nullable|numeric|min:0',
+            'contact_number' => 'sometimes|string|max:20',
+            'eligibility' => 'nullable|string|max:500',
+            'vacancies' => 'nullable|integer|min:1',
+            'entry_fee' => 'nullable|string|max:60',
             'required_documents' => 'nullable|array',
             'required_documents.*' => 'string',
-            'contact_name' => 'nullable|string|max:255',
-            'contact_phone' => 'nullable|string|max:20',
-            'contact_email' => 'nullable|email',
-            'listing_status' => 'nullable|in:draft,published,closed',
+            'status' => 'nullable|in:draft,published,closed',
         ]);
 
         $trial->update($validated);
@@ -98,7 +94,7 @@ class ProviderTrialController extends Controller
     {
         $this->authorizeOwner($request, $trial);
 
-        $trial->update(['listing_status' => 'published']);
+        $trial->update(['status' => 'published']);
         $this->expiryService->onPublish($trial, 'trial');
 
         return response()->json(['data' => $trial]);
@@ -108,7 +104,7 @@ class ProviderTrialController extends Controller
     {
         $this->authorizeOwner($request, $trial);
 
-        $trial->update(['listing_status' => 'closed']);
+        $trial->update(['status' => 'closed']);
 
         return response()->json(['data' => $trial]);
     }

@@ -35,6 +35,7 @@ import 'package:sportx_app/features/academy/presentation/screens/trial_posting_s
 import 'package:sportx_app/features/organizer/presentation/screens/tournament_posting_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/coach_profile_posting_screen.dart';
 import 'package:sportx_app/features/academy/presentation/screens/academy_profile_posting_screen.dart';
+import 'package:sportx_app/features/academy/presentation/screens/academy_profile_screen.dart';
 import 'package:sportx_app/features/organizer/presentation/screens/organizer_onboarding_screen.dart';
 import 'package:sportx_app/features/sponsor/presentation/screens/sponsor_onboarding_screen.dart';
 import 'package:sportx_app/features/sponsor/presentation/screens/sponsorship_posting_screen.dart';
@@ -271,6 +272,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/post-tournament', builder: (context, state) => const TournamentPostingScreen()),
       GoRoute(path: '/edit-coach-profile', builder: (context, state) => const CoachProfilePostingScreen()),
       GoRoute(path: '/edit-academy-profile', builder: (context, state) => const AcademyProfilePostingScreen()),
+      GoRoute(path: '/academy-profile', builder: (context, state) => const AcademyProfileScreen()),
       GoRoute(path: '/organizer-onboarding', builder: (context, state) => const OrganizerOnboardingScreen()),
       GoRoute(path: '/sponsor-onboarding', builder: (context, state) => const SponsorOnboardingScreen()),
       GoRoute(path: '/scout-onboarding', builder: (context, state) => const TalentScoutOnboardingScreen()),

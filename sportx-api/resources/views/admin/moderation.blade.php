@@ -6,7 +6,7 @@
 
 @section('content')
   <div class="tabs">
-    @foreach(['pending'=>'Pending','resolved'=>'Resolved','removed'=>'Removed/Warned','all'=>'All'] as $key => $label)
+      @foreach(['pending'=>'Pending','approved'=>'Resolved','removed'=>'Removed/Warned','all'=>'All'] as $key => $label)
       <a class="tab {{ $status === $key ? 'active' : '' }}" href="{{ route('admin.moderation', ['status' => $key]) }}">{{ $label }} ({{ number_format($counts[$key]) }})</a>
     @endforeach
   </div>

@@ -661,10 +661,10 @@ class TestSeeder extends Seeder
         }
 
         ListingReport::updateOrInsert(
-            ['reporter_user_id' => $user->id, 'reportable_type' => 'trial', 'reportable_id' => $trial->id],
+            ['reporter_user_id' => $user->id, 'reportable_type' => 'App\Models\Trial', 'reportable_id' => $trial->id],
             [
                 'reporter_user_id' => $user->id,
-                'reportable_type' => 'trial',
+                'reportable_type' => 'App\Models\Trial',
                 'reportable_id' => $trial->id,
                 'reason' => 'outdated',
                 'comment' => 'This trial seems to have already concluded.',
