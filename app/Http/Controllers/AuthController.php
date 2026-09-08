@@ -41,7 +41,7 @@ class AuthController extends Controller
             'message' => 'Registration successful.',
             'token' => $token,
             'user' => $this->userResource($user),
-            'needs_onboarding' => ! $user->{$user->role.'Profile'},
+            'needs_onboarding' => ! $user->hasRoleProfile(),
         ], 201);
     }
 
@@ -67,8 +67,7 @@ class AuthController extends Controller
             'message' => 'Email verified successfully',
             'token' => $token,
             'user' => $this->userResource($user),
-            'needs_onboarding' => ! in_array($user->role, ['athlete', 'coach', 'academy', 'organizer', 'sponsor', 'talent_scout'])
-                    || ! $user->{$user->role.'Profile'},
+            'needs_onboarding' => ! $user->hasRoleProfile(),
         ]);
     }
 
@@ -90,7 +89,7 @@ class AuthController extends Controller
         return response()->json([
             'token' => $token,
             'user' => $this->userResource($user),
-            'needs_onboarding' => ! $user->{$user->role.'Profile'},
+            'needs_onboarding' => ! $user->hasRoleProfile(),
         ]);
     }
 
@@ -100,8 +99,7 @@ class AuthController extends Controller
 
         return response()->json([
             'data' => $this->userResource($user) + [
-                'needs_onboarding' => ! in_array($user->role, ['admin'])
-                    && ! $user->{$user->role.'Profile'},
+                'needs_onboarding' => ! $user->hasRoleProfile(),
             ],
         ]);
     }

@@ -257,7 +257,7 @@ class AdminPanelController extends Controller
 
         $counts = [
             'pending' => ListingReport::where('status', 'pending')->count(),
-            'resolved' => ListingReport::where('status', 'resolved')->count(),
+            'approved' => ListingReport::where('status', 'approved')->count(),
             'removed' => ListingReport::whereIn('status', ['removed', 'warned'])->count(),
             'all' => ListingReport::count(),
         ];
@@ -278,7 +278,7 @@ class AdminPanelController extends Controller
         }
 
         $report->update([
-            'status' => $data['action'] === 'approve' ? 'resolved' : ($data['action'] === 'remove' ? 'removed' : 'warned'),
+            'status' => $data['action'] === 'approve' ? 'approved' : ($data['action'] === 'remove' ? 'removed' : 'warned'),
             'resolved_at' => now(),
             'resolved_by' => Auth::id(),
         ]);
@@ -342,6 +342,13 @@ class AdminPanelController extends Controller
         return view('admin.reports', ['reports' => $reports]);
     }
 
+    public function reportDetail($id)
+    {
+        $report = ListingReport::with('reporter')->findOrFail($id);
+
+        return view('admin.report-detail', ['report' => $report]);
+    }
+
     public function reportAction(Request $request, $id)
     {
         $data = $request->validate(['action' => ['required', 'in:resolve,escalate']]);
@@ -349,7 +356,7 @@ class AdminPanelController extends Controller
 
         if ($data['action'] === 'resolve') {
             $report->update([
-                'status' => 'resolved',
+                'status' => 'approved',
                 'resolved_at' => now(),
                 'resolved_by' => Auth::id(),
             ]);
@@ -383,7 +390,7 @@ class AdminPanelController extends Controller
         } elseif ($data['action'] === 'warn') {
             $report->update(['status' => 'warned', 'resolved_at' => now(), 'resolved_by' => Auth::id()]);
         } else {
-            $report->update(['status' => 'resolved', 'resolved_at' => now(), 'resolved_by' => Auth::id()]);
+            $report->update(['status' => 'approved', 'resolved_at' => now(), 'resolved_by' => Auth::id()]);
         }
 
         return back()->with('success', 'Flag '.ucfirst($data['action']).'ed.');
@@ -594,8 +601,7 @@ class AdminPanelController extends Controller
     public function expiryRestore($id)
     {
         $event = \App\Models\ExpiryEvent::findOrFail($id);
-        $event->update(['status' => 'overridden', 'overridden_by' => Auth::id()]);
-        $this->republishContent($event);
+        $event->update(['status' => 'restored', 'overridden_by' => Auth::id()]);
 
         return back()->with('success', 'Listing restored.');
     }

@@ -94,7 +94,7 @@ class AdminModerationController extends Controller
         ListingReport::where('reportable_type', $report->reportable_type)
             ->where('reportable_id', $report->reportable_id)
             ->where('status', 'pending')
-            ->update(['status' => 'resolved']);
+            ->update(['status' => 'approved']);
 
         return response()->json([
             'data' => [
@@ -130,7 +130,7 @@ class AdminModerationController extends Controller
         ListingReport::where('reportable_type', $report->reportable_type)
             ->where('reportable_id', $report->reportable_id)
             ->where('status', 'pending')
-            ->update(['status' => 'resolved']);
+            ->update(['status' => 'approved']);
 
         return response()->json([
             'data' => [

@@ -16,6 +16,7 @@ Route::prefix('panel')->name('admin.')->group(function () {
     Route::get('/2fa', [AdminPanelController::class, 'show2fa'])->name('2fa');
     Route::post('/2fa', [AdminPanelController::class, 'verify2fa']);
     Route::post('/logout', [AdminPanelController::class, 'logout'])->name('logout');
+    Route::get('/logout', [AdminPanelController::class, 'logout'])->name('logout');
 
     // Protected routes
     Route::middleware(['auth', 'admin.panel'])->group(function () {
@@ -49,6 +50,7 @@ Route::prefix('panel')->name('admin.')->group(function () {
 
         // Report Center
         Route::get('/reports', [AdminPanelController::class, 'reports'])->name('reports');
+        Route::get('/reports/{id}', [AdminPanelController::class, 'reportDetail'])->name('reports.detail');
         Route::post('/reports/{id}', [AdminPanelController::class, 'reportAction'])->name('reports.action');
 
         // Content Flags
