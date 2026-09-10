@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/shared/providers/enquiry_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 
 class CoachEnquiryInboxScreen extends ConsumerStatefulWidget {
   final bool isTabContent;
@@ -238,7 +239,7 @@ class _CoachEnquiryInboxScreenState extends ConsumerState<CoachEnquiryInboxScree
                       ],
                       const Spacer(),
                       Text(
-                        e.createdAt ?? '',
+                        DateFormatUtils.formatRelative(e.createdAt),
                         style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                       ),
                     ],

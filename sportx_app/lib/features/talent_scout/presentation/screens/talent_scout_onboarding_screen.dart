@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/talent_scout/data/models/talent_scout_profile.dart';
 import 'package:sportx_app/features/talent_scout/presentation/providers/talent_scout_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
+import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
@@ -20,8 +23,11 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
   final _affiliation = TextEditingController();
   final _bio = TextEditingController();
   int? _experienceYears;
+  int? _cityId;
   final Set<int> _selectedSports = {};
   bool _saving = false;
+  int? _photoMediaId;
+  String? _photoUrl;
 
   @override
   void dispose() {
@@ -31,9 +37,20 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
     super.dispose();
   }
 
+  Future<void> _pickPhoto() async {
+    final media = await pickAndUploadMedia(context, ref, mediaType: 'photo');
+    if (media != null && mounted) {
+      setState(() {
+        _photoMediaId = media.mediaId;
+        _photoUrl = media.url;
+      });
+      SnackBarUtils.showSuccess(context, 'Photo uploaded');
+    }
+  }
+
   Future<void> _submit() async {
     if (_selectedSports.isEmpty) {
-      SnackBarUtils.showError(context, 'Please select at least one sport');
+      SnackBarUtils.showError(context, 'Please select at least one sport specialization');
       return;
     }
     setState(() => _saving = true);
@@ -44,7 +61,9 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
         affiliation: _affiliation.text.trim().isNotEmpty ? _affiliation.text.trim() : null,
         sportsSpecialization: _selectedSports.toList(),
         experienceYears: _experienceYears,
+        cityId: _cityId,
         bio: _bio.text.trim().isNotEmpty ? _bio.text.trim() : null,
+        photoMediaId: _photoMediaId,
       );
       final success = await ref.read(talentScoutProvider.notifier).createProfile(profile);
       if (mounted) {
@@ -55,7 +74,7 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
           SnackBarUtils.showSuccess(context, 'Profile created successfully');
           context.go('/scout-dashboard');
         } else {
-          SnackBarUtils.showError(context, 'Failed to create profile');
+          SnackBarUtils.showError(context, ref.read(talentScoutProvider).error ?? 'Failed to create profile');
         }
       }
     } catch (e) {
@@ -67,6 +86,7 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
 
   @override
   Widget build(BuildContext context) {
+    final meta = ref.watch(metaProvider);
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -77,20 +97,54 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
         leading: IconButton(
             icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
             onPressed: () => context.pop()),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: AppColors.border),
+        ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Step indicator per Implementation Guide: Organization + sports specialization is first setup
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(20)),
+              child: const Text('Step 1 of 1 — Scout Profile Setup', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary)),
+            ),
+            const SizedBox(height: 16),
+            const Text('Professional details help athletes trust your outreach', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+            const SizedBox(height: 20),
+            Center(
+              child: GestureDetector(
+                onTap: _pickPhoto,
+                child: Stack(alignment: Alignment.bottomRight, children: [
+                  CircleAvatar(
+                    radius: 44,
+                    backgroundColor: AppColors.surface,
+                    backgroundImage: _photoUrl != null ? NetworkImage(MediaUtils.resolveUrl(_photoUrl)) : null,
+                    child: _photoUrl == null ? const Icon(LucideIcons.camera, size: 28, color: AppColors.textSecondary) : null,
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                    child: const Icon(LucideIcons.camera, size: 14, color: Colors.white),
+                  ),
+                ]),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Center(child: Text(_photoUrl == null ? 'Tap to add profile photo (optional)' : 'Photo ready — tap to change', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary))),
+            const SizedBox(height: 20),
             TextField(
               controller: _organization,
-              decoration: const InputDecoration(labelText: 'Organization (optional)'),
+              decoration: const InputDecoration(labelText: 'Organization', hintText: 'Elite Talent Agency (optional)'),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _affiliation,
-              decoration: const InputDecoration(labelText: 'Affiliation (optional)'),
+              decoration: const InputDecoration(labelText: 'Affiliation', hintText: 'Gujarat Cricket Association (optional)'),
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<int>(
@@ -100,39 +154,43 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
               onChanged: (v) => setState(() => _experienceYears = v),
             ),
             const SizedBox(height: 16),
+            DropdownButtonFormField<int>(
+              initialValue: _cityId,
+              decoration: const InputDecoration(labelText: 'City'),
+              hint: const Text('Select city'),
+              items: meta.cities.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
+              onChanged: (v) => setState(() => _cityId = v),
+            ),
+            const SizedBox(height: 16),
             const Text('Sports Specialization *',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
             const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _buildSportChip(1, 'Cricket'),
-                _buildSportChip(2, 'Football'),
-                _buildSportChip(3, 'Kabaddi'),
-                _buildSportChip(4, 'Badminton'),
-                _buildSportChip(5, 'Tennis'),
-                _buildSportChip(6, 'Athletics'),
-                _buildSportChip(7, 'Hockey'),
-                _buildSportChip(8, 'Chess'),
-              ],
-            ),
+            if (meta.sports.isEmpty)
+              const Text('Loading sports...', style: TextStyle(fontSize: 13, color: AppColors.textSecondary))
+            else
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: meta.sports.map((s) => _buildSportChip(s.id, s.name)).toList(),
+              ),
             const SizedBox(height: 16),
             TextField(
               controller: _bio,
-              maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Bio (optional)', alignLabelWithHint: true),
+              maxLines: 4,
+              decoration: const InputDecoration(labelText: 'Bio (optional)', hintText: 'Tell athletes about your scouting background...', alignLabelWithHint: true),
             ),
+            const SizedBox(height: 8),
+            const Text('Visible on your public scout card', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
               child: FilledButton(
                 onPressed: _saving ? null : _submit,
-                style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+                style: FilledButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.symmetric(vertical: 14)),
                 child: _saving
                     ? const SizedBox(
                         height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('Submit'),
+                    : const Text('Create Scout Profile', style: TextStyle(fontWeight: FontWeight.w600)),
               ),
             ),
           ],

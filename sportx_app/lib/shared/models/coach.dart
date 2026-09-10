@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/shared/models/sport.dart';
 import 'package:sportx_app/shared/models/city.dart';
 
@@ -114,7 +115,7 @@ class Coach {
       id: _parseInt(json['id'])!,
       userId: _parseInt(json['user_id'])!,
       fullName: json['full_name'] as String,
-      profilePhotoUrl: json['profile_photo_url'] as String? ?? json['photo']?['url'] as String?,
+      profilePhotoUrl: MediaUtils.resolveNullable(json['profile_photo_url'] as String? ?? json['photo']?['url'] as String?),
       sportId: _parseInt(json['sport_id'])!,
       cityId: _parseInt(json['city_id']),
       contactNumber: json['contact_number'] as String?,

@@ -19,7 +19,7 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _contactController = TextEditingController();
-  final _experienceController = TextEditingController();
+  String? _experience;
   final _qualificationController = TextEditingController();
   final _feeController = TextEditingController();
   final _bioController = TextEditingController();
@@ -27,6 +27,7 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
   int? _sportId;
   int? _cityId;
   bool _personalCoaching = false;
+  final List<String> _experienceOptions = ['1-3 years', '3-5 years', '5-10 years', '10+ years'];
   final List<String> _certifications = [];
   final List<String> _languages = [];
   final _certificationController = TextEditingController();
@@ -37,7 +38,6 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
   void dispose() {
     _nameController.dispose();
     _contactController.dispose();
-    _experienceController.dispose();
     _qualificationController.dispose();
     _feeController.dispose();
     _bioController.dispose();
@@ -87,7 +87,7 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
         'sport_id': _sportId,
         'city_id': _cityId,
         'contact_number': _contactController.text.trim(),
-        'experience': _experienceController.text.trim(),
+        'experience': _experience ?? '',
         if (_qualificationController.text.trim().isNotEmpty)
           'qualification': _qualificationController.text.trim(),
         if (_feeController.text.trim().isNotEmpty)
@@ -180,11 +180,16 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
                       ),
                       const SizedBox(height: 20),
                       _buildSectionLabel('Experience (years)'),
-                      TextFormField(
-                        controller: _experienceController,
-                        keyboardType: TextInputType.number,
-                        decoration: _inputDecoration('e.g. 9'),
-                        validator: _required,
+                      _DropdownField(
+                        value: _experience == null ? null : _experienceOptions.indexOf(_experience!),
+                        hint: 'Select experience',
+                        items: _experienceOptions
+                            .asMap()
+                            .entries
+                            .map((e) => _DropdownItem(value: e.key, label: e.value))
+                            .toList(),
+                        onChanged: (v) => setState(() => _experience = v == null ? null : _experienceOptions[v]),
+                        validator: (v) => v == null ? 'Please select an option' : null,
                       ),
                       const SizedBox(height: 20),
                       _buildSectionLabel('Qualification (optional)'),

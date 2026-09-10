@@ -1,3 +1,4 @@
+import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/shared/models/sport.dart';
 import 'package:sportx_app/shared/models/city.dart';
 
@@ -73,8 +74,8 @@ class Academy {
       contactNumber: json['contact_number'] as String?,
       email: json['email'] as String?,
       website: json['website'] as String?,
-      logoUrl: (logo?['url'] as String?) ?? json['logo_url'] as String?,
-      coverImageUrl: (cover?['url'] as String?) ?? json['cover_image_url'] as String?,
+      logoUrl: MediaUtils.resolveNullable((logo?['url'] as String?) ?? json['logo_url'] as String?),
+      coverImageUrl: MediaUtils.resolveNullable((cover?['url'] as String?) ?? json['cover_image_url'] as String?),
       cityId: _parseInt(json['city_id']),
       sportId: _parseInt(json['sport_id']),
       hourlyRate: (json['hourly_rate'] as num?)?.toDouble(),

@@ -30,6 +30,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   int? _selectedSportId;
   String? _selectedSportName;
   String _dominantSide = 'Right';
+  int? _selectedAgeGroupId;
+  String? _selectedGender;
+  final List<String> _genders = ['male', 'female', 'other', 'prefer_not_to_say'];
+  final List<String> _skillLevels = ['beginner', 'intermediate', 'advanced', 'competitive'];
   
   File? _avatarFile;
   String? _existingAvatarUrl;
@@ -60,8 +64,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           _nameController.text = (d['full_name'] ?? d['name'] ?? '') as String;
           _dob = (d['date_of_birth'] ?? '') as String;
           _gender = (d['gender'] ?? '') as String;
+          _selectedGender = _genders.contains(_gender) ? _gender : null;
           _skillLevel = (d['skill_level'] ?? '') as String;
           _cityId = d['city_id'] as int?;
+          _selectedAgeGroupId = d['age_group_id'] as int?;
           _bioController.text = (d['experience'] ?? d['bio'] ?? _bioController.text) as String;
           final photo = d['photo'] as Map<String, dynamic>?;
           _existingAvatarUrl = photo?['url'] as String?;
@@ -105,6 +111,21 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     });
   }
 
+  Future<void> _pickDob() async {
+    final initial = DateTime.tryParse(_dob) ?? DateTime(2010);
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(1950),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _dob = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+      });
+    }
+  }
+
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -118,9 +139,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       await dio.put('/me/profile', data: {
         'full_name': _nameController.text.trim(),
         'date_of_birth': _dob,
-        'gender': _gender,
+        'gender': _selectedGender ?? _gender,
         'skill_level': _skillLevel,
         'city_id': _cityId,
+        'age_group_id': _selectedAgeGroupId,
         'sport_id': _selectedSportId,
         'experience': _bioController.text.trim(),
         'position': _dominantSide == 'Left' ? 'Left-hand' : 'Right-hand',
@@ -189,9 +211,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               const SizedBox(height: 24),
               _buildSectionTitle('Basic Information'),
               _buildTextField('Full Name', _nameController),
+              _buildDobField(),
+              _buildDropdown('Gender', _selectedGender ?? '', [..._genders], (val) => setState(() { _selectedGender = val; _gender = val ?? ''; })),
               _buildBioField(),
               _buildSportDropdown(meta),
-              _buildTextField('Location', _locationController),
+              _buildCityDropdown(meta),
+              _buildAgeGroupDropdown(meta),
+              _buildSkillLevelDropdown(),
               const SizedBox(height: 24),
               _buildSectionTitle('Physical Attributes'),
               Row(
@@ -370,6 +396,124 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(color: AppColors.primary),
               ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDobField() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Date of Birth', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
+          const SizedBox(height: 6),
+          GestureDetector(
+            onTap: _pickDob,
+            child: AbsorbPointer(
+              child: TextFormField(
+                controller: TextEditingController(text: _dob.isEmpty ? '' : _dob),
+                readOnly: true,
+                decoration: InputDecoration(
+                  hintText: 'YYYY-MM-DD',
+                  filled: true,
+                  fillColor: AppColors.surface,
+                  suffixIcon: const Icon(LucideIcons.calendar, size: 18, color: AppColors.textSecondary),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                ),
+                validator: (v) => _dob.isEmpty ? 'Required' : null,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCityDropdown(MetaState meta) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('City', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
+          const SizedBox(height: 6),
+          DropdownButtonFormField<int>(
+            initialValue: _cityId,
+            items: meta.cities.map((c) => DropdownMenuItem(value: c.id, child: Text('${c.name}, ${c.state}'))).toList(),
+            onChanged: (v) => setState(() => _cityId = v),
+            hint: const Text('Select City'),
+            icon: const Icon(LucideIcons.chevronDown, size: 20),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: AppColors.surface,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            ),
+            validator: (v) => v == null ? 'Required' : null,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAgeGroupDropdown(MetaState meta) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Age Group', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
+          const SizedBox(height: 6),
+          DropdownButtonFormField<int>(
+            initialValue: _selectedAgeGroupId,
+            items: meta.ageGroups.map((a) => DropdownMenuItem(value: a.id, child: Text(a.label))).toList(),
+            onChanged: (v) => setState(() => _selectedAgeGroupId = v),
+            hint: const Text('Select Age Group'),
+            icon: const Icon(LucideIcons.chevronDown, size: 20),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: AppColors.surface,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSkillLevelDropdown() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Skill Level', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
+          const SizedBox(height: 6),
+          DropdownButtonFormField<String>(
+            initialValue: _skillLevels.contains(_skillLevel) ? _skillLevel : null,
+            items: _skillLevels.map((s) => DropdownMenuItem(value: s, child: Text(s[0].toUpperCase() + s.substring(1)))).toList(),
+            onChanged: (v) => setState(() => _skillLevel = v ?? ''),
+            hint: const Text('Select Skill Level'),
+            icon: const Icon(LucideIcons.chevronDown, size: 20),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: AppColors.surface,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             ),
           ),

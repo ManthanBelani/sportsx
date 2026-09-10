@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/features/sponsor/presentation/providers/sponsor_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -55,7 +56,8 @@ class ApplicationsInboxScreen extends ConsumerWidget {
                     final sportRaw = a['sport'];
                     final sport = sportRaw is Map ? sportRaw['name'] : sportRaw;
                     final listing = a['sponsorship_title'] ?? 'Sponsorship';
-                    final date = a['created_at'] ?? '';
+                    final rawDate = a['created_at']?.toString() ?? '';
+                    final date = rawDate.isEmpty ? '' : DateFormatUtils.formatRelative(rawDate);
                     final status = (a['status'] ?? 'pending').toString();
                     final isNew = status == 'pending';
                     return Padding(

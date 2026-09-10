@@ -5,6 +5,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/talent_scout/presentation/providers/scout_connection_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/widgets/athlete_avatar.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class TalentScoutConnectionsScreen extends ConsumerWidget {
   const TalentScoutConnectionsScreen({super.key});
@@ -23,9 +24,10 @@ class TalentScoutConnectionsScreen extends ConsumerWidget {
         leading: IconButton(
             icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
             onPressed: () => context.pop()),
+        bottom: PreferredSize(preferredSize: const Size.fromHeight(1), child: Container(height: 1, color: AppColors.border)),
       ),
       body: state.isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
           : state.error != null
               ? Center(
                   child: Column(
@@ -37,6 +39,7 @@ class TalentScoutConnectionsScreen extends ConsumerWidget {
                       const SizedBox(height: 16),
                       FilledButton(
                         onPressed: () => ref.read(scoutConnectionProvider.notifier).load(),
+                        style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
                         child: const Text('Retry'),
                       ),
                     ],
@@ -51,6 +54,8 @@ class TalentScoutConnectionsScreen extends ConsumerWidget {
                           SizedBox(height: 16),
                           Text('No connections yet',
                               style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                          SizedBox(height: 8),
+                          Text('Send a request from athlete profiles', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                         ],
                       ),
                     )
@@ -61,17 +66,19 @@ class TalentScoutConnectionsScreen extends ConsumerWidget {
                         itemCount: state.connections.length,
                         itemBuilder: (context, index) {
                           final conn = state.connections[index];
-                          return _buildConnectionItem(conn);
+                          return _buildConnectionItem(context, ref, conn);
                         },
                       ),
                     ),
     );
   }
 
-  Widget _buildConnectionItem(Map<String, dynamic> conn) {
+  Widget _buildConnectionItem(BuildContext context, WidgetRef ref, Map<String, dynamic> conn) {
     final athlete = conn['athlete'] as Map<String, dynamic>?;
     final photoUrl = athlete?['photo']?['url'] as String?;
-    final status = conn['status'] ?? 'pending';
+    final status = (conn['status'] ?? 'pending').toString();
+    final name = athlete?['user']?['name'] ?? 'Athlete';
+    final connId = conn['id'].toString();
 
     Color badgeColor;
     Color badgeText;
@@ -105,18 +112,53 @@ class TalentScoutConnectionsScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(athlete?['user']?['name'] ?? 'Athlete',
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                Text(name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                 const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(color: badgeColor, borderRadius: BorderRadius.circular(4)),
-                  child: Text(status[0].toUpperCase() + status.substring(1),
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: badgeText)),
-                ),
+                Row(children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(color: badgeColor, borderRadius: BorderRadius.circular(4)),
+                    child: Text(status[0].toUpperCase() + status.substring(1),
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: badgeText)),
+                  ),
+                  if (conn['message'] != null && conn['message'].toString().isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    const Icon(LucideIcons.messageSquare, size: 12, color: AppColors.textSecondary),
+                  ],
+                ]),
+                if (conn['message'] != null && conn['message'].toString().isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text('"${conn['message']}"', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontStyle: FontStyle.italic), maxLines: 2, overflow: TextOverflow.ellipsis),
+                  ),
               ],
             ),
           ),
+          if (status == 'pending')
+            TextButton(
+              onPressed: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('Cancel request?'),
+                    content: Text('Cancel connection request to $name?'),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Keep')),
+                      TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Cancel request', style: TextStyle(color: Colors.red))),
+                    ],
+                  ),
+                );
+                if (confirm == true) {
+                  final ok = await ref.read(scoutConnectionProvider.notifier).cancelConnection(connId);
+                  if (context.mounted) {
+                    SnackBarUtils.showSuccess(context, ok ? 'Request cancelled' : 'Failed to cancel');
+                  }
+                }
+              },
+              child: const Text('Cancel', style: TextStyle(fontSize: 12, color: Colors.red)),
+            )
+          else
+            const Icon(LucideIcons.chevronRight, size: 16, color: AppColors.textSecondary),
         ],
       ),
     );

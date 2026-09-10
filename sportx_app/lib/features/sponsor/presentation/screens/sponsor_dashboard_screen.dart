@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/features/sponsor/presentation/providers/sponsor_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -226,10 +227,16 @@ class _SponsorDashboardScreenState extends ConsumerState<SponsorDashboardScreen>
                     child: Text('No applications yet.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                   )
                 else
-                  ...applications.take(3).map((a) => _buildApplicationItem(
-                        (a['athlete_name'] ?? a['name'] ?? 'Athlete').toString(),
-                        '${a['sport'] ?? ''} • ${a['created_at'] ?? ''}',
-                      )),
+                  ...applications.take(3).map((a) {
+                        final raw = a['created_at']?.toString();
+                        final formatted = raw != null && raw.isNotEmpty ? DateFormatUtils.formatRelative(raw) : '';
+                        final sport = a['sport']?.toString() ?? '';
+                        final meta = [sport, formatted].where((s) => s.isNotEmpty).join(' • ');
+                        return _buildApplicationItem(
+                          (a['athlete_name'] ?? a['name'] ?? 'Athlete').toString(),
+                          meta.isEmpty ? sport : meta,
+                        );
+                      }),
               ],
             ),
           ),

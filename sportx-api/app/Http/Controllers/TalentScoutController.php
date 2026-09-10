@@ -9,7 +9,7 @@ class TalentScoutController extends Controller
 {
     public function show(Request $request)
     {
-        $profile = $request->user()->talentScoutProfile()->with(['city'])->first();
+        $profile = $request->user()->talentScoutProfile()->with(['city', 'photo'])->first();
 
         if (!$profile) {
             return response()->json(['error' => ['code' => 'NOT_FOUND', 'message' => 'Scout profile not found.']], 404);
@@ -38,6 +38,6 @@ class TalentScoutController extends Controller
             $validated
         );
 
-        return response()->json(['data' => $profile->load('city')]);
+        return response()->json(['data' => $profile->load(['city', 'photo'])]);
     }
 }

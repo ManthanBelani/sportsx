@@ -17,6 +17,7 @@ class OnboardingSkillLocationScreen extends ConsumerStatefulWidget {
 class _OnboardingSkillLocationScreenState extends ConsumerState<OnboardingSkillLocationScreen> {
   String _selectedSkill = 'intermediate';
   int? _selectedCityId;
+  String? _selectedState;
   bool _isSubmitting = false;
 
   final _skills = [
@@ -175,13 +176,11 @@ class _OnboardingSkillLocationScreenState extends ConsumerState<OnboardingSkillL
                       ),
                     ),
                     const SizedBox(height: 24),
-                    
-                    const Text('Select your city', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                    const Text('Select your state', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
                     const SizedBox(height: 12),
-                    if (meta.isLoading)
-                      const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()))
-                    else
-                      Container(
+                    Builder(builder: (context) {
+                      final states = meta.cities.map((c) => c.state).toSet().toList()..sort();
+                      return Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                         decoration: BoxDecoration(
                           color: AppColors.surface,
@@ -189,25 +188,70 @@ class _OnboardingSkillLocationScreenState extends ConsumerState<OnboardingSkillL
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: DropdownButtonHideUnderline(
-                          child: DropdownButton<int>(
+                          child: DropdownButton<String>(
                             isExpanded: true,
-                            value: _selectedCityId,
-                            hint: const Text('Choose city', style: TextStyle(fontSize: 15, color: AppColors.textSecondary)),
+                            value: _selectedState,
+                            hint: const Text('Choose state', style: TextStyle(fontSize: 15, color: AppColors.textSecondary)),
                             icon: const Icon(LucideIcons.chevronDown, color: AppColors.textSecondary, size: 20),
-                            items: meta.cities.map((city) {
-                              return DropdownMenuItem<int>(
-                                value: city.id,
-                                child: Text('${city.name}, ${city.state}', style: const TextStyle(fontSize: 15, color: AppColors.textPrimary)),
+                            items: states.map((s) {
+                              return DropdownMenuItem<String>(
+                                value: s,
+                                child: Text(s, style: const TextStyle(fontSize: 15, color: AppColors.textPrimary)),
                               );
                             }).toList(),
                             onChanged: (value) {
                               setState(() {
-                                _selectedCityId = value;
+                                _selectedState = value;
+                                // Reset city when state changes if city not in state
+                                if (_selectedCityId != null) {
+                                  final city = meta.cities.where((c) => c.id == _selectedCityId).firstOrNull;
+                                  if (city != null && city.state != value) _selectedCityId = null;
+                                }
                               });
                             },
                           ),
                         ),
-                      ),
+                      );
+                    }),
+                    const SizedBox(height: 16),
+                    
+                    const Text('Select your city', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                    const SizedBox(height: 12),
+                    if (meta.isLoading)
+                      const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()))
+                    else
+                      Builder(builder: (context) {
+                        final filteredCities = _selectedState == null
+                            ? meta.cities
+                            : meta.cities.where((c) => c.state == _selectedState).toList();
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            border: Border.all(color: AppColors.border),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<int>(
+                              isExpanded: true,
+                              value: _selectedCityId,
+                              hint: const Text('Choose city', style: TextStyle(fontSize: 15, color: AppColors.textSecondary)),
+                              icon: const Icon(LucideIcons.chevronDown, color: AppColors.textSecondary, size: 20),
+                              items: filteredCities.map((city) {
+                                return DropdownMenuItem<int>(
+                                  value: city.id,
+                                  child: Text('${city.name}, ${city.state}', style: const TextStyle(fontSize: 15, color: AppColors.textPrimary)),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedCityId = value;
+                                });
+                              },
+                            ),
+                          ),
+                        );
+                      }),
                       
                     const SizedBox(height: 24),
                     const Text('Popular cities', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
@@ -228,6 +272,7 @@ class _OnboardingSkillLocationScreenState extends ConsumerState<OnboardingSkillL
                             onTap: () {
                               setState(() {
                                 _selectedCityId = city.id;
+                                _selectedState = city.state;
                               });
                             },
                             child: Container(

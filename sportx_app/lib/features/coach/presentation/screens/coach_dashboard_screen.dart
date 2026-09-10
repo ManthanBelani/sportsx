@@ -9,6 +9,7 @@ import 'package:sportx_app/shared/models/coach.dart';
 import 'package:sportx_app/core/config/api_config.dart';
 import 'package:sportx_app/shared/providers/enquiry_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 
 class CoachDashboardScreen extends ConsumerStatefulWidget {
   const CoachDashboardScreen({super.key});
@@ -352,7 +353,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
                     return Column(
                       children: [
                         if (index > 0) const Divider(color: AppColors.border),
-                        _buildEnquiryItem(e.id, e.athleteName, e.message, e.createdAt ?? '', e.status == 'new' && !e.isRead),
+                        _buildEnquiryItem(e.id, e.athleteName, e.message, DateFormatUtils.formatRelative(e.createdAt), e.status == 'new' && !e.isRead),
                       ],
                     );
                   }),

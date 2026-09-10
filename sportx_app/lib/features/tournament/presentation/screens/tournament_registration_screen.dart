@@ -24,7 +24,7 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
   final _teamManagerController = TextEditingController();
   final _captainNameController = TextEditingController();
   final _coachNameController = TextEditingController();
-  final _numberOfPlayersController = TextEditingController();
+  int? _numberOfPlayers;
   int? _categoryId;
   String _participationType = 'individual'; // individual | team
   bool _submitting = false;
@@ -35,7 +35,6 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
     _teamManagerController.dispose();
     _captainNameController.dispose();
     _coachNameController.dispose();
-    _numberOfPlayersController.dispose();
     super.dispose();
   }
 
@@ -50,8 +49,8 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
       return;
     }
     if (_participationType == 'team') {
-      if (_numberOfPlayersController.text.trim().isEmpty) {
-        SnackBarUtils.showSuccess(context, 'Please enter number of players');
+      if (_numberOfPlayers == null) {
+        SnackBarUtils.showSuccess(context, 'Please select number of players');
         return;
       }
       if (_captainNameController.text.trim().isEmpty) {
@@ -72,7 +71,7 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
               'team_manager': _teamManagerController.text.trim(),
               'captain_name': _captainNameController.text.trim(),
               'coach_name': _coachNameController.text.trim(),
-              'number_of_players': int.tryParse(_numberOfPlayersController.text.trim()) ?? 0,
+              'number_of_players': _numberOfPlayers ?? 0,
             },
           });
 
@@ -173,11 +172,9 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
               ),
               const SizedBox(height: 16),
               _buildLabel('Number of Players'),
-              TextField(
-                controller: _numberOfPlayersController,
-                keyboardType: TextInputType.number,
+              DropdownButtonFormField<int>(
+                initialValue: _numberOfPlayers,
                 decoration: InputDecoration(
-                  hintText: 'e.g. 15',
                   filled: true,
                   fillColor: AppColors.surface,
                   border: OutlineInputBorder(
@@ -192,7 +189,13 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
                     borderRadius: BorderRadius.circular(8),
                     borderSide: const BorderSide(color: AppColors.primary),
                   ),
+                  hintText: 'Select players',
                 ),
+                hint: const Text('Select players', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+                items: List.generate(15, (i) => i + 8)
+                    .map((n) => DropdownMenuItem(value: n, child: Text('$n players')))
+                    .toList(),
+                onChanged: (v) => setState(() => _numberOfPlayers = v),
               ),
               const SizedBox(height: 16),
               _buildLabel('Captain Name'),

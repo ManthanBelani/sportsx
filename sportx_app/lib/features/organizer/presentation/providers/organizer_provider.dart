@@ -26,6 +26,14 @@ final tournamentResultsProvider =
   return List<Map<String, dynamic>>.from(data as List);
 });
 
+/// Capacity for a tournament (GET /tournaments/{id}/capacity).
+final tournamentCapacityProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, String>((ref, tournamentId) async {
+  final resp = await ref.watch(dioProvider).get('/tournaments/$tournamentId/capacity');
+  final data = resp.data['data'];
+  return List<Map<String, dynamic>>.from(data as List);
+});
+
 class ProviderTournamentActions {
   final Dio _dio;
   final Ref _ref;

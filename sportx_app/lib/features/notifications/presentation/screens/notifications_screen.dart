@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/features/notifications/presentation/providers/notifications_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -181,14 +182,7 @@ class NotificationsScreen extends ConsumerWidget {
     return 'EARLIER';
   }
 
-  String _formatTime(DateTime date) {
-    final diff = DateTime.now().difference(date);
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes} mins ago';
-    if (diff.inHours < 24) return '${diff.inHours} hours ago';
-    if (diff.inDays == 1) return 'Yesterday, ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
-    return '${date.day}/${date.month}/${date.year}';
-  }
+  String _formatTime(DateTime date) => DateFormatUtils.formatRelative(date.toIso8601String());
 
   _TypeData _getTypeData(String? type) {
     switch (type) {

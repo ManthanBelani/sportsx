@@ -17,7 +17,7 @@ class ScoutConnectionController extends Controller
         }
 
         $connections = ScoutConnection::where('talent_scout_profile_id', $scoutProfile->id)
-            ->with(['athlete.user', 'athlete.sports', 'athlete.ageGroup', 'athlete.city'])
+            ->with(['athlete.user', 'athlete.sports', 'athlete.ageGroup', 'athlete.city', 'athlete.photo'])
             ->get();
 
         return response()->json(['data' => $connections]);

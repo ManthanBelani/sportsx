@@ -17,6 +17,8 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
   late SearchFilters _currentFilters;
 
   String _selectedGender = 'all';
+  String _selectedRating = 'All';
+  String? _selectedState;
 
   RangeValues _feeRange = const RangeValues(0, 30000);
   bool _feeEnabled = false;
@@ -66,6 +68,7 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
   Future<void> _pickCity() async {
     final cities = ref.read(metaProvider).cities;
     if (cities.isEmpty) return;
+    final filtered = _selectedState == null ? cities : cities.where((c) => c.state == _selectedState).toList();
     final selected = await showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       backgroundColor: AppColors.background,
@@ -74,9 +77,9 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
       ),
       builder: (context) => SafeArea(
         child: ListView.builder(
-          itemCount: cities.length,
+          itemCount: filtered.length,
           itemBuilder: (context, index) {
-            final city = cities[index];
+            final city = filtered[index];
             return ListTile(
               title: Text(city.name, style: const TextStyle(color: AppColors.textPrimary)),
               subtitle: Text(city.state, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
@@ -89,6 +92,33 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
     if (selected == null) return;
     setState(() {
       _currentFilters = _currentFilters.copyWith(cityId: selected['id'] as int, clearCityId: false);
+    });
+  }
+
+  Future<void> _pickState() async {
+    final states = ref.read(metaProvider).cities.map((c) => c.state).toSet().toList()..sort();
+    if (states.isEmpty) return;
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (context) => SafeArea(
+        child: ListView.builder(
+          itemCount: states.length,
+          itemBuilder: (context, index) {
+            final s = states[index];
+            return ListTile(
+              title: Text(s, style: const TextStyle(color: AppColors.textPrimary)),
+              trailing: _selectedState == s ? const Icon(LucideIcons.check, color: AppColors.primary, size: 18) : null,
+              onTap: () => Navigator.pop(context, s),
+            );
+          },
+        ),
+      ),
+    );
+    if (selected == null) return;
+    setState(() {
+      _selectedState = selected;
     });
   }
 
@@ -150,18 +180,33 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
                     const SizedBox(height: 24),
                     _buildSection(
                       title: 'Location',
-                      child: _buildPickerField(
-                        label: 'City',
-                        value: cityName,
-                        hint: 'Select city',
-                        icon: LucideIcons.mapPin,
-                        onTap: _pickCity,
-                        onClear: _currentFilters.cityId == null
-                            ? null
-                            : () => setState(() {
-                                  _currentFilters = _currentFilters.copyWith(clearCityId: true, locations: []);
-                                }),
-                      ),
+                      child: Row(children: [
+                        Expanded(
+                          child: _buildPickerField(
+                            label: 'City',
+                            value: cityName,
+                            hint: 'Select city',
+                            icon: LucideIcons.mapPin,
+                            onTap: _pickCity,
+                            onClear: _currentFilters.cityId == null
+                                ? null
+                                : () => setState(() {
+                                      _currentFilters = _currentFilters.copyWith(clearCityId: true, locations: []);
+                                    }),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildPickerField(
+                            label: 'State',
+                            value: _selectedState,
+                            hint: 'Select state',
+                            icon: LucideIcons.map,
+                            onTap: _pickState,
+                            onClear: _selectedState == null ? null : () => setState(() => _selectedState = null),
+                          ),
+                        ),
+                      ]),
                     ),
                     const SizedBox(height: 24),
                     _buildSection(
@@ -289,6 +334,15 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
                           _selectedGender = val;
                           _currentFilters = _currentFilters.copyWith(gender: val);
                         }),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _buildSection(
+                      title: 'Rating',
+                      child: _buildSegmentedButtons(
+                        options: ['All', '4+ ★', '3+ ★'],
+                        selected: _selectedRating,
+                        onSelect: (val) => setState(() => _selectedRating = val),
                       ),
                     ),
                   ],
@@ -502,6 +556,8 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
     setState(() {
       _currentFilters = const SearchFilters();
       _selectedGender = 'all';
+      _selectedRating = 'All';
+      _selectedState = null;
       _feeRange = const RangeValues(0, 30000);
       _feeEnabled = false;
     });

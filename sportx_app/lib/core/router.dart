@@ -107,6 +107,7 @@ import 'package:sportx_app/features/talent_scout/presentation/screens/talent_sco
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_shortlist_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_connection_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_connections_screen.dart';
+import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_profile_screen.dart';
 
 /// Maps a user role to the first onboarding screen they must complete.
 /// Returns null for roles with no onboarding (e.g. admin).
@@ -282,7 +283,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/scout-shortlist', builder: (context, state) => const TalentScoutShortlistScreen()),
       GoRoute(path: '/scout-connect/:athleteId', builder: (context, state) => TalentScoutConnectionScreen(athleteId: state.pathParameters['athleteId']!)),
       GoRoute(path: '/scout-connections', builder: (context, state) => const TalentScoutConnectionsScreen()),
-      GoRoute(path: '/scout-profile', builder: (context, state) => const TalentScoutDashboardScreen()),
+      GoRoute(path: '/scout-profile', builder: (context, state) => const TalentScoutProfileScreen()),
       GoRoute(path: '/sponsor-posting', builder: (context, state) => const SponsorshipPostingScreen()),
       GoRoute(path: '/sponsor-pitch/:id', builder: (context, state) => SponsorPitchScreen(sponsorId: state.pathParameters['id']!)),
       GoRoute(path: '/registrant-detail', builder: (context, state) {

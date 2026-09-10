@@ -31,7 +31,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(searchProvider);
-    final trending = ref.watch(trendingSearchesProvider);
+    final trendingAsync = ref.watch(trendingSearchesProvider);
+    final trending = trendingAsync.valueOrNull ?? ['Cricket', 'Football', 'Badminton', 'Tennis', 'IPL Trials', 'State Championship', 'Ahmedabad', 'Mumbai'];
     final recent = state.recentSearches;
 
     return Scaffold(

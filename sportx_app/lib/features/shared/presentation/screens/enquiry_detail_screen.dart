@@ -5,6 +5,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/shared/providers/enquiry_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 
 class EnquiryDetailScreen extends ConsumerStatefulWidget {
   final String id;
@@ -80,13 +81,13 @@ class _EnquiryDetailScreenState extends ConsumerState<EnquiryDetailScreen> {
                   _buildMessageBubble(
                     sender: enquiry.athleteName,
                     message: enquiry.message,
-                    time: enquiry.createdAt ?? '',
+                    time: DateFormatUtils.formatDisplayDate(enquiry.createdAt),
                     isMe: false,
                   ),
                   ...enquiry.messages.map((m) => _buildMessageBubble(
                         sender: m.sender,
                         message: m.body,
-                        time: m.createdAt ?? '',
+                        time: DateFormatUtils.formatDisplayDate(m.createdAt),
                         isMe: m.isMe,
                       )),
                 ],

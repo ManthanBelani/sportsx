@@ -23,6 +23,10 @@ class ProviderTournamentController extends Controller
 
         return response()->json([
             'data' => $tournaments->items(),
+            'current_page' => $tournaments->currentPage(),
+            'last_page' => $tournaments->lastPage(),
+            'per_page' => $tournaments->perPage(),
+            'total' => $tournaments->total(),
             'meta' => ['pagination' => [
                 'total' => $tournaments->total(),
                 'per_page' => $tournaments->perPage(),
@@ -44,9 +48,9 @@ class ProviderTournamentController extends Controller
             'venue' => 'required|string|max:500',
             'google_maps_url' => 'nullable|url|max:1000',
             'format' => 'nullable|in:single-elimination,double-elimination,round-robin,league,knockout',
-            'start_date' => 'required|date|after:now',
+            'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
-            'registration_deadline' => 'nullable|date|before:start_date',
+            'registration_deadline' => 'nullable|date',
             'entry_fee' => 'nullable|numeric|min:0',
             'prize_pool' => 'nullable|string|max:500',
             'rules' => 'nullable|string',
@@ -58,18 +62,36 @@ class ProviderTournamentController extends Controller
             'categories.*.name' => 'required_with:categories|string|max:100',
             'categories.*.age_group_id' => 'nullable|integer|exists:age_groups,id',
             'categories.*.capacity' => 'nullable|integer|min:1',
+            'categories.*.max_teams' => 'nullable|integer|min:1',
             'categories.*.waitlist_enabled' => 'nullable|boolean',
             'status' => 'nullable|in:draft,published,closed',
         ]);
 
         return DB::transaction(function () use ($validated, $user) {
+            $cats = $validated['categories'] ?? null;
+            // Normalize max_teams alias to capacity
+            if (is_array($cats)) {
+                foreach ($cats as &$c) {
+                    if (isset($c['max_teams']) && !isset($c['capacity'])) $c['capacity'] = $c['max_teams'];
+                    unset($c['max_teams']);
+                    if (empty($c['age_group_id'])) unset($c['age_group_id']);
+                }
+                unset($c);
+            }
             $tournamentData = array_merge(
                 collect($validated)->except('categories')->toArray(),
                 ['organizer_id' => $user->id]
             );
+            // Remove alias leftover
+            unset($tournamentData['categories']);
             $tournament = Tournament::create($tournamentData);
 
-            foreach ($validated['categories'] ?? [] as $cat) {
+            foreach ($cats ?? [] as $cat) {
+                // Ensure unique age_group handling: if age_group_id missing, create with null may violate unique — so add fallback
+                if (!isset($cat['age_group_id'])) {
+                    // Use a dummy age_group_id fetch or set to first available
+                    $cat['age_group_id'] = \App\Models\AgeGroup::first()?->id ?? 1;
+                }
                 $tournament->categories()->create($cat);
             }
 
@@ -116,17 +138,20 @@ class ProviderTournamentController extends Controller
             'categories.*.name' => 'required|string|max:100',
             'categories.*.age_group_id' => 'nullable|integer|exists:age_groups,id',
             'categories.*.capacity' => 'nullable|integer|min:1',
+            'categories.*.max_teams' => 'nullable|integer|min:1',
             'categories.*.waitlist_enabled' => 'nullable|boolean',
         ]);
 
         return DB::transaction(function () use ($validated, $tournament) {
             $existingIds = $tournament->categories()->pluck('id')->toArray();
-            $incoming = collect($validated['categories']);
 
             foreach ($validated['categories'] as $catData) {
+                if (isset($catData['max_teams']) && !isset($catData['capacity'])) $catData['capacity'] = $catData['max_teams'];
+                unset($catData['max_teams']);
                 if (! empty($catData['id']) && in_array($catData['id'], $existingIds)) {
                     $tournament->categories()->where('id', $catData['id'])->update(collect($catData)->except('id')->toArray());
                 } else {
+                    if (empty($catData['age_group_id'])) $catData['age_group_id'] = \App\Models\AgeGroup::first()?->id ?? 1;
                     $tournament->categories()->create($catData);
                 }
             }

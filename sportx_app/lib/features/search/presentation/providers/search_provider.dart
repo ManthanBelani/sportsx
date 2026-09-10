@@ -329,8 +329,17 @@ final searchProvider = StateNotifierProvider<SearchNotifier, SearchState>((ref) 
   return SearchNotifier(dio);
 });
 
-// Trending searches mock data
-final trendingSearchesProvider = Provider<List<String>>((ref) {
+// Trending searches — backend-connected with fallback to static chips
+final trendingSearchesProvider = FutureProvider<List<String>>((ref) async {
+  try {
+    final dio = ref.watch(dioProvider);
+    final resp = await dio.get('/meta/trending-searches');
+    final data = resp.data['data'] as List?;
+    if (data != null && data.isNotEmpty) {
+      return data.map((e) => e.toString()).toList();
+    }
+  } catch (_) {}
+  // Fallback to curated list if backend unavailable
   return [
     'Cricket',
     'Football',

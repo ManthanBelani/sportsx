@@ -37,6 +37,8 @@ class _TrialPostingScreenState extends ConsumerState<TrialPostingScreen> {
   TimeOfDay? _eventTime;
   DateTime? _deadline;
   final Set<String> _docs = {};
+  final Set<String> _selectedAgeChips = {};
+  final List<String> _ageChipOptions = ['U-10', 'U-14', 'U-16', 'U-18', 'Open'];
   bool _saving = false;
 
   @override
@@ -84,7 +86,11 @@ class _TrialPostingScreenState extends ConsumerState<TrialPostingScreen> {
             '${eventDateTime.year}-${_two(eventDateTime.month)}-${_two(eventDateTime.day)} ${_two(eventDateTime.hour)}:${_two(eventDateTime.minute)}:00',
         if (_deadline != null)
           'registration_deadline': '${_deadline!.year}-${_two(_deadline!.month)}-${_two(_deadline!.day)}',
-        if (_eligibility.text.trim().isNotEmpty) 'eligibility': _eligibility.text.trim(),
+        if (_selectedAgeChips.isNotEmpty || _eligibility.text.trim().isNotEmpty)
+          'eligibility': [
+            if (_selectedAgeChips.isNotEmpty) _selectedAgeChips.join(', '),
+            if (_eligibility.text.trim().isNotEmpty) _eligibility.text.trim(),
+          ].join(' • '),
         if (_maxRegistrations.text.trim().isNotEmpty)
           'vacancies': int.tryParse(_maxRegistrations.text.trim()),
         if (_fee.text.trim().isNotEmpty) 'entry_fee': _fee.text.trim(),
@@ -159,10 +165,29 @@ class _TrialPostingScreenState extends ConsumerState<TrialPostingScreen> {
                 validator: (v) => v == null ? 'Select a sport' : null,
               ),
               const SizedBox(height: 16),
-              _label('Eligibility'),
+              _label('Eligibility — Age Groups'),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _ageChipOptions.map((age) {
+                  final selected = _selectedAgeChips.contains(age);
+                  return FilterChip(
+                    label: Text(age),
+                    selected: selected,
+                    onSelected: (v) => setState(() {
+                      if (v) _selectedAgeChips.add(age);
+                      else _selectedAgeChips.remove(age);
+                    }),
+                    selectedColor: AppColors.primary.withValues(alpha: 0.15),
+                    checkmarkColor: AppColors.primary,
+                    labelStyle: TextStyle(color: selected ? AppColors.primary : AppColors.textSecondary, fontWeight: selected ? FontWeight.w600 : FontWeight.normal),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 8),
               TextFormField(
                 controller: _eligibility,
-                decoration: _dec('e.g. Boys, U-14'),
+                decoration: _dec('Additional eligibility (e.g. Boys, Ahmedabad residents)'),
               ),
               const SizedBox(height: 16),
               Row(

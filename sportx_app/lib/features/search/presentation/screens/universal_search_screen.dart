@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/features/search/presentation/providers/search_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -39,7 +40,8 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
   @override
   Widget build(BuildContext context) {
     final searchState = ref.watch(searchProvider);
-    final trendingSearches = ref.watch(trendingSearchesProvider);
+    final trendingAsync = ref.watch(trendingSearchesProvider);
+    final trendingSearches = trendingAsync.valueOrNull ?? ['Cricket', 'Football', 'Badminton', 'Tennis', 'IPL Trials', 'State Championship', 'Ahmedabad', 'Mumbai'];
     final hasResults = searchState.results != null;
 
     return Scaffold(
@@ -210,14 +212,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: [
-              _buildTrendingChip('Cricket', LucideIcons.circleDot),
-              _buildTrendingChip('Football', LucideIcons.goal),
-              _buildTrendingChip('Badminton', LucideIcons.venetianMask), // Close enough to shuttlecock
-              _buildTrendingChip('Athletics', LucideIcons.footprints),
-              _buildTrendingChip('Swimming', LucideIcons.waves),
-              _buildTrendingChip('Tennis', LucideIcons.circle),
-            ],
+            children: trendingSearches.map((term) => _buildTrendingChip(term, _iconForTrending(term))).toList(),
           ),
 
           const SizedBox(height: 24),
@@ -243,6 +238,19 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
         ],
       ),
     );
+  }
+
+  IconData _iconForTrending(String term) {
+    final t = term.toLowerCase();
+    if (t.contains('cricket')) return LucideIcons.circleDot;
+    if (t.contains('football')) return LucideIcons.goal;
+    if (t.contains('badminton')) return LucideIcons.venetianMask;
+    if (t.contains('athletic')) return LucideIcons.footprints;
+    if (t.contains('swim')) return LucideIcons.waves;
+    if (t.contains('tennis')) return LucideIcons.circle;
+    if (t.contains('trial')) return LucideIcons.clipboardList;
+    if (t.contains('championship')) return LucideIcons.trophy;
+    return LucideIcons.search;
   }
 
   Widget _buildTrendingChip(String label, IconData icon) {
@@ -456,18 +464,12 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
     switch (type) {
       case 'trial':
         final dt = item['event_datetime']?.toString();
-        if (dt != null) {
-          final d = DateTime.tryParse(dt);
-          if (d != null) meta = 'Trial: ${d.day}/${d.month}/${d.year}';
-        }
+        if (dt != null) meta = 'Trial: ${DateFormatUtils.formatShortDate(dt)}';
         meta ??= item['entry_fee'] != null ? 'Fee: ${item['entry_fee']}' : null;
         break;
       case 'tournament':
         final dt = item['start_date']?.toString();
-        if (dt != null) {
-          final d = DateTime.tryParse(dt);
-          if (d != null) meta = 'Starts: ${d.day}/${d.month}/${d.year}';
-        }
+        if (dt != null) meta = 'Starts: ${DateFormatUtils.formatShortDate(dt)}';
         meta ??= item['prize_pool'] != null ? 'Prize: ₹${item['prize_pool']}' : null;
         break;
       case 'scholarship':

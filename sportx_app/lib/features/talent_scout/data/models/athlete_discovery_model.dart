@@ -1,3 +1,5 @@
+import 'package:sportx_app/core/utils/media_utils.dart';
+
 class AthleteDiscovery {
   final String id;
   final String fullName;
@@ -33,7 +35,7 @@ class AthleteDiscovery {
     return AthleteDiscovery(
       id: (json['id'] ?? '').toString(),
       fullName: user?['name'] as String? ?? json['full_name'] as String? ?? 'Athlete',
-      photoUrl: photo?['url'] as String?,
+      photoUrl: MediaUtils.resolveNullable(photo?['url'] as String?),
       sports: sportsNames ?? [],
       ageGroupName: ageGroup?['name'] as String?,
       cityName: city?['name'] as String?,

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/academy/presentation/providers/academy_provider.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
+import 'package:sportx_app/shared/models/tournament.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class OrganizerDashboardScreen extends ConsumerStatefulWidget {
@@ -84,6 +85,21 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
     final totalRegs = trials.fold<int>(0, (s, t) => s + (t.filledSpots ?? 0)) +
         tournaments.fold<int>(0, (s, t) => s + (t.filledSpots ?? 0));
 
+    // Find nearest deadline tournament for alert
+    Tournament? deadlineTournament;
+    DateTime? nearestDeadline;
+    for (final t in tournaments) {
+      if (t.registrationDeadline != null && t.status == 'published') {
+        final daysLeft = t.registrationDeadline!.difference(DateTime.now()).inDays;
+        if (daysLeft >= 0 && daysLeft <= 7) {
+          if (nearestDeadline == null || t.registrationDeadline!.isBefore(nearestDeadline)) {
+            nearestDeadline = t.registrationDeadline;
+            deadlineTournament = t;
+          }
+        }
+      }
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -99,9 +115,41 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
               Expanded(child: _buildStatCard('$totalRegs', 'Registrations')),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
-          // Quick Actions
+          // Deadline Alert — exact design from organizer-dashboard.html
+          if (deadlineTournament != null && nearestDeadline != null)
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFfee2e2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(LucideIcons.clock, size: 20, color: Color(0xFFdc2626)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: RichText(
+                      text: TextSpan(
+                        style: const TextStyle(fontSize: 13, color: Color(0xFFdc2626), fontFamily: 'Inter'),
+                        children: [
+                          const TextSpan(text: 'Deadline approaching: ', style: TextStyle(fontWeight: FontWeight.w600)),
+                          TextSpan(text: '${deadlineTournament.title} registration closes in '),
+                          TextSpan(
+                            text: '${nearestDeadline.difference(DateTime.now()).inDays} days',
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (deadlineTournament != null) const SizedBox(height: 16),
+
+          // Quick Actions — per design: Post Trial, Post Tournament, Registrations, Schedule
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -118,8 +166,8 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
                   children: [
                     _buildQuickAction(LucideIcons.clipboardList, 'Post Trial', () => context.push('/post-trial')),
                     _buildQuickAction(LucideIcons.trophy, 'Post Tournament', () => context.push('/post-tournament')),
-                    _buildQuickAction(LucideIcons.barChart2, 'My Tournaments', () => context.push('/my-tournaments')),
-                    _buildQuickAction(LucideIcons.list, 'My Trials', () => context.push('/my-trials')),
+                    _buildQuickAction(LucideIcons.barChart2, 'Registrations', () => context.push('/my-tournaments')),
+                    _buildQuickAction(LucideIcons.calendar, 'Schedule', () => context.push('/tournament-calendar')),
                   ],
                 ),
               ],

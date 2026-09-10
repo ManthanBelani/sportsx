@@ -6,6 +6,7 @@ import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/shared/providers/enquiry_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 
 class CoachEnquiryDetailScreen extends ConsumerStatefulWidget {
   final String id;
@@ -241,12 +242,12 @@ class _CoachEnquiryDetailScreenState extends ConsumerState<CoachEnquiryDetailScr
       children: [
         _buildMessageBubble(
           message: enquiry.message,
-          time: enquiry.createdAt ?? '',
+          time: DateFormatUtils.formatDisplayDate(enquiry.createdAt),
           isMe: false,
         ),
         ...enquiry.messages.map((m) => _buildMessageBubble(
               message: m.body,
-              time: m.createdAt ?? '',
+              time: DateFormatUtils.formatDisplayDate(m.createdAt),
               isMe: m.isMe,
             )),
       ],

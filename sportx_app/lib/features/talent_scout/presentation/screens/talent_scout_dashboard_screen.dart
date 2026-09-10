@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/providers/talent_scout_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/providers/scout_shortlist_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/providers/scout_connection_provider.dart';
@@ -84,16 +85,34 @@ class _TalentScoutDashboardScreenState extends ConsumerState<TalentScoutDashboar
     );
   }
 
+  // Profile completeness: 6 fields - sportsSpecialization mandatory + 5 optional weighted
+  double _completeness() {
+    final p = ref.watch(talentScoutProvider).profile;
+    if (p == null) return 0;
+    int filled = 0;
+    const total = 6;
+    if (p.sportsSpecialization.isNotEmpty) filled++;
+    if ((p.organization ?? '').isNotEmpty) filled++;
+    if ((p.affiliation ?? '').isNotEmpty) filled++;
+    if (p.experienceYears != null) filled++;
+    if (p.cityId != null) filled++;
+    if ((p.bio ?? '').isNotEmpty) filled++;
+    return filled / total;
+  }
+
   Widget _buildHomeTab() {
     final shortlist = ref.watch(scoutShortlistProvider).items;
     final connectionStats = ref.watch(scoutConnectionProvider).stats;
+    final user = ref.watch(authProvider).user;
+    final profile = ref.watch(talentScoutProvider).profile;
+    final completeness = _completeness();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Welcome Banner
+          // Welcome Banner — personalized
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -113,20 +132,44 @@ class _TalentScoutDashboardScreenState extends ConsumerState<TalentScoutDashboar
                   child: const Icon(LucideIcons.userSearch, color: Colors.white, size: 28),
                 ),
                 const SizedBox(width: 14),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Talent Scout Dashboard',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                      SizedBox(height: 2),
-                      Text('Discover and connect with athletes',
+                      Text('Welcome, ${user?.name ?? profile?.organization ?? 'Scout'}',
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                      const SizedBox(height: 2),
+                      const Text('Discover and connect with athletes',
                           style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                     ],
                   ),
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 12),
+          // Profile completeness meter per spec FR-TS-2 / coach completeness pattern
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                const Text('Profile completeness', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                Text('${(completeness * 100).toInt()}%', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary)),
+              ]),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(value: completeness, minHeight: 6, backgroundColor: AppColors.border, valueColor: const AlwaysStoppedAnimation(AppColors.primary)),
+              ),
+              if (completeness < 1) ...[
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: () => context.push('/scout-profile'),
+                  child: const Text('Complete your profile →', style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500)),
+                ),
+              ],
+            ]),
           ),
           const SizedBox(height: 16),
 

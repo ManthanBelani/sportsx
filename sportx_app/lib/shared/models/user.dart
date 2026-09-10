@@ -1,3 +1,5 @@
+import 'package:sportx_app/core/utils/media_utils.dart';
+
 enum UserRole { athlete, coach, academy, organizer, sponsor, admin, talent_scout }
 
 int? _parseInt(dynamic value) {
@@ -33,7 +35,7 @@ class User {
       email: json['email'] as String,
       phone: json['phone'] as String?,
       role: json['role'] as String? ?? 'athlete',
-      profilePhotoUrl: json['profile_photo_url'] as String?,
+      profilePhotoUrl: MediaUtils.resolveNullable(json['profile_photo_url'] as String?),
       isVerified: json['is_verified'] == true || json['is_verified'] == 1,
     );
   }

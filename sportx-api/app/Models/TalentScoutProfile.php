@@ -32,6 +32,11 @@ class TalentScoutProfile extends Model
         return $this->belongsTo(City::class);
     }
 
+    public function photo(): BelongsTo
+    {
+        return $this->belongsTo(MediaItem::class, 'photo_media_id');
+    }
+
     public function shortlists(): HasMany
     {
         return $this->hasMany(ScoutShortlist::class);

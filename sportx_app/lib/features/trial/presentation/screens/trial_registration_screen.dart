@@ -24,6 +24,8 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
   bool _submitting = false;
   final _roleController = TextEditingController();
   final _medicalController = TextEditingController();
+  final _dobController = TextEditingController();
+  String _dob = '';
   final List<int> _documentMediaIds = [];
   String? _uploadedDocName;
 
@@ -31,7 +33,24 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
   void dispose() {
     _roleController.dispose();
     _medicalController.dispose();
+    _dobController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickDob() async {
+    final initial = _dob.isNotEmpty ? DateTime.tryParse(_dob) ?? DateTime(2012, 3, 15) : DateTime(2012, 3, 15);
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(1980),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _dob = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+        _dobController.text = _dob;
+      });
+    }
   }
 
   Future<void> _pickDocument() async {
@@ -154,6 +173,35 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
             
             _buildLabel('Playing Role / Speciality'),
             _buildTextField('e.g., Right-arm Fast Bowler', controller: _roleController),
+
+            const SizedBox(height: 16),
+            _buildLabel('Date of Birth'),
+            GestureDetector(
+              onTap: _pickDob,
+              child: AbsorbPointer(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    border: Border.all(color: AppColors.border),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: TextField(
+                    controller: _dobController,
+                    readOnly: true,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      isDense: true,
+                      hintText: '2012-03-15',
+                      hintStyle: TextStyle(color: AppColors.textSecondary),
+                      suffixIcon: Icon(LucideIcons.calendar, size: 18, color: AppColors.textSecondary),
+                    ),
+                  ),
+                ),
+              ),
+            ),
 
             const SizedBox(height: 16),
             _buildLabel('Medical Conditions (if any)'),
