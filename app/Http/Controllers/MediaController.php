@@ -42,14 +42,30 @@ class MediaController extends Controller
         );
 
         // Ownership: prefer an explicit owner, otherwise infer from the authenticated
-        // athlete profile so mobile clients can upload without knowing their profile id.
+        // user's role so every role (athlete, coach, academy, organizer, sponsor,
+        // talent_scout) can upload without knowing their profile id. Falls back to
+        // the user itself when no profile exists yet (e.g. onboarding).
         $ownerType = $validated['owner_type'] ?? null;
         $ownerId = $validated['owner_id'] ?? null;
         if (! $ownerType || ! $ownerId) {
-            $profile = $request->user()->athleteProfile;
-            abort_unless($profile, 422, 'No owner specified and no athlete profile found for this user');
-            $ownerType = 'athlete_profile';
-            $ownerId = $profile->id;
+            $user = $request->user();
+            $resolved = match ($user->role) {
+                'athlete' => $user->athleteProfile ? ['athlete_profile', $user->athleteProfile->id] : null,
+                'coach' => $user->coachProfile ? ['coach_profile', $user->coachProfile->id] : null,
+                'academy' => $user->academies ? ['academy', $user->academies->id] : null,
+                'organizer' => $user->organizerProfile ? ['organizer_profile', $user->organizerProfile->id] : null,
+                'sponsor' => $user->sponsorProfile ? ['sponsor_profile', $user->sponsorProfile->id] : null,
+                'talent_scout' => $user->talentScoutProfile ? ['talent_scout_profile', $user->talentScoutProfile->id] : null,
+                default => null,
+            };
+            if ($resolved) {
+                [$ownerType, $ownerId] = $resolved;
+            } else {
+                // No profile yet (onboarding) or admin — store under the user itself
+                // so the upload still succeeds and can be linked later via photo_media_id.
+                $ownerType = 'user';
+                $ownerId = $user->id;
+            }
         }
 
         $path = $file->store("media/{$ownerType}/{$ownerId}", 'public');
@@ -78,12 +94,19 @@ class MediaController extends Controller
     {
         $media = MediaItem::findOrFail($id);
 
+        $user = $request->user();
         $allowed = match ($media->owner_type) {
-            'athlete_profile' => $request->user()->athleteProfile?->id === $media->owner_id,
+            'athlete_profile' => $user->athleteProfile?->id === $media->owner_id,
+            'coach_profile' => $user->coachProfile?->id === $media->owner_id,
+            'academy' => $user->academies?->id === $media->owner_id,
+            'organizer_profile' => $user->organizerProfile?->id === $media->owner_id,
+            'sponsor_profile' => $user->sponsorProfile?->id === $media->owner_id,
+            'talent_scout_profile' => $user->talentScoutProfile?->id === $media->owner_id,
+            'user' => $user->id === $media->owner_id,
             default => false,
         };
 
-        abort_unless($allowed || $request->user()->isAdmin(), 403);
+        abort_unless($allowed || $user->isAdmin(), 403);
 
         Storage::disk($media->disk)->delete($media->path);
         $media->delete();

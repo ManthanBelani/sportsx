@@ -199,10 +199,12 @@ class RegistrationController extends Controller
         return response()->json([
             'data' => $caps->map(fn ($c) => [
                 'category_id' => $c->id,
-                'category_name' => $c->name,
-                'max_teams' => $c->max_teams,
+                'category_name' => $c->name ?? $c->ageGroup?->name ?? 'Category',
+                'max_teams' => $c->capacity,
+                'capacity' => $c->capacity,
                 'registered' => $c->registrations_count,
-                'available' => max(0, ($c->max_teams ?? 0) - $c->registrations_count),
+                'available' => max(0, ($c->capacity ?? 0) - $c->registrations_count),
+                'waitlist_enabled' => $c->waitlist_enabled,
             ]),
         ]);
     }
@@ -215,11 +217,15 @@ class RegistrationController extends Controller
             'categories' => 'required|array',
             'categories.*.id' => 'required|integer|exists:tournament_categories,id',
             'categories.*.max_teams' => 'nullable|integer|min:0',
+            'categories.*.capacity' => 'nullable|integer|min:0',
         ]);
 
         foreach ($validated['categories'] as $catUpdate) {
-            $tournament->categories()->where('id', $catUpdate['id'])
-                ->update(['max_teams' => $catUpdate['max_teams']]);
+            $newCap = $catUpdate['max_teams'] ?? $catUpdate['capacity'] ?? null;
+            if ($newCap !== null) {
+                $tournament->categories()->where('id', $catUpdate['id'])
+                    ->update(['capacity' => $newCap]);
+            }
         }
 
         return response()->json(['data' => ['message' => 'Capacity updated']]);

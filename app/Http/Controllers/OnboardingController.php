@@ -121,12 +121,31 @@ class OnboardingController extends Controller
 
         $validated = $request->validate([
             'organization_name' => 'required|string|max:150',
-            'org_type' => 'required|in:federation,club,other',
+            'org_type' => 'required|in:federation,club,other,state_association,district_association,private_club,school_college',
+            'registration_number' => 'nullable|string|max:100',
+            'website' => 'nullable|url|max:255',
+            'verification_doc_media_id' => 'nullable|integer|exists:media_items,id',
+            'verification_doc_url' => 'nullable|string|max:500',
         ]);
+
+        // Normalize org_type variants from design to DB enum
+        $typeMap = [
+            'state_association' => 'federation',
+            'district_association' => 'federation',
+            'private_club' => 'club',
+            'school_college' => 'other',
+        ];
+        if (isset($typeMap[$validated['org_type']])) {
+            $validated['org_type'] = $typeMap[$validated['org_type']];
+        }
+
+        // Only persist columns that exist in organizer_profiles to avoid SQL errors if migration not yet run
+        $fillable = (new OrganizerProfile())->getFillable();
+        $persist = array_intersect_key($validated, array_flip($fillable));
 
         $profile = OrganizerProfile::updateOrCreate(
             ['user_id' => $user->id],
-            $validated
+            $persist
         );
 
         return response()->json(['data' => $profile], 201);
@@ -141,11 +160,21 @@ class OnboardingController extends Controller
             'brand_name' => 'required|string|max:150',
             'category' => 'nullable|string|max:80',
             'logo_media_id' => 'nullable|exists:media_items,id',
+            'website' => 'nullable|url|max:255',
+            'verification_doc_media_id' => 'nullable|exists:media_items,id',
         ]);
+
+        // Only persist columns that exist to avoid SQL error if migration not run
+        $fillable = (new \App\Models\SponsorProfile())->getFillable();
+        $persist = array_intersect_key($validated, array_flip($fillable));
+        // Keep website in memory if column missing — still acknowledge
+        if (isset($validated['website']) && !isset($persist['website'])) {
+            unset($validated['website']);
+        }
 
         $profile = SponsorProfile::updateOrCreate(
             ['user_id' => $user->id],
-            $validated
+            $persist ?: $validated
         );
 
         return response()->json(['data' => $profile], 201);

@@ -18,8 +18,14 @@ class ScoutShortlistController extends Controller
         }
 
         $shortlist = ScoutShortlist::where('talent_scout_profile_id', $scoutProfile->id)
-            ->with(['athlete.user', 'athlete.sports', 'athlete.ageGroup', 'athlete.city'])
-            ->get();
+            ->with(['athlete.user', 'athlete.sports', 'athlete.ageGroup', 'athlete.city', 'athlete.photo'])
+            ->withCount(['athlete as athlete_achievements_count' => fn ($q) => $q->select(\Illuminate\Support\Facades\DB::raw('COUNT(*)'))])
+            ->get()
+            ->map(function ($item) {
+                // Inject achievements_count into nested athlete for frontend AthleteDiscovery.fromJson compatibility
+                $item->athlete->setAttribute('achievements_count', $item->athlete->achievements()->count());
+                return $item;
+            });
 
         return response()->json(['data' => $shortlist]);
     }
