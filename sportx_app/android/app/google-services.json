@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "241021895160",
+    "project_id": "sportx-8e0ec",
+    "storage_bucket": "sportx-8e0ec.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:241021895160:android:573433db273a249c75160d",
+        "android_client_info": {
+          "package_name": "com.sportx.application"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANAGtDLdE09WYVBHqILdnlcDq4TTNZQqo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

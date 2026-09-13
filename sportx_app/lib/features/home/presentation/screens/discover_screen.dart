@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class DiscoverScreen extends ConsumerStatefulWidget {
@@ -230,7 +231,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           },
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const DiscoverSkeleton(),
       error: (e, _) => Center(child: Text('Error: $e')),
     );
   }
@@ -312,7 +313,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
     final coaches = ref.watch(coachesProvider);
 
     if (coaches.isLoading && coaches.items.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const GenericGridSkeleton();
     }
 
     final filtered = coaches.items.where((c) {
@@ -409,7 +410,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
     final sponsorships = ref.watch(sponsorshipsProvider);
 
     if (sponsorships.isLoading && sponsorships.items.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const GenericGridSkeleton();
     }
     if (sponsorships.items.isEmpty) {
       return const Center(child: Text('No sponsors found'));

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/connections/presentation/providers/connections_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
@@ -56,7 +57,7 @@ class _ConnectionRequestsScreenState extends ConsumerState<ConnectionRequestsScr
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(connectionRequestsProvider(currentUserId)),
         child: async.when(
-          loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+          loading: () => const ConnectionsSkeleton(),
           error: (e, _) => Center(child: Text('$e', style: const TextStyle(color: AppColors.textSecondary))),
           data: (_) => TabBarView(
             controller: _tabController,

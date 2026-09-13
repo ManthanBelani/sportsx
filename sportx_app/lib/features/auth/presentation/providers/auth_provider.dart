@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/storage_service.dart';
@@ -100,6 +102,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final user = User.fromJson(respData['user'] as Map<String, dynamic>);
       final needsOnboarding = respData['needs_onboarding'] == true;
       state = AuthState(status: AuthStatus.authenticated, user: user, needsOnboarding: needsOnboarding);
+      await _registerFcmToken();
     } on DioException catch (e) {
       _fail(e);
     }
@@ -115,6 +118,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final user = User.fromJson(data['user'] as Map<String, dynamic>);
       final needsOnboarding = data['needs_onboarding'] == true;
       state = AuthState(status: AuthStatus.authenticated, user: user, needsOnboarding: needsOnboarding);
+      await _registerFcmToken();
     } on DioException catch (e) {
       _fail(e);
     }
@@ -138,6 +142,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final user = User.fromJson(data['user'] as Map<String, dynamic>);
       final needsOnboarding = data['needs_onboarding'] == true;
       state = AuthState(status: AuthStatus.authenticated, user: user, needsOnboarding: needsOnboarding);
+      await _registerFcmToken();
     } on DioException catch (e) {
       _fail(e);
     }
@@ -167,17 +172,45 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _storage.saveToken(authToken);
       final user = User.fromJson(data['user'] as Map<String, dynamic>);
       state = AuthState(status: AuthStatus.authenticated, user: user, needsOnboarding: false);
+      await _registerFcmToken();
     } on DioException catch (e) {
       _fail(e);
     }
   }
 
   Future<void> logout() async {
+    await _unregisterFcmToken();
     try {
       await _dio.post('/auth/logout');
     } catch (_) {}
     await _storage.deleteToken();
     state = AuthState(status: AuthStatus.unauthenticated);
+  }
+
+  Future<void> _registerFcmToken() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        final deviceType = defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';
+        await _dio.post('/me/device-tokens', data: {
+          'token': token,
+          'device_type': deviceType,
+        });
+      }
+    } catch (_) {
+      // Firebase not configured or FCM unavailable — skip token registration.
+    }
+  }
+
+  Future<void> _unregisterFcmToken() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        await _dio.delete('/me/device-tokens', data: {'token': token});
+      }
+    } catch (_) {
+      // Firebase not configured or FCM unavailable — skip token unregistration.
+    }
   }
 
   void forceLogout() {

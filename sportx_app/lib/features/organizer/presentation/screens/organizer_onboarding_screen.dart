@@ -15,8 +15,8 @@ class OrganizerOnboardingScreen extends ConsumerStatefulWidget {
 }
 
 class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingScreen> {
-  final _name = TextEditingController(text: 'Karnataka State Football Association');
-  final _regNo = TextEditingController(text: 'KSFA/REG/2020/0456');
+  final _name = TextEditingController();
+  final _regNo = TextEditingController();
   final _website = TextEditingController();
   String _type = 'State Sports Association';
   bool _saving=false;
@@ -111,7 +111,7 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
               const Text('Tell us about your organization', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
               const SizedBox(height:24),
               _label('Organization Name'),
-              TextField(controller: _name, decoration: const InputDecoration(hintText: 'Karnataka State Football Association')),
+              TextField(controller: _name, decoration: const InputDecoration(hintText: 'e.g. Karnataka State Football Association')),
               const SizedBox(height:16),
               _label('Organization Type'),
               DropdownButtonFormField<String>(
@@ -122,7 +122,7 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
               ),
               const SizedBox(height:16),
               _label('Registration Number'),
-              TextField(controller: _regNo, decoration: const InputDecoration(hintText: 'KSFA/REG/2020/0456')),
+              TextField(controller: _regNo, decoration: const InputDecoration(hintText: 'e.g. REG/2020/0456')),
               const SizedBox(height:16),
               _label('Website (optional)'),
               TextField(controller: _website, decoration: const InputDecoration(hintText: 'https://')),

@@ -3,9 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class MediaGalleryScreen extends ConsumerStatefulWidget {
   const MediaGalleryScreen({super.key});
@@ -19,6 +22,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
   List<Map<String, dynamic>> _mediaItems = [];
   List<Map<String, dynamic>> _achievements = [];
   bool _isReorderMode = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -26,15 +30,39 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
     _loadMedia();
   }
 
+  String get _role => ref.read(authProvider).user?.role ?? 'athlete';
+
   Future<void> _loadMedia() async {
+    if (mounted) setState(() => _isLoading = true);
     try {
-      final resp = await ref.read(dioProvider).get('/me/profile');
-      final data = resp.data['data'] as Map<String, dynamic>?;
-      final items = (data?['media_items'] as List? ?? const [])
-          .whereType<Map>()
-          .map((m) => Map<String, dynamic>.from(m))
-          .toList();
-      final ach = (data?['achievements'] as List? ?? const [])
+      // /me/profile now supports both athlete and coach (coach returns media_items + achievements).
+      // Fallback to /me/coach-profile if profile is null for coach.
+      Map<String, dynamic>? data;
+      try {
+        final resp = await ref.read(dioProvider).get('/me/profile');
+        data = resp.data['data'] as Map<String, dynamic>?;
+      } catch (_) {}
+      if ((data == null || data.isEmpty) && _role == 'coach') {
+        try {
+          final resp = await ref.read(dioProvider).get('/me/coach-profile');
+          data = resp.data['data'] as Map<String, dynamic>?;
+        } catch (_) {}
+      }
+      // Normalize achievements: may be List of Map or List of String (JSON stored)
+      final rawAch = data?['achievements'] as List? ?? const [];
+      final ach = rawAch.whereType<dynamic>().map((e) {
+        if (e is Map) return Map<String, dynamic>.from(e);
+        if (e is String) return <String, dynamic>{'text': e, 'title': e};
+        return <String, dynamic>{'text': e.toString()};
+      }).toList();
+      // Ensure each achievement has an id for keying (use index if missing)
+      for (int i = 0; i < ach.length; i++) {
+        ach[i]['id'] ??= i + 1;
+        // Normalize text/title so display works
+        ach[i]['title'] ??= ach[i]['text'];
+        ach[i]['text'] ??= ach[i]['title'];
+      }
+      final items = (data?['media_items'] as List? ?? data?['mediaItems'] as List? ?? const [])
           .whereType<Map>()
           .map((m) => Map<String, dynamic>.from(m))
           .toList();
@@ -45,6 +73,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
         });
       }
     } catch (_) {}
+    if (mounted) setState(() => _isLoading = false);
   }
 
   List<Map<String, dynamic>> get _filteredItems {
@@ -54,10 +83,18 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
     return [];
   }
 
+  bool _uploading = false;
+
   Future<void> _uploadMedia() async {
-    final media = await pickAndUploadMedia(context, ref, mediaType: _currentTab == 1 ? 'video' : 'photo');
-    if (media == null) return;
-    await _loadMedia();
+    if (_uploading) return;
+    setState(() => _uploading = true);
+    try {
+      final media = await pickAndUploadMedia(context, ref, mediaType: _currentTab == 1 ? 'video' : 'photo');
+      if (media == null) return;
+      await _loadMedia();
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
   }
 
   Future<void> _deleteMedia(int mediaId) async {
@@ -79,9 +116,49 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
 
     final success = await deleteMedia(ref, mediaId);
     if (mounted) {
-      SnackBarUtils.showError(context, success ? 'Deleted' : 'Failed to delete');
+      if (success) {
+        SnackBarUtils.showSuccess(context, 'Deleted');
+      } else {
+        SnackBarUtils.showError(context, 'Failed to delete');
+      }
     }
     if (success) await _loadMedia();
+  }
+
+  Future<void> _deleteAchievement(dynamic achievementId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Achievement'),
+        content: const Text('Are you sure you want to delete this achievement?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      // Remove achievement locally by filtering then persist via PUT /me/profile
+      // which now supports coach achievements as JSON.
+      final remaining = _achievements.where((a) => a['id'] != achievementId).toList();
+      // For legacy achievements where id was index-based, fallback to title/text matching
+      final filtered = remaining.length == _achievements.length
+          ? _achievements.where((a) => a['id'].toString() != achievementId.toString()).toList()
+          : remaining;
+      final payloadAch = filtered.isEmpty
+          ? []
+          : filtered.map((a) => {'text': a['text'] ?? a['title'] ?? ''}).toList();
+      await ref.read(dioProvider).put('/me/profile', data: {'achievements': payloadAch});
+      if (mounted) SnackBarUtils.showSuccess(context, 'Achievement deleted');
+      await _loadMedia();
+    } catch (e) {
+      if (mounted) SnackBarUtils.showError(context, 'Failed to delete achievement');
+    }
   }
 
   Future<void> _saveReorder(List<Map<String, dynamic>> newOrder) async {
@@ -91,18 +168,19 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
     }).toList();
     final success = await reorderMedia(ref, items.cast<Map<String, int>>());
     if (mounted) {
-      SnackBarUtils.showError(context, success ? 'Order saved' : 'Failed to save order');
+      if (success) {
+        SnackBarUtils.showSuccess(context, 'Order saved');
+      } else {
+        SnackBarUtils.showError(context, 'Failed to save order');
+      }
     }
-    if (success) setState(() => _isReorderMode = false);
+    if (success) {
+      await _loadMedia();
+      if (mounted) setState(() => _isReorderMode = false);
+    }
   }
 
-  String _absoluteUrl(String url) {
-    if (url.isEmpty) return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    final base = ref.read(dioProvider).options.baseUrl;
-    final origin = base.replaceFirst(RegExp(r'/api/v1/?$'), '');
-    return '$origin$url';
-  }
+  String _absoluteUrl(String url) => MediaUtils.resolveUrl(url);
 
   @override
   Widget build(BuildContext context) {
@@ -168,37 +246,38 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
           ],
         ],
       ),
-      body: Column(
-        children: [
-          // Tab Bar
-          Container(
-            decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: AppColors.border)),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
+      body: _isLoading
+          ? const MediaGallerySkeleton()
+          : Column(
               children: [
-                _buildTab('Photos (${_mediaItems.where((i) => i['media_type'] == 'photo').length})', 0),
-                _buildTab('Videos (${_mediaItems.where((i) => i['media_type'] == 'video').length})', 1),
-                _buildTab('Achievements (${_achievements.length})', 2),
+                // Tab Bar
+                Container(
+                  decoration: const BoxDecoration(
+                    border: Border(bottom: BorderSide(color: AppColors.border)),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      _buildTab('Photos (${_mediaItems.where((i) => i['media_type'] == 'photo').length})', 0),
+                      _buildTab('Videos (${_mediaItems.where((i) => i['media_type'] == 'video').length})', 1),
+                      _buildTab('Achievements (${_achievements.length})', 2),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        _buildGrid(),
+                        const SizedBox(height: 12),
+                        _buildInfoCard(),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
-          ),
-          
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  _buildGrid(),
-                  const SizedBox(height: 12),
-                  _buildInfoCard(),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -242,11 +321,19 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
         itemCount: items.length,
         onReorder: (oldIndex, newIndex) {
           setState(() {
-            if (oldIndex < newIndex) {
-              newIndex -= 1;
+            // Adjust for removal offset handled by onReorderItem but keep compat.
+            if (oldIndex < newIndex) newIndex -= 1;
+            final moved = items.removeAt(oldIndex);
+            items.insert(newIndex, moved);
+            // Apply reordered filtered sequence back to underlying _mediaItems
+            // so save reflects UI order and cancel keeps original.
+            final mediaTypeFilter = _currentTab == 1 ? 'video' : 'photo';
+            int cursor = 0;
+            for (int i = 0; i < _mediaItems.length; i++) {
+              if (_mediaItems[i]['media_type'] == mediaTypeFilter) {
+                _mediaItems[i] = items[cursor++];
+              }
             }
-            final item = items.removeAt(oldIndex);
-            items.insert(newIndex, item);
           });
         },
         itemBuilder: (context, index) {
@@ -354,44 +441,28 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
               shadows: [Shadow(blurRadius: 4, color: Colors.black54)],
             ),
           ),
+        // Always-visible delete button (top-right) – replaces hidden longPress.
+        Positioned(
+          top: 4,
+          right: 4,
+          child: GestureDetector(
+            onTap: () => _deleteMedia(item['id'] as int),
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.55),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.8), width: 1),
+              ),
+              child: const Icon(LucideIcons.trash2, size: 14, color: Colors.white),
+            ),
+          ),
+        ),
         if (_isReorderMode)
-          Positioned(
-            top: 4,
+          const Positioned(
+            bottom: 4,
             right: 4,
-            child: GestureDetector(
-              onTap: () => _deleteMedia(item['id'] as int),
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.red.withValues(alpha: 0.8),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: const Icon(LucideIcons.trash2, size: 16, color: Colors.white),
-              ),
-            ),
-          )
-        else
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: GestureDetector(
-              onLongPress: () => _deleteMedia(item['id'] as int),
-              child: Container(
-                height: 40,
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Colors.black.withValues(alpha: 0.5)],
-                  ),
-                ),
-                alignment: Alignment.bottomCenter,
-                padding: const EdgeInsets.only(bottom: 4),
-                child: const Icon(LucideIcons.trash2, size: 16, color: Colors.white70),
-              ),
-            ),
+            child: Icon(Icons.drag_handle, color: Colors.white, size: 16, shadows: [Shadow(blurRadius: 4, color: Colors.black54)]),
           ),
       ],
     );
@@ -441,7 +512,10 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
               ),
               const SizedBox(height: 24),
               ElevatedButton.icon(
-                onPressed: () => context.push('/add-achievement'),
+                onPressed: () async {
+                  await context.push('/add-achievement');
+                  await _loadMedia();
+                },
                 icon: const Icon(LucideIcons.plus),
                 label: const Text('Add Achievement'),
                 style: ElevatedButton.styleFrom(
@@ -510,10 +584,13 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
               if (_isReorderMode)
                 IconButton(
                   icon: const Icon(LucideIcons.trash2, color: Colors.red),
-                  onPressed: () => _deleteMedia(achievement['id'] as int),
+                  onPressed: () => _deleteAchievement(achievement['id']),
                 )
               else
-                const Icon(LucideIcons.chevronRight, color: AppColors.textSecondary),
+                IconButton(
+                  icon: const Icon(LucideIcons.trash2, color: Colors.red, size: 18),
+                  onPressed: () => _deleteAchievement(achievement['id']),
+                ),
             ],
           ),
         );

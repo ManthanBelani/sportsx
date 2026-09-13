@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/providers/providers.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -186,7 +187,28 @@ class _RecommendedSection extends ConsumerWidget {
     final coachesState = ref.watch(coachesProvider);
 
     if (state.isLoading && state.items.isEmpty) {
-      return const SizedBox(height: 180, child: Center(child: CircularProgressIndicator()));
+      return SizedBox(
+        height: 200,
+        child: ShimmerSkeleton(
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: 3,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (_, __) => Container(
+              width: 280,
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.border)),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const SkeletonBox(width: double.infinity, height: 100, borderRadius: 8),
+                Padding(padding: const EdgeInsets.all(12), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  SkeletonBox(width: 140, height: 12, borderRadius: 4),
+                  const SizedBox(height: 6),
+                  SkeletonBox(width: 100, height: 10, borderRadius: 4),
+                ])),
+              ]),
+            ),
+          ),
+        ),
+      );
     }
 
     final items = <({String id, String title, String subtitle, bool isCoach})>[
@@ -269,7 +291,28 @@ class _TrialSection extends ConsumerWidget {
     final state = ref.watch(trialsProvider);
 
     if (state.isLoading && state.items.isEmpty) {
-      return const SizedBox(height: 180, child: Center(child: CircularProgressIndicator()));
+      return SizedBox(
+        height: 200,
+        child: ShimmerSkeleton(
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: 3,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (_, __) => Container(
+              width: 280,
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.border)),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const SkeletonBox(width: double.infinity, height: 100, borderRadius: 8),
+                Padding(padding: const EdgeInsets.all(12), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  SkeletonBox(width: 140, height: 12, borderRadius: 4),
+                  const SizedBox(height: 6),
+                  SkeletonBox(width: 100, height: 10, borderRadius: 4),
+                ])),
+              ]),
+            ),
+          ),
+        ),
+      );
     }
 
     if (state.items.isEmpty) {
@@ -336,7 +379,24 @@ class _TournamentSection extends ConsumerWidget {
     final state = ref.watch(tournamentsProvider);
 
     if (state.isLoading && state.items.isEmpty) {
-      return const SizedBox(height: 100, child: Center(child: CircularProgressIndicator()));
+      return ShimmerSkeleton(
+        child: Column(
+          children: List.generate(3, (_) => Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(8)),
+            child: Row(children: [
+              const SkeletonBox(width: 60, height: 60, borderRadius: 8),
+              const SizedBox(width: 12),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                SkeletonBox(width: 140, height: 12, borderRadius: 4),
+                const SizedBox(height: 6),
+                SkeletonBox(width: 100, height: 10, borderRadius: 4),
+              ])),
+            ]),
+          )),
+        ),
+      );
     }
 
     if (state.items.isEmpty) {
@@ -404,7 +464,24 @@ class _ScholarshipSection extends ConsumerWidget {
     final state = ref.watch(scholarshipsProvider);
 
     if (state.isLoading && state.items.isEmpty) {
-      return const SizedBox(height: 100, child: Center(child: CircularProgressIndicator()));
+      return ShimmerSkeleton(
+        child: Column(
+          children: List.generate(3, (_) => Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(8)),
+            child: Row(children: [
+              const SkeletonBox(width: 60, height: 60, borderRadius: 8),
+              const SizedBox(width: 12),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                SkeletonBox(width: 140, height: 12, borderRadius: 4),
+                const SizedBox(height: 6),
+                SkeletonBox(width: 100, height: 10, borderRadius: 4),
+              ])),
+            ]),
+          )),
+        ),
+      );
     }
 
     if (state.items.isEmpty) {

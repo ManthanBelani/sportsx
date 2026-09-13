@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sportx_app/features/coach/presentation/providers/coach_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
@@ -81,6 +82,10 @@ class _EditFacilitiesScreenState extends ConsumerState<EditFacilitiesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final coachState = ref.watch(coachProvider);
+    if (coachState.isLoading && _facilities.isEmpty) {
+      return Scaffold(appBar: AppBar(title: const Text('Edit Facilities & Programs')), body: const FacilitiesSkeleton());
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Facilities & Programs'),

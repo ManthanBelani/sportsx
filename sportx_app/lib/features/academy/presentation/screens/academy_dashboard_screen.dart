@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/academy/presentation/providers/academy_provider.dart';
+import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class AcademyDashboardScreen extends ConsumerStatefulWidget {
@@ -80,8 +82,13 @@ class _AcademyDashboardScreenState extends ConsumerState<AcademyDashboardScreen>
   }
 
   Widget _buildHomeTab() {
-    final academy = ref.watch(myAcademyProvider).valueOrNull;
-    final trials = ref.watch(myTrialsProvider).items;
+    final academyAsync = ref.watch(myAcademyProvider);
+    final academy = academyAsync.valueOrNull;
+    final trialsState = ref.watch(myTrialsProvider);
+    final trials = trialsState.items;
+    if (academyAsync.isLoading || (trialsState.isLoading && trials.isEmpty)) {
+      return const SponsorDashboardSkeleton();
+    }
     final active = trials.where((t) => t.status == 'published').length;
     final drafts = trials.where((t) => t.status == 'draft').length;
 
@@ -212,6 +219,20 @@ class _AcademyDashboardScreenState extends ConsumerState<AcademyDashboardScreen>
                   }),
               ],
             ),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: () async {
+              await ref.read(authProvider.notifier).logout();
+            },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.red,
+              side: const BorderSide(color: Colors.red),
+              minimumSize: const Size.fromHeight(48),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            icon: const Icon(LucideIcons.logOut, size: 18),
+            label: const Text('Log out', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
           ),
         ],
       ),

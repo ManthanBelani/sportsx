@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sportx_app/features/coach/presentation/providers/coach_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
@@ -96,6 +97,13 @@ class _ShowcaseAthletesScreenState extends ConsumerState<ShowcaseAthletesScreen>
 
   @override
   Widget build(BuildContext context) {
+    final coachState = ref.watch(coachProvider);
+    if (coachState.isLoading && _selectedAthletes.isEmpty && _searchResults.isEmpty && _searchController.text.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Showcase Athletes')),
+        body: const ShowcaseSkeleton(),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('Showcase Athletes'),
@@ -169,9 +177,7 @@ class _ShowcaseAthletesScreenState extends ConsumerState<ShowcaseAthletesScreen>
             const SizedBox(height: 16),
           ],
           if (_isSearching)
-            const Expanded(
-              child: Center(child: CircularProgressIndicator()),
-            )
+            const Expanded(child: ShowcaseSkeleton())
           else if (_searchResults.isNotEmpty)
             Expanded(
               child: ListView.builder(

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -51,7 +52,7 @@ class _CapacityManagementScreenState extends ConsumerState<CapacityManagementScr
         final tResp = await ref.read(dioProvider).get('/tournaments/${widget.tournamentId}');
         final tData = tResp.data is Map && tResp.data['data'] is Map ? tResp.data['data'] as Map : tResp.data as Map;
         _tournamentName = (tData['name'] ?? tData['title'])?.toString();
-        if (tData['start_date']!=null) _dateStr = tData['start_date'].toString().substring(0,10);
+        _dateStr = DateFormatUtils.formatShortDate(tData['start_date']?.toString());
       } catch (_) {}
 
       setState(() {
@@ -129,9 +130,9 @@ class _CapacityManagementScreenState extends ConsumerState<CapacityManagementScr
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[
-                    Text(_tournamentName ?? 'Junior National Football Championship 2024', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.textPrimary)),
+                    Text(_tournamentName ?? 'Tournament', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.textPrimary)),
                     const SizedBox(height: 4),
-                    Text(_dateStr ?? 'Dec 15-17, 2024', style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                    Text(_dateStr ?? 'Dates pending', style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                   ]),
                 ),
                 const SizedBox(height: 16),

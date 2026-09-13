@@ -80,15 +80,20 @@ class _EnquireScreenState extends ConsumerState<EnquireScreen> {
             })
         .toList();
 
+    // Build a single preferred_datetime from first filled slot if parseable, otherwise omit (backend expects nullable date)
+    String? preferredDatetime;
+    if (preferredSlots.isNotEmpty) {
+      // Try to interpret as ISO-like date; UI collects free-form day/time so we store null and include message detail instead
+      preferredDatetime = null;
+    }
     try {
-      await ref.read(dioProvider).post('/enquiries', data: {
+      final payload = {
         'subject_type': widget.subjectType,
         'subject_id': widget.subjectId,
-        'message': _messageController.text.trim(),
-        'preferred_slots': preferredSlots,
-        'age': _ageController.text.replaceAll(' years', ''),
-        'contact_number': _phoneController.text.trim(),
-      });
+        'message': _messageController.text.trim() + (preferredSlots.isNotEmpty ? '\nPreferred: ${preferredSlots.map((s) => "${s['day']} ${s['time']}").join(', ')}' : ''),
+        if (preferredDatetime != null) 'preferred_datetime': preferredDatetime,
+      };
+      await ref.read(dioProvider).post('/enquiries', data: payload);
       ref.invalidate(activityProvider);
       if (mounted) {
         SnackBarUtils.showSuccess(context, 'Enquiry Sent Successfully!');

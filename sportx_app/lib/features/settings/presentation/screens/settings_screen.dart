@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/settings/presentation/providers/settings_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
@@ -58,7 +59,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         icon: LucideIcons.user,
                         title: 'Edit Profile',
                         subtitle: 'Name, sport, achievements',
-                        onTap: () => context.push('/edit-profile'),
+                        onTap: () {
+                          final role = ref.read(authProvider).user?.role ?? 'athlete';
+                          if (role == 'coach') {
+                            context.push('/coach-profile-edit');
+                          } else if (role == 'academy') {
+                            context.push('/edit-academy-profile');
+                          } else if (role == 'talent_scout') {
+                            context.push('/scout-profile');
+                          } else {
+                            context.push('/edit-profile');
+                          }
+                        },
                       ),
                       _buildSettingsItem(
                         icon: LucideIcons.camera,
@@ -130,8 +142,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         icon: LucideIcons.mapPin,
                         title: 'Location Services',
                         subtitle: 'Enable location for nearby results',
-                        value: true, // Mock value for UI
-                        onChanged: (v) {},
+                        value: state.notificationPrefs['location'] ?? false,
+                        onChanged: (v) => ref.read(settingsProvider.notifier).updatePrefs(
+                          {...state.notificationPrefs, 'location': v},
+                        ),
                       ),
                     ],
                   ),
@@ -164,7 +178,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         icon: LucideIcons.logOut,
                         title: 'Log Out',
                         isDanger: true,
-                        onTap: () {},
+                        onTap: () async {
+                          await ref.read(authProvider.notifier).logout();
+                        },
                         showArrow: false,
                       ),
                       _buildSettingsItem(

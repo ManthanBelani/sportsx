@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/academy/presentation/providers/academy_provider.dart';
+import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
 import 'package:sportx_app/shared/models/tournament.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class OrganizerDashboardScreen extends ConsumerStatefulWidget {
@@ -78,8 +80,14 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
   }
 
   Widget _buildHomeTab() {
-    final trials = ref.watch(myTrialsProvider).items;
-    final tournaments = ref.watch(myTournamentsProvider).items;
+    final trialsState = ref.watch(myTrialsProvider);
+    final tournamentsState = ref.watch(myTournamentsProvider);
+    final trials = trialsState.items;
+    final tournaments = tournamentsState.items;
+    if ((trialsState.isLoading && trials.isEmpty) ||
+        (tournamentsState.isLoading && tournaments.isEmpty)) {
+      return const SponsorDashboardSkeleton();
+    }
     final activeTrials = trials.where((t) => t.status == 'published').length;
     final activeTournaments = tournaments.where((t) => t.status == 'published').length;
     final totalRegs = trials.fold<int>(0, (s, t) => s + (t.filledSpots ?? 0)) +
@@ -252,6 +260,20 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
                       )),
               ],
             ),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: () async {
+              await ref.read(authProvider.notifier).logout();
+            },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.red,
+              side: const BorderSide(color: Colors.red),
+              minimumSize: const Size.fromHeight(48),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            icon: const Icon(LucideIcons.logOut, size: 18),
+            label: const Text('Log out', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
           ),
         ],
       ),

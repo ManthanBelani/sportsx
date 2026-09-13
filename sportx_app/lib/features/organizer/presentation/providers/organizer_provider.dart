@@ -78,6 +78,35 @@ class ProviderTournamentActions {
       return false;
     }
   }
+
+  Future<bool> unpublishResult(String tournamentId, String resultId) async {
+    try {
+      await _dio.post('/tournaments/$tournamentId/results/$resultId/unpublish');
+      _ref.invalidate(tournamentResultsProvider(tournamentId));
+      return true;
+    } on DioException {
+      return false;
+    }
+  }
+
+  Future<bool> updatePayment(String registrationId, String paymentStatus) async {
+    try {
+      await _dio.patch('/registrations/tournaments/$registrationId/payment', data: {'payment_status': paymentStatus});
+      return true;
+    } on DioException {
+      return false;
+    }
+  }
+
+  Future<String?> downloadTournamentIcs(String registrationId) async {
+    try {
+      final resp = await _dio.get('/registrations/tournaments/$registrationId/ics');
+      // Backend returns text/calendar body directly; we return it as string
+      return resp.data is String ? resp.data as String : resp.data.toString();
+    } on DioException {
+      return null;
+    }
+  }
 }
 
 final providerTournamentActionsProvider = Provider<ProviderTournamentActions>((ref) {

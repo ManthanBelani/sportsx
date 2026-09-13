@@ -17,10 +17,10 @@ class SponsorOnboardingScreen extends ConsumerStatefulWidget {
 }
 
 class _SponsorOnboardingScreenState extends ConsumerState<SponsorOnboardingScreen> {
-  final _brand = TextEditingController(text: 'Nike India');
+  final _brand = TextEditingController();
   final _website = TextEditingController();
   String _category = 'Sports Apparel';
-  final Set<int> _supportedSports = {1, 4};
+  final Set<int> _supportedSports = {};
   bool _saving = false;
   int? _logoMediaId;
   String? _logoName;
@@ -134,7 +134,7 @@ class _SponsorOnboardingScreenState extends ConsumerState<SponsorOnboardingScree
                 const SizedBox(height: 20),
                 const Text('Brand Name', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
                 const SizedBox(height: 6),
-                TextField(controller: _brand, decoration: const InputDecoration(hintText: 'Nike India')),
+                TextField(controller: _brand, decoration: const InputDecoration(hintText: 'e.g. Your Brand Name')),
                 const SizedBox(height: 16),
                 const Text('Brand Category', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
                 const SizedBox(height: 6),

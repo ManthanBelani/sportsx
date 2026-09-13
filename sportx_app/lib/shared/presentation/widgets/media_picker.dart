@@ -62,13 +62,13 @@ Future<PickedMedia?> pickAndUploadMedia(
           children: [
             if (allowCamera)
               ListTile(
-                leading: const Icon(LucideIcons.camera, color: AppColors.primary),
-                title: const Text('Take Photo'),
+                leading: Icon(mediaType == 'video' ? LucideIcons.video : LucideIcons.camera, color: AppColors.primary),
+                title: Text(mediaType == 'video' ? 'Record Video' : 'Take Photo'),
                 onTap: () => Navigator.pop(context, ImageSource.camera),
               ),
             ListTile(
-              leading: const Icon(LucideIcons.image, color: AppColors.primary),
-              title: const Text('Choose from Gallery'),
+              leading: Icon(mediaType == 'video' ? LucideIcons.video : LucideIcons.image, color: AppColors.primary),
+              title: Text(mediaType == 'video' ? 'Choose Video from Gallery' : 'Choose from Gallery'),
               onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
           ],
@@ -82,13 +82,26 @@ Future<PickedMedia?> pickAndUploadMedia(
   final messenger = ScaffoldMessenger.of(context);
 
   try {
-    final picked = await ImagePicker().pickImage(source: source, imageQuality: 80);
+    final picker = ImagePicker();
+    XFile? picked;
+    final isVideo = mediaType == 'video';
+    if (isVideo) {
+      picked = await picker.pickVideo(source: source);
+    } else {
+      picked = await picker.pickImage(source: source, imageQuality: 80);
+    }
     if (picked == null) return null;
 
     final file = File(picked.path);
     final fileSize = await file.length();
     if (fileSize == 0) {
       if (context.mounted) messenger.showSnackBar(const SnackBar(content: Text('Selected file is empty')));
+      return null;
+    }
+    // Client-side size guard (backend limit 10MB)
+    const kMaxBytes = 10 * 1024 * 1024;
+    if (fileSize > kMaxBytes) {
+      if (context.mounted) messenger.showSnackBar(const SnackBar(content: Text('File too large (max 10MB)')));
       return null;
     }
 
@@ -149,5 +162,17 @@ Future<bool> reorderMedia(WidgetRef ref, List<Map<String, int>> items) async {
     return true;
   } on DioException {
     return false;
+  }
+}
+
+/// Returns a signed download URL for a private media item. Backend generates
+/// a 15-minute `temporarySignedRoute` for `/media/download/{id}`.
+Future<String?> getSignedMediaUrl(WidgetRef ref, int mediaId) async {
+  try {
+    final resp = await ref.read(dioProvider).get('/media/$mediaId/signed-url');
+    final data = resp.data is Map ? resp.data['data'] as Map<String, dynamic>? : null;
+    return data?['url'] as String?;
+  } on DioException {
+    return null;
   }
 }

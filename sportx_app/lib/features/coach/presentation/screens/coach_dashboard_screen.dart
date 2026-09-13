@@ -4,12 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/coach/presentation/providers/coach_provider.dart';
 import 'package:sportx_app/features/coach/presentation/screens/coach_enquiry_inbox_screen.dart';
-import 'package:sportx_app/features/coach/presentation/screens/coach_profile_edit_screen.dart';
+import 'package:sportx_app/features/coach/presentation/screens/coach_profile_view_screen.dart';
+import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/shared/models/coach.dart';
-import 'package:sportx_app/core/config/api_config.dart';
 import 'package:sportx_app/shared/providers/enquiry_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/date_format_utils.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class CoachDashboardScreen extends ConsumerStatefulWidget {
   const CoachDashboardScreen({super.key});
@@ -62,7 +63,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
           _buildHomeTab(profile),
           _buildScheduleTab(),
           const CoachEnquiryInboxScreen(isTabContent: true),
-          const CoachProfileEditScreen(isTabContent: true),
+          const CoachProfileViewScreen(isTabContent: true),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -70,8 +71,6 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
         onDestinationSelected: (index) {
           if (index == 2) {
             context.push('/coach-enquiry-inbox');
-          } else if (index == 3) {
-            context.push('/coach-profile-edit');
           } else {
             setState(() => _currentTabIndex = index);
           }
@@ -103,48 +102,50 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
   }
 
   Widget _buildScheduleTab() {
+    final coachState = ref.watch(coachProvider);
+    if (coachState.isLoading && coachState.coachProfile == null) {
+      return const CoachDashboardScheduleSkeleton();
+    }
+    final availability = coachState.coachProfile?.availability ?? {};
+    final hasAvailability = availability.values.any((s) => (s as List).isNotEmpty);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.border),
             ),
-            child: Row(
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(LucideIcons.calendar, color: AppColors.primary, size: 28),
-                ),
-                const SizedBox(width: 16),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Schedule Coming Soon', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                      SizedBox(height: 4),
-                      Text('Manage your coaching sessions and availability will be available here.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Container(width: 40, height: 40, decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)), child: const Icon(LucideIcons.calendar, color: AppColors.primary, size: 20)),
+                const SizedBox(width: 12),
+                const Expanded(child: Text('Weekly Availability', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary))),
+                TextButton(onPressed: () => context.push('/coach-profile-edit'), child: const Text('Edit')),
+              ]),
+              const SizedBox(height: 12),
+              if (!hasAvailability)
+                const Text('No availability set. Tap Edit to define your weekly time slots.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary))
+              else
+                ...availability.entries.where((e) => (e.value as List).isNotEmpty).map((e) => Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Row(children: [
+                        SizedBox(width: 40, child: Text(e.key, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary))),
+                        Expanded(child: Text((e.value as List).join(', '), style: const TextStyle(fontSize: 13, color: AppColors.textSecondary))),
+                      ]),
+                    )),
+            ]),
           ),
           const SizedBox(height: 24),
           const Text('Quick Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
           const SizedBox(height: 12),
-          _buildScheduleAction(LucideIcons.clock, 'Set Availability', 'Define your weekly time slots'),
-          _buildScheduleAction(LucideIcons.video, 'Request Recording', 'Get trial sessions recorded'),
-          _buildScheduleAction(LucideIcons.mapPin, 'Training Location', 'Indiranagar, Bangalore'),
+          GestureDetector(onTap: () => context.push('/coach-profile-edit'), child: _buildScheduleAction(LucideIcons.clock, 'Set Availability', hasAvailability ? 'Update your time slots' : 'Define your weekly time slots')),
+          GestureDetector(onTap: () => context.push('/coach-enquiry-inbox'), child: _buildScheduleAction(LucideIcons.messageCircle, 'Enquiries', 'View and reply to athlete enquiries')),
+          _buildScheduleAction(LucideIcons.mapPin, 'Training Location', coachState.coachProfile?.city?.name ?? 'Set in profile'),
         ],
       ),
     );
@@ -187,19 +188,19 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
   }
 
   Widget _buildHomeTab(Coach? profile) {
+    final coachState = ref.watch(coachProvider);
+    if (coachState.isLoading && profile == null) {
+      return const CoachDashboardHomeSkeleton();
+    }
     final enquiryState = ref.watch(enquiryInboxProvider);
     final totalEnquiries = enquiryState.items.length;
     final newEnquiries = enquiryState.items.where((e) => e.status == 'new' && !e.isRead).length;
     final thisMonthEnquiries = totalEnquiries > 0 ? (totalEnquiries * 0.8).ceil() : 0;
-    final avgRating = '4.8';
+    final avgRating = profile?.rating?.toString() ?? profile?.avgRating?.toString() ?? '-';
     final recentEnquiries = enquiryState.items.take(5).toList();
     final name = profile?.fullName.split(' ').first ?? 'Coach';
     
-    String? photoUrl = profile?.profilePhotoUrl;
-    if (photoUrl != null && photoUrl.startsWith('/')) {
-      final base = ApiConfig.baseUrl.replaceAll('/api/v1', '');
-      photoUrl = '$base$photoUrl';
-    }
+    String? photoUrl = profile?.profilePhotoUrl != null ? MediaUtils.resolveUrl(profile!.profilePhotoUrl!) : null;
     final completeness = _calculateProfileCompleteness(profile);
 
     return SingleChildScrollView(
@@ -216,9 +217,11 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
             child: Row(
               children: [
                 CircleAvatar(
+                  key: ValueKey(photoUrl ?? 'no-photo'),
                   radius: 28,
                   backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                   backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
+                  onBackgroundImageError: (_, __) {},
                   child: photoUrl == null ? const Icon(LucideIcons.user, color: AppColors.primary, size: 28) : null,
                 ),
                 const SizedBox(width: 14),
@@ -310,8 +313,8 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
                   children: [
                     _buildQuickAction(LucideIcons.user, 'Edit Profile', () => _switchTab(3)),
                     _buildQuickAction(LucideIcons.messageCircle, 'Enquiries', () => _switchTab(2)),
-                    _buildQuickAction(LucideIcons.calendar, 'Schedule', () {}),
-                    _buildQuickAction(LucideIcons.barChart2, 'Analytics', () {}),
+                    _buildQuickAction(LucideIcons.calendar, 'Schedule', () => _switchTab(1)),
+                    _buildQuickAction(LucideIcons.barChart2, 'Analytics', () => context.push('/coach-profile-edit')),
                   ],
                 ),
               ],
@@ -480,18 +483,19 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
     int filled = 0;
     int total = 10;
 
-    if (profile.fullName.isNotEmpty) filled++;
-    if (profile.sport != null) filled++;
-    if (profile.city != null) filled++;
-    if (profile.contactNumber != null && profile.contactNumber!.isNotEmpty) filled++;
-    if (profile.experience != null) filled++;
-    if (profile.bio != null && profile.bio!.isNotEmpty) filled++;
-    if (profile.profilePhotoUrl != null) filled++;
-    if (profile.feePerSession != null || profile.feeMonthly != null) filled++;
-    if (profile.headline != null && profile.headline!.isNotEmpty) filled++;
+    if (profile.fullName.trim().isNotEmpty) filled++;
+    // Sport is required – treat sportId as authoritative, fallback to object
+    if (profile.sport != null || profile.sportId != 0) filled++;
+    if (profile.city != null || profile.cityId != null) filled++;
+    if (profile.contactNumber != null && profile.contactNumber!.trim().isNotEmpty) filled++;
+    if (profile.experience != null && profile.experience!.trim().isNotEmpty) filled++;
+    if (profile.bio != null && profile.bio!.trim().isNotEmpty) filled++;
+    if (profile.profilePhotoUrl != null && profile.profilePhotoUrl!.trim().isNotEmpty) filled++;
+    if (profile.feePerSession != null || profile.feeMonthly != null || profile.feeQuarterly != null) filled++;
+    if (profile.headline != null && profile.headline!.trim().isNotEmpty) filled++;
     if (profile.availability != null && profile.availability!.values.any((slots) => slots.isNotEmpty)) filled++;
 
-    return filled / total;
+    return (filled / total).clamp(0.0, 1.0);
   }
 
   List<Widget> _buildProfileTips(Coach? profile) {
@@ -501,24 +505,28 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
       return tips;
     }
 
-    if (profile.profilePhotoUrl == null) {
+    if (profile.profilePhotoUrl == null || profile.profilePhotoUrl!.isEmpty) {
       tips.add(_buildTipItem('Add a profile photo'));
     }
-    if (profile.headline == null || profile.headline!.isEmpty) {
-      tips.add(_buildTipItem('Add your AIFF license certificate'));
+    if (profile.headline == null || profile.headline!.trim().isEmpty) {
+      tips.add(_buildTipItem('Add your headline (e.g. AIFF C License)'));
     }
-    if (profile.bio == null || profile.bio!.isEmpty) {
+    if (profile.bio == null || profile.bio!.trim().isEmpty) {
       tips.add(_buildTipItem('Write a bio describing your coaching approach'));
     }
-    if (profile.feePerSession == null && profile.feeMonthly == null) {
+    if (profile.feePerSession == null && profile.feeMonthly == null && profile.feeQuarterly == null) {
       tips.add(_buildTipItem('Set your fee structure'));
     }
     if (profile.availability == null || !profile.availability!.values.any((slots) => slots.isNotEmpty)) {
       tips.add(_buildTipItem('Set your weekly availability'));
     }
+    if ((profile.certifications == null || profile.certifications!.isEmpty) && (profile.achievements == null || profile.achievements!.isEmpty)) {
+      tips.add(_buildTipItem('Add a certification or achievement'));
+    }
 
-    // Always add the video upload tip as it's missing in the app's capability currently
-    tips.add(_buildTipItem('Upload a training video'));
+    if (tips.isEmpty) {
+      tips.add(_buildTipItem('Profile looks great! Add a training video to stand out.'));
+    }
 
     return tips;
   }

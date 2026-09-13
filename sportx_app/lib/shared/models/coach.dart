@@ -10,6 +10,13 @@ int? _parseInt(dynamic value) {
   return null;
 }
 
+double? _parseDouble(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value);
+  return null;
+}
+
 class Coach {
   final int id;
   final int userId;
@@ -39,6 +46,8 @@ class Coach {
   final Sport? sport;
   final City? city;
   final bool isSaved;
+  final double? rating;
+  final double? avgRating;
 
   Coach({
     required this.id,
@@ -69,6 +78,8 @@ class Coach {
     this.sport,
     this.city,
     this.isSaved = false,
+    this.rating,
+    this.avgRating,
   });
 
   factory Coach.fromJson(Map<String, dynamic> json) {
@@ -122,7 +133,20 @@ class Coach {
       email: json['email'] as String?,
       experience: json['experience'] as String?,
       specialization: json['qualification'] as String? ?? json['specialization'] as String?,
-      achievements: json['achievements'] as String?,
+      achievements: (() {
+        final a = json['achievements'];
+        if (a == null) return null;
+        if (a is String) return a;
+        if (a is List) {
+          if (a.isEmpty) return null;
+          // List of {text,title} or strings
+          return a.map((e) {
+            if (e is Map) return (e['text'] ?? e['title'] ?? '').toString();
+            return e.toString();
+          }).where((s) => s.trim().isNotEmpty).join(', ');
+        }
+        return a.toString();
+      })(),
       bio: json['bio'] as String?,
       hourlyRate: (json['hourly_rate'] as num?)?.toDouble(),
       feePerSession: (json['fee_per_session'] is String)
@@ -146,6 +170,8 @@ class Coach {
       sport: json['sport'] != null ? Sport.fromJson(json['sport']) : null,
       city: json['city'] != null ? City.fromJson(json['city']) : null,
       isSaved: json['is_saved'] == true || json['is_saved'] == 1,
+      rating: _parseDouble(json['rating']),
+      avgRating: _parseDouble(json['avg_rating'] ?? json['avgRating'] ?? json['average_rating']),
     );
   }
 
@@ -158,5 +184,6 @@ class Coach {
     'fee_per_session': feePerSession, 'fee_monthly': feeMonthly, 'fee_quarterly': feeQuarterly,
     'location': location, 'headline': headline, 'availability': availability,
     'registration_link': registrationLink, 'status': status,
+    'rating': rating, 'avg_rating': avgRating,
   };
 }

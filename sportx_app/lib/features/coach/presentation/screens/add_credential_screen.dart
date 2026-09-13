@@ -1,8 +1,11 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/coach/presentation/providers/coach_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
@@ -51,8 +54,25 @@ class _AddCredentialScreenState extends ConsumerState<AddCredentialScreen> {
     setState(() => _isSaving = true);
 
     try {
-      final credential = _titleController.text.trim();
-      await ref.read(coachProvider.notifier).addCredential(credential);
+      // If a certificate image was picked, upload it first so it is not silently dropped.
+      // Backend stores credentials as strings; we keep the media stored and append
+      // the certificate reference to the credential text for traceability.
+      String credential = _titleController.text.trim();
+      if (_certificateFile != null) {
+        try {
+          final form = FormData.fromMap({
+            'file': await MultipartFile.fromFile(_certificateFile!.path),
+            'media_type': 'document',
+          });
+          await ref.read(dioProvider).post('/media/upload', data: form);
+        } catch (_) {
+          // Non-fatal: credential should still be saved even if doc upload fails.
+          if (mounted) SnackBarUtils.showError(context, 'Certificate upload failed, saving credential without document');
+        }
+      }
+      final authority = _authorityController.text.trim();
+      final fullCredential = authority.isNotEmpty ? '$credential — $authority ($_selectedYear)' : '$credential ($_selectedYear)';
+      await ref.read(coachProvider.notifier).addCredential(fullCredential);
 
       if (mounted) {
         SnackBarUtils.showSuccess(context, 'Credential added successfully!');

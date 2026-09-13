@@ -1,8 +1,11 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/core/utils/media_utils.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class ViewProfileScreen extends ConsumerStatefulWidget {
@@ -46,35 +49,11 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _profileData = _getMockData();
+          _profileData = null;
         });
+        SnackBarUtils.showError(context, ApiException.fromDio(e is DioException ? e : DioException(requestOptions: RequestOptions(path: ''), error: e)));
       }
     }
-  }
-
-  Map<String, dynamic> _getMockData() {
-    if (widget.type == 'coach') {
-      return {
-        'full_name': 'Coach Rahul Mehta',
-        'profile_photo_url': 'https://i.pravatar.cc/150?img=10',
-        'specialization': 'Cricket',
-        'experience': 8,
-        'bio': 'Passionate cricket coach with 8 years of experience.',
-        'city': {'name': 'Ahmedabad'},
-        'is_verified': true,
-        'connections_count': 0,
-      };
-    }
-    return {
-      'name': 'Aryan Patel',
-      'profile_photo_url': 'https://i.pravatar.cc/150?img=11',
-      'sport': {'name': 'Cricket'},
-      'bio': 'Passionate cricketer from Ahmedabad.',
-      'city': {'name': 'Ahmedabad'},
-      'age_group': 'Under-14',
-      'is_verified': true,
-      'connections_count': 0,
-    };
   }
 
   @override
@@ -83,7 +62,16 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _profileData == null
-              ? const Center(child: Text('Profile not found'))
+              ? Center(
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    const Icon(Icons.error_outline, size: 48, color: AppColors.textSecondary),
+                    const SizedBox(height: 12),
+                    const Text('Profile not found or unavailable'),
+                    const SizedBox(height: 12),
+                    FilledButton(onPressed: _loadProfile, child: const Text('Retry')),
+                    TextButton(onPressed: () => context.pop(), child: const Text('Go back')),
+                  ]),
+                )
               : CustomScrollView(
                   slivers: [
                     _buildSliverAppBar(),
@@ -101,9 +89,12 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
                           const SizedBox(height: 24),
                           _buildAchievementsSection(),
                           const SizedBox(height: 24),
-                          if (widget.type == 'athlete') ...[
+                          // Tournament history / stats only if backend provides data; hide otherwise to avoid fake UI
+                          if (widget.type == 'athlete' && (_profileData!['tournament_history'] is List && (_profileData!['tournament_history'] as List).isNotEmpty)) ...[
                             _buildTournamentHistorySection(),
                             const SizedBox(height: 24),
+                          ],
+                          if (widget.type == 'athlete' && (_profileData!['performance_stats'] is List && (_profileData!['performance_stats'] as List).isNotEmpty)) ...[
                             _buildPerformanceStatsSection(),
                             const SizedBox(height: 24),
                           ],
@@ -128,9 +119,14 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
         background: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(
-              'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&h=400&fit=crop',
-              fit: BoxFit.cover,
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF1E3A5F), Color(0xFF2E5A8F)],
+                ),
+              ),
             ),
             Container(
               decoration: BoxDecoration(
@@ -153,7 +149,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
                   CircleAvatar(
                     radius: 40,
                     backgroundImage: _profileData!['profile_photo_url'] != null
-                        ? NetworkImage(_profileData!['profile_photo_url'])
+                        ? NetworkImage(MediaUtils.resolveUrl(_profileData!['profile_photo_url'].toString()))
                         : null,
                     backgroundColor: AppColors.surface,
                     child: _profileData!['profile_photo_url'] == null
@@ -301,6 +297,8 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
 
   Widget _buildStatsRow() {
     final connectionsCount = _profileData!['connections_count'] ?? 0;
+    final postsCount = _profileData!['posts_count'] ?? _profileData!['social_posts_count'] ?? 0;
+    final achievementsCount = (_profileData!['achievements'] as List?)?.length ?? 0;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
@@ -310,11 +308,11 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildStatItem('24', 'Posts', Icons.post_add_outlined),
+          _buildStatItem('$postsCount', 'Posts', Icons.post_add_outlined),
           Container(width: 1, height: 32, color: AppColors.border),
           _buildStatItem('$connectionsCount', 'Connects', Icons.people_outline),
           Container(width: 1, height: 32, color: AppColors.border),
-          _buildStatItem('8', 'Achievements', Icons.emoji_events_outlined),
+          _buildStatItem('$achievementsCount', 'Achievements', Icons.emoji_events_outlined),
         ],
       ),
     );
@@ -346,14 +344,17 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
   }
 
   Widget _buildAchievementsSection() {
+    final achievements = _profileData!['achievements'] as List? ?? [];
+    if (achievements.isEmpty) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Achievements', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
-        _buildAchievementItem('🏆', 'State-level U-14 Selection', '2025'),
-        _buildAchievementItem('🥇', 'District Top Scorer', '2024'),
-        _buildAchievementItem('🏏', 'Best Batsman Award', '2024'),
+        ...achievements.map((a) {
+          final m = a is Map ? a : {'text': a.toString()};
+          return _buildAchievementItem('🏆', (m['text'] ?? m['title'] ?? '').toString(), (m['year'] ?? '').toString());
+        }),
       ],
     );
   }
@@ -469,6 +470,8 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
   }
 
   Widget _buildMediaGallerySection() {
+    final mediaItems = _profileData!['media_items'] as List? ?? [];
+    if (mediaItems.isEmpty) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -491,16 +494,17 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
           ),
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: 6,
+          itemCount: mediaItems.length.clamp(0, 6),
           itemBuilder: (context, index) {
+            final item = mediaItems[index] is Map ? mediaItems[index] as Map : {};
+            final url = MediaUtils.resolveNullable((item['url'] ?? item['media_url'])?.toString());
             return Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                image: DecorationImage(
-                  image: NetworkImage('https://picsum.photos/400/400?random=${index + 10}'),
-                  fit: BoxFit.cover,
-                ),
+                color: AppColors.surface,
+                image: url != null ? DecorationImage(image: NetworkImage(url), fit: BoxFit.cover) : null,
               ),
+              child: url == null ? const Icon(Icons.image, color: AppColors.textSecondary) : null,
             );
           },
         ),

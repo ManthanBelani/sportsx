@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/shared/providers/enquiry_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/date_format_utils.dart';
 
@@ -51,7 +52,7 @@ class _CoachEnquiryInboxScreenState extends ConsumerState<CoachEnquiryInboxScree
     final items = _filterItems(allItems);
 
     if (state.isLoading && state.items.isEmpty) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+      return const CoachEnquiryListSkeleton();
     }
     if (items.isEmpty) {
       return _buildEmptyState();

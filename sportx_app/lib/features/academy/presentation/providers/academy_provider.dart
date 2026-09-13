@@ -60,6 +60,33 @@ class ProviderTrialActions {
       return false;
     }
   }
+
+  Future<bool> toggleReminder(String registrationId) async {
+    try {
+      await _dio.post('/registrations/trials/$registrationId/reminder');
+      return true;
+    } on DioException {
+      return false;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getTrialRegistration(String registrationId) async {
+    try {
+      final resp = await _dio.get('/registrations/trials/$registrationId');
+      return resp.data['data'] as Map<String, dynamic>?;
+    } on DioException {
+      return null;
+    }
+  }
+
+  Future<String?> downloadTrialIcs(String registrationId) async {
+    try {
+      final resp = await _dio.get('/registrations/trials/$registrationId/ics');
+      return resp.data is String ? resp.data as String : resp.data.toString();
+    } on DioException {
+      return null;
+    }
+  }
 }
 
 final providerTrialActionsProvider = Provider<ProviderTrialActions>((ref) {

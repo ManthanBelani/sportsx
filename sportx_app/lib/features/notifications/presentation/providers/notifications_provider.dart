@@ -9,6 +9,7 @@ class NotificationItem {
   final String? type;
   final bool isRead;
   final DateTime createdAt;
+  final String? actionUrl;
 
   NotificationItem({
     required this.id,
@@ -17,6 +18,7 @@ class NotificationItem {
     this.type,
     required this.isRead,
     required this.createdAt,
+    this.actionUrl,
   });
 
   factory NotificationItem.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,7 @@ class NotificationItem {
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : DateTime.now(),
+      actionUrl: json['action_url'] as String?,
     );
   }
 }
@@ -126,6 +129,7 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
               type: item.type,
               isRead: true,
               createdAt: item.createdAt,
+              actionUrl: item.actionUrl,
             );
           }
           return item;
@@ -142,6 +146,7 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
         items: state.items.map((item) => NotificationItem(
           id: item.id, title: item.title, body: item.body,
           type: item.type, isRead: true, createdAt: item.createdAt,
+          actionUrl: item.actionUrl,
         )).toList(),
         unreadCount: 0,
       );
@@ -151,6 +156,24 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
   Future<void> refresh() async {
     state = NotificationsState();
     await load();
+  }
+
+  Future<bool> registerDeviceToken(String token, {String deviceType = 'android'}) async {
+    try {
+      await _dio.post('/me/device-tokens', data: {'token': token, 'device_type': deviceType});
+      return true;
+    } on DioException {
+      return false;
+    }
+  }
+
+  Future<bool> unregisterDeviceToken(String token) async {
+    try {
+      await _dio.delete('/me/device-tokens', data: {'token': token});
+      return true;
+    } on DioException {
+      return false;
+    }
   }
 }
 

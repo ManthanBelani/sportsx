@@ -6,6 +6,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/config/api_config.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
@@ -139,7 +140,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const CoachProfileViewSkeleton()
           : RefreshIndicator(
               onRefresh: _loadProfile,
               child: SingleChildScrollView(

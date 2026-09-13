@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/date_format_utils.dart';
+import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/sponsor/presentation/providers/sponsor_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class SponsorDashboardScreen extends ConsumerStatefulWidget {
@@ -80,9 +82,17 @@ class _SponsorDashboardScreenState extends ConsumerState<SponsorDashboardScreen>
   }
 
   Widget _buildHomeTab() {
-    final listings = ref.watch(mySponsorshipsProvider).items;
-    final shortlist = ref.watch(shortlistProvider).items;
-    final applications = ref.watch(myApplicationsProvider).valueOrNull ?? [];
+    final sponsorshipsState = ref.watch(mySponsorshipsProvider);
+    final listings = sponsorshipsState.items;
+    final shortlistState = ref.watch(shortlistProvider);
+    final shortlist = shortlistState.items;
+    final applicationsAsync = ref.watch(myApplicationsProvider);
+    final applications = applicationsAsync.valueOrNull ?? [];
+    if ((sponsorshipsState.isLoading && listings.isEmpty) ||
+        (shortlistState.isLoading && shortlist.isEmpty) ||
+        applicationsAsync.isLoading) {
+      return const SponsorDashboardSkeleton();
+    }
     final active = listings.where((s) => s.status == 'published').length;
 
     return SingleChildScrollView(
@@ -227,7 +237,7 @@ class _SponsorDashboardScreenState extends ConsumerState<SponsorDashboardScreen>
                     child: Text('No applications yet.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                   )
                 else
-                  ...applications.take(3).map((a) {
+                      ...applications.take(3).map((a) {
                         final raw = a['created_at']?.toString();
                         final formatted = raw != null && raw.isNotEmpty ? DateFormatUtils.formatRelative(raw) : '';
                         final sport = a['sport']?.toString() ?? '';
@@ -239,6 +249,20 @@ class _SponsorDashboardScreenState extends ConsumerState<SponsorDashboardScreen>
                       }),
               ],
             ),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: () async {
+              await ref.read(authProvider.notifier).logout();
+            },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.red,
+              side: const BorderSide(color: Colors.red),
+              minimumSize: const Size.fromHeight(48),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            icon: const Icon(LucideIcons.logOut, size: 18),
+            label: const Text('Log out', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
           ),
         ],
       ),

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/features/sponsor/presentation/providers/sponsor_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class ApplicationsInboxScreen extends ConsumerWidget {
@@ -28,7 +29,7 @@ class ApplicationsInboxScreen extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(sponsorApplicationsProvider),
         child: async.when(
-          loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+          loading: () => const GenericListSkeleton(),
           error: (e, _) => Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,

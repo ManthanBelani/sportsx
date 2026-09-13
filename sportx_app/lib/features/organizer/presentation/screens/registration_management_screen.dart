@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
@@ -66,14 +68,14 @@ class RegistrationManagementScreen extends ConsumerWidget {
           }
 
           // Build date/venue header from real tournament detail
-          final venue = tournament?.venue ?? 'Kanteerava Stadium, Bangalore';
+          final venue = tournament?.venue;
           final dateStr = tournament?.startDate != null
               ? (tournament!.endDate != null
-                  ? '${DateFormatUtils.formatShortDate(tournament.startDate!.toIso8601String())} - ${DateFormatUtils.formatShortDate(tournament.endDate!.toIso8601String())} • $venue'
-                  : '${DateFormatUtils.formatShortDate(tournament.startDate!.toIso8601String())} • $venue')
-              : 'Dec 15-17, 2024 • $venue';
+                  ? '${DateFormatUtils.formatShortDate(tournament.startDate!.toIso8601String())} - ${DateFormatUtils.formatShortDate(tournament.endDate!.toIso8601String())}${venue != null ? ' • $venue' : ''}'
+                  : '${DateFormatUtils.formatShortDate(tournament.startDate!.toIso8601String())}${venue != null ? ' • $venue' : ''}')
+              : (venue != null ? venue : 'Tournament details pending');
           // fee label for per-team display (use real fee if available)
-          final feeLabel = feePerTeam > 0 ? '₹${feePerTeam.toStringAsFixed(0)}' : '₹2,500';
+          final feeLabel = feePerTeam > 0 ? '₹${feePerTeam.toStringAsFixed(0)}' : 'TBD';
 
           return RefreshIndicator(
             onRefresh: () async {
@@ -116,7 +118,19 @@ class RegistrationManagementScreen extends ConsumerWidget {
                               Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
                               Text(contact, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                             ])),
-                            Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: isPaid? const Color(0xFFd1fae5): const Color(0xFFfef3c7), borderRadius: BorderRadius.circular(4)), child: Text(feeText, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isPaid? const Color(0xFF065f46): const Color(0xFF92400e)))),
+                            GestureDetector(
+                              onTap: () async {
+                                final next = isPaid ? 'pending' : 'paid';
+                                try {
+                                  await ref.read(dioProvider).patch('/registrations/tournaments/${r['id']}/payment', data: {'payment_status': next});
+                                  if (context.mounted) SnackBarUtils.showSuccess(context, 'Payment marked $next');
+                                  ref.invalidate(tournamentRegistrationsProvider(tournamentId));
+                                } catch (e) {
+                                  if (context.mounted) SnackBarUtils.showError(context, e);
+                                }
+                              },
+                              child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: isPaid? const Color(0xFFd1fae5): const Color(0xFFfef3c7), borderRadius: BorderRadius.circular(4)), child: Text(feeText, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isPaid? const Color(0xFF065f46): const Color(0xFF92400e)))),
+                            ),
                           ]),
                         );
                       }),

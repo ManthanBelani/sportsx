@@ -1,8 +1,10 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/features/saved/presentation/providers/saved_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
@@ -46,32 +48,8 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        // Use mock data on error
-        _coachData = {
-          'full_name': 'Rahul Mehta',
-          'profile_photo_url': 'https://i.pravatar.cc/150?img=10',
-          'specialization': 'Cricket',
-          'experience': 8,
-          'bio': 'Passionate cricket coach with 8 years of experience training young athletes. Specialized in batting technique and mental conditioning.',
-          'contact_number': '+91 9876543210',
-          'email': 'rahul@coach.com',
-          'hourly_rate': 800,
-          'city': {'name': 'Ahmedabad'},
-          'is_verified': true,
-          'credentials': [
-            {'title': 'BCCI Level 2 Certificate', 'year': '2020'},
-            {'title': 'Sports Science Diploma', 'year': '2019'},
-          ],
-          'facilities': [
-            {'name': 'Indoor Cricket Nets', 'type': 'facility'},
-            {'name': 'Weekend Training Camp', 'type': 'program'},
-          ],
-          'showcase_athletes': [
-            {'name': 'Rohit Sharma', 'profile_photo_url': 'https://i.pravatar.cc/150?img=3'},
-            {'name': 'Priya Patel', 'profile_photo_url': 'https://i.pravatar.cc/150?img=5'},
-            {'name': 'Akash Kumar', 'profile_photo_url': 'https://i.pravatar.cc/150?img=8'},
-          ],
-        };
+        _coachData = null;
+        SnackBarUtils.showError(context, ApiException.fromDio(e is DioException ? e : DioException(requestOptions: RequestOptions(path: ''), error: e)));
       }
     }
   }
@@ -122,7 +100,16 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _coachData == null
-              ? const Center(child: Text('Coach not found'))
+              ? Center(
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    const Icon(Icons.error_outline, size: 48, color: AppColors.textSecondary),
+                    const SizedBox(height: 12),
+                    const Text('Coach not found or unavailable'),
+                    const SizedBox(height: 12),
+                    FilledButton(onPressed: _loadCoachData, child: const Text('Retry')),
+                    TextButton(onPressed: () => context.pop(), child: const Text('Go back')),
+                  ]),
+                )
               : CustomScrollView(
                   slivers: [
                     _buildSliverAppBar(),
@@ -163,9 +150,14 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
         background: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(
-              'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&h=400&fit=crop',
-              fit: BoxFit.cover,
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF1E3A5F), Color(0xFF2E5A8F)],
+                ),
+              ),
             ),
             Container(
               decoration: BoxDecoration(
@@ -185,10 +177,10 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
               right: 16,
               child: Row(
                 children: [
-                  CircleAvatar(
+                    CircleAvatar(
                     radius: 40,
                     backgroundImage: _coachData!['profile_photo_url'] != null
-                        ? NetworkImage(_coachData!['profile_photo_url'])
+                        ? NetworkImage(MediaUtils.resolveUrl(_coachData!['profile_photo_url']))
                         : null,
                     backgroundColor: AppColors.surface,
                     child: _coachData!['profile_photo_url'] == null
@@ -273,6 +265,24 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
               onTap: () {
                 Navigator.pop(context);
                 SnackBarUtils.showSuccess(context, 'Link copied to clipboard');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.flag_outlined, color: Colors.red),
+              title: const Text('Report', style: TextStyle(color: Colors.red)),
+              onTap: () async {
+                Navigator.pop(context);
+                try {
+                  await ref.read(dioProvider).post('/reports', data: {
+                    'reportable_type': 'coach_profile',
+                    'reportable_id': int.tryParse(widget.coachId) ?? widget.coachId,
+                    'reason': 'spam',
+                    'description': 'Reported from coach profile',
+                  });
+                  if (context.mounted) SnackBarUtils.showSuccess(context, 'Report submitted');
+                } catch (e) {
+                  if (context.mounted) SnackBarUtils.showError(context, e);
+                }
               },
             ),
           ],
@@ -476,7 +486,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
                   CircleAvatar(
                     radius: 30,
                     backgroundImage: athlete['profile_photo_url'] != null
-                        ? NetworkImage(athlete['profile_photo_url'])
+                        ? NetworkImage(MediaUtils.resolveUrl(athlete['profile_photo_url']))
                         : null,
                     backgroundColor: AppColors.surface,
                     child: athlete['profile_photo_url'] == null

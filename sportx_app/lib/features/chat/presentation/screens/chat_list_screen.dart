@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/chat/presentation/providers/chat_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class ChatListScreen extends ConsumerStatefulWidget {
@@ -73,7 +74,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
             child: RefreshIndicator(
               onRefresh: () async => ref.invalidate(conversationsProvider),
               child: async.when(
-                loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+                loading: () => const ChatListSkeleton(),
                 error: (e, _) => Center(
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
                     Text('$e', style: const TextStyle(color: AppColors.textSecondary)),

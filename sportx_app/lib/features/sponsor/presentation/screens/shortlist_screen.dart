@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/sponsor/presentation/providers/sponsor_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class ShortlistScreen extends ConsumerWidget {
@@ -27,7 +28,7 @@ class ShortlistScreen extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () => ref.read(shortlistProvider.notifier).load(),
         child: state.isLoading && state.items.isEmpty
-            ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+            ? const GenericListSkeleton()
             : state.items.isEmpty
                 ? const Center(
                     child: Text('No shortlisted athletes', style: TextStyle(color: AppColors.textSecondary)))

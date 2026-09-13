@@ -24,6 +24,26 @@ class RegistrantDetailScreen extends ConsumerWidget {
     }
   }
 
+  Future<void> _toggleReminder(BuildContext context, WidgetRef ref) async {
+    try {
+      await ref.read(dioProvider).post('/registrations/trials/$registrationId/reminder');
+      if (context.mounted) SnackBarUtils.showSuccess(context, 'Reminder toggled');
+    } catch (e) {
+      if (context.mounted) SnackBarUtils.showError(context, e);
+    }
+  }
+
+  Future<void> _downloadIcs(BuildContext context, WidgetRef ref) async {
+    try {
+      final resp = await ref.read(dioProvider).get('/registrations/trials/$registrationId/ics');
+      final ics = resp.data is String ? resp.data as String : resp.data.toString();
+      if (context.mounted) SnackBarUtils.showSuccess(context, 'ICS ready (${ics.length} bytes)');
+      // In prod, write to temp file + share via share_plus
+    } catch (e) {
+      if (context.mounted) SnackBarUtils.showError(context, e);
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
@@ -45,6 +65,12 @@ class RegistrantDetailScreen extends ConsumerWidget {
           children: [
             Text('Registration #$registrationId',
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+            const SizedBox(height: 16),
+            Row(children: [
+              Expanded(child: OutlinedButton.icon(onPressed: () => _toggleReminder(context, ref), icon: const Icon(LucideIcons.bell, size: 16), label: const Text('Toggle Reminder'))),
+              const SizedBox(width: 12),
+              Expanded(child: OutlinedButton.icon(onPressed: () => _downloadIcs(context, ref), icon: const Icon(LucideIcons.calendar, size: 16), label: const Text('Download ICS'))),
+            ]),
             const SizedBox(height: 32),
             const Spacer(),
             Row(

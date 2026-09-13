@@ -7,6 +7,7 @@ import 'package:sportx_app/features/talent_scout/presentation/providers/talent_s
 import 'package:sportx_app/features/talent_scout/presentation/providers/scout_shortlist_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/providers/scout_connection_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/widgets/athlete_avatar.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class TalentScoutDashboardScreen extends ConsumerStatefulWidget {
@@ -101,10 +102,18 @@ class _TalentScoutDashboardScreenState extends ConsumerState<TalentScoutDashboar
   }
 
   Widget _buildHomeTab() {
-    final shortlist = ref.watch(scoutShortlistProvider).items;
-    final connectionStats = ref.watch(scoutConnectionProvider).stats;
+    final shortlistState = ref.watch(scoutShortlistProvider);
+    final shortlist = shortlistState.items;
+    final connectionState = ref.watch(scoutConnectionProvider);
+    final connectionStats = connectionState.stats;
+    final profileState = ref.watch(talentScoutProvider);
+    if ((shortlistState.isLoading && shortlist.isEmpty) ||
+        (connectionState.isLoading && connectionState.connections.isEmpty) ||
+        profileState.isLoading) {
+      return const SponsorDashboardSkeleton();
+    }
     final user = ref.watch(authProvider).user;
-    final profile = ref.watch(talentScoutProvider).profile;
+    final profile = profileState.profile;
     final completeness = _completeness();
 
     return SingleChildScrollView(
@@ -248,6 +257,20 @@ class _TalentScoutDashboardScreenState extends ConsumerState<TalentScoutDashboar
                       )),
               ],
             ),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: () async {
+              await ref.read(authProvider.notifier).logout();
+            },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.red,
+              side: const BorderSide(color: Colors.red),
+              minimumSize: const Size.fromHeight(48),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            icon: const Icon(LucideIcons.logOut, size: 18),
+            label: const Text('Log out', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
           ),
         ],
       ),

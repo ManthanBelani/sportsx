@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/features/search/presentation/providers/search_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class UniversalSearchScreen extends ConsumerStatefulWidget {
@@ -157,7 +158,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
     if (searchState.results == null && searchState.query.isEmpty) {
       return _buildSuggestions(trendingSearches, searchState);
     } else if (searchState.isLoading && searchState.results == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const GenericListSkeleton();
     } else if (searchState.results != null) {
       return _buildCategoryResults(searchState.category, searchState.results, searchState);
     } else if (searchState.query.isNotEmpty && !searchState.isLoading) {

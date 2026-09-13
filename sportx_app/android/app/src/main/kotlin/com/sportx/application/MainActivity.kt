@@ -1,4 +1,4 @@
-package com.example.sportx_app
+package com.sportx.application
 
 import io.flutter.embedding.android.FlutterActivity
 

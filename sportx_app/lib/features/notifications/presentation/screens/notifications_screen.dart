@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/features/notifications/presentation/providers/notifications_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class NotificationsScreen extends ConsumerWidget {
@@ -39,7 +41,7 @@ class NotificationsScreen extends ConsumerWidget {
 
   Widget _buildBody(BuildContext context, WidgetRef ref, NotificationsState state) {
     if (state.isLoading && state.items.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const NotificationsSkeleton();
     }
 
     if (state.error != null && state.items.isEmpty) {
@@ -103,11 +105,14 @@ class NotificationsScreen extends ConsumerWidget {
 
   Widget _buildNotificationItem(BuildContext context, WidgetRef ref, dynamic item) {
     final typeData = _getTypeData(item.type);
-    
+
     return InkWell(
       onTap: () {
         if (!item.isRead) {
           ref.read(notificationsProvider.notifier).markAsRead(item.id);
+        }
+        if (item.actionUrl != null && item.actionUrl.isNotEmpty) {
+          _navigateTo(context, item.actionUrl);
         }
       },
       child: Container(
@@ -183,6 +188,42 @@ class NotificationsScreen extends ConsumerWidget {
   }
 
   String _formatTime(DateTime date) => DateFormatUtils.formatRelative(date.toIso8601String());
+
+  void _navigateTo(BuildContext context, String url) {
+    final uri = Uri.parse(url);
+    final path = uri.path;
+
+    if (path.startsWith('/enquiry/')) {
+      final id = path.split('/').last;
+      context.push('/enquiry-detail?id=$id');
+    } else if (path.startsWith('/registrations/trials/')) {
+      final id = path.split('/').last;
+      context.push('/trial-registration/$id');
+    } else if (path.startsWith('/registrations/tournaments/')) {
+      final id = path.split('/').last;
+      context.push('/tournament-registration/$id');
+    } else if (path == '/scout-shortlist') {
+      context.push('/scout-shortlist');
+    } else if (path == '/shortlist') {
+      context.push('/shortlist');
+    } else if (path == '/my-applications') {
+      context.push('/my-applications');
+    } else if (path.startsWith('/trial/')) {
+      final id = path.split('/').last;
+      context.push('/trial/$id');
+    } else if (path.startsWith('/tournament/')) {
+      final id = path.split('/').last;
+      context.push('/tournament/$id');
+    } else if (path.startsWith('/academy/')) {
+      final id = path.split('/').last;
+      context.push('/academy/$id');
+    } else if (path.startsWith('/coach/')) {
+      final id = path.split('/').last;
+      context.push('/coach-profile/$id');
+    } else {
+      context.push(path);
+    }
+  }
 
   _TypeData _getTypeData(String? type) {
     switch (type) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/core/services/push_notification_service.dart';
 import 'package:sportx_app/features/auth/presentation/screens/splash_screen.dart';
 import 'package:sportx_app/features/auth/presentation/screens/role_selection_screen.dart';
 import 'package:sportx_app/features/auth/presentation/screens/sign_up_screen.dart';
@@ -164,6 +165,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final notifier = RouterNotifier(ref);
 
   return GoRouter(
+    navigatorKey: navigatorKey,
     initialLocation: '/splash',
     refreshListenable: notifier,
     redirect: (context, state) {

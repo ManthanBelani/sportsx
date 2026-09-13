@@ -6,6 +6,7 @@ import 'package:sportx_app/features/talent_scout/presentation/providers/athlete_
 import 'package:sportx_app/features/talent_scout/presentation/providers/scout_shortlist_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/widgets/athlete_avatar.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
@@ -441,9 +442,7 @@ class _TalentScoutAthleteDiscoveryScreenState
           // Athlete List
           Expanded(
             child: state.isLoading && state.athletes.isEmpty
-                ? const Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
-                  )
+                ? const GenericListSkeleton()
                 : state.error != null
                 ? Center(
                     child: Column(

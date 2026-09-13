@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
-import 'package:dio/dio.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:sportx_app/core/config/api_config.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/core/utils/media_utils.dart';
+import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
 import 'package:sportx_app/features/coach/presentation/providers/coach_provider.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/models/coach.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 class CoachProfileEditScreen extends ConsumerStatefulWidget {
   final bool isTabContent;
@@ -165,36 +165,34 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
   }
 
   Future<void> _pickAndUploadPhoto() async {
-    final picker = ImagePicker();
-    final xFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
-    if (xFile == null) return;
-
+    if (_uploadingPhoto) return;
     setState(() => _uploadingPhoto = true);
     try {
-      final profile = ref.read(coachProvider).coachProfile;
-      final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(xFile.path),
-        'media_type': 'photo',
-        'owner_type': 'coach_profile',
-        'owner_id': profile?.id,
-      });
-
-      final uploadRes = await ref.read(dioProvider).post('/media/upload', data: formData);
-      final mediaId = uploadRes.data['data']['id'];
-      final mediaUrl = uploadRes.data['data']['url'];
-
+      final media = await pickAndUploadMedia(context, ref, mediaType: 'photo');
+      if (media == null) return;
+      // Optimistic local preview
       setState(() {
-        _uploadedPhotoMediaId = mediaId;
-        _uploadedPhotoUrl = mediaUrl;
+        _uploadedPhotoMediaId = media.mediaId;
+        _uploadedPhotoUrl = MediaUtils.resolveUrl(media.url);
       });
-
-      if (mounted) {
-        SnackBarUtils.showSuccess(context, 'Profile photo updated');
+      // Immediately persist so photo syncs across dashboard/home without requiring Save
+      try {
+        await ref.read(dioProvider).put('/me/coach-profile', data: {'photo_media_id': media.mediaId});
+        await ref.read(coachProvider.notifier).loadCoachProfile();
+        // Clear local override to rely on authoritative provider value (prevents stale cache)
+        if (mounted) {
+          setState(() {
+            _uploadedPhotoMediaId = null;
+            _uploadedPhotoUrl = null;
+          });
+          SnackBarUtils.showSuccess(context, 'Profile photo updated');
+        }
+      } catch (_) {
+        // Keep local override so Save Changes can still persist it
+        if (mounted) SnackBarUtils.showSuccess(context, 'Photo selected — tap Save to persist');
       }
     } catch (e) {
-      if (mounted) {
-        SnackBarUtils.showError(context, 'Failed to upload photo');
-      }
+      if (mounted) SnackBarUtils.showError(context, 'Failed to upload photo');
     } finally {
       if (mounted) setState(() => _uploadingPhoto = false);
     }
@@ -230,7 +228,10 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
       };
 
       await ref.read(dioProvider).put('/me/coach-profile', data: data);
-      ref.read(coachProvider.notifier).loadCoachProfile();
+      await ref.read(coachProvider.notifier).loadCoachProfile();
+      // Clear optimistic photo override after successful save
+      _uploadedPhotoMediaId = null;
+      _uploadedPhotoUrl = null;
 
       if (mounted) {
         SnackBarUtils.showSuccess(context, 'Profile updated successfully');
@@ -246,11 +247,31 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
 
   @override
   Widget build(BuildContext context) {
+    final coachState = ref.watch(coachProvider);
     if (!_initialized) {
-      final profile = ref.watch(coachProvider).coachProfile;
+      final profile = coachState.coachProfile;
       if (profile != null) {
         _initializeFromProfile(profile);
       }
+    }
+
+    // Show skeleton while initial load is in progress and form not yet initialized
+    if (!_initialized && coachState.isLoading) {
+      final skeleton = const CoachEditFormSkeleton();
+      if (widget.isTabContent) return skeleton;
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.background,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
+            onPressed: () => context.pop(),
+          ),
+          title: const Text('Edit Coach Profile', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        ),
+        body: skeleton,
+      );
     }
 
     if (widget.isTabContent) {
@@ -501,17 +522,16 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
 
   Widget _buildProfilePhoto(Coach? profile) {
     String? photoUrl = _uploadedPhotoUrl ?? profile?.profilePhotoUrl;
-    if (photoUrl != null && photoUrl.startsWith('/')) {
-      final base = ApiConfig.baseUrl.replaceAll('/api/v1', '');
-      photoUrl = '$base$photoUrl';
-    }
+    if (photoUrl != null) photoUrl = MediaUtils.resolveUrl(photoUrl);
 
     return Row(
       children: [
         CircleAvatar(
+          key: ValueKey(photoUrl ?? 'no-photo'),
           radius: 40,
           backgroundColor: AppColors.primary.withValues(alpha: 0.1),
           backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
+          onBackgroundImageError: (_, __) {},
           child: photoUrl == null ? const Icon(LucideIcons.user, color: AppColors.primary, size: 32) : null,
         ),
         const SizedBox(width: 16),

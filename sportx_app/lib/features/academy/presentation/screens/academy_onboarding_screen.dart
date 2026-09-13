@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
@@ -105,7 +106,7 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
                   label: 'Upload Logo',
                   onTap: () async {
                     final media = await pickAndUploadMedia(context, ref);
-                    if (media != null) setState(() { _logoMediaId = media.mediaId; _logoUrl = media.url; });
+                    if (media != null) setState(() { _logoMediaId = media.mediaId; _logoUrl = MediaUtils.resolveUrl(media.url); });
                   },
                 ),
                 const SizedBox(height: 16),
@@ -116,7 +117,7 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
                   label: 'Upload Cover',
                   onTap: () async {
                     final media = await pickAndUploadMedia(context, ref);
-                    if (media != null) setState(() { _coverMediaId = media.mediaId; _coverUrl = media.url; });
+                    if (media != null) setState(() { _coverMediaId = media.mediaId; _coverUrl = MediaUtils.resolveUrl(media.url); });
                   },
                 ),
                 const SizedBox(height: 16),
@@ -201,7 +202,7 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: AppColors.border),
-          image: url != null ? DecorationImage(image: NetworkImage(url), fit: BoxFit.cover) : null,
+          image: url != null ? DecorationImage(image: NetworkImage(MediaUtils.resolveUrl(url)), fit: BoxFit.cover) : null,
         ),
         alignment: Alignment.center,
         child: url == null

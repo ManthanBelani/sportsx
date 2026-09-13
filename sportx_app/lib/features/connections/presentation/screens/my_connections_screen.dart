@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/connections/presentation/providers/connections_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class MyConnectionsScreen extends ConsumerStatefulWidget {
@@ -66,7 +67,7 @@ class _MyConnectionsScreenState extends ConsumerState<MyConnectionsScreen> {
             child: RefreshIndicator(
               onRefresh: () async => ref.invalidate(myConnectionsProvider(currentUserId)),
               child: async.when(
-                loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+                loading: () => const ConnectionsSkeleton(),
                 error: (e, _) => Center(child: Text('$e', style: const TextStyle(color: AppColors.textSecondary))),
                 data: (_) => connections.isEmpty
                     ? ListView(children: [

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -25,7 +26,7 @@ class AsyncDetailBuilder<T> extends StatelessWidget {
     return async.when(
       loading: () => _Scaffold(
         title: title,
-        body: const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+        body: const GenericDetailSkeleton(),
       ),
       error: (e, _) => _Scaffold(
         title: title,
@@ -58,7 +59,7 @@ class DirectoryStateView<T> extends StatelessWidget {
     if (state.isLoading && state.items.isEmpty) {
       return _Scaffold(
         title: title,
-        body: const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+        body: const GenericListSkeleton(),
       );
     }
     if (state.error != null && state.items.isEmpty) {

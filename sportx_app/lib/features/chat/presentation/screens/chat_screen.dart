@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/chat/presentation/providers/chat_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -63,7 +64,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         children: [
           Expanded(
             child: async.when(
-              loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+              loading: () => const GenericListSkeleton(itemCount: 5),
               error: (e, _) => Center(
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
                   Text('$e', style: const TextStyle(color: AppColors.textSecondary)),

@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
+import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
@@ -19,13 +20,13 @@ class EditProfileScreen extends ConsumerStatefulWidget {
 
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController(text: 'Aryan Patel');
-  final _bioController = TextEditingController(text: 'Passionate cricketer from Ahmedabad. Looking for opportunities to grow and learn from the best in the game. Dedicated to improving my skills every day.');
-  final _locationController = TextEditingController(text: 'Ahmedabad, Gujarat');
-  
+  final _nameController = TextEditingController();
+  final _bioController = TextEditingController();
+  final _locationController = TextEditingController();
+
   // Physical attributes
-  final _heightController = TextEditingController(text: '165');
-  final _weightController = TextEditingController(text: '58');
+  final _heightController = TextEditingController();
+  final _weightController = TextEditingController();
   
   int? _selectedSportId;
   String? _selectedSportName;
@@ -102,13 +103,20 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     super.dispose();
   }
 
+  bool _pickingAvatar = false;
   Future<void> _pickAvatar() async {
-    final media = await pickAndUploadMedia(context, ref, mediaType: 'photo');
-    if (media == null) return;
-    setState(() {
-      _avatarFile = media.file;
-      _photoMediaId = media.mediaId;
-    });
+    if (_pickingAvatar) return;
+    setState(() => _pickingAvatar = true);
+    try {
+      final media = await pickAndUploadMedia(context, ref, mediaType: 'photo');
+      if (media == null) return;
+      setState(() {
+        _avatarFile = media.file;
+        _photoMediaId = media.mediaId;
+      });
+    } finally {
+      if (mounted) setState(() => _pickingAvatar = false);
+    }
   }
 
   Future<void> _pickDob() async {
@@ -143,13 +151,21 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         'skill_level': _skillLevel,
         'city_id': _cityId,
         'age_group_id': _selectedAgeGroupId,
-        'sport_id': _selectedSportId,
         'experience': _bioController.text.trim(),
         'position': _dominantSide == 'Left' ? 'Left-hand' : 'Right-hand',
         'height': _heightController.text.trim().isNotEmpty ? double.tryParse(_heightController.text.trim()) : null,
         'weight': _weightController.text.trim().isNotEmpty ? double.tryParse(_weightController.text.trim()) : null,
         if (_photoMediaId != null) 'photo_media_id': _photoMediaId,
       });
+
+      // Wire PUT /me/profile/sports (many-to-many) — backend expects {sports:[id]} separately
+      if (_selectedSportId != null) {
+        try {
+          await dio.put('/me/profile/sports', data: {'sports': [_selectedSportId]});
+        } catch (_) {
+          // Non-fatal: main profile already saved
+        }
+      }
 
       if (mounted) {
         SnackBarUtils.showSuccess(context, 'Profile updated');
@@ -293,12 +309,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
   }
 
-  String _absoluteUrl(String url) {
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    final base = ref.read(dioProvider).options.baseUrl;
-    final origin = base.replaceFirst(RegExp(r'/api/v1/?$'), '');
-    return '$origin$url';
-  }
+  String _absoluteUrl(String url) => MediaUtils.resolveUrl(url);
 
   Widget _buildTextField(String label, TextEditingController controller, {bool isNumber = false}) {
     return Padding(
