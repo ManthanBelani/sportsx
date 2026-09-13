@@ -25,7 +25,7 @@ class AdminPanelController extends Controller
 
     public function showLogin()
     {
-        if (Auth::check() && Auth::user()->role === 'admin' && session('admin_2fa_ok')) {
+        if (Auth::check() && Auth::user()->role === 'admin') {
             return redirect()->route('admin.dashboard');
         }
 
@@ -51,33 +51,24 @@ class AdminPanelController extends Controller
 
         Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
-        $request->session()->put('admin_2fa_ok', false);
 
-        return redirect()->route('admin.2fa');
+        return redirect()->route('admin.dashboard');
     }
 
     public function show2fa()
     {
-        if (! Auth::check() || Auth::user()->role !== 'admin') {
+        // 2FA disabled for MVP — show placeholder instead of silent redirect.
+        // TODO(P0): implement TOTP (pragmarx/google2fa). Do not ship without.
+        if (! Auth::check()) {
             return redirect()->route('admin.login');
         }
-        if (session('admin_2fa_ok')) {
-            return redirect()->route('admin.dashboard');
-        }
-
-        return view('admin.twofa');
+        return view('admin.twofa', ['error' => '2FA is not enabled. Contact engineering before production.']);
     }
 
     public function verify2fa(Request $request)
     {
-        $request->validate(['code' => ['required', 'string', 'size:6']]);
-
-        // MVP: accept any 6-digit code. Wire a real TOTP check before production.
-        $user = Auth::user();
-        $user->forceFill(['admin_2fa_verified_at' => now()])->save();
-        $request->session()->put('admin_2fa_ok', true);
-
-        return redirect()->route('admin.dashboard');
+        // 2FA disabled — stub. Replace with real TOTP verification before prod.
+        return redirect()->route('admin.dashboard')->with('error', '2FA verification is disabled in this build — enable TOTP before production.');
     }
 
     public function logout(Request $request)
@@ -108,6 +99,9 @@ class AdminPanelController extends Controller
             'total_users' => User::count(),
             'total_sports' => Sport::count(),
             'total_cities' => City::count(),
+            'pending_users' => User::where('status','pending')->whereIn('role',['coach','sponsor','talent_scout'])->count(),
+            'pending_trials' => Trial::where('status','draft')->count(),
+            'pending_tournaments' => Tournament::where('status','draft')->count(),
         ];
 
         $recentUsers = User::latest()->limit(8)->get();
@@ -135,7 +129,8 @@ class AdminPanelController extends Controller
             $query->where('role', $request->role);
         }
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $status = $request->status === 'rejected' ? 'deleted' : $request->status;
+            $query->where('status', $status);
         }
         if ($request->filled('q')) {
             $q = $request->q;
@@ -165,10 +160,11 @@ class AdminPanelController extends Controller
             return back()->with('error', 'Cannot modify an admin account from here.');
         }
 
+        // users.status enum is ['active','suspended','deleted'] — map 'reject' to 'deleted'
         $user->status = match ($data['action']) {
             'activate' => 'active',
             'suspend' => 'suspended',
-            'reject' => 'rejected',
+            'reject' => 'deleted',
         };
         $user->save();
 
@@ -243,7 +239,7 @@ class AdminPanelController extends Controller
         return back()->with('success', 'Status updated.');
     }
 
-    // ── Moderation ─────────────────────────────────────────────────────────────
+    // ── Moderation (merged with Approvals) ─────────────────────────────────────
 
     public function moderation(Request $request)
     {
@@ -253,7 +249,7 @@ class AdminPanelController extends Controller
         if ($status !== 'all') {
             $query->where('status', $status);
         }
-        $reports = $query->latest()->paginate(25)->appends(['status' => $status]);
+        $reports = $query->latest()->paginate(25, ['*'], 'reports_page')->appends(['status' => $status]);
 
         $counts = [
             'pending' => ListingReport::where('status', 'pending')->count(),
@@ -262,7 +258,18 @@ class AdminPanelController extends Controller
             'all' => ListingReport::count(),
         ];
 
-        return view('admin.moderation', ['reports' => $reports, 'status' => $status, 'counts' => $counts]);
+        // Approvals merged in
+        $pendingUsers = User::where('status', 'pending')->whereIn('role', ['coach','sponsor','talent_scout'])->latest()->paginate(10, ['*'], 'users_page');
+        $pendingTrials = Trial::where('status','draft')->with(['sport','city'])->latest()->paginate(10, ['*'], 'trials_page');
+        $pendingTournaments = Tournament::where('status','draft')->with(['sport','city'])->latest()->paginate(10, ['*'], 'tournaments_page');
+        $approvalCounts = [
+            'users' => User::where('status','pending')->whereIn('role',['coach','sponsor','talent_scout'])->count(),
+            'trials' => Trial::where('status','draft')->count(),
+            'tournaments' => Tournament::where('status','draft')->count(),
+        ];
+        $settings = $this->readSettings();
+
+        return view('admin.moderation', compact('reports','status','counts','pendingUsers','pendingTrials','pendingTournaments','approvalCounts','settings'));
     }
 
     public function moderationAction(Request $request, $id)
@@ -300,17 +307,47 @@ class AdminPanelController extends Controller
     public function categoryStore(Request $request, $type)
     {
         $rules = match ($type) {
-            'sports' => ['name' => 'required|string|max:60', 'sort_order' => 'nullable|integer'],
+            'sports' => ['name' => 'required|string|max:60|unique:sports,name', 'sort_order' => 'nullable|integer'],
             'cities' => ['name' => 'required|string|max:60', 'state' => 'nullable|string|max:60'],
-            'age-groups' => ['name' => 'required|string|max:30', 'min_age' => 'nullable|integer', 'max_age' => 'nullable|integer'],
+            'age-groups' => ['name' => 'required|string|max:30|unique:age_groups,name', 'min_age' => 'nullable|integer', 'max_age' => 'nullable|integer'],
             default => abort(404),
         };
 
-        $data = $request->validate($rules);
+        $messages = [
+            'name.unique' => 'This name is already in use. Please choose a different name.',
+        ];
+
+        $data = $request->validate($rules, $messages);
+
+        // Extra unique check for city (composite name+state) — validator can't express it simply.
+        if ($type === 'cities') {
+            $stateForCheck = $data['state'] ?? 'Unknown';
+            if ($stateForCheck === '' || $stateForCheck === null) $stateForCheck = 'Unknown';
+            if (City::where('name', $data['name'])->where('state', $stateForCheck)->exists()) {
+                return back()->with('error', 'This city already exists for the selected state.')->withInput();
+            }
+        }
+
         $data['is_active'] = true;
 
+        // Normalize empty values that would violate NOT NULL DB constraints.
+        // ConvertEmptyStringsToNull turns "" into null; sports.sort_order and cities.state are NOT NULL.
+        if ($type === 'sports') {
+            $data['sort_order'] = $data['sort_order'] ?? ((int) Sport::max('sort_order') + 1);
+        }
+        if ($type === 'cities') {
+            $data['state'] = $data['state'] ?? '';
+            if ($data['state'] === null || $data['state'] === '') {
+                $data['state'] = 'Unknown';
+            }
+        }
+
         $model = self::categoryModel($type);
-        $model::create($data);
+        try {
+            $model::create($data);
+        } catch (\Throwable $e) {
+            return back()->with('error', $this->friendlyCategoryError($e, $type, $data['name'] ?? null))->withInput();
+        }
 
         return back()->with('success', 'Category added.');
     }
@@ -337,9 +374,10 @@ class AdminPanelController extends Controller
 
     public function reports()
     {
-        $reports = ListingReport::latest()->paginate(25);
+        $reports = ListingReport::with('reporter')->latest()->paginate(25);
+        $pendingCount = ListingReport::where('status', 'pending')->count();
 
-        return view('admin.reports', ['reports' => $reports]);
+        return view('admin.reports', ['reports' => $reports, 'pendingCount' => $pendingCount]);
     }
 
     public function reportDetail($id)
@@ -373,9 +411,10 @@ class AdminPanelController extends Controller
 
     public function flags()
     {
-        $flags = ListingReport::where('status', 'pending')->latest()->paginate(25);
+        $flags = ListingReport::with(['reporter', 'reportable'])->where('status', 'pending')->latest()->paginate(25);
+        $activeCount = ListingReport::where('status', 'pending')->count();
 
-        return view('admin.flags', ['flags' => $flags]);
+        return view('admin.flags', ['flags' => $flags, 'activeCount' => $activeCount]);
     }
 
     public function flagAction(Request $request, $id)
@@ -398,11 +437,12 @@ class AdminPanelController extends Controller
 
     // ── Sponsor Verification ───────────────────────────────────────────────────
 
-    public function sponsors()
+    public function sponsors(Request $request)
     {
-        $sponsorships = Sponsorship::with('sponsor')->latest()->paginate(25);
+        $pendingCount = Sponsorship::where('status', '!=', 'published')->count();
+        $sponsorships = Sponsorship::with(['sponsor.user'])->latest()->paginate(25);
 
-        return view('admin.sponsors', ['sponsorships' => $sponsorships]);
+        return view('admin.sponsors', ['sponsorships' => $sponsorships, 'pendingCount' => $pendingCount]);
     }
 
     public function sponsorAction(Request $request, $id)
@@ -423,7 +463,8 @@ class AdminPanelController extends Controller
         $activeListings = Trial::where('status', 'published')->count()
             + Tournament::where('status', 'published')->count()
             + Sponsorship::where('status', 'published')->count()
-            + Academy::where('listing_status', 'published')->count();
+            + Academy::where('listing_status', 'published')->count()
+            + CoachProfile::where('listing_status', 'published')->count();
 
         $roleDistribution = User::select('role', \DB::raw('count(*) as cnt'))
             ->groupBy('role')->pluck('cnt', 'role');
@@ -445,8 +486,9 @@ class AdminPanelController extends Controller
         $growthMax = max(1, max($growth));
 
         $monthlySignups = User::where('created_at', '>=', now()->startOfMonth())->count();
+        $verifiedRate = $totalUsers ? round(User::whereNotNull('email_verified_at')->count() / $totalUsers * 100) : 0;
 
-        return view('admin.analytics', compact('totalUsers', 'activeListings', 'roleDistribution', 'topSports', 'growth', 'growthMax', 'monthlySignups'));
+        return view('admin.analytics', compact('totalUsers', 'activeListings', 'roleDistribution', 'topSports', 'growth', 'growthMax', 'monthlySignups', 'verifiedRate'));
     }
 
     // ── Notification Templates / Broadcast ─────────────────────────────────────
@@ -454,15 +496,23 @@ class AdminPanelController extends Controller
     public function notifications()
     {
         $templates = collect([
-            ['type' => 'email', 'name' => 'Welcome to SportX', 'body' => 'Welcome to SportX India! Explore trials, tournaments, and scholarships near you.'],
+            // ['type' => 'email', 'name' => 'Welcome to SportX', 'body' => 'Welcome to SportX India! Explore trials, tournaments, and scholarships near you.'], // disabled: email global messaging
             ['type' => 'push', 'name' => 'Trial Reminder', 'body' => 'Reminder: your trial is tomorrow. Don\'t forget your gear!'],
-            ['type' => 'sms', 'name' => 'Scholarship Deadline', 'body' => 'SportX: Last day to apply for the scholarship. Apply now at sportx.in'],
+            // ['type' => 'sms', 'name' => 'Scholarship Deadline', 'body' => 'SportX: Last day to apply for the scholarship. Apply now at sportx.in'], // disabled: sms global messaging
         ]);
 
-        $sent = \App\Models\Notification::select('type', \DB::raw('count(*) as cnt'))
+        $typeMap = ['email' => 'status_update', 'push' => 'reminder', 'sms' => 'enquiry_reply'];
+        $rawCounts = \App\Models\Notification::select('type', \DB::raw('count(*) as cnt'))
             ->groupBy('type')->pluck('cnt', 'type');
+        $sent = collect($typeMap)->mapWithKeys(fn ($real, $display) => [$display => $rawCounts[$real] ?? 0]);
+        $sent['_total'] = $rawCounts->sum();
 
-        return view('admin.notifications', ['templates' => $templates, 'sent' => $sent]);
+        // Role counts for targeting UI
+        $roleCounts = User::select('role', \DB::raw('count(*) as cnt'))->where('status','active')->groupBy('role')->pluck('cnt','role');
+        $totalActive = User::where('status','active')->count();
+        $fcmEnabled = app(\App\Services\FCMService::class)->isEnabled();
+
+        return view('admin.notifications', ['templates' => $templates, 'sent' => $sent, 'roleCounts' => $roleCounts, 'totalActive' => $totalActive, 'fcmEnabled' => $fcmEnabled]);
     }
 
     public function broadcast(Request $request)
@@ -471,22 +521,151 @@ class AdminPanelController extends Controller
             'title' => 'required|string|max:120',
             'body' => 'required|string|max:500',
             'type' => 'required|in:info,success,warning',
+            'roles' => 'nullable|array',
+            'roles.*' => 'in:athlete,coach,academy,organizer,sponsor,talent_scout,admin',
+            'channels' => 'nullable|array',
+            'channels.*' => 'in:in_app,push',
         ]);
 
-        // Broadcast to every user (chunked).
-        User::select('id')->chunk(200, function ($users) use ($data) {
-            $rows = $users->map(fn ($u) => [
-                'user_id' => $u->id,
-                'type' => $data['type'],
-                'title' => $data['title'],
-                'body' => $data['body'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ])->all();
-            \App\Models\Notification::insert($rows);
-        });
+        $targetRoles = $data['roles'] ?? [];
+        $channels = $data['channels'] ?? ['in_app']; // default in-app only for backward compat
+        // Legacy checkbox support: send_push/send_in_app booleans
+        if ($request->has('send_push') || $request->has('send_in_app')) {
+            $channels = [];
+            if ($request->boolean('send_in_app')) $channels[] = 'in_app';
+            if ($request->boolean('send_push')) $channels[] = 'push';
+            if (empty($channels)) $channels = ['in_app'];
+        }
+        if (empty($channels)) $channels = ['in_app'];
 
-        return back()->with('success', 'Broadcast sent to all users.');
+        $sendInApp = in_array('in_app', $channels);
+        $sendPush  = in_array('push', $channels);
+
+        // Build base query for targeted users
+        $userQuery = User::where('status','active');
+        if (!empty($targetRoles)) {
+            $userQuery->whereIn('role', $targetRoles);
+        }
+
+        $inAppCount = 0;
+        $pushCount = 0;
+
+        // 1) In-app notifications (DB)
+        if ($sendInApp) {
+            // Map panel type -> DB enum type
+            $dbType = match($data['type']) {
+                'success' => 'status_update',
+                'warning' => 'reminder',
+                default => 'status_update',
+            };
+            $userQuery->select('id')->chunk(200, function ($users) use ($data, $dbType, &$inAppCount) {
+                $rows = $users->map(fn ($u) => [
+                    'user_id' => $u->id,
+                    'type' => $dbType,
+                    'title' => $data['title'],
+                    'body' => $data['body'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ])->all();
+                \App\Models\Notification::insert($rows);
+                $inAppCount += count($rows);
+            });
+        } else {
+            $inAppCount = $userQuery->count();
+        }
+
+        // 2) Push via FCM
+        $fcmResult = null;
+        if ($sendPush) {
+            $fcmService = app(\App\Services\FCMService::class);
+            if (!$fcmService->isEnabled()) {
+                return back()->with('error', 'FCM is not configured (FCM_PROJECT_ID / credentials missing). In-app notifications were'.($sendInApp ? " sent to {$inAppCount} users." : ' not sent.'));
+            }
+
+            $userIds = (clone $userQuery)->pluck('id')->all();
+            $tokens = \App\Models\UserDeviceToken::whereIn('user_id', $userIds)->active()->pluck('token')->filter()->unique()->values()->all();
+
+            if (empty($tokens)) {
+                return back()->with('success', 'In-app sent to '.($sendInApp ? $inAppCount : 0).' users. No active device tokens found for push — recipients will see it on next app open.');
+            }
+
+            // Chunk tokens 500 per FCM multicast (FCM limit)
+            foreach (array_chunk($tokens, 500) as $chunk) {
+                \App\Jobs\SendPushNotification::dispatch(
+                    $chunk,
+                    $data['title'],
+                    $data['body'],
+                    [
+                        'type' => $data['type'],
+                        'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                        'roles' => implode(',', $targetRoles),
+                    ]
+                );
+                $pushCount += count($chunk);
+            }
+        }
+
+        $roleLabel = empty($targetRoles) ? 'all users' : implode(', ', array_map(fn($r)=>ucfirst(str_replace('_',' ',$r)), $targetRoles));
+        $parts = [];
+        if ($sendInApp) $parts[] = "In-app to {$inAppCount} ({$roleLabel})";
+        if ($sendPush) $parts[] = "Push queued to {$pushCount} devices ({$roleLabel})";
+        return back()->with('success', 'Broadcast sent: '.implode(' + ', $parts).'.');
+    }
+
+    // ── Approvals (legacy — merged into Moderation) ───────────────────────────
+    public function approvals(Request $request)
+    {
+        return redirect()->route('admin.moderation');
+    }
+
+    public function approveUser($id)
+    {
+        $user = User::where('status','pending')->findOrFail($id);
+        $user->status = 'active';
+        $user->save();
+        return back()->with('success', ucfirst($user->role).' approved — login now allowed.');
+    }
+
+    public function rejectUser($id)
+    {
+        $user = User::where('status','pending')->findOrFail($id);
+        $user->status = 'deleted';
+        $user->save();
+        return back()->with('success', 'Registration rejected.');
+    }
+
+    public function approveTrial($id)
+    {
+        $trial = Trial::where('status','draft')->findOrFail($id);
+        $trial->status = 'published';
+        $trial->save();
+        app(\App\Services\ExpiryService::class)->onPublish($trial, 'trial');
+        return back()->with('success', 'Trial approved and now visible to users.');
+    }
+
+    public function rejectTrial($id)
+    {
+        $trial = Trial::where('status','draft')->findOrFail($id);
+        $trial->status = 'closed';
+        $trial->save();
+        return back()->with('success', 'Trial rejected.');
+    }
+
+    public function approveTournament($id)
+    {
+        $tournament = Tournament::where('status','draft')->findOrFail($id);
+        $tournament->status = 'published';
+        $tournament->save();
+        app(\App\Services\ExpiryService::class)->onPublish($tournament, 'tournament');
+        return back()->with('success', 'Tournament approved and now visible to users.');
+    }
+
+    public function rejectTournament($id)
+    {
+        $tournament = Tournament::where('status','draft')->findOrFail($id);
+        $tournament->status = 'closed';
+        $tournament->save();
+        return back()->with('success', 'Tournament rejected.');
     }
 
     // ── System Settings ────────────────────────────────────────────────────────
@@ -498,18 +677,41 @@ class AdminPanelController extends Controller
 
     private function readSettings(): array
     {
-        $path = $this->settingsPath();
-        if (file_exists($path)) {
-            return json_decode((string) file_get_contents($path), true) ?: [];
-        }
-        return [
+        $defaults = [
             'moderation_required' => true,
             'auto_verify_coaches' => false,
+            // Per-type auto-approve — if true, new entries go live immediately; if false, they stay pending/draft
+            'auto_approve_coach' => false,
+            'auto_approve_sponsor' => false,
+            'auto_approve_talent_scout' => false,
+            'auto_approve_trials' => false,
+            'auto_approve_tournaments' => false,
+            'auto_approve_scholarships' => false,
+            'auto_approve_sponsorships' => false,
+            'auto_approve_academies' => false,
+            'auto_approve_venues' => false,
             'email_alerts' => true,
             'push_notifications' => true,
             'suspicious_login_detection' => true,
             'maintenance_mode' => false,
+            // Platform access & limits
+            'registrations_open' => true,
+            'max_listings_per_user_per_day' => 5,
+            'media_max_size_mb' => 10,
+            'session_lifetime_minutes' => 30,
+            'rate_limit_login_per_minute' => 10,
+            'audit_log_enabled' => true,
+            // Data & compliance
+            'data_retention_days' => 365,
+            'allow_user_data_export' => true,
+            'allow_user_data_delete' => true,
         ];
+        $path = $this->settingsPath();
+        if (file_exists($path)) {
+            $stored = json_decode((string) file_get_contents($path), true) ?: [];
+            return array_merge($defaults, array_intersect_key($stored, $defaults));
+        }
+        return $defaults;
     }
 
     public function settings()
@@ -519,9 +721,42 @@ class AdminPanelController extends Controller
 
     public function updateSettings(Request $request)
     {
-        $settings = $this->readSettings();
-        foreach ($settings as $key => $val) {
+        $validated = $request->validate([
+            'moderation_required' => 'nullable|boolean',
+            'auto_verify_coaches' => 'nullable|boolean',
+            'auto_approve_coach' => 'nullable|boolean',
+            'auto_approve_sponsor' => 'nullable|boolean',
+            'auto_approve_talent_scout' => 'nullable|boolean',
+            'auto_approve_trials' => 'nullable|boolean',
+            'auto_approve_tournaments' => 'nullable|boolean',
+            'auto_approve_scholarships' => 'nullable|boolean',
+            'auto_approve_sponsorships' => 'nullable|boolean',
+            'auto_approve_academies' => 'nullable|boolean',
+            'auto_approve_venues' => 'nullable|boolean',
+            'email_alerts' => 'nullable|boolean',
+            'push_notifications' => 'nullable|boolean',
+            'suspicious_login_detection' => 'nullable|boolean',
+            'maintenance_mode' => 'nullable|boolean',
+            'registrations_open' => 'nullable|boolean',
+            'audit_log_enabled' => 'nullable|boolean',
+            'allow_user_data_export' => 'nullable|boolean',
+            'allow_user_data_delete' => 'nullable|boolean',
+            'max_listings_per_user_per_day' => 'nullable|integer|min:1|max:100',
+            'media_max_size_mb' => 'nullable|integer|min:1|max:100',
+            'session_lifetime_minutes' => 'nullable|integer|in:15,30,60,120,240,480',
+            'rate_limit_login_per_minute' => 'nullable|integer|min:5|max:100',
+            'data_retention_days' => 'nullable|integer|min:30|max:3650',
+        ]);
+        $defaults = $this->readSettings();
+        $intKeys = ['max_listings_per_user_per_day','media_max_size_mb','session_lifetime_minutes','rate_limit_login_per_minute','data_retention_days'];
+        $boolKeys = array_diff(array_keys($defaults), $intKeys);
+        $settings = [];
+        foreach ($boolKeys as $key) {
             $settings[$key] = $request->boolean($key);
+        }
+        foreach ($intKeys as $key) {
+            $settings[$key] = $validated[$key] ?? $defaults[$key];
+            $settings[$key] = (int) $settings[$key];
         }
         file_put_contents($this->settingsPath(), json_encode($settings, JSON_PRETTY_PRINT));
 
@@ -541,9 +776,11 @@ class AdminPanelController extends Controller
     {
         $model = self::contentModels()[$type] ?? abort(404);
         try {
-            $model::create($this->extractFields($request, $model));
+            $data = $this->extractFields($request, $model);
+            $data = $this->injectOwnerOnBehalf($request, $type, $data);
+            $model::create($data);
         } catch (\Throwable $e) {
-            return back()->with('error', 'Could not create: '.$e->getMessage())->withInput();
+            return back()->with('error', $this->friendlyContentError($e, 'create'))->withInput();
         }
 
         return redirect()->route('admin.content.list', $type)->with('success', 'Item created.');
@@ -562,9 +799,11 @@ class AdminPanelController extends Controller
         $model = self::contentModels()[$type] ?? abort(404);
         $item = $model::findOrFail($id);
         try {
-            $item->update($this->extractFields($request, $model));
+            $data = $this->extractFields($request, $model);
+            $data = $this->injectOwnerOnBehalf($request, $type, $data, $item);
+            $item->update($data);
         } catch (\Throwable $e) {
-            return back()->with('error', 'Could not update: '.$e->getMessage())->withInput();
+            return back()->with('error', $this->friendlyContentError($e, 'update'))->withInput();
         }
 
         return redirect()->route('admin.content.list', $type)->with('success', 'Item updated.');
@@ -639,7 +878,20 @@ class AdminPanelController extends Controller
             default => abort(404),
         };
 
-        $model::findOrFail($id)->update($request->validate($rules));
+        $data = $request->validate($rules, ['name.unique' => 'This name is already in use.']);
+        if ($type === 'sports' && array_key_exists('sort_order', $data) && $data['sort_order'] === null) {
+            unset($data['sort_order']); // keep existing value, don't set NOT NULL column to null
+        }
+        if ($type === 'cities' && array_key_exists('state', $data) && ($data['state'] === null || $data['state'] === '')) {
+            $data['state'] = 'Unknown';
+        }
+
+        try {
+            $model::findOrFail($id)->update($data);
+        } catch (\Throwable $e) {
+            $name = $data['name'] ?? null;
+            return back()->with('error', $this->friendlyCategoryError($e, $type, $name))->withInput();
+        }
 
         return back()->with('success', 'Category updated.');
     }
@@ -697,8 +949,48 @@ class AdminPanelController extends Controller
         ));
     }
 
+    private function ownerConfigForType(string $type): ?array
+    {
+        return match ($type) {
+            'trials' => ['column' => 'posted_by_user_id', 'label' => 'Owner (posting user)', 'roles' => ['organizer','academy','coach','admin']],
+            'tournaments' => ['column' => 'organizer_id', 'label' => 'Organizer (on behalf of)', 'roles' => ['organizer','admin']],
+            'academies' => ['column' => 'owner_user_id', 'label' => 'Owner (academy user)', 'roles' => ['academy','admin']],
+            'coaches' => ['column' => 'user_id', 'label' => 'Coach user', 'roles' => ['coach','admin']],
+            'scholarships' => ['column' => 'created_by', 'label' => 'Created by (user)', 'roles' => null],
+            'sponsorships' => ['column' => 'sponsor_id', 'label' => 'Sponsor (on behalf of)', 'roles' => ['sponsor','admin']],
+            default => null, // sports-venues has no owner column
+        };
+    }
+
+    private function ownerOptionsForType(string $type): array
+    {
+        $cfg = $this->ownerConfigForType($type);
+        if (! $cfg) return [];
+        // sponsorships & tournaments need profile-aware resolution, but options are still users
+        $q = User::orderBy('name');
+        if (! empty($cfg['roles'])) {
+            $q->whereIn('role', $cfg['roles']);
+        }
+        return $q->limit(200)->get(['id','name','email','role'])->all();
+    }
+
     private function editorViewData(string $type, string $modelClass, ?object $item): array
     {
+        $ownerConfig = $this->ownerConfigForType($type);
+        $ownerOptions = $this->ownerOptionsForType($type);
+        // Resolve current owner user id for edit pre-select
+        $currentOwnerUserId = null;
+        if ($item && $ownerConfig) {
+            $col = $ownerConfig['column'];
+            $raw = $item->{$col} ?? null;
+            if ($type === 'tournaments' && $raw) {
+                $currentOwnerUserId = \App\Models\OrganizerProfile::where('id', $raw)->value('user_id');
+            } elseif ($type === 'sponsorships' && $raw) {
+                $currentOwnerUserId = \App\Models\SponsorProfile::where('id', $raw)->value('user_id');
+            } else {
+                $currentOwnerUserId = $raw;
+            }
+        }
         return [
             'type' => $type,
             'item' => $item,
@@ -707,6 +999,9 @@ class AdminPanelController extends Controller
             'sports' => Sport::orderBy('name')->get(),
             'cities' => City::orderBy('name')->get(),
             'ageGroups' => AgeGroup::orderBy('min_age')->get(),
+            'ownerConfig' => $ownerConfig,
+            'ownerOptions' => $ownerOptions,
+            'currentOwnerUserId' => $currentOwnerUserId,
         ];
     }
 
@@ -737,6 +1032,41 @@ class AdminPanelController extends Controller
             }
         }
 
+        return $data;
+    }
+
+    private function injectOwnerOnBehalf(Request $request, string $type, array $data, ?object $existing = null): array
+    {
+        $cfg = $this->ownerConfigForType($type);
+        if (! $cfg) return $data;
+        $col = $cfg['column'];
+        // Panel sends `owner_user_id` select — empty means fallback to admin (or keep existing on update)
+        $selectedUserId = $request->input('owner_user_id');
+        if ($selectedUserId === '' || $selectedUserId === null) {
+            if ($existing && isset($existing->{$col}) && $existing->{$col}) {
+                return $data; // keep existing owner on edit when no selection
+            }
+            $selectedUserId = $request->user()?->id ?? auth()->id();
+        }
+        $selectedUserId = $selectedUserId ? (int) $selectedUserId : null;
+        if (! $selectedUserId) return $data;
+
+        if ($type === 'tournaments') {
+            // organizer_id is FK to organizer_profiles.id — resolve or create profile for selected user
+            $profile = \App\Models\OrganizerProfile::firstOrCreate(
+                ['user_id' => $selectedUserId],
+                ['organization_name' => User::find($selectedUserId)?->name ?? 'Admin Organization', 'org_type' => 'other', 'verification_status' => 'verified']
+            );
+            $data[$col] = $profile->id;
+        } elseif ($type === 'sponsorships') {
+            $profile = \App\Models\SponsorProfile::firstOrCreate(
+                ['user_id' => $selectedUserId],
+                ['brand_name' => User::find($selectedUserId)?->name ?? 'Admin Sponsor']
+            );
+            $data[$col] = $profile->id;
+        } else {
+            $data[$col] = $selectedUserId;
+        }
         return $data;
     }
 
@@ -775,5 +1105,47 @@ class AdminPanelController extends Controller
             SportsVenue::class => 'sports-venues',
             default => 'trials',
         };
+    }
+
+    private function friendlyCategoryError(\Throwable $e, string $type, ?string $name): string
+    {
+        $msg = $e->getMessage();
+        $quoted = $name ? " '{$name}'" : '';
+
+        if (str_contains($msg, '1062') || str_contains($msg, 'Duplicate entry')) {
+            return match ($type) {
+                'sports' => "Sport{$quoted} already exists. Please use a different name.",
+                'cities' => "City{$quoted} already exists for this state. Try a different name or state.",
+                'age-groups' => "Age group{$quoted} already exists.",
+                default => "This{$quoted} already exists. Please use a different name.",
+            };
+        }
+        if (str_contains($msg, '1048') || str_contains($msg, 'cannot be null')) {
+            if (preg_match("/Column '([^']+)' cannot be null/", $msg, $m)) {
+                $col = str_replace('_', ' ', $m[1]);
+                return "Missing required field: {$col}. Please fill it in.";
+            }
+            return "Missing required field. Please check your input.";
+        }
+        // Don't leak raw SQL in production — log it, show friendly.
+        \Illuminate\Support\Facades\Log::warning('Admin category error', ['type' => $type, 'error' => $msg]);
+        return "Could not save category{$quoted}. Please check your input and try again.";
+    }
+
+    private function friendlyContentError(\Throwable $e, string $action): string
+    {
+        $msg = $e->getMessage();
+        if (str_contains($msg, '1062') || str_contains($msg, 'Duplicate entry')) {
+            return "An entry with this name already exists. Please use a different title.";
+        }
+        if (str_contains($msg, '1048') || str_contains($msg, 'cannot be null')) {
+            if (preg_match("/Column '([^']+)' cannot be null/", $msg, $m)) {
+                $col = str_replace('_', ' ', $m[1]);
+                return "Missing required field: {$col}. Please fill it in and try again.";
+            }
+            return "Missing required information. Please fill in all required fields.";
+        }
+        \Illuminate\Support\Facades\Log::warning('Admin content error', ['action' => $action, 'error' => $msg]);
+        return "Could not {$action} this item. Please check your input and try again.";
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\NotificationCreated;
 use App\Models\Notification;
 use App\Models\ReminderSubscription;
 use Carbon\Carbon;
@@ -58,7 +59,7 @@ class ReminderService
             ->get();
 
         foreach ($due as $reminder) {
-            Notification::create([
+            $notification = Notification::create([
                 'user_id' => $reminder->user_id,
                 'type' => 'reminder',
                 'title' => 'Reminder',
@@ -66,6 +67,8 @@ class ReminderService
                 'notifiable_type' => $reminder->reminderable_type,
                 'notifiable_id' => $reminder->reminderable_id,
             ]);
+
+            NotificationCreated::dispatch($notification);
 
             $reminder->update(['sent_at' => now()]);
         }

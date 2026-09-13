@@ -84,6 +84,12 @@ class ProviderTournamentController extends Controller
             );
             // Remove alias leftover
             unset($tournamentData['categories']);
+            // Honor auto-approve setting
+            $settings = $this->platformSettings();
+            $autoApprove = $settings['auto_approve_tournaments'] ?? false;
+            if (($tournamentData['status'] ?? 'draft') === 'published' && !$autoApprove) {
+                $tournamentData['status'] = 'draft';
+            }
             $tournament = Tournament::create($tournamentData);
 
             foreach ($cats ?? [] as $cat) {
@@ -183,5 +189,14 @@ class ProviderTournamentController extends Controller
     {
         $user = $request->user();
         abort_unless($tournament->organizer_id === $user->id || $user->isAdmin(), 403);
+    }
+
+    private function platformSettings(): array
+    {
+        $path = storage_path('app/platform_settings.json');
+        if (file_exists($path)) {
+            return json_decode((string) file_get_contents($path), true) ?: [];
+        }
+        return [];
     }
 }

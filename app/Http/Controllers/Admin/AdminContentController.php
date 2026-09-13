@@ -70,9 +70,10 @@ class AdminContentController extends Controller
             $query->where('name', 'like', '%' . $request->q . '%');
         }
 
-        // Sorting
-        $sortField = $request->get('sort', 'created_at');
-        $sortDir = $request->get('direction', 'desc');
+        // Sorting — whitelist to prevent injection
+        $allowedSorts = ['created_at', 'updated_at', 'name', 'title', 'status', 'listing_status'];
+        $sortField = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'created_at';
+        $sortDir = strtolower($request->get('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
         $query->orderBy($sortField, $sortDir);
 
         $perPage = min($request->get('per_page', 20), 50);
@@ -129,7 +130,11 @@ class AdminContentController extends Controller
         }
 
         $model = $this->models[$type];
-        $validated = $request->validate($model::rules() ?? []);
+        $validated = $request->validate(array_merge($model::rules() ?? [], [
+            'owner_user_id' => 'nullable|integer|exists:users,id',
+        ]));
+
+        $validated = $this->injectOwner($request, $type, $validated);
 
         $item = $model::create($validated);
 
@@ -161,12 +166,64 @@ class AdminContentController extends Controller
             ], 404);
         }
 
-        $validated = $request->validate($model::rules() ?? []);
+        $validated = $request->validate(array_merge($model::rules() ?? [], [
+            'owner_user_id' => 'nullable|integer|exists:users,id',
+        ]));
+        $validated = $this->injectOwner($request, $type, $validated, $item);
+
         $item->update($validated);
 
         return response()->json([
             'data' => $item
         ]);
+    }
+
+    private function ownerColumnForType(string $type): ?string
+    {
+        return match ($type) {
+            'trials' => 'posted_by_user_id',
+            'tournaments' => 'organizer_id',
+            'academies' => 'owner_user_id',
+            'coaches' => 'user_id',
+            'scholarships' => 'created_by',
+            'sponsorships' => 'sponsor_id',
+            default => null,
+        };
+    }
+
+    private function injectOwner(Request $request, string $type, array $validated, ?object $existing = null): array
+    {
+        $col = $this->ownerColumnForType($type);
+        if (! $col) return collect($validated)->except('owner_user_id')->toArray();
+
+        $ownerUserId = $validated['owner_user_id'] ?? $request->input('owner_user_id');
+        // If not provided on store, fallback to admin; on update, keep existing
+        if (empty($ownerUserId)) {
+            if ($existing && ! empty($existing->{$col})) {
+                unset($validated['owner_user_id']);
+                return $validated;
+            }
+            $ownerUserId = $request->user()?->id;
+        }
+        unset($validated['owner_user_id']);
+        if (! $ownerUserId) return $validated;
+
+        if ($type === 'tournaments') {
+            $profile = \App\Models\OrganizerProfile::firstOrCreate(
+                ['user_id' => (int) $ownerUserId],
+                ['organization_name' => \App\Models\User::find($ownerUserId)?->name ?? 'Admin Organization', 'org_type' => 'other', 'verification_status' => 'verified']
+            );
+            $validated[$col] = $profile->id;
+        } elseif ($type === 'sponsorships') {
+            $profile = \App\Models\SponsorProfile::firstOrCreate(
+                ['user_id' => (int) $ownerUserId],
+                ['brand_name' => \App\Models\User::find($ownerUserId)?->name ?? 'Admin Sponsor']
+            );
+            $validated[$col] = $profile->id;
+        } else {
+            $validated[$col] = (int) $ownerUserId;
+        }
+        return $validated;
     }
 
     public function destroy(string $type, int $id): JsonResponse

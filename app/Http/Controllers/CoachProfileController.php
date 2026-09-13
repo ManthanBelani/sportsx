@@ -8,19 +8,29 @@ class CoachProfileController extends Controller
 {
     public function show(Request $request)
     {
-        return response()->json(['data' => $request->user()->coachProfile?->load(['sport', 'city', 'photo', 'academy'])]);
+        $profile = $request->user()->coachProfile?->load(['sport', 'city', 'photo', 'academy', 'mediaItems']);
+        if ($profile) {
+            $profile->setAttribute('media_items', $profile->mediaItems);
+            if ($profile->achievements === null) {
+                $profile->setAttribute('achievements', []);
+            }
+        }
+        return response()->json(['data' => $profile]);
     }
 
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'full_name' => 'required|string|max:100',
-            'sport_id' => 'required|exists:sports,id',
-            'city_id' => 'required|exists:cities,id',
-            'contact_number' => 'required|string|max:20',
-            'experience' => 'required|string',
+            'full_name' => 'sometimes|required|string|max:100',
+            'sport_id' => 'sometimes|required|exists:sports,id',
+            'city_id' => 'sometimes|required|exists:cities,id',
+            'contact_number' => 'sometimes|required|string|max:20',
+            'experience' => 'sometimes|required|string',
             'qualification' => 'nullable|string',
             'certifications' => 'nullable|array',
+            'achievements' => 'nullable|array',
+            'achievements.*.text' => 'nullable|string',
+            'achievements.*.title' => 'nullable|string',
             'academy_id' => 'nullable|exists:academies,id',
             'languages' => 'nullable|array',
             'email' => 'nullable|email',
@@ -37,8 +47,16 @@ class CoachProfileController extends Controller
         ]);
 
         $profile = $request->user()->coachProfile;
+        if (isset($validated['achievements'])) {
+            $validated['achievements'] = array_map(fn ($a) => is_string($a) ? ['text' => $a] : $a, $validated['achievements']);
+        }
         $profile->update($validated);
+        if (isset($validated['full_name'])) {
+            $request->user()->update(['name' => $validated['full_name']]);
+        }
 
-        return response()->json(['data' => $profile->fresh()->load(['sport', 'city', 'photo'])]);
+        $fresh = $profile->fresh()->load(['sport', 'city', 'photo', 'mediaItems']);
+        $fresh->setAttribute('media_items', $fresh->mediaItems);
+        return response()->json(['data' => $fresh]);
     }
 }

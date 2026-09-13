@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AthleteProfile;
 use App\Models\ScoutShortlist;
 use App\Models\TalentScoutProfile;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
 class ScoutShortlistController extends Controller
@@ -52,6 +53,17 @@ class ScoutShortlistController extends Controller
             'talent_scout_profile_id' => $scoutProfile->id,
             'athlete_profile_id' => $athlete->id,
             'notes' => $request->input('notes'),
+        ]);
+
+        $scoutProfile->load('user');
+        NotificationService::createStatic([
+            'user_id' => $athlete->user_id,
+            'type' => 'status_update',
+            'title' => 'Added to shortlist',
+            'body' => "{$scoutProfile->user->name} added you to their shortlist.",
+            'notifiable_type' => 'scout_shortlist',
+            'notifiable_id' => $shortlist->id,
+            'action_url' => "/scout-shortlist",
         ]);
 
         return response()->json(['data' => $shortlist], 201);

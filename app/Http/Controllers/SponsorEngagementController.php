@@ -7,6 +7,7 @@ use App\Models\ShortlistEntry;
 use App\Models\Sponsorship;
 use App\Models\SponsorshipApplication;
 use App\Services\ExpiryService;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -138,7 +139,7 @@ class SponsorEngagementController extends Controller
             'sponsorship_id' => $sponsorship->id,
             'athlete_id' => $athlete->id,
             'pitch_note' => $validated['pitch_note'],
-            'status' => 'pending',
+            'status' => 'submitted',
         ]);
 
         return response()->json(['data' => $application], 201);
@@ -193,10 +194,31 @@ class SponsorEngagementController extends Controller
         abort_if($application->sponsorship_id !== $sponsorship->id, 403);
 
         $validated = $request->validate([
-            'status' => 'required|in:pending,reviewed,shortlisted,rejected',
+            'status' => 'required|in:submitted,pending,reviewed,shortlisted,rejected',
         ]);
+        // Normalize legacy pending/reviewed to submitted for DB enum
+        $status = match ($validated['status']) {
+            'pending', 'reviewed' => 'submitted',
+            default => $validated['status'],
+        };
 
-        $application->update(array_merge($validated, ['replied_at' => now()]));
+        $application->update(['status' => $status, 'replied_at' => now()]);
+
+        $application->load(['athlete.user', 'sponsorship']);
+        $title = match ($status) {
+            'shortlisted' => 'Application shortlisted!',
+            'rejected' => 'Application not selected',
+            default => 'Application status updated',
+        };
+        NotificationService::createStatic([
+            'user_id' => $application->athlete->user_id,
+            'type' => 'status_update',
+            'title' => $title,
+            'body' => "Your application for \"{$application->sponsorship->title}\" was {$status}.",
+            'notifiable_type' => 'sponsorship_application',
+            'notifiable_id' => $application->id,
+            'action_url' => "/my-applications",
+        ]);
 
         return response()->json(['data' => $application->load(['athlete.user'])]);
     }
@@ -240,6 +262,20 @@ class SponsorEngagementController extends Controller
             ['sponsor_id' => $sponsor->id, 'athlete_id' => $validated['athlete_id']],
             ['note' => $validated['note'] ?? null]
         );
+
+        $athlete = AthleteProfile::find($validated['athlete_id']);
+        $sponsor->load('user');
+        if ($athlete) {
+            NotificationService::createStatic([
+                'user_id' => $athlete->user_id,
+                'type' => 'status_update',
+                'title' => 'Added to sponsor shortlist',
+                'body' => "{$sponsor->user->name} added you to their sponsor shortlist.",
+                'notifiable_type' => 'shortlist_entry',
+                'notifiable_id' => $entry->id,
+                'action_url' => "/shortlist",
+            ]);
+        }
 
         return response()->json(['data' => $entry->load(['athlete.user'])], 201);
     }

@@ -2,25 +2,26 @@
 
 namespace App\Services;
 
+use Google\Auth\Credentials\ServiceAccountCredentials;
+use Google\Auth\Middleware\AuthTokenMiddleware;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class FCMService
 {
-    private string $serverKey;
-    private string $senderId;
     private string $projectId;
+    private string $credentialsPath;
 
     public function __construct()
     {
-        $this->serverKey = config('services.fcm.server_key', env('FCM_SERVER_KEY', ''));
-        $this->senderId = config('services.fcm.sender_id', env('FCM_SENDER_ID', ''));
-        $this->projectId = config('services.fcm.project_id', env('FCM_PROJECT_ID', ''));
+        $this->projectId = (string) (config('services.fcm.project_id') ?? env('FCM_PROJECT_ID', '') ?? '');
+        $this->credentialsPath = (string) (config('services.fcm.credentials_path') ?? env('FCM_CREDENTIALS_PATH', '') ?? '');
     }
 
     public function isEnabled(): bool
     {
-        return !empty($this->serverKey) && !empty($this->projectId);
+        return !empty($this->projectId) && !empty($this->credentialsPath) && file_exists($this->credentialsPath);
     }
 
     public function sendPushNotification(array $deviceTokens, string $title, string $body, array $data = []): array
@@ -124,6 +125,24 @@ class FCMService
 
     private function getAccessToken(): string
     {
-        return $this->serverKey;
+        $cacheKey = 'fcm_access_token';
+
+        $token = Cache::get($cacheKey);
+        if ($token) {
+            return $token;
+        }
+
+        $scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
+
+        $credentials = new ServiceAccountCredentials($scopes, $this->credentialsPath);
+        $token = $credentials->fetchAccessTokenWithAssertion();
+
+        if (isset($token['access_token'])) {
+            $expiresIn = $token['expires_in'] ?? 3600;
+            Cache::put($cacheKey, $token['access_token'], $expiresIn - 60);
+            return $token['access_token'];
+        }
+
+        throw new \RuntimeException('Failed to fetch FCM access token');
     }
 }

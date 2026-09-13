@@ -12,12 +12,22 @@ class ProfileController extends Controller
         $user = $request->user();
         $profile = match ($user->role) {
             'athlete' => $user->athleteProfile?->load(['sports', 'ageGroup', 'city', 'photo', 'achievements', 'mediaItems']),
-            'coach' => $user->coachProfile?->load(['sport', 'city', 'photo', 'academy']),
+            'coach' => $user->coachProfile?->load(['sport', 'city', 'photo', 'academy', 'mediaItems']),
             'academy' => $user->academies?->load(['city', 'sports.sport', 'logo', 'cover']),
             'organizer' => $user->organizerProfile,
             'sponsor' => $user->sponsorProfile?->load('logo'),
             default => null,
         };
+
+        // For coach, ensure media_items and achievements are appended as attributes
+        // so media_gallery_screen can read them uniformly regardless of role.
+        if ($user->role === 'coach' && $profile) {
+            $profile->setAttribute('media_items', $profile->mediaItems);
+            // achievements already cast as array; if null, default to empty array via accessor
+            if (! isset($profile->achievements) || $profile->achievements === null) {
+                $profile->setAttribute('achievements', []);
+            }
+        }
 
         return response()->json(['data' => $profile]);
     }
@@ -54,6 +64,39 @@ class ProfileController extends Controller
             }
 
             return response()->json(['data' => $profile->fresh(['sports', 'achievements', 'photo'])]);
+        }
+
+        if ($user->role === 'coach') {
+            $validated = $request->validate([
+                'full_name' => 'sometimes|required|string|max:100',
+                'sport_id' => 'sometimes|required|exists:sports,id',
+                'city_id' => 'sometimes|required|exists:cities,id',
+                'contact_number' => 'sometimes|required|string|max:20',
+                'experience' => 'sometimes|required|string',
+                'achievements' => 'nullable|array',
+                'achievements.*.text' => 'nullable|string',
+                'achievements.*.title' => 'nullable|string',
+            ]);
+
+            $profile = $user->coachProfile;
+            if (isset($validated['achievements'])) {
+                // Normalize achievements to consistent shape {text, title?, description?, year?}
+                $normalized = array_map(fn ($a) => is_string($a) ? ['text' => $a] : $a, $validated['achievements']);
+                $profile->update(['achievements' => $normalized]);
+                if (isset($validated['full_name'])) {
+                    $user->update(['name' => $validated['full_name']]);
+                }
+            } else {
+                // No achievements-only update should not overwrite other fields accidentally
+                $updateData = Arr::except($validated, ['achievements']);
+                if (! empty($updateData)) {
+                    $profile->update($updateData);
+                }
+            }
+
+            $fresh = $profile->fresh()->load(['sport', 'city', 'photo', 'mediaItems']);
+            $fresh->setAttribute('media_items', $fresh->mediaItems);
+            return response()->json(['data' => $fresh]);
         }
 
         return response()->json(['data' => null, 'message' => 'Not implemented for this role'], 501);

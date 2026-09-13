@@ -2,6 +2,12 @@
 
 namespace App\Providers;
 
+use App\Events\ListingRemoved;
+use App\Events\ListingWarned;
+use App\Events\NotificationCreated;
+use App\Listeners\NotifyOwnerOnListingRemoved;
+use App\Listeners\NotifyOwnerOnListingWarned;
+use App\Listeners\SendPushNotificationListener;
 use App\Models\Academy;
 use App\Models\AthleteProfile;
 use App\Models\CoachProfile;
@@ -16,6 +22,7 @@ use App\Models\Trial;
 use App\Models\Tournament;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -48,5 +55,9 @@ class AppServiceProvider extends ServiceProvider
             'sponsorship' => Sponsorship::class,
             'sports_venue' => SportsVenue::class,
         ]);
+
+        Event::listen(NotificationCreated::class, SendPushNotificationListener::class);
+        Event::listen(ListingRemoved::class, NotifyOwnerOnListingRemoved::class);
+        Event::listen(ListingWarned::class, NotifyOwnerOnListingWarned::class);
     }
 }

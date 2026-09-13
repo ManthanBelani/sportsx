@@ -83,7 +83,7 @@ class AdminCategoryController extends Controller
     // Cities
     public function citiesIndex(): JsonResponse
     {
-        $cities = City::with('state')->orderBy('name')->get();
+        $cities = City::orderBy('name')->get();
 
         return response()->json([
             'data' => $cities

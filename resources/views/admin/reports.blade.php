@@ -1,7 +1,7 @@
 @extends('admin.layouts.app')
 @section('title', 'Report Center')
 @section('header-actions')
-  <span class="header-badge warning">{{ $reports->where('status','pending')->count() }} Pending</span>
+  <span class="header-badge warning">{{ number_format($pendingCount) }} Pending</span>
 @endsection
 
 @section('content')
@@ -9,12 +9,12 @@
     @php $morphName = class_basename($r->reportable_type ?? 'Item'); @endphp
     <div class="card no-pad">
       <div class="report-row-head">
-        <div class="report-type" style="background:{{ $r->status==='pending'?'#fef3c7':'#dcfce7' }};"><i data-lucide="flag" style="width:20px;height:20px;color:{{ $r->status==='pending'?'#d97706':'#16a34a' }};"></i></div>
+        <div class="report-type" style="background:{{ $r->status==='pending'?'#fef3c7':($r->status==='removed' || $r->status==='warned'?'#fee2e2':'#dcfce7') }};"><i data-lucide="flag" style="width:20px;height:20px;color:{{ $r->status==='pending'?'#d97706':($r->status==='removed' || $r->status==='warned'?'#dc2626':'#16a34a') }};"></i></div>
         <div class="report-info">
           <div class="report-title">{{ $r->reason ?: 'Report on '.$morphName.' #'.$r->reportable_id }}</div>
-          <div class="report-meta">Filed {{ $r->created_at?->diffForHumans() }} • By User #{{ $r->reporter_user_id ?? 'Anon' }}</div>
+          <div class="report-meta">Filed {{ $r->created_at?->diffForHumans() }} • By {{ $r->reporter?->name ?? ('User #'.($r->reporter_user_id ?? 'Anon')) }}</div>
         </div>
-        <span class="report-badge {{ $r->status==='pending'?'pending':'active' }}">{{ ucfirst($r->status) }}</span>
+        <span class="report-badge {{ $r->status==='pending'?'pending':($r->status==='removed'?'critical':($r->status==='warned'?'critical':'resolved')) }}">{{ ucfirst($r->status) }}</span>
       </div>
       <div class="card-body">
         <div class="report-detail">{{ $r->comment ?: 'No additional detail.' }}</div>

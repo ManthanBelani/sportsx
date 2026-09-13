@@ -1,21 +1,26 @@
 @extends('admin.layouts.app')
 @section('title', 'Sponsor Verification')
 @section('header-actions')
-  <span class="header-badge warning">{{ $sponsorships->where('status','!=','published')->count() }} Pending</span>
+  <span class="header-badge" style="background:#d97706;color:#fff;">{{ number_format($pendingCount) }} Pending</span>
 @endsection
 
 @section('content')
   <div class="grid-2">
     @forelse($sponsorships as $s)
-      @php $owner = $s->sponsor; @endphp
+      @php
+        $profile = $s->sponsor;
+        $user = $profile?->user;
+        $brandName = $profile?->brand_name ?? $s->organization_name ?? $user?->name ?? 'Unknown Sponsor';
+        $loc = $user?->email ? $user->email : ($s->contact_email ?? '—');
+      @endphp
       <div class="card no-pad">
         <div class="sponsor-header">
-          <div class="sponsor-logo"><i data-lucide="briefcase" style="width:28px;height:28px;color:#1677ff;"></i></div>
+          <div class="sponsor-logo"><i data-lucide="briefcase" style="width:28px;height:28px;color:{{ $s->status === 'published' ? '#4338ca' : '#1677ff' }};"></i></div>
           <div class="sponsor-info">
-            <div class="sponsor-name">{{ $s->title ?? ('Sponsorship #'.$s->id) }}</div>
-            <div class="sponsor-type">{{ $owner?->name ?? 'Unknown' }} • {{ $owner?->email ?? '' }}</div>
+            <div class="sponsor-name">{{ $s->title ?? $brandName }}</div>
+            <div class="sponsor-type">{{ $brandName }} • {{ $loc }}</div>
           </div>
-          <span class="sponsor-tier {{ $s->status === 'published' ? 'platinum' : 'gold' }}">{{ ucfirst($s->status) }}</span>
+          <span class="sponsor-tier {{ $s->status === 'published' ? 'platinum' : 'gold' }}">{{ $s->status === 'published' ? 'Verified' : ucfirst($s->status) }}</span>
         </div>
         <div class="docs-section">
           <div class="docs-title">Details</div>

@@ -52,10 +52,17 @@ class ProviderTrialController extends Controller
             'status' => 'nullable|in:draft,published,closed',
         ]);
 
+        $requestedStatus = $validated['status'] ?? 'draft';
+        // Honor auto-approve setting: if trials need approval and user requested published, force draft
+        $settings = $this->platformSettings();
+        $autoApproveTrials = $settings['auto_approve_trials'] ?? false;
+        if ($requestedStatus === 'published' && !$autoApproveTrials) {
+            $requestedStatus = 'draft';
+        }
         $trial = Trial::create(array_merge($validated, [
             'posted_by_user_id' => $user->id,
             'required_documents' => $validated['required_documents'] ?? [],
-            'status' => $validated['status'] ?? 'draft',
+            'status' => $requestedStatus,
         ]));
 
         if ($trial->status === 'published') {
@@ -113,5 +120,14 @@ class ProviderTrialController extends Controller
     {
         $user = $request->user();
         abort_unless($trial->posted_by_user_id === $user->id || $user->isAdmin(), 403);
+    }
+
+    private function platformSettings(): array
+    {
+        $path = storage_path('app/platform_settings.json');
+        if (file_exists($path)) {
+            return json_decode((string) file_get_contents($path), true) ?: [];
+        }
+        return [];
     }
 }

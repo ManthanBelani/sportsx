@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SponsorProfile extends Model
 {
+    use Auditable;
     protected $fillable = ['user_id', 'brand_name', 'logo_media_id', 'category', 'verification_status'];
 
     public function user(): BelongsTo

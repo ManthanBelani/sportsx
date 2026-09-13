@@ -5,11 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\Auditable;
 
 class CoachProfile extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable;
 
     protected $fillable = [
         'user_id', 'full_name', 'sport_id', 'contact_number', 'experience',
@@ -17,6 +19,7 @@ class CoachProfile extends Model
         'personal_coaching', 'fee_structure', 'bio', 'city_id', 'photo_media_id',
         'listing_status', 'profile_completeness', 'headline', 'location',
         'fee_per_session', 'fee_monthly', 'fee_quarterly', 'availability',
+        'achievements',
     ];
 
     protected $appends = ['connections_count'];
@@ -24,6 +27,7 @@ class CoachProfile extends Model
     protected $casts = [
         'certifications' => 'array',
         'languages' => 'array',
+        'achievements' => 'array',
         'personal_coaching' => 'boolean',
         'profile_completeness' => 'integer',
         'availability' => 'array',
@@ -52,6 +56,11 @@ class CoachProfile extends Model
     public function photo(): BelongsTo
     {
         return $this->belongsTo(MediaItem::class, 'photo_media_id');
+    }
+
+    public function mediaItems(): MorphMany
+    {
+        return $this->morphMany(MediaItem::class, 'owner');
     }
 
     public function getConnectionsCountAttribute(): int
