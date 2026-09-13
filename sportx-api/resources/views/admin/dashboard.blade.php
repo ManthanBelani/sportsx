@@ -51,13 +51,34 @@
     </div>
 
     <div class="card">
-      <div class="card-header"><span class="card-title"><i data-lucide="zap"></i>Quick Actions</span></div>
-      <div class="quick-action-grid">
-        <a href="{{ route('admin.moderation') }}" class="quick-action"><div class="quick-action-icon"><i data-lucide="clipboard-check" style="width:20px;height:20px;color:#6b7280;"></i></div><div class="quick-action-label">Moderate</div></a>
-        <a href="{{ route('admin.users') }}" class="quick-action"><div class="quick-action-icon"><i data-lucide="users" style="width:20px;height:20px;color:#6b7280;"></i></div><div class="quick-action-label">Users</div></a>
-        <a href="{{ route('admin.analytics') }}" class="quick-action"><div class="quick-action-icon"><i data-lucide="bar-chart-2" style="width:20px;height:20px;color:#6b7280;"></i></div><div class="quick-action-label">Analytics</div></a>
-        <a href="{{ route('admin.settings') }}" class="quick-action"><div class="quick-action-icon"><i data-lucide="settings" style="width:20px;height:20px;color:#6b7280;"></i></div><div class="quick-action-label">Settings</div></a>
+      <div class="card-header"><span class="card-title"><i data-lucide="check-circle"></i>Pending Approvals</span><a href="{{ route('admin.moderation') }}" class="see-all">Review All</a></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+        <a href="{{ route('admin.moderation') }}" class="quick-action" style="text-align:center;">
+          <div class="stat-value" style="font-size:22px;">{{ $stats['pending_users'] }}</div>
+          <div class="stat-label">Coaches/Sponsors/Scouts</div>
+        </a>
+        <a href="{{ route('admin.moderation') }}" class="quick-action" style="text-align:center;">
+          <div class="stat-value" style="font-size:22px;">{{ $stats['pending_trials'] }}</div>
+          <div class="stat-label">Trials (draft)</div>
+        </a>
+        <a href="{{ route('admin.moderation') }}" class="quick-action" style="text-align:center;">
+          <div class="stat-value" style="font-size:22px;">{{ $stats['pending_tournaments'] }}</div>
+          <div class="stat-label">Tournaments (draft)</div>
+        </a>
       </div>
+      @if(($stats['pending_users']+$stats['pending_trials']+$stats['pending_tournaments'])===0)
+        <div class="empty" style="padding:16px;">No pending approvals 🎉</div>
+      @endif
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title"><i data-lucide="zap"></i>Quick Actions</span></div>
+    <div class="quick-action-grid">
+      <a href="{{ route('admin.moderation') }}" class="quick-action"><div class="quick-action-icon"><i data-lucide="check-circle" style="width:20px;height:20px;color:#16a34a;"></i></div><div class="quick-action-label">Review Queue</div></a>
+      <a href="{{ route('admin.moderation') }}" class="quick-action"><div class="quick-action-icon"><i data-lucide="clipboard-check" style="width:20px;height:20px;color:#6b7280;"></i></div><div class="quick-action-label">Moderate</div></a>
+      <a href="{{ route('admin.users') }}" class="quick-action"><div class="quick-action-icon"><i data-lucide="users" style="width:20px;height:20px;color:#6b7280;"></i></div><div class="quick-action-label">Users</div></a>
+      <a href="{{ route('admin.settings') }}" class="quick-action"><div class="quick-action-icon"><i data-lucide="settings" style="width:20px;height:20px;color:#6b7280;"></i></div><div class="quick-action-label">Settings</div></a>
     </div>
   </div>
 

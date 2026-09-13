@@ -144,15 +144,15 @@
       </div>
       <div class="sidebar-nav-section">
         <div class="sidebar-nav-label">Management</div>
-        <a href="#" class="sidebar-nav-item"><i data-lucide="badge-check"></i>Sponsors</a>
-        <a href="#" class="sidebar-nav-item"><i data-lucide="flag"></i>Content Flags</a>
+        <a href="{{ route('admin.sponsors') }}" class="sidebar-nav-item @if(request()->routeIs('admin.sponsors')) active @endif"><i data-lucide="badge-check"></i>Sponsors</a>
+        <a href="{{ route('admin.flags') }}" class="sidebar-nav-item @if(request()->routeIs('admin.flags')) active @endif"><i data-lucide="flag"></i>Content Flags</a>
       </div>
       <div class="sidebar-nav-section">
         <div class="sidebar-nav-label">System</div>
-        <a href="#" class="sidebar-nav-item"><i data-lucide="bar-chart-2"></i>Analytics</a>
-        <a href="{{ route('admin.notifications.compose') }}" class="sidebar-nav-item @if(request()->routeIs('admin.notifications.compose')) active @endif"><i data-lucide="bell"></i>Notifications</a>
-        <a href="#" class="sidebar-nav-item"><i data-lucide="tag"></i>Categories</a>
-        <a href="#" class="sidebar-nav-item"><i data-lucide="settings"></i>Settings</a>
+        <a href="{{ route('admin.analytics') }}" class="sidebar-nav-item @if(request()->routeIs('admin.analytics')) active @endif"><i data-lucide="bar-chart-2"></i>Analytics</a>
+        <a href="{{ route('admin.notifications') }}" class="sidebar-nav-item @if(request()->routeIs('admin.notifications')) active @endif"><i data-lucide="bell"></i>Notifications</a>
+        <a href="{{ route('admin.categories') }}" class="sidebar-nav-item @if(request()->routeIs('admin.categories')) active @endif"><i data-lucide="tag"></i>Categories</a>
+        <a href="{{ route('admin.settings') }}" class="sidebar-nav-item @if(request()->routeIs('admin.settings')) active @endif"><i data-lucide="settings"></i>Settings</a>
       </div>
     </nav>
     <div class="sidebar-footer">

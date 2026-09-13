@@ -12,15 +12,15 @@
         <i data-lucide="search" style="width:18px;height:18px;color:#6b7280;"></i>
         <input type="text" name="q" value="{{ request('q') }}" placeholder="Search users by name or email…">
       </div>
-      <select class="filter-btn" name="role">
+      <select class="filter-btn" name="role" onchange="this.form.submit()">
         <option value="">All roles</option>
-        @foreach(['athlete','coach','academy','organizer','sponsor','admin'] as $r)
-          <option value="{{ $r }}" @if(request('role')===$r) selected @endif>{{ ucfirst($r) }}</option>
+        @foreach(['athlete','coach','academy','organizer','sponsor','talent_scout','admin'] as $r)
+          <option value="{{ $r }}" @if(request('role')===$r) selected @endif>{{ ucfirst(str_replace('_',' ', $r)) }}</option>
         @endforeach
       </select>
-      <select class="filter-btn" name="status">
+      <select class="filter-btn" name="status" onchange="this.form.submit()">
         <option value="">All status</option>
-        @foreach(['active','suspended','rejected'] as $s)
+        @foreach(['active','pending','suspended','deleted'] as $s)
           <option value="{{ $s }}" @if(request('status')===$s) selected @endif>{{ ucfirst($s) }}</option>
         @endforeach
       </select>
@@ -39,8 +39,11 @@
                 <div><div class="user-name">{{ $u->name }}</div><div class="user-email">{{ $u->email }}</div></div>
               </div>
             </td>
-            <td><span class="badge {{ $u->role }}">{{ ucfirst($u->role) }}</span></td>
-            <td><span class="status-dot {{ $u->status === 'active' ? 'active' : ($u->status === 'suspended' ? 'suspended' : 'inactive') }}"></span>{{ ucfirst($u->status) }}</td>
+            <td><span class="badge {{ $u->role }}">{{ ucfirst(str_replace('_',' ', $u->role)) }}</span></td>
+            <td>
+              <span class="status-dot {{ $u->status === 'active' ? 'active' : ($u->status === 'pending' ? 'pending' : ($u->status === 'suspended' ? 'suspended' : 'inactive')) }}"></span>
+              <span class="badge {{ $u->status === 'active' ? 'active' : ($u->status === 'pending' ? 'pending' : 'inactive') }}">{{ ucfirst($u->status) }}</span>
+            </td>
             <td>{{ $u->created_at?->format('M d, Y') }}</td>
             <td>
               @if($u->role !== 'admin')

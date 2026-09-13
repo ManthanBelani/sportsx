@@ -1,7 +1,7 @@
 @extends('admin.layouts.app')
 @section('title', 'Content Flags')
 @section('header-actions')
-  <span class="header-badge warning">{{ $flags->total() }} Flagged</span>
+  <span class="header-badge" style="background:#fee2e2;color:#dc2626;">{{ number_format($activeCount) }} Active Flags</span>
 @endsection
 
 @section('content')

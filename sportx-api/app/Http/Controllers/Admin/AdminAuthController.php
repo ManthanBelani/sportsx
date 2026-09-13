@@ -51,56 +51,25 @@ class AdminAuthController extends Controller
                     'email' => $user->email,
                     'role' => $user->role,
                 ],
-                'requires_2fa' => true,
+                'requires_2fa' => false,
             ]
         ]);
     }
 
     public function verify2fa(Request $request): JsonResponse
     {
-        $request->validate([
-            'code' => 'required|string|size:6',
-        ]);
-
-        $user = $request->user();
-
-        if ($user->role !== 'admin') {
-            return response()->json([
-                'error' => [
-                    'code' => 'FORBIDDEN',
-                    'message' => 'Access denied.',
-                ]
-            ], 403);
-        }
-
-        // In production, verify TOTP code here
-        // For MVP, accept any 6-digit code or implement proper TOTP
-        $code = $request->code;
-
-        // Simulate 2FA verification - in production use proper TOTP library
-        if (strlen($code) !== 6) {
-            return response()->json([
-                'error' => [
-                    'code' => 'INVALID_2FA_CODE',
-                    'message' => 'Invalid 2FA code.',
-                ]
-            ], 422);
-        }
-
-        // Mark 2FA as verified for this session
-        $user->forceFill([
-            'admin_2fa_verified_at' => now(),
-        ])->save();
-
+        // TODO(P0-ship-blocker): implement real TOTP verification.
+        // Currently returns success without checking a code — API admin.2fa
+        // middleware is also a pass-through. Fix with pragmarx/google2fa:
+        // $valid = app('pragmarx.google2fa')->verifyKey($user->google2fa_secret, $request->code);
         return response()->json([
             'data' => [
-                'message' => '2FA verified.',
+                'message' => 'WARNING: 2FA not enforced in this build — enable TOTP before production.',
                 'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'role' => $user->role,
-                    'admin_2fa_verified_at' => $user->admin_2fa_verified_at,
+                    'id' => $request->user()->id,
+                    'name' => $request->user()->name,
+                    'email' => $request->user()->email,
+                    'role' => $request->user()->role,
                 ],
             ]
         ]);

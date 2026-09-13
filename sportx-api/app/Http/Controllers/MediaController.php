@@ -138,4 +138,24 @@ class MediaController extends Controller
         $media = MediaItem::findOrFail($id);
         return Storage::disk($media->disk)->download($media->path, $media->original_name);
     }
+
+    public function signedUrl(Request $request, string $id)
+    {
+        $media = MediaItem::findOrFail($id);
+        $user = $request->user();
+        $allowed = match ($media->owner_type) {
+            'athlete_profile' => $user->athleteProfile?->id === $media->owner_id,
+            'coach_profile' => $user->coachProfile?->id === $media->owner_id,
+            'academy' => $user->academies?->id === $media->owner_id,
+            'organizer_profile' => $user->organizerProfile?->id === $media->owner_id,
+            'sponsor_profile' => $user->sponsorProfile?->id === $media->owner_id,
+            'talent_scout_profile' => $user->talentScoutProfile?->id === $media->owner_id,
+            'user' => $user->id === $media->owner_id,
+            default => false,
+        };
+        abort_unless($allowed || $user->isAdmin(), 403);
+        $url = \Illuminate\Support\Facades\URL::temporarySignedRoute('media.download', now()->addMinutes(15), ['id' => $media->id]);
+        return response()->json(['data' => ['url' => $url, 'expires_at' => now()->addMinutes(15)->toISOString()]]);
+    }
 }
+

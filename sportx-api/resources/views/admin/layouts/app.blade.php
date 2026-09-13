@@ -111,10 +111,10 @@
 
     /* ── Badges ── */
     .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
-    .badge.athlete { background: #fef3c7; color: #d97706; } .badge.coach { background: #dbeafe; color: #1677ff; } .badge.academy { background: #dcfce7; color: #16a34a; } .badge.organizer { background: #e0e7ff; color: #4338ca; } .badge.sponsor { background: #f3e8ff; color: #9333ea; } .badge.admin { background: #f3e8ff; color: #9333ea; }
-    .badge.active { background: #dcfce7; color: #16a34a; } .badge.inactive, .badge.rejected { background: #fee2e2; color: #dc2626; } .badge.pending { background: #fef3c7; color: #d97706; }
+    .badge.athlete { background: #fef3c7; color: #d97706; } .badge.coach { background: #dbeafe; color: #1677ff; } .badge.academy { background: #dcfce7; color: #16a34a; } .badge.organizer { background: #e0e7ff; color: #4338ca; } .badge.sponsor { background: #f3e8ff; color: #9333ea; } .badge.talent_scout { background: #e0e7ff; color: #4338ca; } .badge.admin { background: #f3e8ff; color: #9333ea; }
+    .badge.active { background: #dcfce7; color: #16a34a; } .badge.inactive, .badge.rejected, .badge.deleted { background: #fee2e2; color: #dc2626; } .badge.pending { background: #fef3c7; color: #d97706; }
     .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
-    .status-dot.active { background: #16a34a; } .status-dot.suspended { background: #dc2626; } .status-dot.inactive { background: #6b7280; }
+    .status-dot.active { background: #16a34a; } .status-dot.pending { background: #d97706; } .status-dot.suspended { background: #dc2626; } .status-dot.inactive { background: #6b7280; }
     .rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 8px; background: #f0f7ff; color: #1677ff; font-weight: 600; font-size: 13px; }
 
     /* ── Buttons / actions ── */
@@ -211,8 +211,6 @@
     .login-title { text-align: center; font-size: 22px; font-weight: 700; } .login-subtitle { text-align: center; color: #6b7280; font-size: 13px; margin: 4px 0 24px; }
     .otp-input { letter-spacing: 8px; font-size: 22px; text-align: center; }
 
-    @stack('styles')
-
     /* ── Responsive ── */
     .menu-btn { display: none; width: 38px; height: 38px; border: 1px solid #e5e7eb; background: #fff; border-radius: 8px; cursor: pointer; align-items: center; justify-content: center; }
     .nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 90; }
@@ -244,6 +242,7 @@
       .admin-meta { display: none; }
     }
   </style>
+  @stack('styles')
 </head>
 <body>
 @yield('body-open')
@@ -260,21 +259,22 @@
       <div class="sidebar-nav-section">
         <div class="sidebar-nav-label">Main</div>
         <a href="{{ route('admin.dashboard') }}" class="sidebar-nav-item @if(request()->routeIs('admin.dashboard')) active @endif"><i data-lucide="layout-dashboard"></i>Dashboard</a>
+        <a href="{{ route('admin.moderation') }}" class="sidebar-nav-item @if(request()->routeIs('admin.moderation','admin.approvals*')) active @endif"><i data-lucide="clipboard-list"></i>Review Queue</a>
         <a href="{{ route('admin.users') }}" class="sidebar-nav-item @if(request()->routeIs('admin.users','admin.users.detail')) active @endif"><i data-lucide="users"></i>Users</a>
-        <a href="{{ route('admin.moderation') }}" class="sidebar-nav-item @if(request()->routeIs('admin.moderation')) active @endif"><i data-lucide="clipboard-list"></i>Moderation</a>
         <a href="{{ route('admin.reports') }}" class="sidebar-nav-item @if(request()->routeIs('admin.reports')) active @endif"><i data-lucide="alert-octagon"></i>Reports</a>
       </div>
       <div class="sidebar-nav-section">
         <div class="sidebar-nav-label">Management</div>
+        <a href="{{ route('admin.content') }}" class="sidebar-nav-item @if(request()->routeIs('admin.content*')) active @endif"><i data-lucide="layers"></i>Content</a>
         <a href="{{ route('admin.sponsors') }}" class="sidebar-nav-item @if(request()->routeIs('admin.sponsors')) active @endif"><i data-lucide="badge-check"></i>Sponsors</a>
         <a href="{{ route('admin.flags') }}" class="sidebar-nav-item @if(request()->routeIs('admin.flags')) active @endif"><i data-lucide="flag"></i>Content Flags</a>
       </div>
       <div class="sidebar-nav-section">
         <div class="sidebar-nav-label">System</div>
         <a href="{{ route('admin.analytics') }}" class="sidebar-nav-item @if(request()->routeIs('admin.analytics')) active @endif"><i data-lucide="bar-chart-2"></i>Analytics</a>
-        <a href="{{ route('admin.expiry') }}" class="sidebar-nav-item @if(request()->routeIs('admin.expiry')) active @endif"><i data-lucide="clock"></i>Expiry</a>
         <a href="{{ route('admin.notifications') }}" class="sidebar-nav-item @if(request()->routeIs('admin.notifications')) active @endif"><i data-lucide="bell"></i>Notifications</a>
         <a href="{{ route('admin.categories') }}" class="sidebar-nav-item @if(request()->routeIs('admin.categories')) active @endif"><i data-lucide="tag"></i>Categories</a>
+        <a href="{{ route('admin.audit.logs') }}" class="sidebar-nav-item @if(request()->routeIs('admin.audit.*')) active @endif"><i data-lucide="scroll-text"></i>Audit Log</a>
         <a href="{{ route('admin.settings') }}" class="sidebar-nav-item @if(request()->routeIs('admin.settings')) active @endif"><i data-lucide="settings"></i>Settings</a>
       </div>
     </nav>

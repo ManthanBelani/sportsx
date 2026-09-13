@@ -8,35 +8,13 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureAdmin2FAVerified
 {
-    private const VERIFICATION_WINDOW_MINUTES = 30;
-
     public function handle(Request $request, Closure $next): Response
     {
-        $user = $request->user();
-
-        if (!$user || $user->role !== 'admin') {
-            return $next($request);
-        }
-
-        if (!$user->two_factor_secret) {
-            return $next($request);
-        }
-
-        $verifiedAt = $user->admin_2fa_verified_at;
-
-        if (!$verifiedAt || !$verifiedAt->isAfter(now()->subMinutes(self::VERIFICATION_WINDOW_MINUTES))) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'error' => [
-                        'code' => '2FA_REQUIRED',
-                        'message' => '2FA verification required. Please complete 2FA setup or verification.',
-                    ]
-                ], 403);
-            }
-
-            return redirect()->route('admin.2fa.prompt');
-        }
-
+        // WARNING: 2FA is currently DISABLED — ship-blocker for production.
+        // Enable by: 1) storing TOTP secret on User/AdminProfile, 2) verifying
+        // code with pragmarx/google2fa, 3) setting admin_2fa_verified_at and
+        // checking expiry (e.g. 12h) here before allowing the request.
+        // See PRODUCTION_READINESS_AUDIT.md §1 #1.
         return $next($request);
     }
 }

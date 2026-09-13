@@ -10,13 +10,12 @@ Route::get('/', function () {
 // ── Admin panel (server-rendered Blade, session auth) ──────────────────────────
 Route::prefix('panel')->name('admin.')->group(function () {
 
-    // Public auth routes
+    // Public auth routes — throttle to mitigate brute-force
     Route::get('/login', [AdminPanelController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AdminPanelController::class, 'login']);
+    Route::post('/login', [AdminPanelController::class, 'login'])->middleware('throttle:10,1');
     Route::get('/2fa', [AdminPanelController::class, 'show2fa'])->name('2fa');
-    Route::post('/2fa', [AdminPanelController::class, 'verify2fa']);
+    Route::post('/2fa', [AdminPanelController::class, 'verify2fa'])->middleware('throttle:10,1');
     Route::post('/logout', [AdminPanelController::class, 'logout'])->name('logout');
-    Route::get('/logout', [AdminPanelController::class, 'logout'])->name('logout');
 
     // Protected routes
     Route::middleware(['auth', 'admin.panel'])->group(function () {
@@ -61,6 +60,15 @@ Route::prefix('panel')->name('admin.')->group(function () {
         Route::get('/sponsors', [AdminPanelController::class, 'sponsors'])->name('sponsors');
         Route::post('/sponsors/{id}', [AdminPanelController::class, 'sponsorAction'])->name('sponsors.action');
 
+        // Approvals
+        Route::get('/approvals', [AdminPanelController::class, 'approvals'])->name('approvals');
+        Route::post('/approvals/users/{id}/approve', [AdminPanelController::class, 'approveUser'])->name('approvals.users.approve');
+        Route::post('/approvals/users/{id}/reject', [AdminPanelController::class, 'rejectUser'])->name('approvals.users.reject');
+        Route::post('/approvals/trials/{id}/approve', [AdminPanelController::class, 'approveTrial'])->name('approvals.trials.approve');
+        Route::post('/approvals/trials/{id}/reject', [AdminPanelController::class, 'rejectTrial'])->name('approvals.trials.reject');
+        Route::post('/approvals/tournaments/{id}/approve', [AdminPanelController::class, 'approveTournament'])->name('approvals.tournaments.approve');
+        Route::post('/approvals/tournaments/{id}/reject', [AdminPanelController::class, 'rejectTournament'])->name('approvals.tournaments.reject');
+
         // Analytics
         Route::get('/analytics', [AdminPanelController::class, 'analytics'])->name('analytics');
 
@@ -78,5 +86,9 @@ Route::prefix('panel')->name('admin.')->group(function () {
         Route::put('/categories/{type}/{id}', [AdminPanelController::class, 'categoryUpdate'])->name('categories.update');
         Route::post('/categories/{type}/{id}/toggle', [AdminPanelController::class, 'categoryToggle'])->name('categories.toggle');
         Route::delete('/categories/{type}/{id}', [AdminPanelController::class, 'categoryDestroy'])->name('categories.destroy');
+
+        // Audit Log
+        Route::get('/audit-logs', [\App\Http\Controllers\Admin\AdminAuditController::class, 'index'])->name('audit.logs');
+        Route::get('/audit-logs/{id}', [\App\Http\Controllers\Admin\AdminAuditController::class, 'show'])->name('audit.show');
     });
 });

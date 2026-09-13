@@ -16,9 +16,25 @@ class ActivityController extends Controller
     {
         $user = $request->user();
 
+        // Correct schema: enquiries use athlete_id + subject_type/subject_id (morph), not sender_id/receiver_id
+        $enquiriesSent = $user->athleteProfile
+            ? Enquiry::where('athlete_id', $user->athleteProfile->id)->count()
+            : 0;
+
+        $enquiriesReceived = 0;
+        if ($user->coachProfile) {
+            $enquiriesReceived = Enquiry::where('subject_type', 'coach_profile')->where('subject_id', $user->coachProfile->id)->count();
+        } elseif ($user->academies) {
+            $enquiriesReceived = Enquiry::where('subject_type', 'academy')->where('subject_id', $user->academies->id)->count();
+        } elseif ($user->organizerProfile) {
+            $enquiriesReceived = Enquiry::where('subject_type', 'organizer_profile')->where('subject_id', $user->organizerProfile->id)->count();
+        } elseif ($user->sponsorProfile) {
+            $enquiriesReceived = Enquiry::where('subject_type', 'sponsor_profile')->where('subject_id', $user->sponsorProfile->id)->count();
+        }
+
         return response()->json(['data' => [
-            'enquiries_sent' => Enquiry::where('sender_id', $user->id)->count(),
-            'enquiries_received' => Enquiry::where('receiver_id', $user->id)->count(),
+            'enquiries_sent' => $enquiriesSent,
+            'enquiries_received' => $enquiriesReceived,
             'trial_registrations' => $user->athleteProfile
                 ? TrialRegistration::where('athlete_id', $user->athleteProfile->id)->count()
                 : 0,
@@ -35,9 +51,14 @@ class ActivityController extends Controller
 
     private function getRecentSearches($user)
     {
+        // Unify with SearchController which persists to recent_searches table + short cache.
+        // Prefer DB source so cache/frontend drift is not lost across devices.
+        try {
+            $db = \App\Models\RecentSearch::where('user_id', $user->id)->orderByDesc('updated_at')->limit(10)->pluck('query')->toArray();
+            if (!empty($db)) return $db;
+        } catch (\Throwable $e) {}
         $key = "recent_searches:{$user->id}";
         $searches = Cache::get($key, []);
-
         return array_slice($searches, 0, 10);
     }
 }

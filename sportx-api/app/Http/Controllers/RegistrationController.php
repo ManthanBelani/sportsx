@@ -8,6 +8,7 @@ use App\Models\TrialRegistrationDocument;
 use App\Models\Tournament;
 use App\Models\TournamentRegistration;
 use App\Services\IcsService;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -98,6 +99,17 @@ class RegistrationController extends Controller
         $this->authorizeOwner($request, $registration->trial);
         $registration->update(['verification_status' => 'verified']);
 
+        $registration->load(['trial', 'athlete.user']);
+        NotificationService::createStatic([
+            'user_id' => $registration->athlete->user_id,
+            'type' => 'status_update',
+            'title' => 'Registration approved',
+            'body' => "Your registration for \"{$registration->trial->name}\" has been approved.",
+            'notifiable_type' => 'trial_registration',
+            'notifiable_id' => $registration->id,
+            'action_url' => "/registrations/trials/{$registration->id}",
+        ]);
+
         return response()->json(['data' => $registration]);
     }
 
@@ -105,6 +117,17 @@ class RegistrationController extends Controller
     {
         $this->authorizeOwner($request, $registration->trial);
         $registration->update(['verification_status' => 'rejected']);
+
+        $registration->load(['trial', 'athlete.user']);
+        NotificationService::createStatic([
+            'user_id' => $registration->athlete->user_id,
+            'type' => 'status_update',
+            'title' => 'Registration rejected',
+            'body' => "Your registration for \"{$registration->trial->name}\" was not approved.",
+            'notifiable_type' => 'trial_registration',
+            'notifiable_id' => $registration->id,
+            'action_url' => "/registrations/trials/{$registration->id}",
+        ]);
 
         return response()->json(['data' => $registration]);
     }
@@ -240,6 +263,22 @@ class RegistrationController extends Controller
         ]);
 
         $registration->update(['payment_status' => $validated['payment_status']]);
+
+        $registration->load(['tournament', 'athlete.user']);
+        $statusLabel = match ($validated['payment_status']) {
+            'paid' => 'Payment confirmed',
+            'waived' => 'Fee waived',
+            default => 'Payment pending',
+        };
+        NotificationService::createStatic([
+            'user_id' => $registration->athlete->user_id,
+            'type' => 'status_update',
+            'title' => "Registration updated",
+            'body' => "{$statusLabel} for \"{$registration->tournament->name}\".",
+            'notifiable_type' => 'tournament_registration',
+            'notifiable_id' => $registration->id,
+            'action_url' => "/registrations/tournaments/{$registration->id}",
+        ]);
 
         return response()->json(['data' => $registration]);
     }

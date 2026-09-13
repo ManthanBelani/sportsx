@@ -5,7 +5,7 @@
   <div class="login-card">
     <div class="login-logo">🔐</div>
     <div class="login-title">Two-Factor Authentication</div>
-    <div class="login-subtitle">Enter the 6-digit code from your authenticator app.<br><span class="muted">(MVP demo: any 6 digits work)</span></div>
+    <div class="login-subtitle">Enter the 6-digit code from your authenticator app.<br><span class="muted" style="color:#dc2626;">⚠️ 2FA not yet enforced — must be enabled before production</span></div>
 
     @if(session('error')) <div class="flash flash-error">{{ session('error') }}</div> @endif
     @if($errors->any()) <div class="flash flash-error">{{ implode(' ', $errors->all()) }}</div> @endif

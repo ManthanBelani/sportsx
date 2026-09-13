@@ -117,6 +117,7 @@ Route::prefix('v1')->group(function () {
     Route::delete('/media/{id}', [MediaController::class, 'destroy'])->middleware('auth:sanctum');
     Route::put('/media/reorder', [MediaController::class, 'reorder'])->middleware('auth:sanctum');
     Route::get('/media/download/{id}', [MediaController::class, 'download'])->name('media.download');
+    Route::get('/media/{id}/signed-url', [MediaController::class, 'signedUrl'])->middleware('auth:sanctum');
 
     // ── Saved Items ──
     Route::get('/me/saved', [SavedItemController::class, 'index'])->middleware('auth:sanctum');

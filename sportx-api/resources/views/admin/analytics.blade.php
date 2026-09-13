@@ -2,7 +2,6 @@
 @section('title', 'Analytics')
 
 @section('content')
-  @php $verifiedRate = $totalUsers ? round(\App\Models\User::whereNotNull('email_verified_at')->count() / $totalUsers * 100) : 0; @endphp
   <div class="stat-grid">
     <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value">{{ number_format($totalUsers) }}</div><div class="stat-change up">All time</div></div>
     <div class="stat-card"><div class="stat-label">Active Listings</div><div class="stat-value">{{ number_format($activeListings) }}</div><div class="stat-change">Published</div></div>

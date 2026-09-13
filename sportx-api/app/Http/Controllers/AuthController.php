@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\UserDeviceToken;
 use App\Mail\VerifyEmail;
 use App\Mail\PasswordResetMail;
 use Illuminate\Http\Request;
@@ -23,6 +24,15 @@ class AuthController extends Controller
         ]);
 
         $email = strtolower($validated['email']);
+        // Determine if this role needs admin approval
+        $settings = $this->platformSettings();
+        $needsApproval = match ($validated['role']) {
+            'coach' => !($settings['auto_approve_coach'] ?? false),
+            'sponsor' => !($settings['auto_approve_sponsor'] ?? false),
+            'talent_scout' => !($settings['auto_approve_talent_scout'] ?? false),
+            default => false,
+        };
+        $status = $needsApproval ? 'pending' : 'active';
         $user = User::create([
             'role' => $validated['role'],
             'email' => $email,
@@ -30,18 +40,23 @@ class AuthController extends Controller
             'phone' => $validated['phone'] ?? null,
             'password' => Hash::make($validated['password']),
             'email_verified_at' => now(),
-            'status' => 'active',
+            'status' => $status,
         ]);
 
-        // Email/password-only auth: auto-verify and issue a session token
-        // immediately (no OTP / verification step).
+        // If pending approval, still issue token but flag it — middleware will block writes until approved.
+        // We do NOT auto-login pending sponsor/coach/scout? Frontend will show "pending approval" state.
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        $message = $status === 'pending'
+            ? 'Registration received. Your account is pending admin approval.'
+            : 'Registration successful.';
+
         return response()->json([
-            'message' => 'Registration successful.',
+            'message' => $message,
             'token' => $token,
             'user' => $this->userResource($user),
             'needs_onboarding' => ! $user->hasRoleProfile(),
+            'pending_approval' => $status === 'pending',
         ], 201);
     }
 
@@ -78,10 +93,21 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        $user = User::where('email', strtolower($validated['email']))->where('status', 'active')->first();
+        $user = User::where('email', strtolower($validated['email']))->first();
 
         if (!$user || !Hash::check($validated['password'], $user->password)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
+        }
+
+        if ($user->status === 'pending') {
+            return response()->json([
+                'message' => 'Your account is pending admin approval. You will be able to log in once an admin approves your registration.',
+                'status' => 'pending',
+            ], 403);
+        }
+
+        if ($user->status !== 'active') {
+            return response()->json(['message' => 'Account is '.$user->status.'. Contact support.'], 403);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -106,7 +132,11 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $user = $request->user();
+
+        UserDeviceToken::where('user_id', $user->id)->update(['is_active' => false]);
+
+        $user->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logged out']);
     }
@@ -178,5 +208,15 @@ class AuthController extends Controller
             'email_verified_at' => $user->email_verified_at?->toIso8601String(),
             'status' => $user->status,
         ];
+    }
+
+    private function platformSettings(): array
+    {
+        $path = storage_path('app/platform_settings.json');
+        if (file_exists($path)) {
+            $data = json_decode((string) file_get_contents($path), true) ?: [];
+            return $data;
+        }
+        return [];
     }
 }
