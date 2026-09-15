@@ -12,7 +12,13 @@ class TournamentRegistration extends Model
 
     protected $fillable = [
         'tournament_id', 'category_id', 'athlete_id', 'participation_type',
-        'team_name', 'payment_status', 'status',
+        'team_name', 'payment_status', 'approval_status', 'status',
+        'rejection_reason', 'reviewed_by', 'reviewed_at', 'reminder_enabled',
+    ];
+
+    protected $casts = [
+        'reviewed_at' => 'datetime',
+        'reminder_enabled' => 'boolean',
     ];
 
     public function tournament(): BelongsTo
@@ -28,5 +34,10 @@ class TournamentRegistration extends Model
     public function athlete(): BelongsTo
     {
         return $this->belongsTo(AthleteProfile::class, 'athlete_id');
+    }
+
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 }
