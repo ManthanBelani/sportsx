@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
-import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -17,152 +17,79 @@ class RegistrationManagementScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(tournamentRegistrationsProvider(tournamentId));
     final capacityAsync = ref.watch(tournamentCapacityProvider(tournamentId));
     final tournamentAsync = ref.watch(tournamentDetailProvider(tournamentId));
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
         backgroundColor: AppColors.background,
-        elevation: 0,
-        leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: ()=> context.pop()),
-        title: const Text('Registrations', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-        bottom: PreferredSize(preferredSize: const Size.fromHeight(1), child: Container(height:1, color: AppColors.border)),
-      ),
-      body: async.when(
-        loading: ()=> const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-        error: (e,_ )=> Center(child: Column(mainAxisSize: MainAxisSize.min, children:[Text('$e', style: const TextStyle(color: AppColors.textSecondary)), const SizedBox(height:12), ElevatedButton(onPressed: ()=> ref.invalidate(tournamentRegistrationsProvider(tournamentId)), child: const Text('Retry'))])),
-        data: (regs) {
-          // Compute summary from real backend data
-          final totalTeams = regs.length;
-          final capacityList = capacityAsync.valueOrNull ?? [];
-          final tournament = tournamentAsync.valueOrNull;
-          // Real entry fee from tournament (backend entry_fee / registration_fee) -> parse numeric
-          final feeRaw = tournament?.registrationFee ?? 0;
-          final feePerTeam = feeRaw > 0 ? feeRaw : 0;
-          // Fallback fee from any registration category if tournament fee is 0
-          final paidCount = regs.where((r) => (r['payment_status'] ?? r['status']) == 'paid').length;
-          final collected = (feePerTeam > 0 ? (paidCount * feePerTeam).round() : paidCount * 2500);
-          // Spots left = sum(capacity - registered) from capacity endpoint, fallback to placeholder
-          int spotsLeft = 0;
-          int totalCapacity = 0;
-          int totalRegistered = 0;
-          if (capacityList.isNotEmpty) {
-            for (final c in capacityList) {
-              final max = (c['max_teams'] ?? c['capacity'] ?? 0) as int;
-              final reg = (c['registered'] ?? 0) as int;
-              totalCapacity += max;
-              totalRegistered += reg;
-            }
-            spotsLeft = (totalCapacity - totalRegistered).clamp(0, 9999);
-          } else {
-            spotsLeft = 0;
-          }
-
-          // Group by category
-          final Map<String, List<Map<String,dynamic>>> grouped = {};
-          for (final r in regs) {
-            final catName = (r['category'] is Map ? r['category']['name'] : r['category_name'])?.toString() ?? 'Uncategorized';
-            grouped.putIfAbsent(catName, ()=> []).add(r);
-          }
-
-          // Build date/venue header from real tournament detail
-          final venue = tournament?.venue;
-          final dateStr = tournament?.startDate != null
-              ? (tournament!.endDate != null
-                  ? '${DateFormatUtils.formatShortDate(tournament.startDate!.toIso8601String())} - ${DateFormatUtils.formatShortDate(tournament.endDate!.toIso8601String())}${venue != null ? ' • $venue' : ''}'
-                  : '${DateFormatUtils.formatShortDate(tournament.startDate!.toIso8601String())}${venue != null ? ' • $venue' : ''}')
-              : (venue != null ? venue : 'Tournament details pending');
-          // fee label for per-team display (use real fee if available)
-          final feeLabel = feePerTeam > 0 ? '₹${feePerTeam.toStringAsFixed(0)}' : 'TBD';
-
-          return RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(tournamentRegistrationsProvider(tournamentId));
-              ref.invalidate(tournamentCapacityProvider(tournamentId));
-              ref.invalidate(tournamentDetailProvider(tournamentId));
-            },
-            child: CustomScrollView(slivers: [
-              SliverToBoxAdapter(child: _tournamentBar(totalTeams, collected, spotsLeft, dateStr)),
-              if (regs.isEmpty)
-                const SliverToBoxAdapter(child: Padding(padding: EdgeInsets.only(top: 80), child: Center(child: Text('No registrations yet', style: TextStyle(color: AppColors.textSecondary)))))
-              else
-                ...grouped.entries.map((entry)=> SliverToBoxAdapter(
-                  child: Container(
-                    padding: const EdgeInsets.fromLTRB(20,16,20,0),
-                    decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.border))),
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[
-                      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children:[
-                        Text(entry.key, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                        Text('${entry.value.length} teams', style: const TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w500)),
-                      ]),
-                      const SizedBox(height: 10),
-                      ...entry.value.map((r){
-                        final athlete = r['athlete'] is Map ? r['athlete'] as Map : null;
-                        final user = athlete != null && athlete['user'] is Map ? athlete['user'] as Map : null;
-                        final name = (r['team_name'] ?? r['athlete_name'] ?? user?['name'] ?? r['name'] ?? 'Participant').toString();
-                        final payment = (r['payment_status'] ?? r['status'] ?? 'pending').toString();
-                        final isPaid = payment=='paid' || payment=='completed';
-                        // Try to get avatar
-                        final avatarUrl = user?['avatar_url'] ?? athlete?['photo_url'];
-                        final contact = 'Captain: ${user?['name']?.toString().split(' ').first ?? '—'} • ${r['participation_type'] ?? '—'}';
-                        final feeText = isPaid ? 'Paid $feeLabel' : 'Pending';
-                        final resolvedAvatar = MediaUtils.resolveNullable(avatarUrl?.toString());
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Row(children:[
-                            CircleAvatar(radius: 18, backgroundColor: AppColors.surface, backgroundImage: resolvedAvatar!=null ? NetworkImage(resolvedAvatar) : null, onBackgroundImageError: resolvedAvatar!=null ? (e,s){} : null, child: resolvedAvatar==null ? const Icon(LucideIcons.user, size:16, color: AppColors.textSecondary) : null),
-                            const SizedBox(width: 10),
-                            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[
-                              Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
-                              Text(contact, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                            ])),
-                            GestureDetector(
-                              onTap: () async {
-                                final next = isPaid ? 'pending' : 'paid';
-                                try {
-                                  await ref.read(dioProvider).patch('/registrations/tournaments/${r['id']}/payment', data: {'payment_status': next});
-                                  if (context.mounted) SnackBarUtils.showSuccess(context, 'Payment marked $next');
-                                  ref.invalidate(tournamentRegistrationsProvider(tournamentId));
-                                } catch (e) {
-                                  if (context.mounted) SnackBarUtils.showError(context, e);
-                                }
-                              },
-                              child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: isPaid? const Color(0xFFd1fae5): const Color(0xFFfef3c7), borderRadius: BorderRadius.circular(4)), child: Text(feeText, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isPaid? const Color(0xFF065f46): const Color(0xFF92400e)))),
-                            ),
-                          ]),
-                        );
-                      }),
-                      const SizedBox(height: 16),
-                    ]),
-                  ),
-                )),
-            ]),
-          );
-        },
+        appBar: AppBar(
+          backgroundColor: AppColors.background,
+          elevation: 0,
+          leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
+          title: const Text('Registrations', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+          bottom: const TabBar(
+            labelColor: AppColors.primary,
+            unselectedLabelColor: AppColors.textSecondary,
+            indicatorColor: AppColors.primary,
+            tabs: [
+              Tab(text: 'Pending'),
+              Tab(text: 'Approved'),
+              Tab(text: 'Rejected'),
+            ],
+          ),
+        ),
+        body: Column(
+          children: [
+            // Summary bar
+            Builder(builder: (context) {
+              final tournament = tournamentAsync.valueOrNull;
+              final venue = tournament?.venue;
+              final dateStr = tournament?.startDate != null
+                  ? (tournament!.endDate != null
+                      ? '${DateFormatUtils.formatShortDate(tournament.startDate!.toIso8601String())} - ${DateFormatUtils.formatShortDate(tournament.endDate!.toIso8601String())}${venue != null ? ' • $venue' : ''}'
+                      : '${DateFormatUtils.formatShortDate(tournament.startDate!.toIso8601String())}${venue != null ? ' • $venue' : ''}')
+                  : (venue ?? 'Tournament details pending');
+              // capacity summary
+              final capacityList = capacityAsync.valueOrNull ?? [];
+              int spotsLeft = 0, totalCapacity = 0, totalRegistered = 0;
+              if (capacityList.isNotEmpty) {
+                for (final c in capacityList) {
+                  totalCapacity += (c['max_teams'] ?? c['capacity'] ?? 0) as int;
+                  totalRegistered += (c['registered'] ?? 0) as int;
+                }
+                spotsLeft = (totalCapacity - totalRegistered).clamp(0, 9999);
+              }
+              // total teams approximated from registrations provider not yet loaded per-tab; show capacity stats only
+              return _tournamentBar(totalRegistered, spotsLeft, dateStr);
+            }),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  _RegistrationListView(tournamentId: tournamentId, status: 'pending'),
+                  _RegistrationListView(tournamentId: tournamentId, status: 'approved'),
+                  _RegistrationListView(tournamentId: tournamentId, status: 'rejected'),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _tournamentBar(int teams, int collected, int spotsLeft, String dateStr){
-    String fmtCollected(int v){
-      if (v>=100000) return '₹${(v/100000).toStringAsFixed(2)}L';
-      if (v>=1000) return '₹${(v/1000).toStringAsFixed(0)}K';
-      return '₹$v';
-    }
+  Widget _tournamentBar(int totalRegistered, int spotsLeft, String dateStr) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       color: AppColors.surface,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
         const SizedBox(height: 4),
         Text(dateStr, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
         const SizedBox(height: 12),
-        Row(children:[
-          Expanded(child: _summaryItem('$teams', 'Teams')),
-          const SizedBox(width: 10),
-          Expanded(child: _summaryItem(fmtCollected(collected), 'Collected')),
+        Row(children: [
+          Expanded(child: _summaryItem('$totalRegistered', 'Registered')),
           const SizedBox(width: 10),
           Expanded(child: _summaryItem('$spotsLeft', 'Spots Left')),
         ]),
@@ -170,15 +97,184 @@ class RegistrationManagementScreen extends ConsumerWidget {
     );
   }
 
-  Widget _summaryItem(String num, String label){
+  Widget _summaryItem(String num, String label) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(8)),
-      child: Column(children:[
+      child: Column(children: [
         Text(num, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.primary)),
         const SizedBox(height: 2),
         Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
       ]),
     );
+  }
+}
+
+class _RegistrationListView extends ConsumerWidget {
+  final String tournamentId;
+  final String status;
+  const _RegistrationListView({required this.tournamentId, required this.status});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(tournamentRegistrationsByStatusProvider((tournamentId: tournamentId, status: status)));
+
+    return async.when(
+      loading: () => const GenericListSkeleton(itemCount: 5),
+      error: (e, _) => Center(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Text('$e', style: const TextStyle(color: AppColors.textSecondary)),
+          const SizedBox(height: 12),
+          ElevatedButton(onPressed: () => ref.invalidate(tournamentRegistrationsByStatusProvider((tournamentId: tournamentId, status: status))), child: const Text('Retry')),
+        ]),
+      ),
+      data: (regs) {
+        if (regs.isEmpty) {
+          return Center(child: Text('No $status registrations', style: const TextStyle(color: AppColors.textSecondary)));
+        }
+        // group by category
+        final Map<String, List<Map<String, dynamic>>> grouped = {};
+        for (final r in regs) {
+          final catName = (r['category'] is Map ? r['category']['name'] : r['category_name'])?.toString() ?? 'Uncategorized';
+          grouped.putIfAbsent(catName, () => []).add(r);
+        }
+        return RefreshIndicator(
+          onRefresh: () async => ref.invalidate(tournamentRegistrationsByStatusProvider((tournamentId: tournamentId, status: status))),
+          child: ListView(
+            children: [
+              ...grouped.entries.map((entry) => Container(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                    decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.border))),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                        Text(entry.key, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                        Text('${entry.value.length} teams', style: const TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w500)),
+                      ]),
+                      const SizedBox(height: 10),
+                      ...entry.value.map((r) => _RegistrationCard(tournamentId: tournamentId, data: r, status: status)),
+                      const SizedBox(height: 16),
+                    ]),
+                  )),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _RegistrationCard extends ConsumerWidget {
+  final String tournamentId;
+  final Map<String, dynamic> data;
+  final String status;
+  const _RegistrationCard({required this.tournamentId, required this.data, required this.status});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final athlete = data['athlete'] is Map ? data['athlete'] as Map : null;
+    final user = athlete != null && athlete['user'] is Map ? athlete['user'] as Map : null;
+    final name = (data['team_name'] ?? user?['name'] ?? 'Participant').toString();
+    final approvalStatus = (data['approval_status'] ?? data['status'] ?? 'pending').toString();
+    final rejectionReason = data['rejection_reason']?.toString();
+    final avatarUrl = user?['avatar_url'] ?? athlete?['photo_url'];
+    final resolvedAvatar = MediaUtils.resolveNullable(avatarUrl?.toString());
+    final isPending = approvalStatus == 'pending';
+
+    Color chipColor = switch (approvalStatus) {
+      'approved' => Colors.green,
+      'rejected' => Colors.red,
+      _ => Colors.orange,
+    };
+    IconData chipIcon = switch (approvalStatus) {
+      'approved' => Icons.check_circle,
+      'rejected' => Icons.cancel,
+      _ => Icons.hourglass_empty,
+    };
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            CircleAvatar(radius: 18, backgroundColor: AppColors.surface, backgroundImage: resolvedAvatar != null ? NetworkImage(resolvedAvatar) : null, child: resolvedAvatar == null ? const Icon(LucideIcons.user, size: 16, color: AppColors.textSecondary) : null),
+            const SizedBox(width: 10),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
+              Text('${data['participation_type'] ?? ''} • ${approvalStatus}', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            ])),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(color: chipColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Icon(chipIcon, size: 14, color: chipColor),
+                const SizedBox(width: 4),
+                Text(approvalStatus, style: TextStyle(fontSize: 12, color: chipColor, fontWeight: FontWeight.w600)),
+              ]),
+            ),
+          ]),
+          if (rejectionReason != null && approvalStatus == 'rejected') ...[
+            const SizedBox(height: 8),
+            Text('Reason: $rejectionReason', style: const TextStyle(fontSize: 12, color: Colors.red)),
+          ],
+          if (isPending) ...[
+            const SizedBox(height: 12),
+            Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+              OutlinedButton(
+                onPressed: () => _showRejectDialog(context, ref, data),
+                style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Reject'),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: () => _approve(context, ref, data),
+                child: const Text('Approve'),
+              ),
+            ]),
+          ],
+        ]),
+      ),
+    );
+  }
+
+  Future<void> _approve(BuildContext context, WidgetRef ref, Map<String, dynamic> r) async {
+    final id = r['id'].toString();
+    final ok = await ref.read(providerTournamentActionsProvider).approveRegistration(id);
+    if (context.mounted) {
+      SnackBarUtils.showSuccess(context, ok ? 'Registration approved' : 'Failed to approve');
+      if (ok) {
+        ref.invalidate(tournamentRegistrationsByStatusProvider((tournamentId: tournamentId, status: 'pending')));
+        ref.invalidate(tournamentRegistrationsByStatusProvider((tournamentId: tournamentId, status: 'approved')));
+      }
+    }
+  }
+
+  Future<void> _showRejectDialog(BuildContext context, WidgetRef ref, Map<String, dynamic> r) async {
+    final controller = TextEditingController();
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reject Registration'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(labelText: 'Reason for rejection', hintText: 'Enter reason...'),
+          maxLines: 3,
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          ElevatedButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Reject')),
+        ],
+      ),
+    );
+    if (reason != null && reason.trim().isNotEmpty && context.mounted) {
+      final ok = await ref.read(providerTournamentActionsProvider).rejectRegistration(r['id'].toString(), reason.trim());
+      if (context.mounted) {
+        SnackBarUtils.showSuccess(context, ok ? 'Registration rejected' : 'Failed to reject');
+        if (ok) {
+          ref.invalidate(tournamentRegistrationsByStatusProvider((tournamentId: tournamentId, status: 'pending')));
+          ref.invalidate(tournamentRegistrationsByStatusProvider((tournamentId: tournamentId, status: 'rejected')));
+        }
+      }
+    }
   }
 }

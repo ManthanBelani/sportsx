@@ -12,7 +12,33 @@ class RegistrantDetailScreen extends ConsumerWidget {
 
   Future<void> _act(BuildContext context, WidgetRef ref, String action, String msg) async {
     try {
-      await ref.read(dioProvider).post('/registrations/trials/$registrationId/$action');
+      // Prefer new approval endpoints (PATCH), fallback to legacy POST
+      if (action == 'verify' || action == 'approve') {
+        await ref.read(dioProvider).patch('/registrations/trials/$registrationId/approve');
+      } else if (action == 'reject') {
+        // show rejection reason dialog for new flow
+        final controller = TextEditingController();
+        final reason = await showDialog<String>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Reject Registration'),
+            content: TextField(controller: controller, maxLines: 3, decoration: const InputDecoration(labelText: 'Reason', hintText: 'Enter reason...')),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+              ElevatedButton(onPressed: () => Navigator.pop(ctx, controller.text), child: const Text('Reject')),
+            ],
+          ),
+        );
+        if (reason == null || reason.trim().isEmpty) return;
+        try {
+          await ref.read(dioProvider).patch('/registrations/trials/$registrationId/reject', data: {'rejection_reason': reason.trim()});
+        } catch (_) {
+          // fallback to legacy POST without reason
+          await ref.read(dioProvider).post('/registrations/trials/$registrationId/reject');
+        }
+      } else {
+        await ref.read(dioProvider).post('/registrations/trials/$registrationId/$action');
+      }
       if (context.mounted) {
         SnackBarUtils.showSuccess(context, msg);
         context.pop();

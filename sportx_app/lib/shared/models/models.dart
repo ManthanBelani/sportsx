@@ -9,3 +9,5 @@ export 'scholarship.dart';
 export 'sponsorship.dart';
 export 'sports_venue.dart';
 export 'user.dart';
+export 'approval.dart';
+export 'coaching_enrollment.dart';

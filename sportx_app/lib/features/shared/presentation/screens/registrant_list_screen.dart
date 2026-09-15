@@ -5,6 +5,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/features/academy/presentation/providers/academy_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -65,7 +66,7 @@ class RegistrantListScreen extends ConsumerWidget {
             child: RefreshIndicator(
               onRefresh: () async => ref.invalidate(trialRegistrantsProvider(trialId)),
               child: async.when(
-                loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+                loading: () => const GenericListSkeleton(itemCount: 5),
                 error: (e, _) => Center(
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
                     Text('$e', style: const TextStyle(color: AppColors.textSecondary)),
@@ -86,13 +87,13 @@ class RegistrantListScreen extends ConsumerWidget {
                           final phone = r['phone'] ?? athlete?['phone'] ?? user?['phone'] ?? '+91 98765 43210';
                           final age = r['age'] ?? athlete?['age_group']?['name'] ?? '14';
                           final gender = r['gender'] ?? athlete?['gender'] ?? '—';
-                          final docsStatus = (r['document_status'] ?? r['status'] ?? 'pending').toString();
+                          final approvalStatus = (r['approval_status'] ?? r['status'] ?? 'pending').toString();
+                          final docsStatus = (r['document_status'] ?? 'pending').toString();
                           final isDocsComplete = docsStatus == 'submitted' || docsStatus == 'complete';
-                          final isVerified = (r['verification_status'] ?? r['status']) == 'verified' || (r['status'] ?? '') == 'verified';
                           final photoUrl = user?['avatar_url'] ?? athlete?['photo']?['url'];
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12),
-                            child: _buildRegistrantCard(context, name, phone.toString(), age.toString(), gender.toString(), isDocsComplete, isVerified, r['id']?.toString() ?? '', photoUrl?.toString()),
+                            child: _buildRegistrantCard(context, name, phone.toString(), age.toString(), gender.toString(), isDocsComplete, approvalStatus, r['id']?.toString() ?? '', photoUrl?.toString()),
                           );
                         },
                       ),
@@ -104,10 +105,13 @@ class RegistrantListScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildRegistrantCard(BuildContext context, String name, String phone, String age, String gender, bool docsComplete, bool verified, String id, String? photoUrl) {
+  Widget _buildRegistrantCard(BuildContext context, String name, String phone, String age, String gender, bool docsComplete, String approvalStatus, String id, String? photoUrl) {
     final docsColor = docsComplete ? const Color(0xFFd1fae5) : const Color(0xFFfef3c7);
     final docsTextColor = docsComplete ? const Color(0xFF065f46) : const Color(0xFF92400E);
-    final statusColor = verified ? AppColors.success : AppColors.warning;
+    final isApproved = approvalStatus == 'approved';
+    final isRejected = approvalStatus == 'rejected';
+    final statusColor = isApproved ? AppColors.success : isRejected ? Colors.red : AppColors.warning;
+    final statusLabel = isApproved ? 'Approved' : isRejected ? 'Rejected' : 'Pending';
     return InkWell(
       onTap: () => context.push('/registrant-detail', extra: {'id': id}),
       borderRadius: BorderRadius.circular(12),
@@ -144,9 +148,9 @@ class RegistrantListScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 6),
             Row(children: [
-              Icon(verified ? LucideIcons.checkCircle2 : LucideIcons.clock, size: 14, color: statusColor),
+              Icon(isApproved ? LucideIcons.checkCircle2 : isRejected ? LucideIcons.xCircle : LucideIcons.clock, size: 14, color: statusColor),
               const SizedBox(width: 4),
-              Text(verified ? 'Verified' : 'Pending', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: statusColor)),
+              Text(statusLabel, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: statusColor)),
             ]),
           ]),
         ]),

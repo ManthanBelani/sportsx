@@ -109,6 +109,9 @@ import 'package:sportx_app/features/talent_scout/presentation/screens/talent_sco
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_connection_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_connections_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_profile_screen.dart';
+import 'package:sportx_app/features/athlete/presentation/screens/my_registrations_screen.dart';
+import 'package:sportx_app/features/athlete/presentation/screens/my_coaching_enrollments_screen.dart';
+import 'package:sportx_app/features/coach/presentation/screens/coach_enrollment_screen.dart';
 
 /// Maps a user role to the first onboarding screen they must complete.
 /// Returns null for roles with no onboarding (e.g. admin).
@@ -405,6 +408,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         return OppReviewDetailScreen(opportunity: opportunity ?? Opportunity(id: '', title: '', sponsorName: '', status: 'pending', createdAt: ''));
       }),
       GoRoute(path: '/admin/notifications/targeting', builder: (context, state) => const NotificationTargetingScreen()),
+      GoRoute(path: '/my-registrations', builder: (context, state) => const MyRegistrationsScreen()),
+      GoRoute(path: '/my-coaching-enrollments', builder: (context, state) => const MyCoachingEnrollmentsScreen()),
+      GoRoute(path: '/coach-enrollments', builder: (context, state) => const CoachEnrollmentScreen()),
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
         routes: [

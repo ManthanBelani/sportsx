@@ -13,8 +13,15 @@ class TrialRegistration extends Model
 
     protected $fillable = [
         'trial_id', 'athlete_id', 'registration_ref', 'document_status',
-        'verification_status', 'reminder_enabled',
+        'verification_status', 'approval_status', 'reminder_enabled',
         'playing_role', 'medical_conditions', 'parental_consent',
+        'rejection_reason', 'reviewed_by', 'reviewed_at', 'status',
+    ];
+
+    protected $casts = [
+        'reviewed_at' => 'datetime',
+        'reminder_enabled' => 'boolean',
+        'parental_consent' => 'boolean',
     ];
 
     public function trial(): BelongsTo
@@ -25,6 +32,11 @@ class TrialRegistration extends Model
     public function athlete(): BelongsTo
     {
         return $this->belongsTo(AthleteProfile::class, 'athlete_id');
+    }
+
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 
     public function documents(): HasMany

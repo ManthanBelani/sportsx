@@ -10,7 +10,11 @@ return new class extends Migration
     {
         if (! Schema::hasColumn('coach_profiles', 'achievements')) {
             Schema::table('coach_profiles', function (Blueprint $table) {
-                $table->json('achievements')->nullable()->after('availability');
+                if (Schema::hasColumn('coach_profiles', 'availability')) {
+                    $table->json('achievements')->nullable()->after('availability');
+                } else {
+                    $table->json('achievements')->nullable();
+                }
             });
         }
     }

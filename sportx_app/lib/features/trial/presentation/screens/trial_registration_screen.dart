@@ -252,40 +252,25 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
 
             const SizedBox(height: 24),
 
-            // Payment Summary
+            // Approval info (replaces payment summary)
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: AppColors.border),
               ),
-              child: Column(
+              child: Row(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Registration Fee', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
-                      Text('₹${entryFee.toStringAsFixed(0)}', style: const TextStyle(fontSize: 14, color: AppColors.textPrimary)),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Platform Fee', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
-                      Text('₹${platformFee.toStringAsFixed(0)}', style: const TextStyle(fontSize: 14, color: AppColors.textPrimary)),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const Divider(color: AppColors.border),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Total Amount', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                      Text('₹${total.toStringAsFixed(0)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.primary)),
-                    ],
+                  const Icon(Icons.info_outline, size: 18, color: AppColors.textSecondary),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      entryFee > 0
+                          ? 'Entry Fee: ₹${entryFee.toStringAsFixed(0)} (Approval Required)'
+                          : 'Free Entry (Approval Required)',
+                      style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
+                    ),
                   ),
                 ],
               ),
@@ -304,7 +289,7 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
               ),
               child: _submitting
                   ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : Text('Pay ₹${total.toStringAsFixed(0)} & Register', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  : const Text('Request to Participate', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           ],
         ),
