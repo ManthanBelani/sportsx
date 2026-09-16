@@ -1795,9 +1795,11 @@ class TournamentRegistrationSeeder extends Seeder
 
 ## 8. Admin Panel Analytics & Activity Tracking
 
+> **Note:** This section describes the **Laravel Blade-based Admin Panel** (the server-rendered web admin at `/admin`). The Flutter app does not have an admin panel—all admin functionality is accessed via the web admin panel.
+
 ### 8.1 Overview
 
-The admin panel provides comprehensive visibility into all registration activities across the platform, enabling admins to monitor, analyze, and intervene when necessary.
+The admin panel (web-based, Laravel Blade views) provides comprehensive visibility into all registration activities across the platform, enabling admins to monitor, analyze, and intervene when necessary.
 
 ### 8.2 Activity Log Model
 
@@ -2253,53 +2255,39 @@ Route::middleware(['auth:sanctum', 'role:admin', 'admin.2fa'])->prefix('admin')-
 });
 ```
 
-### 8.6 Flutter Admin Panel - Analytics Dashboard
+### 8.6 Admin Panel Web Views (Blade Templates)
 
-```dart
-// sportx_app/lib/features/admin/presentation/screens/registration_analytics_screen.dart
+> **Note:** The Flutter app does not have an admin panel. Admin analytics are accessed via the web admin panel (Laravel Blade views) at `/admin`. The backend API endpoints are already implemented in `RegistrationAnalyticsController`.
 
-class RegistrationAnalyticsScreen extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Registration Analytics'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.download),
-            onPressed: () => ref.read(adminAnalyticsProvider.notifier).exportLog(),
-            tooltip: 'Export to Excel',
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () => ref.read(adminAnalyticsProvider.notifier).refresh(),
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Stats Cards
-              _buildStatsGrid(context, ref),
-              SizedBox(height: 24),
+**Example Blade View:**
 
-              // Chart
-              _buildChartSection(context, ref),
-              SizedBox(height: 24),
+```blade
+{{-- resources/views/admin/registrations/analytics.blade.php --}}
 
-              // Sport Breakdown
-              _buildSportBreakdown(context, ref),
-              SizedBox(height: 24),
+@extends('admin.layouts.main')
 
-              // Top Organizers
-              _buildTopOrganizers(context, ref),
-              SizedBox(height: 24),
+@section('content')
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Registration Analytics</h1>
+</div>
 
-              // Activity Log
-              _buildActivityLog(context, ref),
-            ],
-          ),
-        ),
+{{-- Stats Cards --}}
+<div class="row mb-4">
+    @foreach(['total_registrations','pending_count','approved_count','rejected_count'] as $stat)
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5>{{ $stats[$stat] }}</h5>
+                <p class="text-muted">{{ ucwords(str_replace('_',' ',$stat)) }}</p>
+            </div>
+        </div>
+    </div>
+    @endforeach
+</div>
+
+{{-- Charts and Activity Log via AJAX/Chart.js --}}
+@endsection
+```
       ),
     );
   }
@@ -3012,16 +3000,15 @@ private function getDisputedCount(): int
 - [ ] Add coach enrollment providers
 - [ ] Add pending enrollment badge to coach dashboard
 
-### Flutter Admin Panel
-- [ ] Create RegistrationAnalyticsScreen
-- [ ] Create AdminAnalyticsProvider
-- [ ] Implement chart widgets for trends
-- [ ] Implement sport breakdown chart
-- [ ] Implement top organizers list
-- [ ] Implement activity log with filters
-- [ ] Add export functionality
-- [ ] Add admin override actions
-- [ ] Add coaching enrollment stats to admin dashboard
+### Laravel Admin Panel (Blade Views)
+- [ ] Create `resources/views/admin/registrations/analytics.blade.php`
+- [ ] Add stats cards for registrations and coaching enrollments
+- [ ] Add Chart.js trend charts for registrations over time
+- [ ] Add sport breakdown chart
+- [ ] Add top organizers leaderboard
+- [ ] Add activity log table with AJAX pagination and filters
+- [ ] Add export functionality button
+- [ ] Add admin override actions (approve/reject buttons in activity log)
 
 ### Testing
 - [ ] Test athlete registration flow (submit → pending → notification)
@@ -3029,8 +3016,8 @@ private function getDisputedCount(): int
 - [ ] Test organizer rejection flow (view pending → reject with reason → athlete notified)
 - [ ] Test status display in My Registrations
 - [ ] Test role-based access (athlete cannot approve, organizer cannot approve other's)
-- [ ] Test admin analytics dashboard loads
-- [ ] Test admin can override approve/reject
+- [ ] Test admin analytics dashboard loads (web admin)
+- [ ] Test admin can override approve/reject via web admin
 - [ ] Test activity log records all actions
 - [ ] Test athlete enrollment request flow (submit → coach reviews → notification)
 - [ ] Test coach approval flow (view pending → approve → set start date → athlete notified)

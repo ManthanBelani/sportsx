@@ -20,80 +20,138 @@ class RegistrationManagementScreen extends ConsumerWidget {
     final capacityAsync = ref.watch(tournamentCapacityProvider(tournamentId));
     final tournamentAsync = ref.watch(tournamentDetailProvider(tournamentId));
 
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: AppColors.background,
-          elevation: 0,
-          leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
-          title: const Text('Registrations', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-          bottom: const TabBar(
+        elevation: 0,
+        leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
+        title: const Text('Registrations', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        bottom: const PreferredSize(preferredSize: Size.fromHeight(1), child: Divider(height: 1, color: AppColors.border)),
+      ),
+      body: tournamentAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+        error: (e, _) => Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Text('$e', style: const TextStyle(color: AppColors.textSecondary)), const SizedBox(height: 12), ElevatedButton(onPressed: () => ref.invalidate(tournamentDetailProvider(tournamentId)), child: const Text('Retry'))])),
+        data: (tournament) {
+          final capacityList = capacityAsync.valueOrNull ?? [];
+          final feeRaw = tournament?.registrationFee ?? 0;
+          final feePerTeam = (feeRaw > 0 ? feeRaw : 0).toInt();
+          int spotsLeft = 0;
+          int totalCapacity = 0;
+          int totalRegistered = 0;
+          if (capacityList.isNotEmpty) {
+            for (final c in capacityList) {
+              final max = (c['max_teams'] ?? c['capacity'] ?? 0) as int;
+              final reg = (c['registered'] ?? 0) as int;
+              totalCapacity += max;
+              totalRegistered += reg;
+            }
+            spotsLeft = (totalCapacity - totalRegistered).clamp(0, 9999);
+          }
+          final venue = tournament?.venue;
+          final dateStr = tournament?.startDate != null
+              ? (tournament!.endDate != null
+                  ? '${DateFormatUtils.formatShortDate(tournament.startDate!.toIso8601String())} - ${DateFormatUtils.formatShortDate(tournament.endDate!.toIso8601String())}${venue != null ? ' • $venue' : ''}'
+                  : '${DateFormatUtils.formatShortDate(tournament.startDate!.toIso8601String())}${venue != null ? ' • $venue' : ''}')
+              : (venue ?? 'Tournament details pending');
+
+          return _RegistrationsTabView(
+            tournamentId: tournamentId,
+            title: title,
+            dateStr: dateStr,
+            spotsLeft: spotsLeft,
+            totalRegistered: totalRegistered,
+            feePerTeam: feePerTeam,
+            capacityList: capacityList,
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _RegistrationsTabView extends ConsumerStatefulWidget {
+  final String tournamentId;
+  final String title;
+  final String dateStr;
+  final int spotsLeft;
+  final int totalRegistered;
+  final int feePerTeam;
+  final List<Map<String, dynamic>> capacityList;
+
+  const _RegistrationsTabView({
+    required this.tournamentId,
+    required this.title,
+    required this.dateStr,
+    required this.spotsLeft,
+    required this.totalRegistered,
+    required this.feePerTeam,
+    required this.capacityList,
+  });
+
+  @override
+  ConsumerState<_RegistrationsTabView> createState() => _RegistrationsTabViewState();
+}
+
+class _RegistrationsTabViewState extends ConsumerState<_RegistrationsTabView> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          color: AppColors.surface,
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(widget.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+            const SizedBox(height: 4),
+            Text(widget.dateStr, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+            const SizedBox(height: 12),
+            Row(children: [
+              Expanded(child: _summaryItem('${widget.totalRegistered}', 'Registered')),
+              const SizedBox(width: 10),
+              Expanded(child: _summaryItem('${widget.spotsLeft}', 'Spots Left')),
+            ]),
+          ]),
+        ),
+        Container(
+          color: AppColors.background,
+          child: TabBar(
+            controller: _tabController,
             labelColor: AppColors.primary,
             unselectedLabelColor: AppColors.textSecondary,
             indicatorColor: AppColors.primary,
-            tabs: [
+            tabs: const [
               Tab(text: 'Pending'),
               Tab(text: 'Approved'),
               Tab(text: 'Rejected'),
             ],
           ),
         ),
-        body: Column(
-          children: [
-            // Summary bar
-            Builder(builder: (context) {
-              final tournament = tournamentAsync.valueOrNull;
-              final venue = tournament?.venue;
-              final dateStr = tournament?.startDate != null
-                  ? (tournament!.endDate != null
-                      ? '${DateFormatUtils.formatShortDate(tournament.startDate!.toIso8601String())} - ${DateFormatUtils.formatShortDate(tournament.endDate!.toIso8601String())}${venue != null ? ' • $venue' : ''}'
-                      : '${DateFormatUtils.formatShortDate(tournament.startDate!.toIso8601String())}${venue != null ? ' • $venue' : ''}')
-                  : (venue ?? 'Tournament details pending');
-              // capacity summary
-              final capacityList = capacityAsync.valueOrNull ?? [];
-              int spotsLeft = 0, totalCapacity = 0, totalRegistered = 0;
-              if (capacityList.isNotEmpty) {
-                for (final c in capacityList) {
-                  totalCapacity += (c['max_teams'] ?? c['capacity'] ?? 0) as int;
-                  totalRegistered += (c['registered'] ?? 0) as int;
-                }
-                spotsLeft = (totalCapacity - totalRegistered).clamp(0, 9999);
-              }
-              // total teams approximated from registrations provider not yet loaded per-tab; show capacity stats only
-              return _tournamentBar(totalRegistered, spotsLeft, dateStr);
-            }),
-            Expanded(
-              child: TabBarView(
-                children: [
-                  _RegistrationListView(tournamentId: tournamentId, status: 'pending'),
-                  _RegistrationListView(tournamentId: tournamentId, status: 'approved'),
-                  _RegistrationListView(tournamentId: tournamentId, status: 'rejected'),
-                ],
-              ),
-            ),
-          ],
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _RegistrationListView(tournamentId: widget.tournamentId, status: 'pending', feePerTeam: widget.feePerTeam),
+              _RegistrationListView(tournamentId: widget.tournamentId, status: 'approved', feePerTeam: widget.feePerTeam),
+              _RegistrationListView(tournamentId: widget.tournamentId, status: 'rejected', feePerTeam: widget.feePerTeam),
+            ],
+          ),
         ),
-      ),
-    );
-  }
-
-  Widget _tournamentBar(int totalRegistered, int spotsLeft, String dateStr) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      color: AppColors.surface,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-        const SizedBox(height: 4),
-        Text(dateStr, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-        const SizedBox(height: 12),
-        Row(children: [
-          Expanded(child: _summaryItem('$totalRegistered', 'Registered')),
-          const SizedBox(width: 10),
-          Expanded(child: _summaryItem('$spotsLeft', 'Spots Left')),
-        ]),
-      ]),
+      ],
     );
   }
 
@@ -113,7 +171,9 @@ class RegistrationManagementScreen extends ConsumerWidget {
 class _RegistrationListView extends ConsumerWidget {
   final String tournamentId;
   final String status;
-  const _RegistrationListView({required this.tournamentId, required this.status});
+  final int feePerTeam;
+
+  const _RegistrationListView({required this.tournamentId, required this.status, required this.feePerTeam});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -132,8 +192,7 @@ class _RegistrationListView extends ConsumerWidget {
         if (regs.isEmpty) {
           return Center(child: Text('No $status registrations', style: const TextStyle(color: AppColors.textSecondary)));
         }
-        // group by category
-        final Map<String, List<Map<String, dynamic>>> grouped = {};
+        final grouped = <String, List<Map<String, dynamic>>>{};
         for (final r in regs) {
           final catName = (r['category'] is Map ? r['category']['name'] : r['category_name'])?.toString() ?? 'Uncategorized';
           grouped.putIfAbsent(catName, () => []).add(r);
@@ -141,6 +200,7 @@ class _RegistrationListView extends ConsumerWidget {
         return RefreshIndicator(
           onRefresh: () async => ref.invalidate(tournamentRegistrationsByStatusProvider((tournamentId: tournamentId, status: status))),
           child: ListView(
+            padding: const EdgeInsets.only(bottom: 20),
             children: [
               ...grouped.entries.map((entry) => Container(
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
@@ -151,7 +211,7 @@ class _RegistrationListView extends ConsumerWidget {
                         Text('${entry.value.length} teams', style: const TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w500)),
                       ]),
                       const SizedBox(height: 10),
-                      ...entry.value.map((r) => _RegistrationCard(tournamentId: tournamentId, data: r, status: status)),
+                      ...entry.value.map((r) => _RegistrationCard(tournamentId: tournamentId, data: r, status: status, feePerTeam: feePerTeam)),
                       const SizedBox(height: 16),
                     ]),
                   )),
@@ -167,7 +227,9 @@ class _RegistrationCard extends ConsumerWidget {
   final String tournamentId;
   final Map<String, dynamic> data;
   final String status;
-  const _RegistrationCard({required this.tournamentId, required this.data, required this.status});
+  final int feePerTeam;
+
+  const _RegistrationCard({required this.tournamentId, required this.data, required this.status, required this.feePerTeam});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -179,6 +241,8 @@ class _RegistrationCard extends ConsumerWidget {
     final avatarUrl = user?['avatar_url'] ?? athlete?['photo_url'];
     final resolvedAvatar = MediaUtils.resolveNullable(avatarUrl?.toString());
     final isPending = approvalStatus == 'pending';
+    final isPaid = (data['payment_status'] ?? data['status'] ?? '') == 'paid';
+    final feeLabel = feePerTeam > 0 ? '₹$feePerTeam' : 'TBD';
 
     Color chipColor = switch (approvalStatus) {
       'approved' => Colors.green,
@@ -203,17 +267,15 @@ class _RegistrationCard extends ConsumerWidget {
               Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
               Text('${data['participation_type'] ?? ''} • $approvalStatus', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
             ])),
+            _ApprovalChip(status: approvalStatus),
+            const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: chipColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
-              child: Row(mainAxisSize: MainAxisSize.min, children: [
-                Icon(chipIcon, size: 14, color: chipColor),
-                const SizedBox(width: 4),
-                Text(approvalStatus, style: TextStyle(fontSize: 12, color: chipColor, fontWeight: FontWeight.w600)),
-              ]),
+              decoration: BoxDecoration(color: isPaid ? const Color(0xFFd1fae5) : const Color(0xFFfef3c7), borderRadius: BorderRadius.circular(4)),
+              child: Text(isPaid ? 'Paid $feeLabel' : 'Pending', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isPaid ? const Color(0xFF065f46) : const Color(0xFF92400e))),
             ),
           ]),
-          if (rejectionReason != null && approvalStatus == 'rejected') ...[
+          if (rejectionReason != null && rejectionReason.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text('Reason: $rejectionReason', style: const TextStyle(fontSize: 12, color: Colors.red)),
           ],
@@ -276,5 +338,27 @@ class _RegistrationCard extends ConsumerWidget {
         }
       }
     }
+  }
+}
+
+class _ApprovalChip extends StatelessWidget {
+  final String status;
+  const _ApprovalChip({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = switch (status) {
+      'approved' => AppColors.success,
+      'rejected' => AppColors.error,
+      _ => AppColors.warning,
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(status, style: TextStyle(color: color, fontSize: 11)),
+    );
   }
 }

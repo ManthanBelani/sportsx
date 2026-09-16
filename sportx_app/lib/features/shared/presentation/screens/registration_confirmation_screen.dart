@@ -23,7 +23,9 @@ class RegistrationConfirmationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = isTrial ? 'You have successfully registered for the trial.' : 'You have successfully registered for the tournament.';
+    final title = isTrial
+        ? 'Your trial request has been submitted for approval.'
+        : 'Your tournament request has been submitted for approval.';
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -47,9 +49,12 @@ class RegistrationConfirmationScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              const Text('Registration Confirmed!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+              const Text('Request Submitted!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
               const SizedBox(height: 8),
               Text(title, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+              const SizedBox(height: 8),
+              const Text('You will be notified once the organizer reviews your request.',
+                  style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
               const SizedBox(height: 32),
 
               Container(

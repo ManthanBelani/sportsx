@@ -35,7 +35,7 @@ class CoachingEnrollmentActions {
       await _ref.read(dioProvider).patch('/coaching-enrollments/$enrollmentId/approve', data: {
         'start_date': startDate.toIso8601String().split('T').first,
         if (endDate != null) 'end_date': endDate.toIso8601String().split('T').first,
-        'coach_response': ?coachResponse,
+        if (coachResponse != null) 'coach_response': coachResponse,
       });
       _ref.invalidate(coachEnrollmentsProvider);
       return true;

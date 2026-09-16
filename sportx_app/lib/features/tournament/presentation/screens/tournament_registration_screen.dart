@@ -276,28 +276,27 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
               onChanged: (v) => setState(() => _categoryId = v),
             ),
             const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.info_outline, size: 18, color: AppColors.textSecondary),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      fee > 0
-                          ? 'Entry Fee: ₹${fee.toStringAsFixed(0)} (Approval Required)'
-                          : 'Free Entry (Approval Required)',
-                      style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
+            if (fee > 0)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline, size: 18, color: AppColors.textSecondary),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Entry fee ₹${fee.toStringAsFixed(0)} (approval required — pay only if instructed by the organizer)',
+                        style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
           ],
           ctaText: _submitting ? 'Submitting...' : 'Request to Participate',
           onSubmit: _submitting ? () {} : () => _submit(tournament),

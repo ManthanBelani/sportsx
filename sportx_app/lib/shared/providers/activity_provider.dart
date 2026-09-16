@@ -44,7 +44,10 @@ class ActivityEntry {
     return ActivityEntry(
       id: json['id']?.toString() ?? '',
       title: trial['title'] as String? ?? trial['name'] as String? ?? 'Trial',
-      status: json['approval_status'] as String? ?? json['verification_status'] as String? ?? json['document_status'] as String? ?? json['status'] as String? ?? 'pending',
+      status: json['approval_status'] as String? ??
+          json['verification_status'] as String? ??
+          json['document_status'] as String? ??
+          'registered',
       date: trial['trial_date'] as String? ?? trial['event_datetime'] as String? ?? json['created_at'] as String?,
       category: 'trial',
       entityType: 'trial',
@@ -57,7 +60,7 @@ class ActivityEntry {
     return ActivityEntry(
       id: json['id']?.toString() ?? '',
       title: tournament['title'] as String? ?? tournament['name'] as String? ?? 'Tournament',
-      status: json['approval_status'] as String? ?? json['status'] as String? ?? 'pending',
+      status: json['approval_status'] as String? ?? json['status'] as String? ?? 'registered',
       date: tournament['start_date'] as String? ?? tournament['event_datetime'] as String? ?? json['created_at'] as String?,
       category: 'tournament',
       entityType: 'tournament',

@@ -5,10 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
+import 'package:sportx_app/features/coach/presentation/widgets/coach_enrollment_section.dart';
 import 'package:sportx_app/features/saved/presentation/providers/saved_provider.dart';
-import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
-import 'package:sportx_app/features/coach/presentation/providers/coaching_enrollment_provider.dart';
-import 'package:sportx_app/shared/models/approval.dart';
+import 'package:sportx_app/shared/models/coach.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
@@ -133,9 +132,10 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
                           const SizedBox(height: 24),
                           _buildShowcaseAthletesSection(),
                           const SizedBox(height: 24),
-                           _buildContactSection(),
+                          if (_coachData != null)
+                            CoachEnrollmentSection(coach: Coach.fromJson(_coachData!)),
                           const SizedBox(height: 24),
-                          _buildCoachingEnrollmentSection(context),
+                          _buildContactSection(),
                           const SizedBox(height: 24),
                           _buildShareProfileButton(),
                           const SizedBox(height: 100),
@@ -559,78 +559,6 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
     );
   }
 
-  Widget _buildCoachingEnrollmentSection(BuildContext context) {
-    final personalCoaching = _coachData!['personal_coaching'] == true || _coachData!['personal_coaching'] == 1;
-    final role = ref.watch(authProvider).user?.role;
-    final isAthlete = role == 'athlete';
-    if (!personalCoaching || !isAthlete) return const SizedBox.shrink();
-    final feePerSession = _coachData!['fee_per_session'];
-    final feeMonthly = _coachData!['fee_monthly'];
-    final feeQuarterly = _coachData!['fee_quarterly'];
-    String fmt(dynamic v) => v != null ? '₹${double.tryParse(v.toString())?.toStringAsFixed(0) ?? v}' : '—';
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Card(
-        margin: EdgeInsets.zero,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Coaching Plans', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 12),
-            if (feePerSession != null) _buildPriceRow('Per Session', fmt(feePerSession)),
-            if (feeMonthly != null) _buildPriceRow('Monthly', fmt(feeMonthly)),
-            if (feeQuarterly != null) _buildPriceRow('Quarterly', fmt(feeQuarterly)),
-            const SizedBox(height: 8),
-            const Text('Approval required before enrollment', style: TextStyle(fontSize: 12, color: Colors.grey)),
-          ]),
-        ),
-      ),
-      const SizedBox(height: 12),
-      SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: () => _showEnrollmentDialog(context),
-          style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
-          child: const Text('Enroll with Coach'),
-        ),
-      ),
-    ]);
-  }
-
-  Widget _buildPriceRow(String label, String price) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(label), Text(price, style: const TextStyle(fontWeight: FontWeight.bold))]),
-    );
-  }
-
-  Future<void> _showEnrollmentDialog(BuildContext context) async {
-    final selectedPlan = await showModalBottomSheet<PlanType>(
-      context: context,
-      builder: (ctx) => _PlanSelectionSheet(coachData: _coachData!),
-    );
-    if (selectedPlan != null && context.mounted) {
-      final notes = await showDialog<String>(
-        context: context,
-        builder: (ctx) {
-          final ctrl = TextEditingController();
-          return AlertDialog(
-            title: const Text('Enrollment Request'),
-            content: Column(mainAxisSize: MainAxisSize.min, children: [
-              const Text('Add a note to your coach (optional):'),
-              const SizedBox(height: 12),
-              TextField(controller: ctrl, maxLines: 3, decoration: const InputDecoration(hintText: 'Introduce yourself and your goals...', border: OutlineInputBorder())),
-            ]),
-            actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')), ElevatedButton(onPressed: () => Navigator.pop(ctx, ctrl.text), child: const Text('Submit Request'))],
-          );
-        },
-      );
-      if (notes != null && context.mounted) {
-        final ok = await ref.read(coachingEnrollmentActionsProvider).enroll(coachId: int.parse(widget.coachId), planType: selectedPlan.name, notes: notes);
-        if (context.mounted) SnackBarUtils.showSuccess(context, ok ? 'Enrollment request submitted!' : 'Failed to submit enrollment');
-      }
-    }
-  }
-
   Widget _buildShareProfileButton() {
     return SizedBox(
       width: double.infinity,
@@ -686,29 +614,6 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
           ],
         ),
       ),
-    );
-  }
-}
-
-class _PlanSelectionSheet extends StatelessWidget {
-  final Map<String, dynamic> coachData;
-  const _PlanSelectionSheet({required this.coachData});
-  @override
-  Widget build(BuildContext context) {
-    String fmt(dynamic v) => v != null ? '₹${double.tryParse(v.toString())?.toStringAsFixed(0) ?? v}' : '—';
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('Select Plan', style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 16),
-        if (coachData['fee_per_session'] != null)
-          ListTile(title: const Text('Per Session'), subtitle: Text(fmt(coachData['fee_per_session'])), onTap: () => Navigator.pop(context, PlanType.session)),
-        if (coachData['fee_monthly'] != null)
-          ListTile(title: const Text('Monthly'), subtitle: Text(fmt(coachData['fee_monthly'])), trailing: const Chip(label: Text('Popular')), onTap: () => Navigator.pop(context, PlanType.monthly)),
-        if (coachData['fee_quarterly'] != null)
-          ListTile(title: const Text('Quarterly'), subtitle: Text(fmt(coachData['fee_quarterly'])), onTap: () => Navigator.pop(context, PlanType.quarterly)),
-        const SizedBox(height: 16),
-      ]),
     );
   }
 }

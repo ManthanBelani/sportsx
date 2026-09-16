@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/features/coach/presentation/widgets/coach_enrollment_section.dart';
 import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/shared/presentation/widgets/async_state_view.dart';
 import 'package:sportx_app/shared/presentation/widgets/detail_page_template.dart';
@@ -101,6 +102,7 @@ class _CoachDetailScreenState extends ConsumerState<CoachDetailScreen> {
             if (c.contactNumber != null) 'Contact': c.contactNumber!,
           },
           addressStr: c.city?.name ?? '',
+          extraSections: [CoachEnrollmentSection(coach: c)],
           ctaText: 'Enquire / Book',
           onCtaPressed: () => context.push('/enquire/coach_profile/${c.id}/${Uri.encodeComponent(c.fullName)}'),
           onPhonePressed: c.contactNumber == null ? null : () => launchUrl(Uri.parse('tel:${c.contactNumber}')),

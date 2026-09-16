@@ -39,6 +39,7 @@ use App\Http\Controllers\Admin\AdminContentController;
 use App\Http\Controllers\Admin\AdminModerationController;
 use App\Http\Controllers\Admin\AdminExpiryController;
 use App\Http\Controllers\Admin\AdminCategoryController;
+use App\Http\Controllers\Admin\RegistrationAnalyticsController;
 use App\Http\Controllers\AdminUserController;
 use Illuminate\Support\Facades\Route;
 
@@ -177,10 +178,10 @@ Route::prefix('v1')->group(function () {
     Route::get('/trials/{trial}/pending-requests', [RegistrationController::class, 'pendingTrialRequests'])->middleware('auth:sanctum');
     Route::get('/registrations/trials/{registration}', [RegistrationController::class, 'trialShow'])->middleware('auth:sanctum');
     Route::post('/registrations/trials/{registration}/verify', [RegistrationController::class, 'verifyTrial'])->middleware('auth:sanctum');
-    Route::post('/registrations/trials/{registration}/reject', [RegistrationController::class, 'rejectTrial'])->middleware('auth:sanctum');
     Route::patch('/registrations/trials/{registration}/approve', [RegistrationController::class, 'approveTrial'])->middleware('auth:sanctum');
-    Route::patch('/registrations/trials/{registration}/reject', [RegistrationController::class, 'rejectTrialNew'])->middleware('auth:sanctum');
+    Route::patch('/registrations/trials/{registration}/reject', [RegistrationController::class, 'rejectTrial'])->middleware('auth:sanctum');
     Route::post('/registrations/trials/{registration}/reminder', [RegistrationController::class, 'toggleTrialReminder'])->middleware('auth:sanctum');
+    Route::get('/me/registrations/trials', [RegistrationController::class, 'myTrialRegistrations'])->middleware('auth:sanctum');
 
     Route::post('/tournaments/{tournament}/register', [RegistrationController::class, 'storeTournament'])->middleware(['auth:sanctum', 'role:athlete']);
     Route::get('/tournaments/{tournament}/registrations', [RegistrationController::class, 'tournamentIndex'])->middleware('auth:sanctum');
@@ -190,18 +191,15 @@ Route::prefix('v1')->group(function () {
     Route::get('/tournaments/{tournament}/capacity', [RegistrationController::class, 'tournamentCapacity'])->middleware('auth:sanctum');
     Route::put('/tournaments/{tournament}/capacity', [RegistrationController::class, 'updateTournamentCapacity'])->middleware('auth:sanctum');
     Route::patch('/registrations/tournaments/{registration}/payment', [RegistrationController::class, 'updateTournamentPayment'])->middleware('auth:sanctum');
-    Route::get('/me/registrations', [RegistrationController::class, 'myRegistrations'])->middleware('auth:sanctum');
     Route::get('/me/registrations/tournaments', [RegistrationController::class, 'myTournamentRegistrations'])->middleware('auth:sanctum');
-    Route::get('/me/registrations/trials', [RegistrationController::class, 'myTrialRegistrations'])->middleware('auth:sanctum');
+    Route::get('/me/registrations', [RegistrationController::class, 'myRegistrations'])->middleware('auth:sanctum');
     Route::get('/registrations/trials/{registration}/ics', [RegistrationController::class, 'downloadTrialIcs'])->middleware('auth:sanctum');
     Route::get('/registrations/tournaments/{registration}/ics', [RegistrationController::class, 'downloadTournamentIcs'])->middleware('auth:sanctum');
 
     // ── Coaching Enrollments (Approval-Based) ──
     Route::post('/coaches/{coach}/enroll', [CoachingEnrollmentController::class, 'store'])->middleware(['auth:sanctum', 'role:athlete']);
-    Route::post('/coaching-enrollments', [CoachingEnrollmentController::class, 'store'])->middleware(['auth:sanctum', 'role:athlete']);
     Route::get('/me/coaching-enrollments', [CoachingEnrollmentController::class, 'myEnrollments'])->middleware('auth:sanctum');
     Route::get('/coach/enrollments', [CoachingEnrollmentController::class, 'coachEnrollments'])->middleware(['auth:sanctum', 'role:coach']);
-    Route::get('/coaching-enrollments/{enrollment}', [CoachingEnrollmentController::class, 'show'])->middleware('auth:sanctum');
     Route::patch('/coaching-enrollments/{enrollment}/approve', [CoachingEnrollmentController::class, 'approve'])->middleware(['auth:sanctum', 'role:coach']);
     Route::patch('/coaching-enrollments/{enrollment}/reject', [CoachingEnrollmentController::class, 'reject'])->middleware(['auth:sanctum', 'role:coach']);
 
@@ -351,6 +349,16 @@ Route::prefix('v1')->group(function () {
 
         // Admin Notification broadcast
         Route::post('/notifications/broadcast', [AdminUserController::class, 'broadcast']);
+
+        // Admin approval analytics + overrides
+        Route::get('/registrations/analytics/dashboard', [RegistrationAnalyticsController::class, 'dashboard']);
+        Route::get('/registrations/activity-log', [RegistrationAnalyticsController::class, 'activityLog']);
+        Route::patch('/registrations/tournaments/{registration}/admin-approve', [RegistrationController::class, 'adminApproveTournament']);
+        Route::patch('/registrations/tournaments/{registration}/admin-reject', [RegistrationController::class, 'adminRejectTournament']);
+        Route::patch('/registrations/trials/{registration}/admin-approve', [RegistrationController::class, 'adminApproveTrial']);
+        Route::patch('/registrations/trials/{registration}/admin-reject', [RegistrationController::class, 'adminRejectTrial']);
+        Route::patch('/coaching-enrollments/{enrollment}/admin-approve', [CoachingEnrollmentController::class, 'adminApprove']);
+        Route::patch('/coaching-enrollments/{enrollment}/admin-reject', [CoachingEnrollmentController::class, 'adminReject']);
     });
 
     // Admin Auth (no 2FA required - these handle the initial login and 2FA verification)

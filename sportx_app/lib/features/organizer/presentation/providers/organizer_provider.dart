@@ -117,6 +117,7 @@ class ProviderTournamentActions {
   Future<bool> approveRegistration(String registrationId) async {
     try {
       await _dio.patch('/registrations/tournaments/$registrationId/approve');
+      _ref.invalidate(tournamentRegistrationsProvider);
       return true;
     } on DioException {
       return false;
@@ -126,6 +127,7 @@ class ProviderTournamentActions {
   Future<bool> rejectRegistration(String registrationId, String reason) async {
     try {
       await _dio.patch('/registrations/tournaments/$registrationId/reject', data: {'rejection_reason': reason});
+      _ref.invalidate(tournamentRegistrationsProvider);
       return true;
     } on DioException {
       return false;

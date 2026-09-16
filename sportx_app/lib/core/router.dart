@@ -27,6 +27,9 @@ import 'package:sportx_app/shared/presentation/screens/enquire_screen.dart';
 import 'package:sportx_app/features/trial/presentation/screens/trial_registration_screen.dart';
 import 'package:sportx_app/features/tournament/presentation/screens/tournament_registration_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/registration_confirmation_screen.dart';
+import 'package:sportx_app/features/shared/presentation/screens/my_registrations_screen.dart';
+import 'package:sportx_app/features/coach/presentation/screens/coach_enrollment_screen.dart';
+import 'package:sportx_app/features/athlete/presentation/screens/my_coaching_enrollments_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/coach_dashboard_screen.dart';
 import 'package:sportx_app/features/academy/presentation/screens/academy_dashboard_screen.dart';
 import 'package:sportx_app/features/organizer/presentation/screens/organizer_dashboard_screen.dart';
@@ -109,8 +112,6 @@ import 'package:sportx_app/features/talent_scout/presentation/screens/talent_sco
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_connection_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_connections_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_profile_screen.dart';
-import 'package:sportx_app/features/athlete/presentation/screens/my_registrations_screen.dart';
-import 'package:sportx_app/features/athlete/presentation/screens/my_coaching_enrollments_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/coach_enrollment_screen.dart';
 
 /// Maps a user role to the first onboarding screen they must complete.
@@ -347,6 +348,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/my-trials', builder: (context, state) => const MyTrialsManagementScreen()),
       GoRoute(path: '/my-tournaments', builder: (context, state) => const MyTournamentsManagementScreen()),
       GoRoute(path: '/my-sponsorships', builder: (context, state) => const MySponsorshipsManagementScreen()),
+      GoRoute(path: '/my-registrations', builder: (context, state) => const MyRegistrationsScreen()),
+      GoRoute(path: '/coach-enrollments', builder: (context, state) => const CoachEnrollmentScreen()),
+      GoRoute(path: '/my-coaching-enrollments', builder: (context, state) => const MyCoachingEnrollmentsScreen()),
       GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
       GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
       GoRoute(path: '/help-support', builder: (context, state) => const HelpSupportScreen()),

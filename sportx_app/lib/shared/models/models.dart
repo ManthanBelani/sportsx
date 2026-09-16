@@ -10,4 +10,5 @@ export 'sponsorship.dart';
 export 'sports_venue.dart';
 export 'user.dart';
 export 'approval.dart';
+export 'registration.dart';
 export 'coaching_enrollment.dart';
