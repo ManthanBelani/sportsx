@@ -238,7 +238,7 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
                                 borderRadius: BorderRadius.circular(8),
                                 child: Stack(fit: StackFit.expand, children: [
                                   if (url.toString().isNotEmpty)
-                                    Image.network(url.toString(), fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(color: AppColors.surface, child: const Icon(LucideIcons.image, color: AppColors.textSecondary)))
+                                    Image.network(url.toString(), fit: BoxFit.cover, errorBuilder: (_, _, _) => Container(color: AppColors.surface, child: const Icon(LucideIcons.image, color: AppColors.textSecondary)))
                                   else
                                     Container(color: AppColors.surface, child: const Icon(LucideIcons.image, color: AppColors.textSecondary)),
                                   if (isVideo) const Center(child: Icon(LucideIcons.play, color: Colors.white, size: 24)),
@@ -263,12 +263,17 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
                                       if (!mounted) return;
                                       final error = ref.read(scoutShortlistProvider).error;
                                       if (success) {
+                                        if (!mounted) return;
                                         setState(() => _isShortlisted = true);
+                                        if (!context.mounted) return;
                                         SnackBarUtils.showSuccess(context, 'Added to shortlist');
                                       } else if (error == 'Already shortlisted') {
+                                        if (!mounted) return;
                                         setState(() => _isShortlisted = true);
+                                        if (!context.mounted) return;
                                         SnackBarUtils.showError(context, 'Already shortlisted');
                                       } else {
+                                        if (!context.mounted) return;
                                         SnackBarUtils.showError(context, error ?? 'Failed to add to shortlist');
                                       }
                                     },

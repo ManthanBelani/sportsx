@@ -221,7 +221,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
                   radius: 28,
                   backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                   backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
-                  onBackgroundImageError: (_, __) {},
+                  onBackgroundImageError: (_, _) {},
                   child: photoUrl == null ? const Icon(LucideIcons.user, color: AppColors.primary, size: 28) : null,
                 ),
                 const SizedBox(width: 14),

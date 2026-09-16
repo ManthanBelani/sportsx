@@ -43,9 +43,13 @@ class _CapacityManagementScreenState extends ConsumerState<CapacityManagementScr
       final resp = await ref.read(dioProvider).get('/tournaments/${widget.tournamentId}/capacity');
       final raw = resp.data;
       List data;
-      if (raw is Map && raw['data'] is List) data = raw['data'] as List;
-      else if (raw is List) data = raw;
-      else data = [];
+      if (raw is Map && raw['data'] is List) {
+        data = raw['data'] as List;
+      } else if (raw is List) {
+        data = raw;
+      } else {
+        data = [];
+      }
 
       // also fetch tournament detail for header
       try {

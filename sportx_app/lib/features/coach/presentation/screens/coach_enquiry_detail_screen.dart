@@ -167,7 +167,7 @@ class _CoachEnquiryDetailScreenState extends ConsumerState<CoachEnquiryDetailScr
                       width: 56,
                       height: 56,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, _, ___) => const Icon(LucideIcons.user, color: AppColors.primary),
+                      errorBuilder: (_, _, _) => const Icon(LucideIcons.user, color: AppColors.primary),
                     ),
                   )
                 : const Icon(LucideIcons.user, color: AppColors.primary),

@@ -140,7 +140,7 @@ class CoachProfileViewScreen extends ConsumerWidget {
             radius: 42,
             backgroundColor: AppColors.primary.withValues(alpha: 0.1),
             backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
-            onBackgroundImageError: (_, __) {},
+            onBackgroundImageError: (_, _) {},
             child: photoUrl == null ? const Icon(LucideIcons.user, color: AppColors.primary, size: 36) : null,
           ),
           const SizedBox(width: 16),

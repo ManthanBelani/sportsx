@@ -43,7 +43,9 @@ class _ResultsPublishingScreenState extends ConsumerState<ResultsPublishingScree
   }
   @override
   void dispose(){
-    for (final m in _semi) m.dispose();
+    for (final m in _semi) {
+      m.dispose();
+    }
     super.dispose();
   }
 

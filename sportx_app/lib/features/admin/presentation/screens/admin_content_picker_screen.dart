@@ -31,7 +31,7 @@ class _AdminContentPickerScreenState extends ConsumerState<AdminContentPickerScr
   @override
   Widget build(BuildContext context) {
     final pickers = ref.watch(adminProvider).contentPicker;
-    int _count(String type) => pickers.where((p) => p.type == type).fold(0, (s, p) => s + p.total);
+    int count(String type) => pickers.where((p) => p.type == type).fold(0, (s, p) => s + p.total);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -45,7 +45,7 @@ class _AdminContentPickerScreenState extends ConsumerState<AdminContentPickerScr
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: _categories
-            .map((c) => _buildCategoryTile(context, c.$1, c.$2, c.$3, '${_count(c.$1)}'))
+            .map((c) => _buildCategoryTile(context, c.$1, c.$2, c.$3, '${count(c.$1)}'))
             .toList(),
       ),
     );

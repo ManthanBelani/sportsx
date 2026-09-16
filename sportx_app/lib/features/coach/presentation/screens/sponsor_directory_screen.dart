@@ -123,7 +123,7 @@ class _SponsorDirectoryCoachScreenState extends ConsumerState<SponsorDirectoryCo
     );
   }
 
-  Widget _buildSponsorCard(s) {
+  Widget _buildSponsorCard(dynamic s) {
     return InkWell(
       onTap: () => context.push('/sponsor-pitch/${s.id}'),
       borderRadius: BorderRadius.circular(12),

@@ -354,7 +354,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
                   width: 60,
                   height: 60,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, _, ___) => Container(
+                  errorBuilder: (_, _, _) => Container(
                     width: 60,
                     height: 60,
                     color: AppColors.border,
@@ -426,7 +426,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
           child: Image.network(
             _absoluteUrl((item['url'] ?? '') as String),
             fit: BoxFit.cover,
-            errorBuilder: (_, _, ___) => Container(
+            errorBuilder: (_, _, _) => Container(
               color: AppColors.surface,
               child: const Icon(LucideIcons.image, color: AppColors.textSecondary),
             ),

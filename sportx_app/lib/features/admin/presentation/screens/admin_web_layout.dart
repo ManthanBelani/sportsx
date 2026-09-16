@@ -147,7 +147,7 @@ class AdminSectionLabel extends StatelessWidget {
             ],
           ],
         ),
-        if (action != null) action!,
+        ?action,
       ],
     );
   }

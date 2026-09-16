@@ -159,8 +159,11 @@ class _SponsorOnboardingScreenState extends ConsumerState<SponsorOnboardingScree
                         label: Text(s.name),
                         selected: selected,
                         onSelected: (v) => setState(() {
-                          if (v) _supportedSports.add(s.id);
-                          else _supportedSports.remove(s.id);
+                          if (v) {
+                            _supportedSports.add(s.id);
+                          } else {
+                            _supportedSports.remove(s.id);
+                          }
                         }),
                         selectedColor: AppColors.primary.withValues(alpha: 0.15),
                         checkmarkColor: AppColors.primary,

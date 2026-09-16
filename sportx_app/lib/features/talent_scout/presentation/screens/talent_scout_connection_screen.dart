@@ -121,7 +121,7 @@ class _TalentScoutConnectionScreenState extends ConsumerState<TalentScoutConnect
                         Text(name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                         const SizedBox(height: 2),
                         Text(
-                          [sport, if (city != null) city].where((e) => e.isNotEmpty).join(' • ').isEmpty ? 'Connection request' : [sport, if (city != null) city].where((e) => e.isNotEmpty).join(' • '),
+                          [sport, ?city].where((e) => e.isNotEmpty).join(' • ').isEmpty ? 'Connection request' : [sport, ?city].where((e) => e.isNotEmpty).join(' • '),
                           style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                         ),
                       ],

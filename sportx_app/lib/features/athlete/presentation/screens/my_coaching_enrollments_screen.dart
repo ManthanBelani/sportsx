@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/features/coach/presentation/providers/coaching_enrollment_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
-import 'package:sportx_app/theme/colors.dart';
 
 class MyCoachingEnrollmentsScreen extends ConsumerWidget {
   const MyCoachingEnrollmentsScreen({super.key});

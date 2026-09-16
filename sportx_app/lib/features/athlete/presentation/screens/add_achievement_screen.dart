@@ -124,7 +124,7 @@ class _AddAchievementScreenState extends ConsumerState<AddAchievementScreen> {
         {
           'text': _titleController.text.trim() +
               (_descriptionController.text.trim().isNotEmpty
-                  ? ' — ${_descriptionController.text.trim()} (${_selectedYear})'
+                  ? ' — ${_descriptionController.text.trim()} ($_selectedYear)'
                   : ' ($_selectedYear)'),
           'title': _titleController.text.trim(),
           'description': _descriptionController.text.trim(),

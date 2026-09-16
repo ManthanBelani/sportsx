@@ -237,7 +237,7 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.border)),
       child:       DropdownButtonFormField<int>(
-        value: value,
+        initialValue: value,
         decoration: const InputDecoration(border: InputBorder.none),
         hint: Text(hint, style: const TextStyle(color: AppColors.textSecondary, fontSize: 15)),
         isExpanded: true,

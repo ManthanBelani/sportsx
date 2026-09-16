@@ -135,8 +135,11 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
                 label: Text(s.name),
                 selected: sel,
                 onSelected: (v) => setState(() {
-                  if (v) _sports.add(s.id);
-                  else _sports.remove(s.id);
+                  if (v) {
+                    _sports.add(s.id);
+                  } else {
+                    _sports.remove(s.id);
+                  }
                 }),
                 selectedColor: AppColors.primary.withValues(alpha: 0.15),
                 checkmarkColor: AppColors.primary,

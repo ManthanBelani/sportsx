@@ -128,7 +128,7 @@ class ShortlistNotifier extends StateNotifier<ShortlistState> {
 
   Future<bool> add(String athleteId, {String? note}) async {
     try {
-      await _dio.post('/me/shortlist', data: {'athlete_id': athleteId, if (note != null) 'note': note});
+      await _dio.post('/me/shortlist', data: {'athlete_id': athleteId, 'note': ?note});
       await load();
       return true;
     } on DioException {

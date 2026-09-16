@@ -91,7 +91,7 @@ class _EnquireScreenState extends ConsumerState<EnquireScreen> {
         'subject_type': widget.subjectType,
         'subject_id': widget.subjectId,
         'message': _messageController.text.trim() + (preferredSlots.isNotEmpty ? '\nPreferred: ${preferredSlots.map((s) => "${s['day']} ${s['time']}").join(', ')}' : ''),
-        if (preferredDatetime != null) 'preferred_datetime': preferredDatetime,
+        'preferred_datetime': ?preferredDatetime,
       };
       await ref.read(dioProvider).post('/enquiries', data: payload);
       ref.invalidate(activityProvider);

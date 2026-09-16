@@ -18,7 +18,7 @@ class ReportNotifier extends StateNotifier<AsyncValue<void>> {
         'reportable_type': reportableType,
         'reportable_id': reportableId,
         'reason': reason,
-        if (description != null) 'description': description,
+        'description': ?description,
       });
       state = const AsyncValue.data(null);
       return true;

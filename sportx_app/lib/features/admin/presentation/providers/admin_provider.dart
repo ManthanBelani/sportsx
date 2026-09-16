@@ -430,7 +430,7 @@ class AdminNotifier extends StateNotifier<AdminState> {
   Future<void> warnOwner(String reportId, {String? message}) async {
     try {
       await _dio.post('/admin/moderation/reports/$reportId/warn', data: {
-        if (message != null) 'message': message,
+        'message': ?message,
       });
       state = state.copyWith(
         reports: state.reports.where((r) => r.id != reportId).toList(),
@@ -657,7 +657,7 @@ class AdminNotifier extends StateNotifier<AdminState> {
       await _dio.post('/admin/notifications/broadcast', data: {
         'title': title,
         'body': body,
-        if (roles != null) 'roles': roles,
+        'roles': ?roles,
       });
       return true;
     } catch (e) {

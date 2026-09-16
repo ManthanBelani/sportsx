@@ -267,8 +267,8 @@ class CoachEnquiryListSkeleton extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
         itemCount: 6,
-        separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.border),
-        itemBuilder: (_, __) => Padding(
+        separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.border),
+        itemBuilder: (_, _) => Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const SkeletonBox(width: 48, height: 48, borderRadius: 24),
@@ -321,7 +321,7 @@ class MediaGallerySkeleton extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 4, crossAxisSpacing: 4),
             itemCount: 9,
-            itemBuilder: (_, __) => const SkeletonBox(width: double.infinity, height: 100, borderRadius: 8),
+            itemBuilder: (_, _) => const SkeletonBox(width: double.infinity, height: 100, borderRadius: 8),
           ),
         ),
       ]),
@@ -361,7 +361,7 @@ class FacilitiesSkeleton extends StatelessWidget {
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: 2,
-        itemBuilder: (_, __) => Container(margin: const EdgeInsets.only(bottom: 16), padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [SkeletonBox(width: 100, height: 14, borderRadius: 4), SkeletonBox(width: 24, height: 24, borderRadius: 12)]), const SizedBox(height: 16), SkeletonBox(width: double.infinity, height: 48, borderRadius: 8), const SizedBox(height: 16), SkeletonBox(width: double.infinity, height: 80, borderRadius: 8), const SizedBox(height: 16), SkeletonBox(width: double.infinity, height: 48, borderRadius: 8)])),
+        itemBuilder: (_, _) => Container(margin: const EdgeInsets.only(bottom: 16), padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [SkeletonBox(width: 100, height: 14, borderRadius: 4), SkeletonBox(width: 24, height: 24, borderRadius: 12)]), const SizedBox(height: 16), SkeletonBox(width: double.infinity, height: 48, borderRadius: 8), const SizedBox(height: 16), SkeletonBox(width: double.infinity, height: 80, borderRadius: 8), const SizedBox(height: 16), SkeletonBox(width: double.infinity, height: 48, borderRadius: 8)])),
       ),
     );
   }
@@ -374,9 +374,9 @@ class ShowcaseSkeleton extends StatelessWidget {
     return ShimmerSkeleton(
       child: Column(children: [
         Padding(padding: const EdgeInsets.all(16), child: SkeletonBox(width: double.infinity, height: 48, borderRadius: 12)),
-        SizedBox(height: 70, child: ListView.separated(scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 16), itemCount: 5, separatorBuilder: (_, __) => const SizedBox(width: 12), itemBuilder: (_, __) => const Column(children: [SkeletonBox(width: 60, height: 60, borderRadius: 30), SizedBox(height: 6), SkeletonBox(width: 50, height: 10, borderRadius: 4)]))),
+        SizedBox(height: 70, child: ListView.separated(scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 16), itemCount: 5, separatorBuilder: (_, _) => const SizedBox(width: 12), itemBuilder: (_, _) => const Column(children: [SkeletonBox(width: 60, height: 60, borderRadius: 30), SizedBox(height: 6), SkeletonBox(width: 50, height: 10, borderRadius: 4)]))),
         const SizedBox(height: 16),
-        Expanded(child: ListView.separated(padding: const EdgeInsets.symmetric(horizontal: 16), itemCount: 5, separatorBuilder: (_, __) => const SizedBox(height: 8), itemBuilder: (_, __) => Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(12)), child: Row(children: [const SkeletonBox(width: 44, height: 44, borderRadius: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [SkeletonBox(width: 120, height: 12, borderRadius: 4), const SizedBox(height: 6), SkeletonBox(width: 80, height: 10, borderRadius: 4)]))])))),
+        Expanded(child: ListView.separated(padding: const EdgeInsets.symmetric(horizontal: 16), itemCount: 5, separatorBuilder: (_, _) => const SizedBox(height: 8), itemBuilder: (_, _) => Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(12)), child: Row(children: [const SkeletonBox(width: 44, height: 44, borderRadius: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [SkeletonBox(width: 120, height: 12, borderRadius: 4), const SizedBox(height: 6), SkeletonBox(width: 80, height: 10, borderRadius: 4)]))])))),
       ]),
     );
   }
@@ -393,8 +393,8 @@ class GenericListSkeleton extends StatelessWidget {
       child: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: itemCount,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
-        itemBuilder: (_, __) => Container(
+        separatorBuilder: (_, _) => const SizedBox(height: 12),
+        itemBuilder: (_, _) => Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -426,7 +426,7 @@ class GenericGridSkeleton extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: 0.85),
         itemCount: itemCount,
-        itemBuilder: (_, __) => Container(
+        itemBuilder: (_, _) => Container(
           decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const SkeletonBox(width: double.infinity, height: 110, borderRadius: 12),
@@ -479,7 +479,7 @@ class HomeSkeleton extends StatelessWidget {
           const SizedBox(height: 16),
           SkeletonBox(width: 140, height: 16, borderRadius: 4),
           const SizedBox(height: 12),
-          SizedBox(height: 110, child: ListView.separated(scrollDirection: Axis.horizontal, itemCount: 4, separatorBuilder: (_, __) => const SizedBox(width: 12), itemBuilder: (_, __) => const SkeletonBox(width: 140, height: 110, borderRadius: 12))),
+          SizedBox(height: 110, child: ListView.separated(scrollDirection: Axis.horizontal, itemCount: 4, separatorBuilder: (_, _) => const SizedBox(width: 12), itemBuilder: (_, _) => const SkeletonBox(width: 140, height: 110, borderRadius: 12))),
           const SizedBox(height: 16),
           SkeletonBox(width: 120, height: 16, borderRadius: 4),
           const SizedBox(height: 12),
@@ -498,8 +498,8 @@ class NotificationsSkeleton extends StatelessWidget {
       child: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: 8,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
-        itemBuilder: (_, __) => Container(
+        separatorBuilder: (_, _) => const SizedBox(height: 12),
+        itemBuilder: (_, _) => Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
           child: Row(children: [
@@ -521,8 +521,8 @@ class ConnectionsSkeleton extends StatelessWidget {
       child: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: 6,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
-        itemBuilder: (_, __) => Container(
+        separatorBuilder: (_, _) => const SizedBox(height: 12),
+        itemBuilder: (_, _) => Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
           child: Row(children: [
@@ -545,8 +545,8 @@ class ChatListSkeleton extends StatelessWidget {
       child: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: 7,
-        separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.border),
-        itemBuilder: (_, __) => Padding(
+        separatorBuilder: (_, _) => const Divider(height: 1, color: AppColors.border),
+        itemBuilder: (_, _) => Padding(
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Row(children: [const SkeletonBox(width: 48, height: 48, borderRadius: 24), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [SkeletonBox(width: 100, height: 12, borderRadius: 4), SkeletonBox(width: 50, height: 10, borderRadius: 4)]), const SizedBox(height: 6), SkeletonBox(width: double.infinity, height: 10, borderRadius: 4)]))]),
         ),

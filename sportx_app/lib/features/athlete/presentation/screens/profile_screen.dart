@@ -201,7 +201,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       width: 96,
                       height: 96,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, _, ___) =>
+                      errorBuilder: (_, _, _) =>
                           const Icon(LucideIcons.user, size: 48, color: Colors.white),
                     )
                   : const Icon(LucideIcons.user, size: 48, color: Colors.white),
@@ -508,7 +508,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   child: Image.network(
                     images[index],
                     fit: BoxFit.cover,
-                    errorBuilder: (_, _, ___) => Container(
+                    errorBuilder: (_, _, _) => Container(
                       color: AppColors.surface,
                       child: const Icon(LucideIcons.image, color: AppColors.textSecondary),
                     ),
@@ -711,7 +711,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-              if (action != null) action,
+              ?action,
             ],
           ),
           const SizedBox(height: 16),

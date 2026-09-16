@@ -201,7 +201,7 @@ class _RegistrationCard extends ConsumerWidget {
             const SizedBox(width: 10),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
-              Text('${data['participation_type'] ?? ''} • ${approvalStatus}', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              Text('${data['participation_type'] ?? ''} • $approvalStatus', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
             ])),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

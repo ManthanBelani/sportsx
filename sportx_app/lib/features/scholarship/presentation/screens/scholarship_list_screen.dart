@@ -146,7 +146,7 @@ class _ScholarshipListScreenState extends ConsumerState<ScholarshipListScreen> {
                                                 width: 80,
                                                 height: 80,
                                                 fit: BoxFit.cover,
-                                                errorBuilder: (_, _, ___) => const Icon(
+                                                errorBuilder: (_, _, _) => const Icon(
                                                   LucideIcons.graduationCap,
                                                   color: AppColors.primary,
                                                   size: 32,

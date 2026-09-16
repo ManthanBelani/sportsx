@@ -276,7 +276,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           width: 96,
                           height: 96,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, _, ___) =>
+                          errorBuilder: (_, _, _) =>
                               const Icon(LucideIcons.user, size: 40, color: Colors.white),
                         ),
                       )

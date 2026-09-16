@@ -76,7 +76,9 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
     _startDate.dispose();
     _endDate.dispose();
     _deadline.dispose();
-    for (final c in _categories) c.dispose();
+    for (final c in _categories) {
+      c.dispose();
+    }
     super.dispose();
   }
 

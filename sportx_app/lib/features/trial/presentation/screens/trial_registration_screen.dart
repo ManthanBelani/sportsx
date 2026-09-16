@@ -103,8 +103,6 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
     final trialAsync = ref.watch(trialDetailProvider(widget.trialId));
     final trial = trialAsync.valueOrNull;
     final entryFee = trial?.registrationFee ?? 0;
-    final platformFee = entryFee > 0 ? 50.0 : 0.0;
-    final total = entryFee + platformFee;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(

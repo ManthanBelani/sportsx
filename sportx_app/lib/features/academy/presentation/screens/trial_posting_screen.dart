@@ -175,8 +175,11 @@ class _TrialPostingScreenState extends ConsumerState<TrialPostingScreen> {
                     label: Text(age),
                     selected: selected,
                     onSelected: (v) => setState(() {
-                      if (v) _selectedAgeChips.add(age);
-                      else _selectedAgeChips.remove(age);
+                      if (v) {
+                        _selectedAgeChips.add(age);
+                      } else {
+                        _selectedAgeChips.remove(age);
+                      }
                     }),
                     selectedColor: AppColors.primary.withValues(alpha: 0.15),
                     checkmarkColor: AppColors.primary,

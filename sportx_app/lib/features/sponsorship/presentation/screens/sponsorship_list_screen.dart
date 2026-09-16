@@ -149,7 +149,7 @@ class _SponsorshipListScreenState extends ConsumerState<SponsorshipListScreen> {
                                                     width: 48,
                                                     height: 48,
                                                     fit: BoxFit.cover,
-                                                    errorBuilder: (_, _, ___) => const Icon(
+                                                    errorBuilder: (_, _, _) => const Icon(
                                                       LucideIcons.star,
                                                       color: AppColors.primary,
                                                       size: 24,

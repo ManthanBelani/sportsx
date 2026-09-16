@@ -73,10 +73,15 @@ class _CoachEnquiryInboxScreenState extends ConsumerState<CoachEnquiryInboxScree
 
     final tabs = List.generate(_tabKeys.length, (index) {
       int count = 0;
-      if (index == 0) count = allItems.length;
-      else if (index == 1) count = allItems.where((e) => e.status == 'new').length;
-      else if (index == 2) count = allItems.where((e) => e.status == 'replied').length;
-      else if (index == 3) count = allItems.where((e) => e.status == 'closed').length;
+      if (index == 0) {
+        count = allItems.length;
+      } else if (index == 1) {
+        count = allItems.where((e) => e.status == 'new').length;
+      } else if (index == 2) {
+        count = allItems.where((e) => e.status == 'replied').length;
+      } else if (index == 3) {
+        count = allItems.where((e) => e.status == 'closed').length;
+      }
 
       return Tab(
         height: 60,
@@ -186,7 +191,7 @@ class _CoachEnquiryInboxScreenState extends ConsumerState<CoachEnquiryInboxScree
                         width: 48,
                         height: 48,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, _, ___) => const Icon(LucideIcons.user, color: AppColors.primary),
+                        errorBuilder: (_, _, _) => const Icon(LucideIcons.user, color: AppColors.primary),
                       ),
                     )
                   : const Icon(LucideIcons.user, color: AppColors.primary),

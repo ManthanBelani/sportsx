@@ -29,7 +29,9 @@ class _SponsorshipPostingScreenState extends ConsumerState<SponsorshipPostingScr
     _grantAmount.dispose();
     _eligibility.dispose();
     _deadline.dispose();
-    for (final c in _benefits) c.dispose();
+    for (final c in _benefits) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -117,8 +119,11 @@ class _SponsorshipPostingScreenState extends ConsumerState<SponsorshipPostingScr
                     label: Text(s.name),
                     selected: selected,
                     onSelected: (v) => setState(() {
-                      if (v) _selectedSportIds.add(s.id);
-                      else _selectedSportIds.remove(s.id);
+                      if (v) {
+                        _selectedSportIds.add(s.id);
+                      } else {
+                        _selectedSportIds.remove(s.id);
+                      }
                     }),
                     selectedColor: AppColors.primary.withValues(alpha: 0.15),
                     checkmarkColor: AppColors.primary,

@@ -1,5 +1,6 @@
 import 'package:sportx_app/core/utils/media_utils.dart';
 
+// ignore: constant_identifier_names
 enum UserRole { athlete, coach, academy, organizer, sponsor, admin, talent_scout }
 
 int? _parseInt(dynamic value) {
