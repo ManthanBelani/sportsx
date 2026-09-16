@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SportX - Screenshot 2</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #0a1628; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+    .phone { width: 390px; height: 844px; background: #000; border-radius: 50px; padding: 12px; box-shadow: 0 40px 100px rgba(0,0,0,0.6); }
+    .screen { width: 366px; height: 820px; background: #fff; border-radius: 38px; overflow: hidden; position: relative; }
+    .app { width: 366px; height: 820px; overflow-y: auto; background: #fff; }
+    .download-area { margin-top: 30px; text-align: center; }
+    .download-btn { background: #1677ff; color: #fff; border: none; padding: 18px 50px; font-size: 18px; font-weight: 600; border-radius: 30px; cursor: pointer; display: inline-flex; align-items: center; gap: 12px; }
+    .download-btn:hover { background: #0055cc; }
+    .specs { color: rgba(255,255,255,0.5); font-size: 13px; margin-top: 12px; }
+    .loading { color: #fff; font-size: 14px; margin-top: 15px; }
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <div class="screen">
+      <div class="app" id="screenshot">
+        <div style="padding:16px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #d9dee7;position:sticky;top:0;background:#fff;z-index:10;">
+          <div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;"><i data-lucide="arrow-left" style="width:18px;height:18px"></i></div>
+          <h1 style="flex:1;font-size:17px;font-weight:600;">Trials</h1>
+        </div>
+        <div style="padding:12px 20px;border-bottom:1px solid #d9dee7;">
+          <div style="display:flex;align-items:center;background:#f7f8fa;border-radius:20px;padding:10px 16px;gap:10px;">
+            <i data-lucide="search" style="width:16px;height:16px;color:#6b7280"></i>
+            <span style="font-size:14px;color:#6b7280;">Search trials...</span>
+          </div>
+        </div>
+        <div style="padding:12px 20px;display:flex;gap:8px;overflow-x:auto;">
+          <div style="padding:8px 14px;background:#e6f0ff;border:1px solid #1677ff;color:#1677ff;border-radius:16px;font-size:12px;font-weight:500;white-space:nowrap;">All Sports</div>
+          <div style="padding:8px 14px;background:#f7f8fa;border:1px solid #d9dee7;color:#111;border-radius:16px;font-size:12px;font-weight:500;white-space:nowrap;display:flex;align-items:center;gap:6px;"><i data-lucide="circle-dot" style="width:12px;height:12px"></i> Cricket</div>
+          <div style="padding:8px 14px;background:#f7f8fa;border:1px solid #d9dee7;color:#111;border-radius:16px;font-size:12px;font-weight:500;white-space:nowrap;display:flex;align-items:center;gap:6px;"><i data-lucide="goal" style="width:12px;height:12px"></i> Football</div>
+        </div>
+        <div style="padding:16px 20px 100px;">
+          <div style="font-size:12px;color:#6b7280;margin-bottom:12px;">8 trials found · 3 closing soon</div>
+          <div style="background:#fff;border:1px solid #d9dee7;border-radius:8px;padding:14px;margin-bottom:12px;">
+            <div style="display:flex;gap:12px;margin-bottom:10px;">
+              <div style="width:44px;height:44px;background:#f7f8fa;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="circle-dot" style="width:22px;height:22px;color:#1677ff"></i></div>
+              <div style="flex:1;"><div style="font-size:14px;font-weight:600;margin-bottom:2px;">U-14 Cricket Trials</div><div style="font-size:11px;color:#6b7280;">Elite Cricket Academy</div></div>
+              <div style="padding:4px 8px;background:#fef3c7;color:#92400e;border-radius:6px;font-size:10px;font-weight:500;">Closing Soon</div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:#6b7280;margin-bottom:10px;"><span style="display:flex;align-items:center;gap:4px;"><i data-lucide="calendar" style="width:12px;height:12px"></i> Aug 15, 2026</span><span style="display:flex;align-items:center;gap:4px;"><i data-lucide="map-pin" style="width:12px;height:12px"></i> Sardar Patel Stadium</span><span style="display:flex;align-items:center;gap:4px;"><i data-lucide="users" style="width:12px;height:12px"></i> U-14, Boys</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid #d9dee7;"><span style="font-size:14px;font-weight:600;color:#1677ff;">₹200</span><span style="padding:4px 8px;background:#fee2e2;color:#dc2626;border-radius:6px;font-size:10px;">12 spots left</span></div>
+          </div>
+          <div style="background:#fff;border:1px solid #d9dee7;border-radius:8px;padding:14px;margin-bottom:12px;">
+            <div style="display:flex;gap:12px;margin-bottom:10px;">
+              <div style="width:44px;height:44px;background:#f7f8fa;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="goal" style="width:22px;height:22px;color:#1677ff"></i></div>
+              <div style="flex:1;"><div style="font-size:14px;font-weight:600;margin-bottom:2px;">District Football Trials</div><div style="font-size:11px;color:#6b7280;">SportsFed Gujarat</div></div>
+              <div style="padding:4px 8px;background:#fef3c7;color:#92400e;border-radius:6px;font-size:10px;font-weight:500;">Closing Soon</div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:#6b7280;margin-bottom:10px;"><span style="display:flex;align-items:center;gap:4px;"><i data-lucide="calendar" style="width:12px;height:12px"></i> Aug 20, 2026</span><span style="display:flex;align-items:center;gap:4px;"><i data-lucide="map-pin" style="width:12px;height:12px"></i> INAX Football Ground</span><span style="display:flex;align-items:center;gap:4px;"><i data-lucide="users" style="width:12px;height:12px"></i> U-16, Open</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid #d9dee7;"><span style="font-size:14px;font-weight:600;color:#1677ff;">₹150</span><span style="padding:4px 8px;background:#fee2e2;color:#dc2626;border-radius:6px;font-size:10px;">8 spots left</span></div>
+          </div>
+          <div style="background:#fff;border:1px solid #d9dee7;border-radius:8px;padding:14px;">
+            <div style="display:flex;gap:12px;margin-bottom:10px;">
+              <div style="width:44px;height:44px;background:#f7f8fa;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="shuttlecock" style="width:22px;height:22px;color:#1677ff"></i></div>
+              <div style="flex:1;"><div style="font-size:14px;font-weight:600;margin-bottom:2px;">State Badminton Championship</div><div style="font-size:11px;color:#6b7280;">Gujarat Badminton Association</div></div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:#6b7280;margin-bottom:10px;"><span style="display:flex;align-items:center;gap:4px;"><i data-lucide="calendar" style="width:12px;height:12px"></i> Aug 25, 2026</span><span style="display:flex;align-items:center;gap:4px;"><i data-lucide="map-pin" style="width:12px;height:12px"></i> Sports Complex</span><span style="display:flex;align-items:center;gap:4px;"><i data-lucide="users" style="width:12px;height:12px"></i> U-12, U-16, Open</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid #d9dee7;"><span style="font-size:14px;font-weight:600;color:#1677ff;">₹300</span><span style="padding:4px 8px;background:#f7f8fa;color:#6b7280;border-radius:6px;font-size:10px;">45 spots left</span></div>
+          </div>
+        </div>
+        <nav style="position:sticky;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #d9dee7;display:flex;justify-content:space-around;padding:10px 0;z-index:100;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 16px;color:#6b7280;"><i data-lucide="home" style="width:22px;height:22px"></i><span style="font-size:10px;font-weight:500;">Home</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 16px;color:#1677ff;"><i data-lucide="search" style="width:22px;height:22px"></i><span style="font-size:10px;font-weight:500;">Search</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 16px;color:#6b7280;"><i data-lucide="heart" style="width:22px;height:22px"></i><span style="font-size:10px;font-weight:500;">Saved</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 16px;color:#6b7280;"><i data-lucide="layout-list" style="width:22px;height:22px"></i><span style="font-size:10px;font-weight:500;">Activity</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 16px;color:#6b7280;"><i data-lucide="user" style="width:22px;height:22px"></i><span style="font-size:10px;font-weight:500;">Profile</span></div>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <div class="download-area">
+    <button class="download-btn" onclick="downloadImg()"><i data-lucide="download" style="width:20px;height:20px"></i> Download Screenshot</button>
+    <p class="specs">1080 × 1920 px | JPG</p>
+    <p class="loading" id="loading" style="display:none;">Generating image...</p>
+  </div>
+  <script>lucide.createIcons();</script>
+  <script>
+    async function downloadImg() {
+      const btn = document.querySelector('.download-btn');
+      const loading = document.getElementById('loading');
+      btn.disabled = true; btn.style.opacity = '0.7'; loading.style.display = 'block';
+      try {
+        const el = document.getElementById('screenshot');
+        const canvas = await html2canvas(el, { scale: 2.78, backgroundColor: '#ffffff', width: 366, height: 820, useCORS: true, allowTaint: true, logging: false });
+        const link = document.createElement('a');
+        link.download = 'sportx-screenshot-2-trials.jpg';
+        link.href = canvas.toDataURL('image/jpeg', 0.92);
+        link.click();
+      } catch(e) { alert('Error: ' + e.message); }
+      btn.disabled = false; btn.style.opacity = '1'; loading.style.display = 'none';
+    }
+  </script>
+</body>
+</html>

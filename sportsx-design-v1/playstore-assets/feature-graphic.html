@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SportX - Feature Graphic</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #0a1628; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; }
+    .preview-label { color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 16px; }
+    canvas { border-radius: 4px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+    .download-area { margin-top: 30px; text-align: center; }
+    .download-btn { background: #1677ff; color: #fff; border: none; padding: 18px 50px; font-size: 18px; font-weight: 600; border-radius: 30px; cursor: pointer; display: inline-flex; align-items: center; gap: 12px; }
+    .download-btn:hover { background: #0055cc; }
+    .specs { color: rgba(255,255,255,0.5); font-size: 13px; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <p class="preview-label">Feature Graphic Preview (1024 × 500 px)</p>
+  
+  <canvas id="preview" width="1024" height="500"></canvas>
+
+  <div class="download-area">
+    <button class="download-btn" onclick="downloadImg()"><i data-lucide="download" style="width:20px;height:20px"></i> Download Feature Graphic</button>
+    <p class="specs">1024 × 500 px | JPG</p>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('preview');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    img.onload = function() {
+      drawGraphic();
+    };
+    
+    img.src = '../SportX_PlayStore_Icon_512x512%20(1).png';
+    
+    function drawGraphic() {
+      // Background gradient
+      const gradient = ctx.createLinearGradient(0, 0, 1024, 500);
+      gradient.addColorStop(0, '#0a1628');
+      gradient.addColorStop(0.5, '#1a365d');
+      gradient.addColorStop(1, '#0f3460');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 1024, 500);
+      
+      // Left glow
+      const leftGlow = ctx.createRadialGradient(200, 400, 0, 200, 400, 400);
+      leftGlow.addColorStop(0, 'rgba(22,119,255,0.3)');
+      leftGlow.addColorStop(1, 'transparent');
+      ctx.fillStyle = leftGlow;
+      ctx.fillRect(0, 0, 1024, 500);
+      
+      // Right glow
+      const rightGlow = ctx.createRadialGradient(800, 100, 0, 800, 100, 300);
+      rightGlow.addColorStop(0, 'rgba(82,196,26,0.2)');
+      rightGlow.addColorStop(1, 'transparent');
+      ctx.fillStyle = rightGlow;
+      ctx.fillRect(0, 0, 1024, 500);
+      
+      // Left content area
+      const leftX = 60;
+      let leftY = 80;
+      
+      // Logo
+      ctx.drawImage(img, leftX, leftY, 64, 64);
+      
+      // Logo text
+      ctx.font = '800 40px Inter, sans-serif';
+      ctx.fillStyle = '#fff';
+      ctx.fillText('Sport', leftX + 80, leftY + 45);
+      ctx.fillStyle = '#1677ff';
+      ctx.fillText('X', leftX + 80 + ctx.measureText('Sport').width, leftY + 45);
+      
+      leftY += 100;
+      
+      // Tagline
+      ctx.font = '700 28px Inter, sans-serif';
+      ctx.fillStyle = '#fff';
+      ctx.fillText('Your Gateway to', leftX, leftY);
+      ctx.fillText('Elite Sports Trials', leftX, leftY + 38);
+      
+      leftY += 80;
+      
+      // Description
+      ctx.font = '400 16px Inter, sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.fillText('Connect with coaches, discover trials,', leftX, leftY);
+      ctx.fillText('and kickstart your athletic career.', leftX, leftY + 24);
+      
+      leftY += 60;
+      
+      // Badges
+      ctx.fillStyle = 'rgba(255,255,255,0.1)';
+      roundRect(ctx, leftX, leftY, 140, 40, 20);
+      ctx.fill();
+      
+      ctx.font = '500 14px Inter, sans-serif';
+      ctx.fillStyle = '#fff';
+      ctx.fillText('✓ Verified Trials', leftX + 18, leftY + 26);
+      
+      ctx.fillStyle = 'rgba(255,255,255,0.1)';
+      roundRect(ctx, leftX + 160, leftY, 140, 40, 20);
+      ctx.fill();
+      
+      ctx.fillText('👥 50K+ Athletes', leftX + 178, leftY + 26);
+      
+      // Right side - Phone mockup
+      const phoneX = 750;
+      const phoneY = 150;
+      const phoneW = 130;
+      const phoneH = 220;
+      
+      // Phone shadow
+      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur = 30;
+      ctx.shadowOffsetY = 15;
+      
+      // Phone body
+      ctx.fillStyle = '#000';
+      roundRect(ctx, phoneX, phoneY, phoneW, phoneH, 24);
+      ctx.fill();
+      
+      // Reset shadow
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetY = 0;
+      
+      // Phone screen
+      const screenX = phoneX + 7;
+      const screenY = phoneY + 7;
+      const screenW = phoneW - 14;
+      const screenH = phoneH - 14;
+      
+      const screenGrad = ctx.createLinearGradient(screenX, screenY, screenX, screenY + screenH);
+      screenGrad.addColorStop(0, '#1677ff');
+      screenGrad.addColorStop(1, '#003f8a');
+      ctx.fillStyle = screenGrad;
+      roundRect(ctx, screenX, screenY, screenW, screenH, 18);
+      ctx.fill();
+      
+      // App icon in phone
+      const iconSize = 50;
+      const iconX = screenX + (screenW - iconSize) / 2;
+      const iconY = screenY + 50;
+      ctx.drawImage(img, iconX, iconY, iconSize, iconSize);
+      
+      // Text in phone
+      ctx.font = '600 11px Inter, sans-serif';
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.fillText('Find Your', screenX + screenW/2, iconY + iconSize + 25);
+      ctx.fillText('Opportunity', screenX + screenW/2, iconY + iconSize + 42);
+      ctx.textAlign = 'left';
+    }
+    
+    function roundRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+    
+    function downloadImg() {
+      const link = document.createElement('a');
+      link.download = 'sportx-feature-graphic.jpg';
+      link.href = canvas.toDataURL('image/jpeg', 0.95);
+      link.click();
+    }
+  </script>
+</body>
+</html>

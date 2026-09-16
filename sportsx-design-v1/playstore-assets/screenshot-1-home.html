@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="head">
+<head>
+  <meta charset="UTF-8">
+  <title>SportX - Screenshot 1</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #0a1628; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+    .phone { width: 390px; height: 844px; background: #000; border-radius: 50px; padding: 12px; box-shadow: 0 40px 100px rgba(0,0,0,0.6); }
+    .screen { width: 366px; height: 820px; background: #fff; border-radius: 38px; overflow: hidden; position: relative; }
+    .app { width: 366px; height: 820px; overflow: hidden; background: #f7f8fa; }
+    .download-area { margin-top: 30px; text-align: center; }
+    .download-btn { background: #1677ff; color: #fff; border: none; padding: 18px 50px; font-size: 18px; font-weight: 600; border-radius: 30px; cursor: pointer; display: inline-flex; align-items: center; gap: 12px; }
+    .download-btn:hover { background: #0055cc; }
+    .specs { color: rgba(255,255,255,0.5); font-size: 13px; margin-top: 12px; }
+    .loading { color: #fff; font-size: 14px; margin-top: 15px; }
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <div class="screen">
+      <div class="app" id="screenshot">
+        <div style="background:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;border-bottom:1px solid #d9dee7;">
+          <div>
+            <h1 style="font-size:18px;font-weight:700;">Hi Aryan! <span style="display:inline-flex"><i data-lucide="hand" style="width:18px;height:18px"></i></span></h1>
+            <p style="font-size:12px;color:#6b7280;">Cricket · Under-14</p>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <div style="width:36px;height:36px;background:#f7f8fa;border-radius:50%;display:flex;align-items:center;justify-content:center;"><i data-lucide="bell" style="width:18px;height:18px;color:#6b7280"></i></div>
+            <div style="width:36px;height:36px;background:#f7f8fa;border-radius:50%;display:flex;align-items:center;justify-content:center;"><i data-lucide="heart" style="width:18px;height:18px;color:#6b7280"></i></div>
+          </div>
+        </div>
+        <div style="background:#fff;padding:12px 20px;border-bottom:1px solid #d9dee7;">
+          <div style="display:flex;align-items:center;background:#f7f8fa;border-radius:20px;padding:10px 16px;gap:10px;">
+            <i data-lucide="search" style="width:16px;height:16px;color:#6b7280"></i>
+            <span style="font-size:14px;color:#6b7280;">Search academies, trials, coaches...</span>
+          </div>
+        </div>
+        <div style="padding:20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <h2 style="font-size:15px;font-weight:600;">Recommended for you</h2>
+            <span style="font-size:12px;color:#1677ff;font-weight:500;">See all</span>
+          </div>
+          <div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;">
+            <div style="background:#fff;border:1px solid #d9dee7;border-radius:8px;width:150px;flex-shrink:0;overflow:hidden;">
+              <div style="height:80px;background:#f7f8fa;display:flex;align-items:center;justify-content:center;"><i data-lucide="circle-dot" style="width:32px;height:32px;color:#1677ff"></i></div>
+              <div style="padding:10px;">
+                <div style="font-size:13px;font-weight:600;margin-bottom:2px;">Elite Cricket Academy</div>
+                <div style="font-size:11px;color:#6b7280;">Cricket · Ahmedabad</div>
+                <div style="font-size:11px;color:#6b7280;">₹2,000 – ₹5,000/mo</div>
+              </div>
+            </div>
+            <div style="background:#fff;border:1px solid #d9dee7;border-radius:8px;width:150px;flex-shrink:0;overflow:hidden;">
+              <div style="height:80px;background:#f7f8fa;display:flex;align-items:center;justify-content:center;"><i data-lucide="user" style="width:32px;height:32px;color:#1677ff"></i></div>
+              <div style="padding:10px;">
+                <div style="font-size:13px;font-weight:600;margin-bottom:2px;">Rahul Mehta</div>
+                <div style="font-size:11px;color:#6b7280;">Cricket · 8 yrs exp</div>
+                <div style="font-size:11px;color:#6b7280;">₹800/session</div>
+              </div>
+            </div>
+            <div style="background:#fff;border:1px solid #d9dee7;border-radius:8px;width:150px;flex-shrink:0;overflow:hidden;">
+              <div style="height:80px;background:#f7f8fa;display:flex;align-items:center;justify-content:center;"><i data-lucide="goal" style="width:32px;height:32px;color:#1677ff"></i></div>
+              <div style="padding:10px;">
+                <div style="font-size:13px;font-weight:600;margin-bottom:2px;">Football Academy</div>
+                <div style="font-size:11px;color:#6b7280;">Football · Ahmedabad</div>
+                <div style="font-size:11px;color:#6b7280;">₹1,500 – ₹3,000/mo</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="padding:0 20px 20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <h2 style="font-size:15px;font-weight:600;">Upcoming Tournaments</h2>
+            <span style="font-size:12px;color:#1677ff;font-weight:500;">See all</span>
+          </div>
+          <div style="background:#fff;border:1px solid #d9dee7;border-radius:8px;padding:12px;display:flex;gap:12px;margin-bottom:8px;">
+            <div style="width:50px;height:50px;background:#f7f8fa;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="trophy" style="width:24px;height:24px;color:#1677ff"></i></div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:600;margin-bottom:2px;">U-16 State Cricket Cup</div>
+              <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">Aug 15–20 · Sardar Patel Stadium</div>
+              <span style="display:inline-block;padding:2px 8px;background:#fef3c7;color:#92400e;border-radius:10px;font-size:10px;font-weight:500;">Prize: ₹50,000</span>
+            </div>
+          </div>
+          <div style="background:#fff;border:1px solid #d9dee7;border-radius:8px;padding:12px;display:flex;gap:12px;">
+            <div style="width:50px;height:50px;background:#f7f8fa;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="shuttlecock" style="width:24px;height:24px;color:#1677ff"></i></div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:600;margin-bottom:2px;">All India Badminton Championship</div>
+              <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">Sep 5–10 · Sports Complex</div>
+              <span style="display:inline-block;padding:2px 8px;background:#fef3c7;color:#92400e;border-radius:10px;font-size:10px;font-weight:500;">Prize: ₹25,000</span>
+            </div>
+          </div>
+        </div>
+        <nav style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #d9dee7;display:flex;justify-content:space-around;padding:10px 0;z-index:100;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 16px;color:#1677ff;"><i data-lucide="home" style="width:22px;height:22px"></i><span style="font-size:10px;font-weight:500;">Home</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 16px;color:#6b7280;"><i data-lucide="search" style="width:22px;height:22px"></i><span style="font-size:10px;font-weight:500;">Search</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 16px;color:#6b7280;"><i data-lucide="heart" style="width:22px;height:22px"></i><span style="font-size:10px;font-weight:500;">Saved</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 16px;color:#6b7280;"><i data-lucide="layout-list" style="width:22px;height:22px"></i><span style="font-size:10px;font-weight:500;">Activity</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 16px;color:#6b7280;"><i data-lucide="user" style="width:22px;height:22px"></i><span style="font-size:10px;font-weight:500;">Profile</span></div>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <div class="download-area">
+    <button class="download-btn" onclick="downloadImg()"><i data-lucide="download" style="width:20px;height:20px"></i> Download Screenshot</button>
+    <p class="specs">1080 × 1920 px | JPG</p>
+    <p class="loading" id="loading" style="display:none;">Generating image...</p>
+  </div>
+  <script>lucide.createIcons();</script>
+  <script>
+    async function downloadImg() {
+      const btn = document.querySelector('.download-btn');
+      const loading = document.getElementById('loading');
+      btn.disabled = true;
+      btn.style.opacity = '0.7';
+      loading.style.display = 'block';
+      try {
+        const el = document.getElementById('screenshot');
+        const canvas = await html2canvas(el, {
+          scale: 2.78,
+          backgroundColor: '#f7f8fa',
+          width: 366,
+          height: 820,
+          useCORS: true,
+          allowTaint: true,
+          logging: false
+        });
+        const link = document.createElement('a');
+        link.download = 'sportx-screenshot-1-home.jpg';
+        link.href = canvas.toDataURL('image/jpeg', 0.92);
+        link.click();
+      } catch(e) { alert('Error: ' + e.message); }
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      loading.style.display = 'none';
+    }
+  </script>
+</body>
+</html>
