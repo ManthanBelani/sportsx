@@ -13,13 +13,18 @@ class TournamentRegistration extends Model
     protected $fillable = [
         'tournament_id', 'category_id', 'athlete_id', 'participation_type',
         'team_name', 'payment_status', 'approval_status', 'status',
-        'rejection_reason', 'reviewed_by', 'reviewed_at', 'reminder_enabled',
+        'rejection_reason', 'reviewed_by', 'reviewed_at',
+        'reminder_enabled', 'admin_override',
     ];
 
-    protected $casts = [
-        'reviewed_at' => 'datetime',
-        'reminder_enabled' => 'boolean',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'reviewed_at' => 'datetime',
+            'reminder_enabled' => 'boolean',
+            'admin_override' => 'boolean',
+        ];
+    }
 
     public function tournament(): BelongsTo
     {
@@ -39,5 +44,20 @@ class TournamentRegistration extends Model
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    public function isPending(): bool
+    {
+        return $this->approval_status === 'pending';
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->approval_status === 'approved';
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->approval_status === 'rejected';
     }
 }

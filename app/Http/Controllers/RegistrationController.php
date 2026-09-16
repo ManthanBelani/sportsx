@@ -9,6 +9,7 @@ use App\Models\Tournament;
 use App\Models\TournamentRegistration;
 use App\Services\IcsService;
 use App\Services\NotificationService;
+use App\Services\RegistrationActivityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -61,29 +62,23 @@ class RegistrationController extends Controller
                 ]);
             }
 
-            // Notify trial owner (organizer/academy) of new request
-            try {
-                $ownerId = $trial->posted_by_user_id;
-                if ($ownerId && $ownerId !== $request->user()->id) {
-                    NotificationService::createStatic([
-                        'user_id' => $ownerId,
-                        'type' => 'status_update',
-                        'title' => 'New Registration Request',
-                        'body' => $request->user()->name . ' requested to register for ' . $trial->name,
-                        'notifiable_type' => 'trial_registration',
-                        'notifiable_id' => $registration->id,
-                        'action_url' => "/registrations/trials/{$registration->id}",
-                    ]);
-                }
-            } catch (\Throwable $e) {}
+            app(RegistrationActivityService::class)->logSubmission($registration, $request->user());
+            NotificationService::createStatic([
+                'user_id' => $trial->posted_by_user_id,
+                'type' => 'status_update',
+                'title' => 'New trial registration request',
+                'body' => "A new request was submitted for \"{$trial->name}\".",
+                'notifiable_type' => 'trial_registration',
+                'notifiable_id' => $registration->id,
+                'action_url' => "/trials/{$trial->id}/registrations",
+            ]);
 
             return response()->json([
                 'data' => [
                     'registration_ref' => $registration->registration_ref,
                     'trial' => $trial->only(['id', 'name', 'event_datetime', 'venue']),
-                    'status' => $registration->status ?? $registration->verification_status,
+                    'status' => $registration->verification_status,
                     'approval_status' => $registration->approval_status,
-                    'verification_status' => $registration->verification_status,
                     'reminder_enabled' => $registration->reminder_enabled,
                 ],
                 'message' => 'Registration request submitted successfully',
@@ -140,33 +135,65 @@ class RegistrationController extends Controller
 
     public function verifyTrial(Request $request, TrialRegistration $registration)
     {
-        // Legacy alias -> delegate to approveTrial
         return $this->approveTrial($request, $registration);
+    }
+
+    public function approveTrial(Request $request, TrialRegistration $registration)
+    {
+        $this->authorizeOwner($request, $registration->trial);
+        $registration->update([
+            'verification_status' => 'verified',
+            'approval_status' => 'approved',
+            'status' => 'confirmed',
+            'reviewed_by' => $request->user()->id,
+            'reviewed_at' => now(),
+            'rejection_reason' => null,
+        ]);
+
+        app(RegistrationActivityService::class)->logApproval($registration, $request->user());
+
+        $registration->load(['trial', 'athlete.user']);
+        NotificationService::createStatic([
+            'user_id' => $registration->athlete->user_id,
+            'type' => 'status_update',
+            'title' => 'Registration approved',
+            'body' => "Your registration for \"{$registration->trial->name}\" has been approved.",
+            'notifiable_type' => 'trial_registration',
+            'notifiable_id' => $registration->id,
+            'action_url' => "/registrations/trials/{$registration->id}",
+        ]);
+
+        return response()->json(['data' => $registration]);
     }
 
     public function rejectTrial(Request $request, TrialRegistration $registration)
     {
-        // Handle legacy POST reject without reason; delegate to new logic if reason provided
-        $reason = $request->input('rejection_reason');
-        if ($reason) {
-            return $this->rejectTrialNew($request, $registration);
-        }
         $this->authorizeOwner($request, $registration->trial);
+
+        $validated = $request->validate([
+            'rejection_reason' => 'nullable|string|max:500',
+        ]);
+
         $registration->update([
             'verification_status' => 'rejected',
             'approval_status' => 'rejected',
             'status' => 'cancelled',
-            'rejection_reason' => $reason ?? 'Rejected by organizer',
+            'rejection_reason' => $validated['rejection_reason'] ?? null,
             'reviewed_by' => $request->user()->id,
             'reviewed_at' => now(),
         ]);
+
+        app(RegistrationActivityService::class)->logRejection(
+            $registration, $request->user(), $validated['rejection_reason'] ?? ''
+        );
 
         $registration->load(['trial', 'athlete.user']);
         NotificationService::createStatic([
             'user_id' => $registration->athlete->user_id,
             'type' => 'status_update',
             'title' => 'Registration rejected',
-            'body' => "Your registration for \"{$registration->trial->name}\" was not approved.",
+            'body' => "Your registration for \"{$registration->trial->name}\" was not approved."
+                . ($registration->rejection_reason ? " Reason: {$registration->rejection_reason}" : ''),
             'notifiable_type' => 'trial_registration',
             'notifiable_id' => $registration->id,
             'action_url' => "/registrations/trials/{$registration->id}",
@@ -230,6 +257,91 @@ class RegistrationController extends Controller
         return response()->json(['data' => $registration, 'message' => 'Trial registration rejected']);
     }
 
+    public function pendingTrialRequests(Request $request, Trial $trial)
+    {
+        $this->authorizeOwner($request, $trial);
+
+        $query = $trial->registrations()->with(['athlete.user', 'documents.media']);
+        if ($request->get('status', 'pending') !== 'all') {
+            $query->where('approval_status', $request->get('status', 'pending'));
+        }
+        $registrations = $query->orderByDesc('created_at')->paginate(20);
+
+        return response()->json([
+            'data' => $registrations->items(),
+            'meta' => ['pagination' => [
+                'total' => $registrations->total(),
+                'per_page' => $registrations->perPage(),
+                'current_page' => $registrations->currentPage(),
+                'last_page' => $registrations->lastPage(),
+            ]],
+        ]);
+    }
+
+    public function myTrialRegistrations(Request $request)
+    {
+        $athlete = $request->user()->athleteProfile;
+        abort_unless($athlete, 403, 'Athlete profile required');
+
+        $registrations = TrialRegistration::with(['trial'])
+            ->where('athlete_id', $athlete->id)
+            ->orderByDesc('created_at')
+            ->paginate(20);
+
+        return response()->json([
+            'data' => $registrations->items(),
+            'meta' => ['pagination' => [
+                'total' => $registrations->total(),
+                'per_page' => $registrations->perPage(),
+                'current_page' => $registrations->currentPage(),
+                'last_page' => $registrations->lastPage(),
+            ]],
+        ]);
+    }
+
+    public function adminApproveTrial(Request $request, TrialRegistration $registration)
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+        $registration->update([
+            'verification_status' => 'verified',
+            'approval_status' => 'approved',
+            'reviewed_by' => $request->user()->id,
+            'reviewed_at' => now(),
+            'rejection_reason' => null,
+            'admin_override' => true,
+        ]);
+        app(RegistrationActivityService::class)->logApproval($registration, $request->user());
+        $registration->load(['trial', 'athlete.user']);
+        NotificationService::createStatic([
+            'user_id' => $registration->athlete->user_id,
+            'type' => 'status_update',
+            'title' => 'Registration approved',
+            'body' => "Your registration for \"{$registration->trial->name}\" has been approved.",
+            'notifiable_type' => 'trial_registration',
+            'notifiable_id' => $registration->id,
+            'action_url' => "/registrations/trials/{$registration->id}",
+        ]);
+
+        return response()->json(['data' => $registration]);
+    }
+
+    public function adminRejectTrial(Request $request, TrialRegistration $registration)
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+        $validated = $request->validate(['rejection_reason' => 'required|string|max:500']);
+        $registration->update([
+            'verification_status' => 'rejected',
+            'approval_status' => 'rejected',
+            'rejection_reason' => $validated['rejection_reason'],
+            'reviewed_by' => $request->user()->id,
+            'reviewed_at' => now(),
+            'admin_override' => true,
+        ]);
+        app(RegistrationActivityService::class)->logRejection($registration, $request->user(), $validated['rejection_reason']);
+
+        return response()->json(['data' => $registration]);
+    }
+
     public function toggleTrialReminder(Request $request, TrialRegistration $registration)
     {
         abort_if($registration->athlete->user_id !== $request->user()->id, 403);
@@ -277,6 +389,21 @@ class RegistrationController extends Controller
             'status' => 'pending',
             'reminder_enabled' => $validated['reminder_enabled'] ?? false,
         ]);
+
+        app(RegistrationActivityService::class)->logSubmission($registration, $request->user());
+
+        $organizerUserId = $tournament->organizer?->user_id ?? $tournament->organizer_id;
+        if ($organizerUserId) {
+            NotificationService::createStatic([
+                'user_id' => $organizerUserId,
+                'type' => 'status_update',
+                'title' => 'New tournament registration request',
+                'body' => "A new request was submitted for \"{$tournament->name}\".",
+                'notifiable_type' => 'tournament_registration',
+                'notifiable_id' => $registration->id,
+                'action_url' => "/tournaments/{$tournament->id}/registrations",
+            ]);
+        }
 
         $registration->load(['category', 'tournament']);
 
@@ -474,6 +601,159 @@ class RegistrationController extends Controller
         ]);
 
         return response()->json(['data' => $registration]);
+    }
+
+    public function pendingTournamentRequests(Request $request, Tournament $tournament)
+    {
+        $this->authorizeTournamentOwner($request, $tournament);
+
+        $query = $tournament->registrations()->with(['athlete.user', 'category']);
+        if ($request->get('status', 'pending') !== 'all') {
+            $query->where('approval_status', $request->get('status', 'pending'));
+        }
+        $registrations = $query->orderByDesc('created_at')->paginate(20);
+
+        return response()->json([
+            'data' => $registrations->items(),
+            'meta' => ['pagination' => [
+                'total' => $registrations->total(),
+                'per_page' => $registrations->perPage(),
+                'current_page' => $registrations->currentPage(),
+                'last_page' => $registrations->lastPage(),
+            ]],
+        ]);
+    }
+
+    public function approveTournament(Request $request, TournamentRegistration $registration)
+    {
+        $this->authorizeTournamentOwner($request, $registration->tournament);
+
+        $registration->update([
+            'approval_status' => 'approved',
+            'status' => 'confirmed',
+            'rejection_reason' => null,
+            'reviewed_by' => $request->user()->id,
+            'reviewed_at' => now(),
+        ]);
+
+        app(RegistrationActivityService::class)->logApproval($registration, $request->user());
+
+        $registration->load(['tournament', 'athlete.user']);
+        NotificationService::createStatic([
+            'user_id' => $registration->athlete->user_id,
+            'type' => 'status_update',
+            'title' => 'Registration approved',
+            'body' => "Your registration for \"{$registration->tournament->name}\" has been approved.",
+            'notifiable_type' => 'tournament_registration',
+            'notifiable_id' => $registration->id,
+            'action_url' => "/registrations/tournaments/{$registration->id}",
+        ]);
+
+        return response()->json([
+            'message' => 'Registration approved',
+            'data' => $registration,
+        ]);
+    }
+
+    public function rejectTournament(Request $request, TournamentRegistration $registration)
+    {
+        $this->authorizeTournamentOwner($request, $registration->tournament);
+
+        $validated = $request->validate([
+            'rejection_reason' => 'required|string|max:500',
+        ]);
+
+        $registration->update([
+            'approval_status' => 'rejected',
+            'status' => 'cancelled',
+            'rejection_reason' => $validated['rejection_reason'],
+            'reviewed_by' => $request->user()->id,
+            'reviewed_at' => now(),
+        ]);
+
+        app(RegistrationActivityService::class)->logRejection(
+            $registration, $request->user(), $validated['rejection_reason']
+        );
+
+        $registration->load(['tournament', 'athlete.user']);
+        NotificationService::createStatic([
+            'user_id' => $registration->athlete->user_id,
+            'type' => 'status_update',
+            'title' => 'Registration rejected',
+            'body' => "Your registration for \"{$registration->tournament->name}\" was not approved. Reason: {$validated['rejection_reason']}",
+            'notifiable_type' => 'tournament_registration',
+            'notifiable_id' => $registration->id,
+            'action_url' => "/registrations/tournaments/{$registration->id}",
+        ]);
+
+        return response()->json([
+            'message' => 'Registration rejected',
+            'data' => $registration,
+        ]);
+    }
+
+    public function myTournamentRegistrations(Request $request)
+    {
+        $athlete = $request->user()->athleteProfile;
+        abort_unless($athlete, 403, 'Athlete profile required');
+
+        $registrations = TournamentRegistration::with(['tournament', 'category'])
+            ->where('athlete_id', $athlete->id)
+            ->orderByDesc('created_at')
+            ->paginate(20);
+
+        return response()->json([
+            'data' => $registrations->items(),
+            'meta' => ['pagination' => [
+                'total' => $registrations->total(),
+                'per_page' => $registrations->perPage(),
+                'current_page' => $registrations->currentPage(),
+                'last_page' => $registrations->lastPage(),
+            ]],
+        ]);
+    }
+
+    public function adminApproveTournament(Request $request, TournamentRegistration $registration)
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+        $registration->update([
+            'approval_status' => 'approved',
+            'status' => 'confirmed',
+            'rejection_reason' => null,
+            'reviewed_by' => $request->user()->id,
+            'reviewed_at' => now(),
+            'admin_override' => true,
+        ]);
+        app(RegistrationActivityService::class)->logApproval($registration, $request->user());
+        $registration->load(['tournament', 'athlete.user']);
+        NotificationService::createStatic([
+            'user_id' => $registration->athlete->user_id,
+            'type' => 'status_update',
+            'title' => 'Registration approved',
+            'body' => "Your registration for \"{$registration->tournament->name}\" has been approved.",
+            'notifiable_type' => 'tournament_registration',
+            'notifiable_id' => $registration->id,
+            'action_url' => "/registrations/tournaments/{$registration->id}",
+        ]);
+
+        return response()->json(['message' => 'Admin approved registration', 'data' => $registration]);
+    }
+
+    public function adminRejectTournament(Request $request, TournamentRegistration $registration)
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+        $validated = $request->validate(['rejection_reason' => 'required|string|max:500']);
+        $registration->update([
+            'approval_status' => 'rejected',
+            'status' => 'cancelled',
+            'rejection_reason' => $validated['rejection_reason'],
+            'reviewed_by' => $request->user()->id,
+            'reviewed_at' => now(),
+            'admin_override' => true,
+        ]);
+        app(RegistrationActivityService::class)->logRejection($registration, $request->user(), $validated['rejection_reason']);
+
+        return response()->json(['message' => 'Admin rejected registration', 'data' => $registration]);
     }
 
     // ── Athlete's own registrations ──────────────────────────────────────────

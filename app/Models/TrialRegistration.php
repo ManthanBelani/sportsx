@@ -13,16 +13,21 @@ class TrialRegistration extends Model
 
     protected $fillable = [
         'trial_id', 'athlete_id', 'registration_ref', 'document_status',
-        'verification_status', 'approval_status', 'reminder_enabled',
-        'playing_role', 'medical_conditions', 'parental_consent',
-        'rejection_reason', 'reviewed_by', 'reviewed_at', 'status',
+        'verification_status', 'approval_status', 'rejection_reason',
+        'reviewed_by', 'reviewed_at', 'admin_override',
+        'reminder_enabled', 'playing_role', 'medical_conditions', 'parental_consent',
+        'status',
     ];
 
-    protected $casts = [
-        'reviewed_at' => 'datetime',
-        'reminder_enabled' => 'boolean',
-        'parental_consent' => 'boolean',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'reviewed_at' => 'datetime',
+            'reminder_enabled' => 'boolean',
+            'parental_consent' => 'boolean',
+            'admin_override' => 'boolean',
+        ];
+    }
 
     public function trial(): BelongsTo
     {
@@ -42,5 +47,20 @@ class TrialRegistration extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(TrialRegistrationDocument::class);
+    }
+
+    public function isPending(): bool
+    {
+        return $this->approval_status === 'pending';
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->approval_status === 'approved';
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->approval_status === 'rejected';
     }
 }
