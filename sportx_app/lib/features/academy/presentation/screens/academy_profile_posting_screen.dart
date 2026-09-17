@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +11,7 @@ import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 const _facilityOptions = [
   'Turf Ground',
@@ -118,7 +120,7 @@ class _AcademyProfilePostingScreenState extends ConsumerState<AcademyProfilePost
         context.pop();
       }
     } catch (e) {
-      if (mounted) SnackBarUtils.showError(context, e);
+      if (mounted) SnackBarUtils.showError(context, e is DioException ? ApiException.fromDio(e as DioException) : e);
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -149,7 +151,7 @@ class _AcademyProfilePostingScreenState extends ConsumerState<AcademyProfilePost
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
       ),
       body: !showForm
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? const GenericListSkeleton()
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Form(

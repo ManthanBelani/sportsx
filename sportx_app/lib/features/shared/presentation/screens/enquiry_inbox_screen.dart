@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/shared/providers/enquiry_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class EnquiryInboxScreen extends ConsumerStatefulWidget {
   const EnquiryInboxScreen({super.key});
@@ -109,7 +110,7 @@ class _EnquiryInboxScreenState extends ConsumerState<EnquiryInboxScreen> {
             child: RefreshIndicator(
               onRefresh: _refresh,
               child: _loading && all.isEmpty
-                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                  ? const GenericListSkeleton()
                   : state.error != null && all.isEmpty
                       ? ListView(children: [
                           Padding(
@@ -126,8 +127,23 @@ class _EnquiryInboxScreenState extends ConsumerState<EnquiryInboxScreen> {
                               Padding(
                                 padding: EdgeInsets.all(32),
                                 child: Center(
-                                  child: Text('No enquiries yet',
-                                      style: TextStyle(color: AppColors.textSecondary)),
+                                  child: Column(
+                                    children: [
+                                      Text('No enquiries yet',
+                                          style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppColors.textPrimary)),
+                                      SizedBox(height: 4),
+                                      Text(
+                                          'When athletes enquire about\nyour coaching, they will appear here',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontSize: 13,
+                                              color: AppColors.textSecondary,
+                                              height: 1.4)),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ])

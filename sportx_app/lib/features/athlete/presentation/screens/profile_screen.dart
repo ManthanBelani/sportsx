@@ -50,11 +50,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Future<void> _loadProfile() async {
     final authUser = ref.read(authProvider).user;
-    setState(() {
-      _userId = authUser?.id ?? 0;
-      _name = authUser?.name ?? '';
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _userId = authUser?.id ?? 0;
+        if (_name.isEmpty) _name = authUser?.name ?? '';
+        _isLoading = true;
+      });
+    }
 
     try {
       final dio = ref.read(dioProvider);
@@ -139,11 +141,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         ],
       ),
-      body: _isLoading
-          ? const CoachProfileViewSkeleton()
-          : RefreshIndicator(
-              onRefresh: _loadProfile,
-              child: SingleChildScrollView(
+      body: RefreshIndicator(
+        onRefresh: _loadProfile,
+        child: _isLoading
+            ? const SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                child: CoachProfileViewSkeleton(),
+              )
+            : SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -167,7 +172,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ],
                 ),
               ),
-            ),
+      ),
     );
   }
 

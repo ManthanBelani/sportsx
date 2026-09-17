@@ -4,6 +4,7 @@ import 'package:sportx_app/features/admin/presentation/providers/admin_provider.
 import 'package:sportx_app/features/admin/presentation/screens/admin_web_layout.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class PendingApprovalsScreen extends ConsumerStatefulWidget {
   const PendingApprovalsScreen({super.key});
@@ -35,7 +36,7 @@ class _PendingApprovalsScreenState extends ConsumerState<PendingApprovalsScreen>
         ),
       ],
       child: adminState.isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const GenericListSkeleton()
           : adminState.pendingApprovals.isEmpty
               ? Center(
                   child: Column(

@@ -100,26 +100,50 @@ class _SavedScreenState extends ConsumerState<SavedScreen> with SingleTickerProv
           tabs: _tabs.map((t) => Tab(text: t)).toList(),
         ),
       ),
-      body: state.isLoading && state.items.isEmpty
-          ? const GenericListSkeleton()
+      body: state.isLoading
+          ? RefreshIndicator(
+              onRefresh: () => ref.read(savedProvider.notifier).load(),
+              child: const SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                child: GenericListSkeleton(),
+              ),
+            )
           : state.error != null && state.items.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(state.error!, style: const TextStyle(color: AppColors.textSecondary)),
-                      const SizedBox(height: 12),
-                      ElevatedButton(
-                        onPressed: () => ref.read(savedProvider.notifier).load(),
-                        child: const Text('Retry'),
+              ? RefreshIndicator(
+                  onRefresh: () => ref.read(savedProvider.notifier).load(),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.6,
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(state.error!, style: TextStyle(color: AppColors.textSecondary)),
+                            SizedBox(height: 12),
+                            ElevatedButton(
+                              onPressed: () => ref.read(savedProvider.notifier).load(),
+                              child: Text('Retry'),
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
+                    ),
                   ),
                 )
               : state.items.isEmpty
-                  ? const Center(
-                      child: Text('No saved items yet',
-                          style: TextStyle(color: AppColors.textSecondary)),
+                  ? RefreshIndicator(
+                      onRefresh: () => ref.read(savedProvider.notifier).load(),
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.6,
+                          child: const Center(
+                            child: Text('No saved items yet',
+                                style: TextStyle(color: AppColors.textSecondary)),
+                          ),
+                        ),
+                      ),
                     )
                   : TabBarView(
                       controller: _tabController,
@@ -136,13 +160,23 @@ class _SavedScreenState extends ConsumerState<SavedScreen> with SingleTickerProv
 
   Widget _buildList(List<SavedItem> items) {
     if (items.isEmpty) {
-      return const Center(
-        child: Text('Nothing here yet', style: TextStyle(color: AppColors.textSecondary)),
+      return RefreshIndicator(
+        onRefresh: () => ref.read(savedProvider.notifier).load(),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height * 0.5,
+            child: const Center(
+              child: Text('Nothing here yet', style: TextStyle(color: AppColors.textSecondary)),
+            ),
+          ),
+        ),
       );
     }
     return RefreshIndicator(
       onRefresh: () => ref.read(savedProvider.notifier).load(),
       child: ListView.separated(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
         itemCount: items.length,
         separatorBuilder: (_, _) => const Divider(height: 1),

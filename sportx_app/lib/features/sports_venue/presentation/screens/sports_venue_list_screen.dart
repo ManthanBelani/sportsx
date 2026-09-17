@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class SportsVenueListScreen extends ConsumerWidget {
   const SportsVenueListScreen({super.key});
@@ -15,7 +16,7 @@ class SportsVenueListScreen extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () => ref.read(sportsVenuesProvider.notifier).refresh(),
         child: state.isLoading && state.items.isEmpty
-            ? const Center(child: CircularProgressIndicator())
+            ? const GenericListSkeleton()
             : state.items.isEmpty
                 ? const Center(child: Text('No venues found'))
                 : ListView.builder(

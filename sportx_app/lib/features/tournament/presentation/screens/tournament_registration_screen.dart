@@ -89,11 +89,11 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
       });
     } on DioException catch (e) {
       if (mounted) {
-        SnackBarUtils.showError(context, ApiException.fromDio(e));
+        SnackBarUtils.showError(context, (() { final ex = ApiException.fromDio(e); return ex.fieldErrors.isNotEmpty ? '${ex.message} (${ex.fieldErrors.values.join(', ')})' : ex.message; })());
       }
     } catch (e) {
       if (mounted) {
-        SnackBarUtils.showError(context, 'Registration failed. Please try again.');
+        SnackBarUtils.showError(context, e, 'Registration failed. Please check your connection and try again.');
       }
     } finally {
       if (mounted) setState(() => _submitting = false);

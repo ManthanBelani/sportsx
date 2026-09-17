@@ -7,6 +7,7 @@ import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class ViewProfileScreen extends ConsumerStatefulWidget {
   final String type;
@@ -60,7 +61,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const GenericDetailSkeleton()
           : _profileData == null
               ? Center(
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -300,6 +301,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
     final postsCount = _profileData!['posts_count'] ?? _profileData!['social_posts_count'] ?? 0;
     final achievementsCount = (_profileData!['achievements'] as List?)?.length ?? 0;
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
         color: AppColors.surface,

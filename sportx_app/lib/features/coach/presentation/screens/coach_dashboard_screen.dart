@@ -111,9 +111,10 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
+            width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppColors.surface,
@@ -153,6 +154,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
 
   Widget _buildScheduleAction(IconData icon, String title, String subtitle) {
     return Container(
+      width: double.infinity,
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -206,9 +208,10 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
+            width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: AppColors.surface,
@@ -221,7 +224,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
                   radius: 28,
                   backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                   backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
-                  onBackgroundImageError: (_, _) {},
+                  onBackgroundImageError: photoUrl != null ? (_, _) {} : null,
                   child: photoUrl == null ? const Icon(LucideIcons.user, color: AppColors.primary, size: 28) : null,
                 ),
                 const SizedBox(width: 14),
@@ -265,6 +268,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
           const SizedBox(height: 16),
 
           Container(
+            width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppColors.surface,
@@ -298,6 +302,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
           const SizedBox(height: 16),
 
           Container(
+            width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppColors.surface,
@@ -323,6 +328,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
           const SizedBox(height: 16),
 
           Container(
+            width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppColors.surface,
@@ -346,7 +352,20 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
                   const Center(
                     child: Padding(
                       padding: EdgeInsets.all(16),
-                      child: Text('No enquiries yet', style: TextStyle(color: AppColors.textSecondary)),
+                      child: Column(
+                        children: [
+                          Text('No enquiries yet',
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary)),
+                          SizedBox(height: 4),
+                          Text('When athletes enquire about\nyour coaching, they will appear here',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: 13, color: AppColors.textSecondary, height: 1.4)),
+                        ],
+                      ),
                     ),
                   )
                 else

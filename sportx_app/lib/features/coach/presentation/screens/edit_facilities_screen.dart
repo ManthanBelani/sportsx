@@ -73,7 +73,7 @@ class _EditFacilitiesScreenState extends ConsumerState<EditFacilitiesScreen> {
       }
     } catch (e) {
       if (mounted) {
-        SnackBarUtils.showError(context, e);
+        SnackBarUtils.showError(context, e, 'Failed to update facilities. Please try again.');
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);

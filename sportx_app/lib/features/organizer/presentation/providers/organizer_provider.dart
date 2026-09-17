@@ -55,112 +55,117 @@ class ProviderTournamentActions {
   final Ref _ref;
   ProviderTournamentActions(this._dio, this._ref);
 
-  Future<bool> create(Map<String, dynamic> data) async {
+  String _msg(Object e) => e is DioException ? ApiException.fromDio(e).message : ApiException.messageFor(e);
+
+  Future<(bool, String?)> create(Map<String, dynamic> data) async {
     try {
       await _dio.post('/me/tournaments', data: data);
       _ref.read(myTournamentsProvider.notifier).refresh();
-      return true;
-    } on DioException {
-      return false;
+      return (true, null);
+    } catch (e) {
+      return (false, _msg(e));
     }
   }
 
-  Future<bool> publish(String id) async {
+  Future<(bool, String?)> publish(String id) async {
     try {
       await _dio.post('/me/tournaments/$id/publish');
       _ref.read(myTournamentsProvider.notifier).refresh();
-      return true;
-    } on DioException {
-      return false;
+      return (true, null);
+    } catch (e) {
+      return (false, _msg(e));
     }
   }
 
-  Future<bool> close(String id) async {
+  Future<(bool, String?)> close(String id) async {
     try {
       await _dio.post('/me/tournaments/$id/close');
       _ref.read(myTournamentsProvider.notifier).refresh();
-      return true;
-    } on DioException {
-      return false;
+      return (true, null);
+    } catch (e) {
+      return (false, _msg(e));
     }
   }
 
-  Future<bool> publishResult(String tournamentId, String resultId) async {
+  Future<(bool, String?)> publishResult(String tournamentId, String resultId) async {
     try {
       await _dio.post('/tournaments/$tournamentId/results/$resultId/publish');
       _ref.invalidate(tournamentResultsProvider(tournamentId));
-      return true;
-    } on DioException {
-      return false;
+      return (true, null);
+    } catch (e) {
+      return (false, _msg(e));
     }
   }
 
-  Future<bool> unpublishResult(String tournamentId, String resultId) async {
+  Future<(bool, String?)> unpublishResult(String tournamentId, String resultId) async {
     try {
       await _dio.post('/tournaments/$tournamentId/results/$resultId/unpublish');
       _ref.invalidate(tournamentResultsProvider(tournamentId));
-      return true;
-    } on DioException {
-      return false;
+      return (true, null);
+    } catch (e) {
+      return (false, _msg(e));
     }
   }
 
-  Future<bool> updatePayment(String registrationId, String paymentStatus) async {
+  Future<(bool, String?)> updatePayment(String registrationId, String paymentStatus) async {
     try {
       await _dio.patch('/registrations/tournaments/$registrationId/payment', data: {'payment_status': paymentStatus});
-      return true;
-    } on DioException {
-      return false;
+      return (true, null);
+    } catch (e) {
+      return (false, _msg(e));
     }
   }
 
-  Future<bool> approveRegistration(String registrationId) async {
+  Future<(bool, String?)> approveRegistration(String registrationId) async {
     try {
       await _dio.patch('/registrations/tournaments/$registrationId/approve');
       _ref.invalidate(tournamentRegistrationsProvider);
-      return true;
-    } on DioException {
-      return false;
+      return (true, null);
+    } catch (e) {
+      return (false, _msg(e));
     }
   }
 
-  Future<bool> rejectRegistration(String registrationId, String reason) async {
+  Future<(bool, String?)> rejectRegistration(String registrationId, String reason) async {
     try {
       await _dio.patch('/registrations/tournaments/$registrationId/reject', data: {'rejection_reason': reason});
       _ref.invalidate(tournamentRegistrationsProvider);
-      return true;
-    } on DioException {
-      return false;
+      return (true, null);
+    } catch (e) {
+      return (false, _msg(e));
     }
   }
 
-  Future<bool> approveTrialRegistration(String registrationId) async {
+  Future<(bool, String?)> approveTrialRegistration(String registrationId) async {
     try {
       await _dio.patch('/registrations/trials/$registrationId/approve');
-      return true;
-    } on DioException {
-      return false;
+      return (true, null);
+    } catch (e) {
+      return (false, _msg(e));
     }
   }
 
-  Future<bool> rejectTrialRegistration(String registrationId, String reason) async {
+  Future<(bool, String?)> rejectTrialRegistration(String registrationId, String reason) async {
     try {
       await _dio.patch('/registrations/trials/$registrationId/reject', data: {'rejection_reason': reason});
-      return true;
-    } on DioException {
-      return false;
+      return (true, null);
+    } catch (e) {
+      return (false, _msg(e));
     }
   }
 
-  Future<String?> downloadTournamentIcs(String registrationId) async {
+  Future<(String?, String?)> downloadTournamentIcs(String registrationId) async {
     try {
       final resp = await _dio.get('/registrations/tournaments/$registrationId/ics');
-      // Backend returns text/calendar body directly; we return it as string
-      return resp.data is String ? resp.data as String : resp.data.toString();
-    } on DioException {
-      return null;
+      final ics = resp.data is String ? resp.data as String : resp.data.toString();
+      return (ics, null);
+    } catch (e) {
+      return (null, _msg(e));
     }
   }
+
+  // Back-compat boolean wrappers
+  Future<bool> createLegacy(Map<String, dynamic> data) async => (await create(data)).$1;
 }
 
 final providerTournamentActionsProvider = Provider<ProviderTournamentActions>((ref) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -30,8 +31,8 @@ class RegistrationManagementScreen extends ConsumerWidget {
         bottom: const PreferredSize(preferredSize: Size.fromHeight(1), child: Divider(height: 1, color: AppColors.border)),
       ),
       body: tournamentAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-        error: (e, _) => Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Text('$e', style: const TextStyle(color: AppColors.textSecondary)), const SizedBox(height: 12), ElevatedButton(onPressed: () => ref.invalidate(tournamentDetailProvider(tournamentId)), child: const Text('Retry'))])),
+        loading: () => const GenericDetailSkeleton(),
+        error: (e, _) => Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Text(ApiException.messageFor(e), style: const TextStyle(color: AppColors.textSecondary)), const SizedBox(height: 12), ElevatedButton(onPressed: () => ref.invalidate(tournamentDetailProvider(tournamentId)), child: const Text('Retry'))])),
         data: (tournament) {
           final capacityList = capacityAsync.valueOrNull ?? [];
           final feeRaw = tournament?.registrationFee ?? 0;
@@ -183,7 +184,7 @@ class _RegistrationListView extends ConsumerWidget {
       loading: () => const GenericListSkeleton(itemCount: 5),
       error: (e, _) => Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Text('$e', style: const TextStyle(color: AppColors.textSecondary)),
+          Text(ApiException.messageFor(e), style: const TextStyle(color: AppColors.textSecondary)),
           const SizedBox(height: 12),
           ElevatedButton(onPressed: () => ref.invalidate(tournamentRegistrationsByStatusProvider((tournamentId: tournamentId, status: status))), child: const Text('Retry')),
         ]),
@@ -301,9 +302,13 @@ class _RegistrationCard extends ConsumerWidget {
 
   Future<void> _approve(BuildContext context, WidgetRef ref, Map<String, dynamic> r) async {
     final id = r['id'].toString();
-    final ok = await ref.read(providerTournamentActionsProvider).approveRegistration(id);
+    final (ok, error) = await ref.read(providerTournamentActionsProvider).approveRegistration(id);
     if (context.mounted) {
-      SnackBarUtils.showSuccess(context, ok ? 'Registration approved' : 'Failed to approve');
+      if (ok) {
+        SnackBarUtils.showSuccess(context, 'Registration approved');
+      } else {
+        SnackBarUtils.showError(context, error ?? 'Failed to approve. Please try again.');
+      }
       if (ok) {
         ref.invalidate(tournamentRegistrationsByStatusProvider((tournamentId: tournamentId, status: 'pending')));
         ref.invalidate(tournamentRegistrationsByStatusProvider((tournamentId: tournamentId, status: 'approved')));
@@ -329,9 +334,13 @@ class _RegistrationCard extends ConsumerWidget {
       ),
     );
     if (reason != null && reason.trim().isNotEmpty && context.mounted) {
-      final ok = await ref.read(providerTournamentActionsProvider).rejectRegistration(r['id'].toString(), reason.trim());
+      final (ok, error) = await ref.read(providerTournamentActionsProvider).rejectRegistration(r['id'].toString(), reason.trim());
       if (context.mounted) {
-        SnackBarUtils.showSuccess(context, ok ? 'Registration rejected' : 'Failed to reject');
+        if (ok) {
+          SnackBarUtils.showSuccess(context, 'Registration rejected');
+        } else {
+          SnackBarUtils.showError(context, error ?? 'Failed to reject. Please try again.');
+        }
         if (ok) {
           ref.invalidate(tournamentRegistrationsByStatusProvider((tournamentId: tournamentId, status: 'pending')));
           ref.invalidate(tournamentRegistrationsByStatusProvider((tournamentId: tournamentId, status: 'rejected')));

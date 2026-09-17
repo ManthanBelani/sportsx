@@ -69,7 +69,7 @@ class _TalentScoutConnectionScreenState extends ConsumerState<TalentScoutConnect
         }
       }
     } catch (e) {
-      if (mounted) SnackBarUtils.showError(context, e);
+      if (mounted) SnackBarUtils.showError(context, e, 'Failed to send request. Please try again.');
     } finally {
       if (mounted) setState(() => _sending = false);
     }

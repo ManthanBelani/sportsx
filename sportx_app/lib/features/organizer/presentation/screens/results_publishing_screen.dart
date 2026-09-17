@@ -94,7 +94,7 @@ class _ResultsPublishingScreenState extends ConsumerState<ResultsPublishingScree
         context.pop();
       }
     } catch(e){
-      if (mounted) SnackBarUtils.showError(context, e);
+      if (mounted) SnackBarUtils.showError(context, e, 'Failed to publish results. Please try again.');
     } finally{
       if (mounted) setState(()=> _saving=false);
     }

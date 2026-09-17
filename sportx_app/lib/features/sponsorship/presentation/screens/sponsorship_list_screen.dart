@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class SponsorshipListScreen extends ConsumerStatefulWidget {
   const SponsorshipListScreen({super.key});
@@ -105,7 +106,7 @@ class _SponsorshipListScreenState extends ConsumerState<SponsorshipListScreen> {
             child: RefreshIndicator(
               onRefresh: () => ref.read(sponsorshipsProvider.notifier).refresh(),
               child: state.isLoading && state.items.isEmpty
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const GenericListSkeleton()
                   : state.items.isEmpty
                       ? const Center(child: Text('No sponsorships found'))
                       : ListView.builder(

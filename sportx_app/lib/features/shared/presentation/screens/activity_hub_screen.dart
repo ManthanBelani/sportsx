@@ -70,8 +70,14 @@ class ActivityHubScreen extends ConsumerWidget {
             ],
           ),
         ),
-        body: state.isLoading && state.items.isEmpty
-            ? const GenericListSkeleton()
+        body: state.isLoading
+            ? RefreshIndicator(
+                onRefresh: () => ref.read(activityProvider.notifier).load(),
+                child: const SingleChildScrollView(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  child: GenericListSkeleton(),
+                ),
+              )
             : TabBarView(
                 children: [
                   _buildList(context, ref, byCategory['trial']!),
@@ -86,13 +92,23 @@ class ActivityHubScreen extends ConsumerWidget {
 
   Widget _buildList(BuildContext context, WidgetRef ref, List<ActivityEntry> items) {
     if (items.isEmpty) {
-      return Center(
-        child: Text('No activity yet', style: TextStyle(color: AppColors.textSecondary)),
+      return RefreshIndicator(
+        onRefresh: () => ref.read(activityProvider.notifier).load(),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height * 0.6,
+            child: const Center(
+              child: Text('No activity yet', style: TextStyle(color: AppColors.textSecondary)),
+            ),
+          ),
+        ),
       );
     }
     return RefreshIndicator(
       onRefresh: () => ref.read(activityProvider.notifier).load(),
       child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
         itemCount: items.length,
         itemBuilder: (context, i) {

@@ -30,13 +30,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
+    if (!mounted) return;
     final state = ref.read(authProvider);
-    if (mounted) {
-      if (state.status == AuthStatus.authenticated) {
-        context.go('/home');
-      } else if (state.status == AuthStatus.error) {
-        SnackBarUtils.showError(context, state.error ?? 'Login failed');
-      }
+    if (state.status == AuthStatus.authenticated) {
+      context.go('/home');
+    } else if (state.status == AuthStatus.error) {
+      SnackBarUtils.showError(context, state.error ?? 'Login failed');
     }
   }
 

@@ -192,18 +192,25 @@ final enquiryDetailProvider =
   );
 });
 
-Future<bool> replyEnquiry(WidgetRef ref, String id, String message) async {
+Future<(bool, String?)> replyEnquiry(WidgetRef ref, String id, String message) async {
   try {
     await ref.read(dioProvider).post('/enquiries/$id/messages', data: {'body': message});
     ref.invalidate(enquiryDetailProvider(id));
-    return true;
-  } on DioException {
-    return false;
+    return (true, null);
+  } on DioException catch (e) {
+    return (false, ApiException.fromDio(e).message);
+  } catch (e) {
+    return (false, ApiException.messageFor(e));
   }
 }
 
-Future<void> markEnquiryRead(Ref ref, String id) async {
+Future<(bool, String?)> markEnquiryRead(Ref ref, String id) async {
   try {
     await ref.read(dioProvider).put('/enquiries/$id/read');
-  } catch (_) {}
+    return (true, null);
+  } on DioException catch (e) {
+    return (false, ApiException.fromDio(e).message);
+  } catch (e) {
+    return (false, ApiException.messageFor(e));
+  }
 }

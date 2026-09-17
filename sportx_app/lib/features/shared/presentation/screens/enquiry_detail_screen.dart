@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -6,6 +7,7 @@ import 'package:sportx_app/shared/providers/enquiry_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/core/utils/date_format_utils.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class EnquiryDetailScreen extends ConsumerStatefulWidget {
   final String id;
@@ -27,17 +29,17 @@ class _EnquiryDetailScreenState extends ConsumerState<EnquiryDetailScreen> {
 
   Future<void> _send() async {
     final text = _replyController.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty) { SnackBarUtils.showError(context, 'Please enter a message'); return; }
     setState(() => _sending = true);
-    final ok = await replyEnquiry(ref, widget.id, text);
+    final (ok, error) = await replyEnquiry(ref, widget.id, text);
     if (!mounted) return;
     setState(() => _sending = false);
     if (ok) {
       _replyController.clear();
       ref.read(enquiryInboxProvider.notifier).load();
-      SnackBarUtils.showSuccess(context, 'Message sent');
+      SnackBarUtils.showSuccess(context, 'Message sent successfully!');
     } else {
-      SnackBarUtils.showError(context, 'Failed to send');
+      SnackBarUtils.showError(context, 'Failed to send message. Please check your connection and try again.');
     }
   }
 
@@ -58,12 +60,12 @@ class _EnquiryDetailScreenState extends ConsumerState<EnquiryDetailScreen> {
         ),
       ),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+        loading: () => const GenericDetailSkeleton(),
         error: (e, _) => Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('$e', style: const TextStyle(color: AppColors.textSecondary)),
+              Text(ApiException.messageFor(e), style: const TextStyle(color: AppColors.textSecondary)),
               const SizedBox(height: 12),
               ElevatedButton(
                 onPressed: () => ref.invalidate(enquiryDetailProvider(widget.id)),

@@ -35,13 +35,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       password: _passwordController.text,
       role: widget.role,
     );
+    if (!mounted) return;
     final state = ref.read(authProvider);
-    if (mounted) {
-      if (state.status == AuthStatus.authenticated) {
-        context.go('/home');
-      } else if (state.status == AuthStatus.error) {
-        SnackBarUtils.showError(context, state.error ?? 'Error');
-      }
+    if (state.status == AuthStatus.authenticated) {
+      context.go('/home');
+    } else if (state.status == AuthStatus.error) {
+      SnackBarUtils.showError(context, state.error ?? 'Error');
     }
   }
 

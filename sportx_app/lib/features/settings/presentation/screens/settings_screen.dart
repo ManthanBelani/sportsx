@@ -6,6 +6,7 @@ import 'package:sportx_app/features/auth/presentation/providers/auth_provider.da
 import 'package:sportx_app/features/settings/presentation/providers/settings_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -46,7 +47,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         centerTitle: false,
       ),
       body: state.isLoading && state.notificationPrefs.isEmpty
-          ? const Center(child: CircularProgressIndicator())
+          ? const GenericListSkeleton()
           : SingleChildScrollView(
               padding: const EdgeInsets.all(20),
               child: Column(

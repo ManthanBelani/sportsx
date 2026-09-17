@@ -15,17 +15,20 @@ class HomeScreen extends ConsumerWidget {
     final auth = ref.watch(authProvider);
     final user = auth.user;
     final profileAsync = ref.watch(profileProvider);
+    Future<void> onRefresh() async {
+      await Future.wait([
+        ref.read(academiesProvider.notifier).refresh(),
+        ref.read(coachesProvider.notifier).refresh(),
+        ref.read(trialsProvider.notifier).refresh(),
+        ref.read(tournamentsProvider.notifier).refresh(),
+        ref.read(scholarshipsProvider.notifier).refresh(),
+      ]);
+    }
 
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: RefreshIndicator(
-        onRefresh: () async {
-          ref.read(academiesProvider.notifier).refresh();
-          ref.read(coachesProvider.notifier).refresh();
-          ref.read(trialsProvider.notifier).refresh();
-          ref.read(tournamentsProvider.notifier).refresh();
-          ref.read(scholarshipsProvider.notifier).refresh();
-        },
+        onRefresh: onRefresh,
         child: CustomScrollView(
           slivers: [
             SliverAppBar(
@@ -61,7 +64,7 @@ class HomeScreen extends ConsumerWidget {
                               style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
                             );
                           },
-                          loading: () => const Text('Loading profile...', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                          loading: () => const ShimmerSkeleton(child: SkeletonBox(width: 120, height: 12, borderRadius: 4)),
                           error: (_, _) => const Text('Athlete', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                         ),
                       ],
@@ -186,7 +189,8 @@ class _RecommendedSection extends ConsumerWidget {
     final state = ref.watch(academiesProvider);
     final coachesState = ref.watch(coachesProvider);
 
-    if (state.isLoading && state.items.isEmpty) {
+    final isLoading = (state.isLoading && state.items.isEmpty) || (coachesState.isLoading && coachesState.items.isEmpty);
+    if (isLoading) {
       return SizedBox(
         height: 200,
         child: ShimmerSkeleton(

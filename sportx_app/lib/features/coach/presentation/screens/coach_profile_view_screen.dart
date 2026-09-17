@@ -43,7 +43,7 @@ class CoachProfileViewScreen extends ConsumerWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildHeader(context, profile),
             const SizedBox(height: 20),
@@ -127,6 +127,7 @@ class CoachProfileViewScreen extends ConsumerWidget {
   Widget _buildHeader(BuildContext context, Coach profile) {
     final photoUrl = profile.profilePhotoUrl != null ? MediaUtils.resolveUrl(profile.profilePhotoUrl!) : null;
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -140,7 +141,7 @@ class CoachProfileViewScreen extends ConsumerWidget {
             radius: 42,
             backgroundColor: AppColors.primary.withValues(alpha: 0.1),
             backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
-            onBackgroundImageError: (_, _) {},
+            onBackgroundImageError: photoUrl != null ? (_, _) {} : null,
             child: photoUrl == null ? const Icon(LucideIcons.user, color: AppColors.primary, size: 36) : null,
           ),
           const SizedBox(width: 16),
@@ -244,6 +245,7 @@ class CoachProfileViewScreen extends ConsumerWidget {
                 if (certs.isNotEmpty && achievements?.trim().isNotEmpty == true) const SizedBox(height: 12),
                 if (achievements?.trim().isNotEmpty == true)
                   Container(
+                    width: double.infinity,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(8)),
                     child: Row(
@@ -337,6 +339,7 @@ class CoachProfileViewScreen extends ConsumerWidget {
 
   Widget _buildSectionCard({required String title, required Widget child}) {
     return Container(
+      width: double.infinity,
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(

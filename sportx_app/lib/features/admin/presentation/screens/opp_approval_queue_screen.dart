@@ -5,6 +5,7 @@ import 'package:sportx_app/features/admin/presentation/providers/admin_provider.
 import 'package:sportx_app/features/admin/presentation/screens/admin_web_layout.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class OppApprovalQueueScreen extends ConsumerStatefulWidget {
   const OppApprovalQueueScreen({super.key});
@@ -73,7 +74,7 @@ class _OppApprovalQueueScreenState extends ConsumerState<OppApprovalQueueScreen>
 
   Widget _buildOpportunityList(AdminState adminState, String status) {
     if (adminState.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const GenericListSkeleton();
     }
 
     final opportunities = adminState.opportunities

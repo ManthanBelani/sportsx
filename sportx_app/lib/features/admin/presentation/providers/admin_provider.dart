@@ -273,26 +273,23 @@ class AdminNotifier extends StateNotifier<AdminState> {
         'email': email,
         'password': password,
       });
-
-      if (response.statusCode == 200) {
-        final data = response.data['data'];
-        final token = data['token'] as String?;
-        if (token != null) {
-          await _storage.saveToken(token);
-        }
-        state = state.copyWith(
-          isLoading: false,
-          isLoggedIn: true,
-          currentAdmin: AdminUser(
-            id: data['user']['id'].toString(),
-            name: data['user']['name'] ?? '',
-            email: data['user']['email'] ?? '',
-            role: data['user']['role'] ?? 'admin',
-          ),
-        );
-        return true;
+      final data = response.data['data'] as Map<String, dynamic>;
+      final token = data['token'] as String?;
+      if (token != null) {
+        await _storage.saveToken(token);
       }
-      return false;
+      final userMap = data['user'] as Map<String, dynamic>? ?? data;
+      state = state.copyWith(
+        isLoading: false,
+        isLoggedIn: true,
+        currentAdmin: AdminUser(
+          id: userMap['id'].toString(),
+          name: userMap['name'] ?? '',
+          email: userMap['email'] ?? '',
+          role: userMap['role'] ?? 'admin',
+        ),
+      );
+      return true;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
       return false;
@@ -305,21 +302,18 @@ class AdminNotifier extends StateNotifier<AdminState> {
       final response = await _dio.post('/admin/verify-2fa', data: {
         'code': code,
       });
-
-      if (response.statusCode == 200) {
-        final data = response.data['data'];
-        state = state.copyWith(
-          isLoading: false,
-          currentAdmin: AdminUser(
-            id: data['user']['id'].toString(),
-            name: data['user']['name'] ?? '',
-            email: data['user']['email'] ?? '',
-            role: data['user']['role'] ?? 'admin',
-          ),
-        );
-        return true;
-      }
-      return false;
+      final data = response.data['data'] as Map<String, dynamic>;
+      final userMap = data['user'] as Map<String, dynamic>? ?? data;
+      state = state.copyWith(
+        isLoading: false,
+        currentAdmin: AdminUser(
+          id: userMap['id'].toString(),
+          name: userMap['name'] ?? '',
+          email: userMap['email'] ?? '',
+          role: userMap['role'] ?? 'admin',
+        ),
+      );
+      return true;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
       return false;
@@ -667,10 +661,9 @@ class AdminNotifier extends StateNotifier<AdminState> {
   }
 
   String _getErrorMessage(dynamic e) {
-    if (e is DioException && e.response?.data != null) {
-      return e.response?.data['error']['message'] ?? 'An error occurred';
-    }
-    return e.toString();
+    if (e is DioException) return ApiException.fromDio(e).message;
+    if (e is ApiException) return e.message;
+    return ApiException.messageFor(e);
   }
 }
 

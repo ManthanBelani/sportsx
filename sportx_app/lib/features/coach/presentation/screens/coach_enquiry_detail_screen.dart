@@ -48,17 +48,21 @@ class _CoachEnquiryDetailScreenState extends ConsumerState<CoachEnquiryDetailScr
 
   Future<void> _send() async {
     final text = _replyController.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty) {
+      SnackBarUtils.showError(context, 'Please enter a message');
+      return;
+    }
     setState(() => _sending = true);
-    final ok = await replyEnquiry(ref, widget.id, text);
+    final (ok, error) = await replyEnquiry(ref, widget.id, text);
     if (!mounted) return;
     setState(() => _sending = false);
     if (ok) {
       _replyController.clear();
       ref.read(enquiryInboxProvider.notifier).load();
       _scrollToBottom();
+      SnackBarUtils.showSuccess(context, 'Message sent');
     } else {
-      SnackBarUtils.showError(context, 'Failed to send message');
+      SnackBarUtils.showError(context, error ?? 'Failed to send message. Please try again.');
     }
   }
 
@@ -114,7 +118,7 @@ class _CoachEnquiryDetailScreenState extends ConsumerState<CoachEnquiryDetailScr
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('$e', style: const TextStyle(color: AppColors.textSecondary)),
+              Text(ApiException.messageFor(e), style: const TextStyle(color: AppColors.textSecondary)),
               const SizedBox(height: 12),
               ElevatedButton(
                 onPressed: () => ref.invalidate(enquiryDetailProvider(widget.id)),

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/social/presentation/providers/posts_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
   final String postId;
@@ -25,7 +27,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
   Future<void> _submitComment() async {
     final text = _commentController.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty) { SnackBarUtils.showError(context, 'Please enter a comment'); return; }
     _commentController.clear();
     final ok = await commentOnPost(ref, widget.postId, text);
     if (mounted) {
@@ -49,10 +51,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         children: [
           Expanded(
             child: async.when(
-              loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+              loading: () => const GenericDetailSkeleton(),
               error: (e, _) => Center(
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  Text('$e', style: const TextStyle(color: AppColors.textSecondary)),
+                  Text(ApiException.messageFor(e), style: const TextStyle(color: AppColors.textSecondary)),
                   const SizedBox(height: 12),
                   ElevatedButton(onPressed: () => ref.invalidate(postDetailProvider(widget.postId)), child: const Text('Retry')),
                 ]),

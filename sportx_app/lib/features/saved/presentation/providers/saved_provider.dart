@@ -61,12 +61,12 @@ class SavedState {
 class SavedNotifier extends StateNotifier<SavedState> {
   final Dio _dio;
 
-  SavedNotifier(this._dio) : super(SavedState()) {
+  SavedNotifier(this._dio) : super(SavedState(isLoading: true)) {
     load();
   }
 
   Future<void> load() async {
-    if (state.isLoading) return;
+    if (state.isLoading && state.items.isNotEmpty) return;
     state = state.copyWith(isLoading: true, error: null);
     try {
       final resp = await _dio.get('/me/saved');

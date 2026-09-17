@@ -28,7 +28,7 @@ class _SponsorPitchScreenState extends ConsumerState<SponsorPitchScreen> {
   }
 
   Future<void> _submit() async {
-    if (_pitchController.text.trim().isEmpty) return;
+    if (_pitchController.text.trim().isEmpty) { SnackBarUtils.showError(context, 'Please write a pitch note before submitting'); return; }
     setState(() => _submitting = true);
     try {
       await ref.read(dioProvider).post('/sponsorships/${widget.sponsorId}/apply', data: {
@@ -42,7 +42,7 @@ class _SponsorPitchScreenState extends ConsumerState<SponsorPitchScreen> {
       }
     } catch (e) {
       if (mounted) {
-        SnackBarUtils.showError(context, e);
+        SnackBarUtils.showError(context, e, 'Failed to submit pitch. Please try again.');
       }
     } finally {
       if (mounted) setState(() => _submitting = false);

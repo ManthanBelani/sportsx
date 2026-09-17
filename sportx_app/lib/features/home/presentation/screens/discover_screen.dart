@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
@@ -232,7 +233,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
         );
       },
       loading: () => const DiscoverSkeleton(),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => Center(child: Text(ApiException.messageFor(e))),
     );
   }
 

@@ -130,9 +130,17 @@ class AdminContentController extends Controller
         }
 
         $model = $this->models[$type];
-        $validated = $request->validate(array_merge($model::rules() ?? [], [
-            'owner_user_id' => 'nullable|integer|exists:users,id',
-        ]));
+        $rules = method_exists($model, 'rules') ? $model::rules() : [];
+        // If model defines no rules, accept all fillable input (admin is trusted)
+        if (empty($rules)) {
+            $validated = $request->all();
+            // Validate only owner_user_id if present
+            $request->validate(['owner_user_id' => 'nullable|integer|exists:users,id']);
+        } else {
+            $validated = $request->validate(array_merge($rules, [
+                'owner_user_id' => 'nullable|integer|exists:users,id',
+            ]));
+        }
 
         $validated = $this->injectOwner($request, $type, $validated);
 
@@ -166,9 +174,15 @@ class AdminContentController extends Controller
             ], 404);
         }
 
-        $validated = $request->validate(array_merge($model::rules() ?? [], [
-            'owner_user_id' => 'nullable|integer|exists:users,id',
-        ]));
+        $rules = method_exists($model, 'rules') ? $model::rules() : [];
+        if (empty($rules)) {
+            $validated = $request->all();
+            $request->validate(['owner_user_id' => 'nullable|integer|exists:users,id']);
+        } else {
+            $validated = $request->validate(array_merge($rules, [
+                'owner_user_id' => 'nullable|integer|exists:users,id',
+            ]));
+        }
         $validated = $this->injectOwner($request, $type, $validated, $item);
 
         $item->update($validated);

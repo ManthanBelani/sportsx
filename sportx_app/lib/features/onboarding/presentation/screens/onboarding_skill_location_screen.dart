@@ -6,6 +6,7 @@ import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/onboarding/presentation/providers/onboarding_provider.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class OnboardingSkillLocationScreen extends ConsumerStatefulWidget {
@@ -215,7 +216,7 @@ class _OnboardingSkillLocationScreenState extends ConsumerState<OnboardingSkillL
                     const Text('Select your city', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
                     const SizedBox(height: 12),
                     if (meta.isLoading)
-                      const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()))
+                      const Padding(padding: EdgeInsets.all(32), child: SkeletonBox(width: double.infinity, height: 48, borderRadius: 8))
                     else
                       Builder(builder: (context) {
                         final filteredCities = _selectedState == null

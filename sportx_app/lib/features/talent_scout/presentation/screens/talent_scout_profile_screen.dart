@@ -6,6 +6,7 @@ import 'package:sportx_app/features/talent_scout/presentation/providers/talent_s
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class TalentScoutProfileScreen extends ConsumerStatefulWidget {
   const TalentScoutProfileScreen({super.key});
@@ -78,7 +79,7 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
         }
       }
     } catch (e) {
-      if (mounted) SnackBarUtils.showError(context, e);
+      if (mounted) SnackBarUtils.showError(context, e, 'Failed to update profile. Please try again.');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -90,7 +91,7 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
     if (_loading) {
       return const Scaffold(
         backgroundColor: AppColors.background,
-        body: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+        body: const GenericListSkeleton(),
       );
     }
     return Scaffold(

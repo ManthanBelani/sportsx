@@ -112,67 +112,72 @@ Future<PickedMedia?> pickAndUploadMedia(
 
     final resp = await ref.read(dioProvider).post('/media/upload', data: form);
 
-    if (resp.statusCode != 201) {
-      if (context.mounted) messenger.showSnackBar(SnackBar(content: Text('Upload failed: ${resp.statusCode}')));
-      return null;
-    }
-
-    final data = resp.data is Map ? resp.data['data'] as Map<String, dynamic>? : null;
+      final data = resp.data is Map ? resp.data['data'] as Map<String, dynamic>? : null;
     final mediaId = data?['id'] as int?;
     final url = data?['url'] as String? ?? '';
 
     if (mediaId == null || mediaId == 0) {
-      if (context.mounted) messenger.showSnackBar(const SnackBar(content: Text('Upload succeeded but no media ID returned')));
+      if (context.mounted) SnackBarUtils.showError(context, 'Upload succeeded but server did not return media ID. Please try again.');
       return null;
     }
 
-    if (context.mounted) messenger.showSnackBar(const SnackBar(content: Text('Uploaded successfully')));
+    if (context.mounted) SnackBarUtils.showSuccess(context, 'Uploaded successfully');
 
     return PickedMedia(file: file, mediaId: mediaId, url: url);
   } on DioException catch (e) {
     if (context.mounted) {
       final apiEx = ApiException.fromDio(e);
-      SnackBarUtils.showError(context, 'Upload error: ${apiEx.message} (${apiEx.statusCode})');
+      if (apiEx.fieldErrors.isNotEmpty) {
+        SnackBarUtils.showValidationError(context, apiEx.fieldErrors, apiEx);
+      } else {
+        SnackBarUtils.showError(context, apiEx);
+      }
     }
     return null;
   } catch (e) {
     if (context.mounted) {
-      SnackBarUtils.showError(context, e);
+      SnackBarUtils.showError(context, e, 'Upload failed. Please check your connection and try again.');
     }
     return null;
   }
 }
 
-/// Deletes a media item by ID. Returns true on success.
-Future<bool> deleteMedia(WidgetRef ref, int mediaId) async {
+/// Deletes a media item by ID. Returns (success, errorMessage).
+Future<(bool, String?)> deleteMedia(WidgetRef ref, int mediaId) async {
   try {
     await ref.read(dioProvider).delete('/media/$mediaId');
-    return true;
-  } on DioException {
-    return false;
+    return (true, null);
+  } on DioException catch (e) {
+    return (false, ApiException.fromDio(e).message);
+  } catch (e) {
+    return (false, ApiException.messageFor(e));
   }
 }
 
-/// Reorders media items. The `items` list should contain the new ordered list
-/// of {id, sort_order} pairs.
-Future<bool> reorderMedia(WidgetRef ref, List<Map<String, int>> items) async {
-  if (items.isEmpty) return true;
+/// Reorders media items. Returns (success, errorMessage).
+Future<(bool, String?)> reorderMedia(WidgetRef ref, List<Map<String, int>> items) async {
+  if (items.isEmpty) return (true, null);
   try {
     await ref.read(dioProvider).put('/media/reorder', data: {'items': items});
-    return true;
-  } on DioException {
-    return false;
+    return (true, null);
+  } on DioException catch (e) {
+    return (false, ApiException.fromDio(e).message);
+  } catch (e) {
+    return (false, ApiException.messageFor(e));
   }
 }
 
-/// Returns a signed download URL for a private media item. Backend generates
-/// a 15-minute `temporarySignedRoute` for `/media/download/{id}`.
-Future<String?> getSignedMediaUrl(WidgetRef ref, int mediaId) async {
+/// Returns a signed download URL for a private media item.
+Future<(String?, String?)> getSignedMediaUrl(WidgetRef ref, int mediaId) async {
   try {
     final resp = await ref.read(dioProvider).get('/media/$mediaId/signed-url');
     final data = resp.data is Map ? resp.data['data'] as Map<String, dynamic>? : null;
-    return data?['url'] as String?;
-  } on DioException {
-    return null;
+    final url = data?['url'] as String?;
+    if (url == null || url.isEmpty) return (null, 'Failed to generate download link. Please try again.');
+    return (url, null);
+  } on DioException catch (e) {
+    return (null, ApiException.fromDio(e).message);
+  } catch (e) {
+    return (null, ApiException.messageFor(e));
   }
 }

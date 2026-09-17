@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -66,7 +67,7 @@ class _AcademyProfileScreenState extends ConsumerState<AcademyProfileScreen> {
         error: (e, _) => ListView(
           padding: const EdgeInsets.all(32),
           children: [
-            Text('Could not load profile: $e',
+            Text('Could not load profile: ${ApiException.messageFor(e)}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: AppColors.textSecondary)),
             const SizedBox(height: 12),

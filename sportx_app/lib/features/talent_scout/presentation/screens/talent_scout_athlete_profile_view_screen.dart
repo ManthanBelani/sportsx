@@ -7,6 +7,7 @@ import 'package:sportx_app/features/talent_scout/presentation/providers/scout_sh
 import 'package:sportx_app/features/talent_scout/presentation/widgets/athlete_avatar.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class TalentScoutAthleteProfileViewScreen extends ConsumerStatefulWidget {
   final String athleteId;
@@ -65,7 +66,7 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
         bottom: PreferredSize(preferredSize: const Size.fromHeight(1), child: Container(height: 1, color: AppColors.border)),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? const GenericDetailSkeleton()
           : _error != null
               ? Center(
                   child: Column(

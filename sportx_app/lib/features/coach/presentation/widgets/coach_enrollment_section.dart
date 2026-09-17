@@ -61,7 +61,7 @@ class _CoachEnrollmentSectionState extends ConsumerState<CoachEnrollmentSection>
     if (notes == null || !mounted) return;
 
     setState(() => _submitting = true);
-    final ok = await ref
+    final (ok, error) = await ref
         .read(coachingEnrollmentActionsProvider)
         .enroll(coachId: widget.coach.id, planType: plan.name, notes: notes);
     if (mounted) {
@@ -69,7 +69,7 @@ class _CoachEnrollmentSectionState extends ConsumerState<CoachEnrollmentSection>
       if (ok) {
         SnackBarUtils.showSuccess(context, 'Enrollment request submitted!');
       } else {
-        SnackBarUtils.showError(context, 'Failed to submit enrollment request');
+        SnackBarUtils.showError(context, error ?? 'Failed to submit enrollment request. Please try again.');
       }
     }
   }

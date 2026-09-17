@@ -5,6 +5,7 @@ import 'package:sportx_app/features/admin/presentation/providers/admin_provider.
 import 'package:sportx_app/features/admin/presentation/screens/admin_web_layout.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class ModerationQueueScreen extends ConsumerStatefulWidget {
   const ModerationQueueScreen({super.key});
@@ -36,7 +37,7 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
         ),
       ],
       child: adminState.isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const GenericListSkeleton()
           : _buildModerationList(adminState),
     );
   }

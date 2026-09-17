@@ -113,12 +113,12 @@ class ActivityState {
 class ActivityNotifier extends StateNotifier<ActivityState> {
   final Dio _dio;
 
-  ActivityNotifier(this._dio) : super(ActivityState()) {
+  ActivityNotifier(this._dio) : super(ActivityState(isLoading: true)) {
     load();
   }
 
   Future<void> load() async {
-    if (state.isLoading) return;
+    if (state.isLoading && state.items.isNotEmpty) return;
     state = state.copyWith(isLoading: true, error: null);
     try {
       final List<ActivityEntry> allItems = [];

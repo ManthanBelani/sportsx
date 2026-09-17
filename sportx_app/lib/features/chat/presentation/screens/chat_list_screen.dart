@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -77,7 +78,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                 loading: () => const ChatListSkeleton(),
                 error: (e, _) => Center(
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    Text('$e', style: const TextStyle(color: AppColors.textSecondary)),
+                    Text(ApiException.messageFor(e), style: const TextStyle(color: AppColors.textSecondary)),
                     const SizedBox(height: 12),
                     ElevatedButton(onPressed: () => ref.invalidate(conversationsProvider), child: const Text('Retry')),
                   ]),

@@ -93,10 +93,10 @@ class _AddAchievementScreenState extends ConsumerState<AddAchievementScreen> {
       if (pickedFile != null) {
         setState(() => _certificateFile = File(pickedFile.path));
       }
+    } on DioException catch (e) {
+      if (mounted) SnackBarUtils.showError(context, ApiException.fromDio(e));
     } catch (e) {
-      if (mounted) {
-        SnackBarUtils.showError(context, e);
-      }
+      if (mounted) SnackBarUtils.showError(context, e, 'Failed to pick image. Please try again.');
     }
   }
 
@@ -153,10 +153,17 @@ class _AddAchievementScreenState extends ConsumerState<AddAchievementScreen> {
         SnackBarUtils.showSuccess(context, 'Achievement added successfully!');
         context.pop();
       }
-    } catch (e) {
+    } on DioException catch (e) {
       if (mounted) {
-        SnackBarUtils.showError(context, e);
+        final apiEx = ApiException.fromDio(e);
+        if (apiEx.fieldErrors.isNotEmpty) {
+          SnackBarUtils.showValidationError(context, apiEx.fieldErrors, apiEx);
+        } else {
+          SnackBarUtils.showError(context, apiEx);
+        }
       }
+    } catch (e) {
+      if (mounted) SnackBarUtils.showError(context, e, 'Failed to save achievement. Please try again.');
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }

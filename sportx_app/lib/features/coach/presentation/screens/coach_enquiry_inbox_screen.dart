@@ -159,8 +159,8 @@ class _CoachEnquiryInboxScreenState extends ConsumerState<CoachEnquiryInboxScree
           ),
           const SizedBox(height: 4),
           const Text(
-            'When athletes enquire about your coaching, they will appear here',
-            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            'When athletes enquire about\nyour coaching, they will appear here',
+            style: TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.4),
             textAlign: TextAlign.center,
           ),
         ],

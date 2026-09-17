@@ -157,13 +157,17 @@ class SponsorshipActions {
   final Ref _ref;
   SponsorshipActions(this._dio, this._ref);
 
-  Future<bool> create(Map<String, dynamic> data) async {
+  Future<bool> create(Map<String, dynamic> data) async => (await createWithError(data)).$1;
+
+  Future<(bool, String?)> createWithError(Map<String, dynamic> data) async {
     try {
       await _dio.post('/me/sponsorships', data: data);
       _ref.read(mySponsorshipsProvider.notifier).refresh();
-      return true;
-    } on DioException {
-      return false;
+      return (true, null);
+    } on DioException catch (e) {
+      return (false, ApiException.fromDio(e).message);
+    } catch (e) {
+      return (false, ApiException.messageFor(e));
     }
   }
 

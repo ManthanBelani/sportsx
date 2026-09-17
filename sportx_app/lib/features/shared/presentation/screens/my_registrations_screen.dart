@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/shared/models/approval.dart';
 import 'package:sportx_app/shared/providers/registration_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class MyRegistrationsScreen extends ConsumerWidget {
   const MyRegistrationsScreen({super.key});
@@ -64,8 +66,8 @@ class _TournamentRegsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final async = ref.watch(myTournamentRegistrationsProvider);
     return async.when(
-      loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-      error: (e, _) => Center(child: Text('$e')),
+      loading: () => const GenericListSkeleton(),
+      error: (e, _) => Center(child: Text(ApiException.messageFor(e))),
       data: (regs) {
         if (regs.isEmpty) {
           return const Center(
@@ -129,8 +131,8 @@ class _TrialRegsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final async = ref.watch(myTrialRegistrationsProvider);
     return async.when(
-      loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-      error: (e, _) => Center(child: Text('$e')),
+      loading: () => const GenericListSkeleton(),
+      error: (e, _) => Center(child: Text(ApiException.messageFor(e))),
       data: (regs) {
         if (regs.isEmpty) {
           return const Center(

@@ -34,12 +34,12 @@ class DirectoryNotifier<T> extends StateNotifier<DirectoryState<T>> {
   final String endpoint;
   final T Function(Map<String, dynamic>) fromJson;
 
-  DirectoryNotifier(this._dio, this.endpoint, this.fromJson) : super(DirectoryState()) {
+  DirectoryNotifier(this._dio, this.endpoint, this.fromJson) : super(DirectoryState(isLoading: true)) {
     load();
   }
 
   Future<void> load() async {
-    if (state.isLoading) return;
+    if (state.isLoading && state.items.isNotEmpty) return;
     state = state.copyWith(isLoading: true, page: 1);
     try {
       final resp = await _dio.get(endpoint, queryParameters: {'page': 1, 'per_page': 20});

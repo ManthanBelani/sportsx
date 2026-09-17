@@ -6,6 +6,7 @@ import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class CapacityManagementScreen extends ConsumerStatefulWidget {
   final String tournamentId;
@@ -74,7 +75,7 @@ class _CapacityManagementScreenState extends ConsumerState<CapacityManagementScr
       });
     } catch (e) {
       setState(()=> _loading=false);
-      if (mounted) SnackBarUtils.showError(context, e);
+      if (mounted) SnackBarUtils.showError(context, e, 'Failed to load capacity. Please check your connection and try again.');
     }
   }
 
@@ -97,7 +98,7 @@ class _CapacityManagementScreenState extends ConsumerState<CapacityManagementScr
         context.pop();
       }
     } catch (e) {
-      if (mounted) SnackBarUtils.showError(context, e);
+      if (mounted) SnackBarUtils.showError(context, e, 'Failed to update capacity. Please try again.');
     } finally {
       if (mounted) setState(()=> _saving=false);
     }
@@ -125,7 +126,7 @@ class _CapacityManagementScreenState extends ConsumerState<CapacityManagementScr
         bottom: PreferredSize(preferredSize: const Size.fromHeight(1), child: Container(height: 1, color: AppColors.border)),
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? const GenericListSkeleton()
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [

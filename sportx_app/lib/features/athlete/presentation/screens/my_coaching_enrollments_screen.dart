@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/features/coach/presentation/providers/coaching_enrollment_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
@@ -39,7 +40,7 @@ class MyCoachingEnrollmentsScreen extends ConsumerWidget {
           );
         },
         loading: () => const GenericListSkeleton(itemCount: 5),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text(ApiException.messageFor(e))),
       ),
     );
   }

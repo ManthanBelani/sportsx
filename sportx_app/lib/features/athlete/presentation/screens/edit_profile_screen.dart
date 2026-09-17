@@ -177,7 +177,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        SnackBarUtils.showError(context, e);
+        SnackBarUtils.showError(context, e, 'Failed to save profile. Please try again.');
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);

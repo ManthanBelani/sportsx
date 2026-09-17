@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/shared/models/coaching_enrollment.dart';
@@ -20,17 +21,25 @@ class CoachingEnrollmentActions {
   final Ref _ref;
   CoachingEnrollmentActions(this._ref);
 
-  Future<bool> enroll({required int coachId, required String planType, String? notes}) async {
+  String _msg(Object e) => e is DioException ? ApiException.fromDio(e).message : ApiException.messageFor(e);
+
+  Future<(bool, String?)> enroll({required int coachId, required String planType, String? notes}) async {
     try {
       await _ref.read(dioProvider).post('/coaches/$coachId/enroll', data: {'plan_type': planType, 'notes': notes});
       _ref.invalidate(myCoachingEnrollmentsProvider);
-      return true;
-    } catch (_) {
-      return false;
+      return (true, null);
+    } catch (e) {
+      return (false, _msg(e));
     }
   }
 
-  Future<bool> approve(String enrollmentId, {required DateTime startDate, DateTime? endDate, String? coachResponse}) async {
+  // Back-compat boolean wrapper used by existing screens.
+  Future<bool> enrollLegacy({required int coachId, required String planType, String? notes}) async {
+    final (ok, _) = await enroll(coachId: coachId, planType: planType, notes: notes);
+    return ok;
+  }
+
+  Future<(bool, String?)> approve(String enrollmentId, {required DateTime startDate, DateTime? endDate, String? coachResponse}) async {
     try {
       await _ref.read(dioProvider).patch('/coaching-enrollments/$enrollmentId/approve', data: {
         'start_date': startDate.toIso8601String().split('T').first,
@@ -38,19 +47,19 @@ class CoachingEnrollmentActions {
         if (coachResponse != null) 'coach_response': coachResponse,
       });
       _ref.invalidate(coachEnrollmentsProvider);
-      return true;
-    } catch (_) {
-      return false;
+      return (true, null);
+    } catch (e) {
+      return (false, _msg(e));
     }
   }
 
-  Future<bool> reject(String enrollmentId, String reason) async {
+  Future<(bool, String?)> reject(String enrollmentId, String reason) async {
     try {
       await _ref.read(dioProvider).patch('/coaching-enrollments/$enrollmentId/reject', data: {'rejection_reason': reason});
       _ref.invalidate(coachEnrollmentsProvider);
-      return true;
-    } catch (_) {
-      return false;
+      return (true, null);
+    } catch (e) {
+      return (false, _msg(e));
     }
   }
 }

@@ -5,6 +5,7 @@ import 'package:sportx_app/features/admin/presentation/providers/admin_provider.
 import 'package:sportx_app/features/admin/presentation/screens/admin_web_layout.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class ManageUsersScreen extends ConsumerStatefulWidget {
   const ManageUsersScreen({super.key});
@@ -63,7 +64,7 @@ class _ManageUsersScreenState extends ConsumerState<ManageUsersScreen> {
           ),
           Expanded(
             child: adminState.isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const GenericListSkeleton()
                 : adminState.users.isEmpty
                     ? const Center(child: Text('No users found'))
                     : ListView.builder(

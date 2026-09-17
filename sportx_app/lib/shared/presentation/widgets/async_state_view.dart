@@ -31,7 +31,7 @@ class AsyncDetailBuilder<T> extends StatelessWidget {
       error: (e, _) => _Scaffold(
         title: title,
         body: _ErrorView(
-          message: e is ApiException ? e.message : 'Failed to load. Pull to retry.',
+          message: ApiException.messageFor(e),
           onRetry: onRetry,
         ),
       ),

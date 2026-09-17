@@ -5,6 +5,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/academy/presentation/providers/academy_provider.dart';
 import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class MyTrialsManagementScreen extends ConsumerWidget {
   const MyTrialsManagementScreen({super.key});
@@ -55,7 +56,7 @@ class MyTrialsManagementScreen extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () => ref.read(myTrialsProvider.notifier).refresh(),
         child: state.isLoading && state.items.isEmpty
-            ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+            ? const GenericListSkeleton()
             : state.items.isEmpty
                 ? ListView(
                     children: const [

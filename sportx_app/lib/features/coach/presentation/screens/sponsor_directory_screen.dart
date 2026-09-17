@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class SponsorDirectoryCoachScreen extends ConsumerStatefulWidget {
   const SponsorDirectoryCoachScreen({super.key});
@@ -98,7 +99,7 @@ class _SponsorDirectoryCoachScreenState extends ConsumerState<SponsorDirectoryCo
             child: RefreshIndicator(
               onRefresh: () => ref.read(sponsorshipsProvider.notifier).refresh(),
               child: state.isLoading && state.items.isEmpty
-                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                  ? const GenericListSkeleton()
                   : sponsors.isEmpty
                       ? Center(
                           child: Column(

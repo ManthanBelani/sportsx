@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -43,10 +44,10 @@ class RegistrantDetailScreen extends ConsumerWidget {
         SnackBarUtils.showSuccess(context, msg);
         context.pop();
       }
+    } on DioException catch (e) {
+      if (context.mounted) SnackBarUtils.showError(context, ApiException.fromDio(e));
     } catch (e) {
-      if (context.mounted) {
-        SnackBarUtils.showError(context, e);
-      }
+      if (context.mounted) SnackBarUtils.showError(context, e, 'Action failed. Please try again.');
     }
   }
 
@@ -54,8 +55,10 @@ class RegistrantDetailScreen extends ConsumerWidget {
     try {
       await ref.read(dioProvider).post('/registrations/trials/$registrationId/reminder');
       if (context.mounted) SnackBarUtils.showSuccess(context, 'Reminder toggled');
+    } on DioException catch (e) {
+      if (context.mounted) SnackBarUtils.showError(context, ApiException.fromDio(e));
     } catch (e) {
-      if (context.mounted) SnackBarUtils.showError(context, e);
+      if (context.mounted) SnackBarUtils.showError(context, e, 'Failed to toggle reminder. Please try again.');
     }
   }
 
@@ -65,8 +68,10 @@ class RegistrantDetailScreen extends ConsumerWidget {
       final ics = resp.data is String ? resp.data as String : resp.data.toString();
       if (context.mounted) SnackBarUtils.showSuccess(context, 'ICS ready (${ics.length} bytes)');
       // In prod, write to temp file + share via share_plus
+    } on DioException catch (e) {
+      if (context.mounted) SnackBarUtils.showError(context, ApiException.fromDio(e));
     } catch (e) {
-      if (context.mounted) SnackBarUtils.showError(context, e);
+      if (context.mounted) SnackBarUtils.showError(context, e, 'Failed to download ICS. Please try again.');
     }
   }
 

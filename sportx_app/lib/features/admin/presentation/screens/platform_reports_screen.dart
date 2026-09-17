@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_web_layout.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class PlatformReportsScreen extends ConsumerStatefulWidget {
   const PlatformReportsScreen({super.key});
@@ -33,7 +34,7 @@ class _PlatformReportsScreenState extends ConsumerState<PlatformReportsScreen> {
         ),
       ],
       child: adminState.isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const GenericListSkeleton()
           : RefreshIndicator(
               onRefresh: () => ref.read(adminProvider.notifier).loadPlatformStats(),
               child: ListView(

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -103,7 +104,7 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
       if (mounted) context.go('/coach-dashboard');
     } catch (e) {
       if (mounted) {
-        SnackBarUtils.showError(context, e);
+        SnackBarUtils.showError(context, e is DioException ? ApiException.fromDio(e as DioException) : e);
       }
     } finally {
       if (mounted) setState(() => _saving = false);

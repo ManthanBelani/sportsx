@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class ResultsViewScreen extends ConsumerWidget {
   final String tournamentId;
@@ -40,10 +42,10 @@ class ResultsViewScreen extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(tournamentResultsProvider(tournamentId)),
         child: async.when(
-          loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+          loading: () => const GenericListSkeleton(),
           error: (e, _) => Center(
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Text('$e', style: const TextStyle(color: AppColors.textSecondary)),
+              Text(ApiException.messageFor(e), style: const TextStyle(color: AppColors.textSecondary)),
               const SizedBox(height: 12),
               ElevatedButton(onPressed: () => ref.invalidate(tournamentResultsProvider(tournamentId)), child: const Text('Retry')),
             ]),

@@ -78,7 +78,7 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
         }
       }
     } catch (e) {
-      if (mounted) SnackBarUtils.showError(context, e);
+      if (mounted) SnackBarUtils.showError(context, e, 'Failed to save profile. Please try again.');
     } finally {
       if (mounted) setState(() => _saving = false);
     }

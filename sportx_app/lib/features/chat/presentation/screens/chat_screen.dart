@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -36,7 +38,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   void _send() async {
     final text = _messageController.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty) { SnackBarUtils.showError(context, 'Please enter a message'); return; }
     _messageController.clear();
     await sendMessage(ref, widget.chatId, text);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -67,7 +69,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               loading: () => const GenericListSkeleton(itemCount: 5),
               error: (e, _) => Center(
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  Text('$e', style: const TextStyle(color: AppColors.textSecondary)),
+                  Text(ApiException.messageFor(e), style: const TextStyle(color: AppColors.textSecondary)),
                   const SizedBox(height: 12),
                   ElevatedButton(onPressed: () => ref.invalidate(conversationDetailProvider(widget.chatId)), child: const Text('Retry')),
                 ]),

@@ -58,7 +58,7 @@ class _SponsorshipPostingScreenState extends ConsumerState<SponsorshipPostingScr
     }
     setState(() => _saving = true);
     final benefitsList = _benefits.map((c) => c.text.trim()).where((s) => s.isNotEmpty).toList();
-    final ok = await ref.read(sponsorshipActionsProvider).create({
+    final (ok, error) = await ref.read(sponsorshipActionsProvider).createWithError({
       'title': _title.text.trim(),
       'sport_ids': _selectedSportIds.toList(),
       // keep legacy single sport field for backend compat
@@ -76,7 +76,7 @@ class _SponsorshipPostingScreenState extends ConsumerState<SponsorshipPostingScr
       SnackBarUtils.showSuccess(context, 'Sponsorship saved!');
       context.pop();
     } else {
-      SnackBarUtils.showError(context, 'Failed to save');
+      SnackBarUtils.showError(context, error ?? 'Failed to save sponsorship. Please try again.');
     }
   }
 

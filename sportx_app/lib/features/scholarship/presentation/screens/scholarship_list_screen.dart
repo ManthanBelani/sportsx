@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class ScholarshipListScreen extends ConsumerStatefulWidget {
   const ScholarshipListScreen({super.key});
@@ -104,7 +105,7 @@ class _ScholarshipListScreenState extends ConsumerState<ScholarshipListScreen> {
             child: RefreshIndicator(
               onRefresh: () => ref.read(scholarshipsProvider.notifier).refresh(),
               child: state.isLoading && state.items.isEmpty
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const GenericListSkeleton()
                   : state.items.isEmpty
                       ? const Center(child: Text('No scholarships found'))
                       : ListView.builder(

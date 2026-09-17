@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/sponsor/presentation/providers/sponsor_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class MySponsorshipsManagementScreen extends ConsumerWidget {
   const MySponsorshipsManagementScreen({super.key});
@@ -41,7 +42,7 @@ class MySponsorshipsManagementScreen extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () => ref.read(mySponsorshipsProvider.notifier).refresh(),
         child: state.isLoading && state.items.isEmpty
-            ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+            ? const GenericListSkeleton()
             : state.items.isEmpty
                 ? const Center(
                     child: Text('No sponsorships yet', style: TextStyle(color: AppColors.textSecondary)))

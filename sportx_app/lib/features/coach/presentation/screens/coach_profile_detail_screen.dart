@@ -287,7 +287,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
                   });
                   if (context.mounted) SnackBarUtils.showSuccess(context, 'Report submitted');
                 } catch (e) {
-                  if (context.mounted) SnackBarUtils.showError(context, e);
+                  if (context.mounted) SnackBarUtils.showError(context, e, 'Failed to perform action. Please try again.');
                 }
               },
             ),
@@ -324,6 +324,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
 
   Widget _buildStatsRow() {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
         color: AppColors.surface,

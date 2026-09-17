@@ -74,8 +74,10 @@ class CoachNotifier extends StateNotifier<CoachState> {
       } else {
         state = state.copyWith(isLoading: false);
       }
+    } on DioException catch (e) {
+      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: ApiException.messageFor(e));
     }
   }
 
@@ -90,8 +92,10 @@ class CoachNotifier extends StateNotifier<CoachState> {
         certifications: updatedCredentials,
         isLoading: false,
       );
+    } on DioException catch (e) {
+      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: ApiException.messageFor(e));
     }
   }
 
@@ -107,8 +111,10 @@ class CoachNotifier extends StateNotifier<CoachState> {
         certifications: updatedCredentials,
         isLoading: false,
       );
+    } on DioException catch (e) {
+      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: ApiException.messageFor(e));
     }
   }
 
@@ -122,8 +128,10 @@ class CoachNotifier extends StateNotifier<CoachState> {
         facilities: facilities,
         isLoading: false,
       );
+    } on DioException catch (e) {
+      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: ApiException.messageFor(e));
     }
   }
 
@@ -137,8 +145,10 @@ class CoachNotifier extends StateNotifier<CoachState> {
         showcaseAthletes: athletes,
         isLoading: false,
       );
+    } on DioException catch (e) {
+      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: ApiException.messageFor(e));
     }
   }
 
@@ -150,7 +160,11 @@ class CoachNotifier extends StateNotifier<CoachState> {
         return data.cast<Map<String, dynamic>>();
       }
       return [];
-    } catch (e) {
+    } on DioException catch (e) {
+      // Propagate search errors as empty list but log via ApiException for debugging.
+      // Caller handles empty state; error snackbar shown by UI if needed.
+      return [];
+    } catch (_) {
       return [];
     }
   }

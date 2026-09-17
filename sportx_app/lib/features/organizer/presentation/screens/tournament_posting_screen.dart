@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -143,7 +144,7 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
       SnackBarUtils.showSuccess(context, status == 'published' ? 'Tournament published!' : 'Draft saved!');
       context.pop();
     } catch (e) {
-      if (mounted) SnackBarUtils.showError(context, e);
+      if (mounted) SnackBarUtils.showError(context, e is DioException ? ApiException.fromDio(e as DioException) : e);
     } finally {
       if (mounted) setState(() => _saving = false);
     }

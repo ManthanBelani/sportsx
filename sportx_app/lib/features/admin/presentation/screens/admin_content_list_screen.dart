@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class AdminContentListScreen extends ConsumerStatefulWidget {
   final String category;
@@ -61,7 +62,7 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
           ),
           Expanded(
             child: state.isLoading && items.isEmpty
-                ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                ? const GenericListSkeleton()
                 : items.isEmpty
                     ? const Center(child: Text('No items', style: TextStyle(color: AppColors.textSecondary)))
                     : ListView.builder(

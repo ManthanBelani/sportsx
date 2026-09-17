@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class MyTournamentsManagementScreen extends ConsumerWidget {
   const MyTournamentsManagementScreen({super.key});
@@ -38,7 +39,7 @@ class MyTournamentsManagementScreen extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: ()=> ref.read(myTournamentsProvider.notifier).refresh(),
         child: state.isLoading && state.items.isEmpty
-            ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+            ? const GenericListSkeleton()
             : state.items.isEmpty
                 ? ListView(children: const [SizedBox(height: 200), Center(child: Text('No tournaments yet', style: TextStyle(color: AppColors.textSecondary)))])
                 : ListView(

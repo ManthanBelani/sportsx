@@ -9,6 +9,7 @@ import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class ApplySponsorScreen extends ConsumerStatefulWidget {
   final String sponsorshipId;
@@ -30,7 +31,7 @@ class _ApplySponsorScreenState extends ConsumerState<ApplySponsorScreen> {
 
   Future<void> _submit(Sponsorship sponsorship) async {
     if (_pitchNoteController.text.trim().isEmpty) {
-      SnackBarUtils.showSuccess(context, 'Please enter a pitch note');
+      SnackBarUtils.showError(context, 'Please enter a pitch note');
       return;
     }
 
@@ -50,11 +51,16 @@ class _ApplySponsorScreenState extends ConsumerState<ApplySponsorScreen> {
       }
     } on DioException catch (e) {
       if (mounted) {
-        SnackBarUtils.showError(context, ApiException.fromDio(e));
+        final apiEx = ApiException.fromDio(e);
+        if (apiEx.fieldErrors.isNotEmpty) {
+          SnackBarUtils.showValidationError(context, apiEx.fieldErrors, apiEx);
+        } else {
+          SnackBarUtils.showError(context, apiEx);
+        }
       }
     } catch (e) {
       if (mounted) {
-        SnackBarUtils.showError(context, 'Failed to submit application. Please try again.');
+        SnackBarUtils.showError(context, e, 'Failed to submit application. Please try again.');
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -303,8 +309,8 @@ class _ApplySponsorScreenState extends ConsumerState<ApplySponsorScreen> {
             ],
           ),
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const GenericListSkeleton(),
+        error: (e, _) => Center(child: Text(ApiException.messageFor(e))),
       ),
       bottomNavigationBar: async.maybeWhen(
         data: (sponsorship) => Container(

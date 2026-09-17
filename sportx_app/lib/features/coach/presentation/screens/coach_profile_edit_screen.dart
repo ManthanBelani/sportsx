@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -187,12 +188,15 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
           });
           SnackBarUtils.showSuccess(context, 'Profile photo updated');
         }
-      } catch (_) {
-        // Keep local override so Save Changes can still persist it
-        if (mounted) SnackBarUtils.showSuccess(context, 'Photo selected — tap Save to persist');
+      } on DioException catch (e) {
+        if (mounted) SnackBarUtils.showError(context, ApiException.fromDio(e));
+      } catch (e) {
+        if (mounted) SnackBarUtils.showError(context, e, 'Failed to update photo. Photo selected — tap Save to persist');
       }
+    } on DioException catch (e) {
+      if (mounted) SnackBarUtils.showError(context, ApiException.fromDio(e));
     } catch (e) {
-      if (mounted) SnackBarUtils.showError(context, 'Failed to upload photo');
+      if (mounted) SnackBarUtils.showError(context, e, 'Failed to upload photo. Please try again.');
     } finally {
       if (mounted) setState(() => _uploadingPhoto = false);
     }
@@ -236,10 +240,17 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
       if (mounted) {
         SnackBarUtils.showSuccess(context, 'Profile updated successfully');
       }
-    } catch (e) {
+    } on DioException catch (e) {
       if (mounted) {
-        SnackBarUtils.showError(context, e);
+        final apiEx = ApiException.fromDio(e);
+        if (apiEx.fieldErrors.isNotEmpty) {
+          SnackBarUtils.showValidationError(context, apiEx.fieldErrors, apiEx);
+        } else {
+          SnackBarUtils.showError(context, apiEx);
+        }
       }
+    } catch (e) {
+      if (mounted) SnackBarUtils.showError(context, e, 'Failed to save profile. Please try again.');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -531,7 +542,7 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
           radius: 40,
           backgroundColor: AppColors.primary.withValues(alpha: 0.1),
           backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
-          onBackgroundImageError: (_, _) {},
+          onBackgroundImageError: photoUrl != null ? (_, _) {} : null,
           child: photoUrl == null ? const Icon(LucideIcons.user, color: AppColors.primary, size: 32) : null,
         ),
         const SizedBox(width: 16),

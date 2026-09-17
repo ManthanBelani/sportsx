@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/features/coach/presentation/providers/coaching_enrollment_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
@@ -51,7 +52,7 @@ class _EnrollmentListView extends ConsumerWidget {
         );
       },
       loading: () => const GenericListSkeleton(itemCount: 4),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => Center(child: Text(ApiException.messageFor(e))),
     );
   }
 }
@@ -114,8 +115,14 @@ class _EnrollmentCard extends ConsumerWidget {
   Future<void> _approve(BuildContext context, WidgetRef ref) async {
     final date = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now(), lastDate: DateTime.now().add(const Duration(days: 365)));
     if (date != null && context.mounted) {
-      final ok = await ref.read(coachingEnrollmentActionsProvider).approve(enrollment.id.toString(), startDate: date);
-      if (context.mounted) SnackBarUtils.showSuccess(context, ok ? 'Enrollment approved' : 'Failed');
+      final (ok, error) = await ref.read(coachingEnrollmentActionsProvider).approve(enrollment.id.toString(), startDate: date);
+      if (context.mounted) {
+        if (ok) {
+          SnackBarUtils.showSuccess(context, 'Enrollment approved');
+        } else {
+          SnackBarUtils.showError(context, error ?? 'Failed to approve enrollment. Please try again.');
+        }
+      }
     }
   }
 
@@ -123,8 +130,14 @@ class _EnrollmentCard extends ConsumerWidget {
     final ctrl = TextEditingController();
     final reason = await showDialog<String>(context: context, builder: (ctx) => AlertDialog(title: const Text('Reject Enrollment'), content: TextField(controller: ctrl, decoration: const InputDecoration(labelText: 'Reason')), actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')), ElevatedButton(onPressed: () => Navigator.pop(ctx, ctrl.text), child: const Text('Reject'))]));
     if (reason != null && reason.trim().isNotEmpty && context.mounted) {
-      final ok = await ref.read(coachingEnrollmentActionsProvider).reject(enrollment.id.toString(), reason.trim());
-      if (context.mounted) SnackBarUtils.showSuccess(context, ok ? 'Rejected' : 'Failed');
+      final (ok, error) = await ref.read(coachingEnrollmentActionsProvider).reject(enrollment.id.toString(), reason.trim());
+      if (context.mounted) {
+        if (ok) {
+          SnackBarUtils.showSuccess(context, 'Enrollment rejected');
+        } else {
+          SnackBarUtils.showError(context, error ?? 'Failed to reject enrollment. Please try again.');
+        }
+      }
     }
   }
 }

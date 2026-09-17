@@ -90,7 +90,7 @@ class _SponsorOnboardingScreenState extends ConsumerState<SponsorOnboardingScree
         context.go('/sponsor-dashboard');
       }
     } catch (e) {
-      if (mounted) SnackBarUtils.showError(context, e);
+      if (mounted) SnackBarUtils.showError(context, e, 'Failed to save profile. Please try again.');
     } finally {
       if (mounted) setState(() => _saving = false);
     }

@@ -5,6 +5,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class TournamentCalendarScreen extends ConsumerStatefulWidget {
   const TournamentCalendarScreen({super.key});
@@ -310,7 +311,7 @@ class _TournamentCalendarScreenState extends ConsumerState<TournamentCalendarScr
 
   Widget _buildListView(DirectoryState<Tournament> state) {
     if (state.isLoading && state.items.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const GenericListSkeleton();
     }
 
     if (state.items.isEmpty) {

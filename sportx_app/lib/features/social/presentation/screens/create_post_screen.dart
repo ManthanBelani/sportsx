@@ -53,7 +53,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       }
     } catch (e) {
       if (mounted) {
-        SnackBarUtils.showError(context, e);
+        SnackBarUtils.showError(context, e, 'Failed to create post. Please try again.');
       }
     }
   }
@@ -70,7 +70,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
   Future<void> _submitPost() async {
     if (_captionController.text.trim().isEmpty && _selectedMedia.isEmpty) {
-      SnackBarUtils.showSuccess(context, 'Please add a caption or media');
+      SnackBarUtils.showError(context, 'Please add a caption or photo to create a post');
       return;
     }
 
@@ -100,7 +100,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       }
     } catch (e) {
       if (mounted) {
-        SnackBarUtils.showError(context, e);
+        SnackBarUtils.showError(context, e, 'Failed to create post. Please try again.');
       }
     } finally {
       if (mounted) setState(() => _isPosting = false);

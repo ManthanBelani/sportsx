@@ -88,7 +88,7 @@ class _ShowcaseAthletesScreenState extends ConsumerState<ShowcaseAthletesScreen>
       }
     } catch (e) {
       if (mounted) {
-        SnackBarUtils.showError(context, e);
+        SnackBarUtils.showError(context, e, 'Failed to update showcase. Please try again.');
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);

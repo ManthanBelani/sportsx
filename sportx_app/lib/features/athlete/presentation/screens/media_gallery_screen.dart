@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -114,12 +115,12 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
     );
     if (confirmed != true) return;
 
-    final success = await deleteMedia(ref, mediaId);
+    final (success, error) = await deleteMedia(ref, mediaId);
     if (mounted) {
       if (success) {
         SnackBarUtils.showSuccess(context, 'Deleted');
       } else {
-        SnackBarUtils.showError(context, 'Failed to delete');
+        SnackBarUtils.showError(context, error ?? 'Failed to delete. Please try again.');
       }
     }
     if (success) await _loadMedia();
@@ -156,8 +157,10 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
       await ref.read(dioProvider).put('/me/profile', data: {'achievements': payloadAch});
       if (mounted) SnackBarUtils.showSuccess(context, 'Achievement deleted');
       await _loadMedia();
+    } on DioException catch (e) {
+      if (mounted) SnackBarUtils.showError(context, ApiException.fromDio(e));
     } catch (e) {
-      if (mounted) SnackBarUtils.showError(context, 'Failed to delete achievement');
+      if (mounted) SnackBarUtils.showError(context, e, 'Failed to delete achievement. Please try again.');
     }
   }
 
@@ -166,12 +169,12 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
       'id': e.value['id'] as int,
       'sort_order': e.key,
     }).toList();
-    final success = await reorderMedia(ref, items.cast<Map<String, int>>());
+    final (success, error) = await reorderMedia(ref, items.cast<Map<String, int>>());
     if (mounted) {
       if (success) {
         SnackBarUtils.showSuccess(context, 'Order saved');
       } else {
-        SnackBarUtils.showError(context, 'Failed to save order');
+        SnackBarUtils.showError(context, error ?? 'Failed to save order. Please try again.');
       }
     }
     if (success) {

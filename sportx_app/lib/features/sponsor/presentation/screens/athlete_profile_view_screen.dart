@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -6,6 +7,7 @@ import 'package:sportx_app/features/sponsor/presentation/providers/sponsor_provi
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class AthleteProfileViewScreen extends ConsumerWidget {
   final String athleteId;
@@ -38,12 +40,12 @@ class AthleteProfileViewScreen extends ConsumerWidget {
         ),
       ),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+        loading: () => const GenericDetailSkeleton(),
         error: (e, _) => Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('$e', style: const TextStyle(color: AppColors.textSecondary)),
+              Text(ApiException.messageFor(e), style: const TextStyle(color: AppColors.textSecondary)),
               const SizedBox(height: 12),
               ElevatedButton(
                 onPressed: () => ref.invalidate(athleteDetailProvider(athleteId)),
