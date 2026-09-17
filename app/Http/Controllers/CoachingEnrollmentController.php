@@ -205,6 +205,39 @@ class CoachingEnrollmentController extends Controller
         return response()->json(['data' => $enrollment]);
     }
 
+    public function adminApprove(Request $request, CoachingEnrollment $enrollment)
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+        $validated = $request->validate([
+            'start_date' => 'nullable|date',
+            'coach_response' => 'nullable|string|max:500',
+        ]);
+        $enrollment->update([
+            'approval_status' => 'approved',
+            'status' => 'active',
+            'reviewed_by' => $request->user()->id,
+            'reviewed_at' => now(),
+            'start_date' => $validated['start_date'] ?? $enrollment->start_date ?? now()->toDateString(),
+            'coach_response' => $validated['coach_response'] ?? null,
+            'rejection_reason' => null,
+        ]);
+        return response()->json(['data' => $enrollment, 'message' => 'Admin approved enrollment']);
+    }
+
+    public function adminReject(Request $request, CoachingEnrollment $enrollment)
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+        $validated = $request->validate(['rejection_reason' => 'required|string|max:500']);
+        $enrollment->update([
+            'approval_status' => 'rejected',
+            'status' => 'cancelled',
+            'reviewed_by' => $request->user()->id,
+            'reviewed_at' => now(),
+            'rejection_reason' => $validated['rejection_reason'],
+        ]);
+        return response()->json(['data' => $enrollment, 'message' => 'Admin rejected enrollment']);
+    }
+
     private function authorizeCoach(Request $request, CoachingEnrollment $enrollment): void
     {
         $user = $request->user();

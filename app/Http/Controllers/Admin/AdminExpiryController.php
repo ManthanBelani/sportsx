@@ -101,8 +101,10 @@ class AdminExpiryController extends Controller
         // Update event status
         $event->update(['status' => 'overridden']);
 
-        // Restore the listing
-        $event->content->update(['status' => 'published']);
+        // Restore the listing if content still exists
+        if ($event->content) {
+            $event->content->update(['status' => 'published']);
+        }
 
         return response()->json([
             'data' => [
@@ -127,8 +129,10 @@ class AdminExpiryController extends Controller
         // Update event status
         $event->update(['status' => 'overridden']);
 
-        // Restore the listing
-        $event->content->update(['status' => 'published']);
+        // Restore the listing if content still exists
+        if ($event->content) {
+            $event->content->update(['status' => 'published']);
+        }
 
         return response()->json([
             'data' => [

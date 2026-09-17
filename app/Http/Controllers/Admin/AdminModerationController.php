@@ -61,7 +61,7 @@ class AdminModerationController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $report = ListingReport::with(['reporter', 'subject'])->find($id);
+        $report = ListingReport::with(['reporter', 'reportable'])->find($id);
 
         if (!$report) {
             return response()->json([
@@ -165,11 +165,11 @@ class AdminModerationController extends Controller
             }
         }
 
-        // Mark all reports as actioned
+        // Mark all reports as warned (enum: pending, approved, edited, removed, warned)
         ListingReport::where('reportable_type', $report->reportable_type)
             ->where('reportable_id', $report->reportable_id)
             ->where('status', 'pending')
-            ->update(['status' => 'actioned']);
+            ->update(['status' => 'warned']);
 
         return response()->json([
             'data' => [
