@@ -189,7 +189,7 @@ class TalentScoutTest extends TestCase
     {
         Sanctum::actingAs($this->scoutUser);
 
-        $resp = $this->postJson("/api/v1/me/shortlist/{$this->athleteProfile->id}", [
+        $resp = $this->postJson("/api/v1/me/scout-shortlist/{$this->athleteProfile->id}", [
             'notes' => 'Promising athlete',
         ]);
 
@@ -206,9 +206,9 @@ class TalentScoutTest extends TestCase
     {
         Sanctum::actingAs($this->scoutUser);
 
-        $this->postJson("/api/v1/me/shortlist/{$this->athleteProfile->id}");
+        $this->postJson("/api/v1/me/scout-shortlist/{$this->athleteProfile->id}");
 
-        $resp = $this->postJson("/api/v1/me/shortlist/{$this->athleteProfile->id}");
+        $resp = $this->postJson("/api/v1/me/scout-shortlist/{$this->athleteProfile->id}");
 
         $resp->assertStatus(409);
     }
@@ -223,7 +223,7 @@ class TalentScoutTest extends TestCase
 
         Sanctum::actingAs($this->scoutUser);
 
-        $resp = $this->getJson('/api/v1/me/shortlist');
+        $resp = $this->getJson('/api/v1/me/scout-shortlist');
 
         $resp->assertStatus(200)
             ->assertJsonCount(1, 'data');
@@ -238,7 +238,7 @@ class TalentScoutTest extends TestCase
 
         Sanctum::actingAs($this->scoutUser);
 
-        $resp = $this->deleteJson("/api/v1/me/shortlist/{$this->athleteProfile->id}");
+        $resp = $this->deleteJson("/api/v1/me/scout-shortlist/{$this->athleteProfile->id}");
 
         $resp->assertStatus(200);
 
@@ -258,7 +258,7 @@ class TalentScoutTest extends TestCase
 
         Sanctum::actingAs($this->scoutUser);
 
-        $resp = $this->patchJson("/api/v1/me/shortlist/{$this->athleteProfile->id}", [
+        $resp = $this->patchJson("/api/v1/me/scout-shortlist/{$this->athleteProfile->id}", [
             'notes' => 'New notes',
         ]);
 
@@ -307,7 +307,7 @@ class TalentScoutTest extends TestCase
 
         Sanctum::actingAs($this->scoutUser);
 
-        $resp = $this->getJson('/api/v1/me/connections');
+        $resp = $this->getJson('/api/v1/me/scout-connections');
 
         $resp->assertStatus(200)
             ->assertJsonCount(1, 'data');
@@ -323,7 +323,7 @@ class TalentScoutTest extends TestCase
 
         Sanctum::actingAs($this->scoutUser);
 
-        $resp = $this->deleteJson("/api/v1/me/connections/{$connection->id}");
+        $resp = $this->deleteJson("/api/v1/me/scout-connections/{$connection->id}");
 
         $resp->assertStatus(200);
 
@@ -342,9 +342,73 @@ class TalentScoutTest extends TestCase
 
         Sanctum::actingAs($this->scoutUser);
 
-        $resp = $this->deleteJson("/api/v1/me/connections/{$connection->id}");
+        $resp = $this->deleteJson("/api/v1/me/scout-connections/{$connection->id}");
 
         $resp->assertStatus(404);
+    }
+
+    // ==================== Athlete Side Tests ====================
+
+    public function test_athlete_can_list_incoming_scout_requests(): void
+    {
+        ScoutConnection::create([
+            'talent_scout_profile_id' => $this->scoutProfile->id,
+            'athlete_profile_id' => $this->athleteProfile->id,
+            'status' => 'pending',
+        ]);
+
+        Sanctum::actingAs($this->athleteUser);
+
+        $resp = $this->getJson('/api/v1/me/scout-connection-requests');
+
+        $resp->assertStatus(200)
+            ->assertJsonCount(1, 'data');
+    }
+
+    public function test_athlete_can_accept_scout_request(): void
+    {
+        $connection = ScoutConnection::create([
+            'talent_scout_profile_id' => $this->scoutProfile->id,
+            'athlete_profile_id' => $this->athleteProfile->id,
+            'status' => 'pending',
+        ]);
+
+        Sanctum::actingAs($this->athleteUser);
+
+        $resp = $this->postJson("/api/v1/me/scout-connection-requests/{$connection->id}/accept");
+
+        $resp->assertStatus(200)
+            ->assertJsonPath('data.status', 'accepted');
+
+        $this->assertDatabaseHas('scout_connections', [
+            'id' => $connection->id,
+            'status' => 'accepted',
+        ]);
+    }
+
+    public function test_athlete_can_reject_scout_request(): void
+    {
+        $connection = ScoutConnection::create([
+            'talent_scout_profile_id' => $this->scoutProfile->id,
+            'athlete_profile_id' => $this->athleteProfile->id,
+            'status' => 'pending',
+        ]);
+
+        Sanctum::actingAs($this->athleteUser);
+
+        $resp = $this->postJson("/api/v1/me/scout-connection-requests/{$connection->id}/reject");
+
+        $resp->assertStatus(200)
+            ->assertJsonPath('data.status', 'rejected');
+    }
+
+    public function test_scout_cannot_access_athlete_request_routes(): void
+    {
+        Sanctum::actingAs($this->scoutUser);
+
+        $this->getJson('/api/v1/me/scout-connection-requests')->assertStatus(403);
+        $this->postJson('/api/v1/me/scout-connection-requests/1/accept')->assertStatus(403);
+        $this->postJson('/api/v1/me/scout-connection-requests/1/reject')->assertStatus(403);
     }
 
     // ==================== Authorization Tests ====================
@@ -355,14 +419,14 @@ class TalentScoutTest extends TestCase
 
         $this->getJson('/api/v1/me/scout-profile')->assertStatus(403);
         $this->putJson('/api/v1/me/scout-profile', [])->assertStatus(403);
-        $this->getJson('/api/v1/me/shortlist')->assertStatus(403);
-        $this->getJson('/api/v1/me/connections')->assertStatus(403);
+        $this->getJson('/api/v1/me/scout-shortlist')->assertStatus(403);
+        $this->getJson('/api/v1/me/scout-connections')->assertStatus(403);
     }
 
     public function test_unauthenticated_user_cannot_access_scout_routes(): void
     {
         $this->getJson('/api/v1/me/scout-profile')->assertStatus(401);
-        $this->postJson('/api/v1/me/shortlist/1')->assertStatus(401);
+        $this->postJson('/api/v1/me/scout-shortlist/1')->assertStatus(401);
         $this->postJson('/api/v1/athletes/1/connect')->assertStatus(401);
     }
 

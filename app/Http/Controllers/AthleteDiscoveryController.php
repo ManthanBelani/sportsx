@@ -21,7 +21,7 @@ class AthleteDiscoveryController extends Controller
         $skillLevel = $request->input('skill_level');
         $hasAchievements = $request->boolean('has_achievements') || $request->boolean('hasAchievements');
 
-        $query->when($sportId, fn ($q) => $q->whereHas('sports', fn ($s) => $s->where('sport_id', $sportId)))
+        $query->when($sportId, fn ($q) => $q->whereHas('sports', fn ($s) => $s->whereIn('sports.id', (array) $sportId)))
             ->when($ageGroupId, fn ($q) => $q->where('age_group_id', $ageGroupId))
             ->when($cityId, fn ($q) => $q->where('city_id', $cityId))
             ->when($skillLevel, fn ($q) => $q->where('skill_level', $skillLevel))

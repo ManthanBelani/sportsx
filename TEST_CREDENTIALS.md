@@ -16,6 +16,7 @@ Seeded test users for development and testing.
 | Academy | `mca@sportx.test` | `password` | Mumbai Cricket Academy |
 | Organizer | `organizer@sportx.test` | `password` | Gujarat Sports Federation |
 | Sponsor | `sponsor@sportx.test` | `password` | Decathlon India |
+| Talent Scout | `kiran@scout.test` | `password` | Kiran Patel |
 
 ## Usage
 
@@ -66,3 +67,4 @@ Located in `database/seeders/`:
 | `DeviceTokenSeeder.php` | device_tokens |
 | `RecentSearchSeeder.php` | recent_searches |
 | `AchievementSeeder.php` | achievements |
+| `TalentScoutSeeder.php` | users (talent_scout), talent_scout_profiles |

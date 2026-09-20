@@ -148,7 +148,7 @@ class TrialSeeder extends Seeder
             [
                 'name' => 'U-18 Football Trials - Bangalore',
                 'posted_by_user_id' => 3,
-                'academy_id' => 3,
+                'academy_id' => null,
                 'organization_name' => 'Bangalore FC Youth Academy',
                 'sport_id' => 2,
                 'event_datetime' => now()->addDays(30)->toDateTimeString(),

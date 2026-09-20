@@ -27,6 +27,7 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SponsorEngagementController;
 use App\Http\Controllers\SponsorshipController;
 use App\Http\Controllers\SportsVenueController;
+use App\Http\Controllers\OrganizerAnalyticsController;
 use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\TalentScoutController;
 use App\Http\Controllers\ScoutShortlistController;
@@ -139,6 +140,8 @@ Route::prefix('v1')->group(function () {
     Route::put('/me/coach-profile', [CoachProfileController::class, 'update'])->middleware(['auth:sanctum', 'role:coach']);
     Route::get('/me/academy', [AcademyController::class, 'show'])->middleware(['auth:sanctum', 'role:academy']);
     Route::put('/me/academy', [AcademyController::class, 'update'])->middleware(['auth:sanctum', 'role:academy']);
+    Route::get('/me/organizer', [\App\Http\Controllers\OrganizerProfileController::class, 'show'])->middleware(['auth:sanctum', 'role:organizer']);
+    Route::put('/me/organizer', [\App\Http\Controllers\OrganizerProfileController::class, 'update'])->middleware(['auth:sanctum', 'role:organizer']);
 
     // ── Enquiries ──
     Route::post('/enquiries', [EnquiryController::class, 'store'])->middleware(['auth:sanctum', 'role:athlete']);
@@ -157,19 +160,26 @@ Route::prefix('v1')->group(function () {
         Route::get('/me/scout-profile', [TalentScoutController::class, 'show']);
         Route::put('/me/scout-profile', [TalentScoutController::class, 'update']);
 
-        // Shortlist
-        Route::get('/me/shortlist', [ScoutShortlistController::class, 'index']);
-        Route::post('/me/shortlist/{athlete}', [ScoutShortlistController::class, 'store']);
-        Route::delete('/me/shortlist/{athlete}', [ScoutShortlistController::class, 'destroy']);
-        Route::patch('/me/shortlist/{athlete}', [ScoutShortlistController::class, 'update']);
+        // Shortlist (namespaced to avoid clashing with sponsor GET /me/shortlist)
+        Route::get('/me/scout-shortlist', [ScoutShortlistController::class, 'index']);
+        Route::post('/me/scout-shortlist/{athlete}', [ScoutShortlistController::class, 'store']);
+        Route::delete('/me/scout-shortlist/{athlete}', [ScoutShortlistController::class, 'destroy']);
+        Route::patch('/me/scout-shortlist/{athlete}', [ScoutShortlistController::class, 'update']);
 
-        // Connections
-        Route::get('/me/connections', [ScoutConnectionController::class, 'index']);
-        Route::delete('/me/connections/{connection}', [ScoutConnectionController::class, 'destroy']);
+        // Connections (namespaced to avoid clashing with generic GET /me/connections)
+        Route::get('/me/scout-connections', [ScoutConnectionController::class, 'index']);
+        Route::delete('/me/scout-connections/{connection}', [ScoutConnectionController::class, 'destroy']);
     });
 
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/athletes/{athlete}/connect', [ScoutConnectionController::class, 'store']);
+    });
+
+    // ── Athlete side of scout connections (incoming requests + accept/reject) ──
+    Route::middleware(['auth:sanctum', 'role:athlete'])->group(function () {
+        Route::get('/me/scout-connection-requests', [ScoutConnectionController::class, 'indexForAthlete']);
+        Route::post('/me/scout-connection-requests/{connection}/accept', [ScoutConnectionController::class, 'accept']);
+        Route::post('/me/scout-connection-requests/{connection}/reject', [ScoutConnectionController::class, 'reject']);
     });
 
     // ── Registrations (Phase 2) ──
@@ -223,6 +233,9 @@ Route::prefix('v1')->group(function () {
     Route::put('/me/tournaments/{tournament}/categories', [ProviderTournamentController::class, 'updateCategories'])->middleware('auth:sanctum');
     Route::post('/me/tournaments/{tournament}/publish', [ProviderTournamentController::class, 'publish'])->middleware('auth:sanctum');
     Route::post('/me/tournaments/{tournament}/close', [ProviderTournamentController::class, 'close'])->middleware('auth:sanctum');
+
+    // ── Organizer Analytics ──
+    Route::get('/me/organizer/analytics', [OrganizerAnalyticsController::class, 'index'])->middleware(['auth:sanctum', 'role:organizer,admin']);
 
     // ── Sponsor Engagement (Phase 2) ──
     Route::get('/me/sponsorships', [SponsorEngagementController::class, 'mySponsorships'])->middleware(['auth:sanctum', 'role:sponsor']);

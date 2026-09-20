@@ -68,7 +68,7 @@ class TournamentSeeder extends Seeder
                 'contact_number' => '+91 98250 11111',
                 'prize_pool' => '75000',
                 'rules' => 'BWF rules apply',
-                'gender' => 'all',
+                'gender' => 'open',
                 'status' => 'published',
             ],
             [
@@ -86,7 +86,7 @@ class TournamentSeeder extends Seeder
                 'contact_number' => '+91 98111 44444',
                 'prize_pool' => '25000',
                 'rules' => 'FINA rules apply',
-                'gender' => 'all',
+                'gender' => 'open',
                 'status' => 'published',
             ],
             [
@@ -104,7 +104,7 @@ class TournamentSeeder extends Seeder
                 'contact_number' => '+91 98111 55555',
                 'prize_pool' => '150000',
                 'rules' => 'World Athletics rules',
-                'gender' => 'all',
+                'gender' => 'open',
                 'status' => 'published',
             ],
             [
@@ -140,7 +140,7 @@ class TournamentSeeder extends Seeder
                 'contact_number' => '+91 98111 77777',
                 'prize_pool' => '200000',
                 'rules' => 'ITF rules apply',
-                'gender' => 'all',
+                'gender' => 'open',
                 'status' => 'published',
             ],
             [
@@ -194,7 +194,7 @@ class TournamentSeeder extends Seeder
                 'contact_number' => '+91 98260 11111',
                 'prize_pool' => '30000',
                 'rules' => 'FIDE Swiss System',
-                'gender' => 'all',
+                'gender' => 'open',
                 'status' => 'published',
             ],
         ];
