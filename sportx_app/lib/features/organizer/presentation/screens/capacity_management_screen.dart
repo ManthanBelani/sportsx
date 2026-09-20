@@ -82,23 +82,27 @@ class _CapacityManagementScreenState extends ConsumerState<CapacityManagementScr
   Future<void> _save() async {
     setState(()=> _saving=true);
     try {
-      await ref.read(dioProvider).put('/tournaments/${widget.tournamentId}/capacity', data: {
-        'categories': _cats.map((c)=> {'id': c.id, 'max_teams': c.maxTeams}).toList(),
+      // Single atomic call: capacity + waitlist via /me/tournaments/{id}/categories (handles both)
+      await ref.read(dioProvider).put('/me/tournaments/${widget.tournamentId}/categories', data: {
+        'categories': _cats.map((c)=> {'id': c.id, 'name': c.name, 'capacity': c.maxTeams, 'waitlist_enabled': c.waitlistEnabled}).toList(),
       });
-      // Also persist waitlist via separate update if needed — backend TournamentCategory has waitlist_enabled
-      // Update each category via /me/tournaments/{id}/categories endpoint for waitlist
-      // We try to update waitlist separately
-      try {
-        await ref.read(dioProvider).put('/me/tournaments/${widget.tournamentId}/categories', data: {
-          'categories': _cats.map((c)=> {'id': c.id, 'name': c.name, 'capacity': c.maxTeams, 'waitlist_enabled': c.waitlistEnabled}).toList(),
-        });
-      } catch (_) {}
       if (mounted) {
         SnackBarUtils.showSuccess(context, 'Capacity saved');
         context.pop();
       }
     } catch (e) {
-      if (mounted) SnackBarUtils.showError(context, e, 'Failed to update capacity. Please try again.');
+      // Fallback to legacy capacity endpoint if categories update fails
+      try {
+        await ref.read(dioProvider).put('/tournaments/${widget.tournamentId}/capacity', data: {
+          'categories': _cats.map((c)=> {'id': c.id, 'max_teams': c.maxTeams}).toList(),
+        });
+        if (mounted) {
+          SnackBarUtils.showSuccess(context, 'Capacity saved');
+          context.pop();
+        }
+      } catch (e2) {
+        if (mounted) SnackBarUtils.showError(context, e2, 'Failed to update capacity. Please try again.');
+      }
     } finally {
       if (mounted) setState(()=> _saving=false);
     }

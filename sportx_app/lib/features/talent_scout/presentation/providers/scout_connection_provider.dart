@@ -54,7 +54,7 @@ class ScoutConnectionNotifier extends StateNotifier<ScoutConnectionState> {
   Future<void> load() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final resp = await _dio.get('/me/connections');
+      final resp = await _dio.get('/me/scout-connections');
       final list = List<Map<String, dynamic>>.from(resp.data['data'] ?? []);
       
       int accepted = 0;
@@ -101,7 +101,7 @@ class ScoutConnectionNotifier extends StateNotifier<ScoutConnectionState> {
 
   Future<bool> cancelConnection(String connectionId) async {
     try {
-      await _dio.delete('/me/connections/$connectionId');
+      await _dio.delete('/me/scout-connections/$connectionId');
       await load();
       return true;
     } on DioException catch (e) {

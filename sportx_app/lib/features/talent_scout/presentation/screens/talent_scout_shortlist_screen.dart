@@ -20,162 +20,138 @@ class TalentScoutShortlistScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
+        automaticallyImplyLeading: false,
         title: const Text('My Shortlist',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-        leading: IconButton(
-            icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
-            onPressed: () => context.pop()),
         bottom: PreferredSize(preferredSize: const Size.fromHeight(1), child: Container(height: 1, color: AppColors.border)),
       ),
-      body: state.isLoading
+      body: state.isLoading && state.items.isEmpty
           ? const GenericListSkeleton()
-          : state.items.isEmpty
-              ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(LucideIcons.star, size: 48, color: AppColors.border),
-                      SizedBox(height: 16),
-                      Text('No athletes shortlisted yet', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
-                      SizedBox(height: 8),
-                      Text('Discover athletes and tap ⭐ to save', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                    ],
-                  ),
+          : state.error != null && state.items.isEmpty
+              ? Center(
+                  child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    const Icon(LucideIcons.alertCircle, size: 48, color: AppColors.border),
+                    const SizedBox(height: 12),
+                    Text(state.error!, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary), textAlign: TextAlign.center),
+                    const SizedBox(height: 12),
+                    FilledButton(onPressed: () => ref.read(scoutShortlistProvider.notifier).load(), style: FilledButton.styleFrom(backgroundColor: AppColors.primary), child: const Text('Retry')),
+                  ]),
                 )
-              : RefreshIndicator(
-                  onRefresh: () => ref.read(scoutShortlistProvider.notifier).load(),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: state.items.length,
-                    itemBuilder: (context, index) {
-                      final item = state.items[index];
-                      return _buildShortlistItem(context, ref, item);
-                    },
-                  ),
-                ),
+              : state.items.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                          const Icon(LucideIcons.star, size: 48, color: AppColors.border),
+                          const SizedBox(height: 16),
+                          const Text('No athletes shortlisted yet', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                          const SizedBox(height: 8),
+                          const Text('Discover athletes and tap ⭐ to save for later', style: TextStyle(fontSize: 12, color: AppColors.textSecondary), textAlign: TextAlign.center),
+                          const SizedBox(height: 16),
+                          FilledButton.icon(onPressed: () => context.push('/scout-discovery'), style: FilledButton.styleFrom(backgroundColor: AppColors.primary), icon: const Icon(LucideIcons.search, size: 16), label: const Text('Discover Athletes')),
+                        ]),
+                      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: () => ref.read(scoutShortlistProvider.notifier).load(),
+                      child: ListView.builder(
+                        padding: const EdgeInsets.all(20),
+                        itemCount: state.items.length,
+                        itemBuilder: (context, index) => _buildShortlistItem(context, ref, state.items[index]),
+                      ),
+                    ),
     );
   }
 
   Widget _buildShortlistItem(BuildContext context, WidgetRef ref, dynamic item) {
     return Dismissible(
-      key: Key(item.id),
+      key: Key(item.id.toString()),
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
+        margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(12)),
         child: const Icon(LucideIcons.trash2, color: Colors.white),
       ),
-      confirmDismiss: (_) async {
-        return await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Remove from Shortlist'),
-            content: Text('Remove ${item.athlete.fullName} from your shortlist?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('Remove'),
-              ),
-            ],
-          ),
-        );
-      },
+      confirmDismiss: (_) async => await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Remove from Shortlist'),
+          content: Text('Remove ${item.athlete.fullName} from your shortlist?'),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancel')),
+            TextButton(onPressed: () => Navigator.of(context).pop(true), style: TextButton.styleFrom(foregroundColor: Colors.red), child: const Text('Remove')),
+          ],
+        ),
+      ),
       onDismissed: (_) async {
         final success = await ref.read(scoutShortlistProvider.notifier).removeFromShortlist(item.athlete.id);
         if (context.mounted) {
-          SnackBarUtils.showSuccess(context, success ? 'Removed from shortlist' : 'Failed to remove');
+          if (success) {
+            SnackBarUtils.showSuccess(context, 'Removed from shortlist');
+          } else {
+            SnackBarUtils.showError(context, ref.read(scoutShortlistProvider).error ?? 'Failed to remove');
+          }
         }
       },
-      child: GestureDetector(
+      child: InkWell(
         onTap: () => context.push('/scout-athlete/${item.athlete.id}'),
         onLongPress: () => _showNotesDialog(context, ref, item),
+        borderRadius: BorderRadius.circular(12),
         child: Container(
+          width: double.infinity,
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  AthleteAvatar(photoUrl: item.athlete.photoUrl, radius: 24),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(item.athlete.fullName,
-                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                        const SizedBox(height: 2),
-                        Row(children: [
-                          if (item.athlete.sports.isNotEmpty)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(12)),
-                              child: Text(item.athlete.sports.first, style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w600)),
-                            ),
-                          if (item.athlete.cityName != null) ...[
-                            const SizedBox(width: 6),
-                            Text(item.athlete.cityName!, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                          ],
-                        ]),
-                      ],
-                    ),
-                  ),
-                  PopupMenuButton<String>(
-                    icon: const Icon(LucideIcons.moreVertical, size: 18, color: AppColors.textSecondary),
-                    onSelected: (v) {
-                      if (v == 'notes') _showNotesDialog(context, ref, item);
-                      if (v == 'view') context.push('/scout-athlete/${item.athlete.id}');
-                      if (v == 'connect') context.push('/scout-connect/${item.athlete.id}');
-                      if (v == 'remove') {
-                        ref.read(scoutShortlistProvider.notifier).removeFromShortlist(item.athlete.id);
-                      }
-                    },
-                    itemBuilder: (_) => [
-                      const PopupMenuItem(value: 'view', child: Text('View profile')),
-                      const PopupMenuItem(value: 'notes', child: Text('Edit notes')),
-                      const PopupMenuItem(value: 'connect', child: Text('Connect')),
-                      const PopupMenuItem(value: 'remove', child: Text('Remove', style: TextStyle(color: Colors.red))),
-                    ],
-                  ),
+          decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              AthleteAvatar(photoUrl: item.athlete.photoUrl, radius: 24),
+              const SizedBox(width: 14),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(item.athlete.fullName, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                const SizedBox(height: 2),
+                Row(children: [
+                  if (item.athlete.sports.isNotEmpty)
+                    Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(12)), child: Text(item.athlete.sports.first, style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w600))),
+                  if (item.athlete.cityName != null) ...[const SizedBox(width: 6), Text(item.athlete.cityName!, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary))],
+                ]),
+              ])),
+              PopupMenuButton<String>(
+                icon: const Icon(LucideIcons.moreVertical, size: 18, color: AppColors.textSecondary),
+                onSelected: (v) {
+                  if (v == 'notes') _showNotesDialog(context, ref, item);
+                  if (v == 'view') context.push('/scout-athlete/${item.athlete.id}');
+                  if (v == 'connect') context.push('/scout-connect/${item.athlete.id}');
+                  if (v == 'remove') ref.read(scoutShortlistProvider.notifier).removeFromShortlist(item.athlete.id);
+                },
+                itemBuilder: (_) => const [
+                  PopupMenuItem(value: 'view', child: Text('View profile')),
+                  PopupMenuItem(value: 'notes', child: Text('Edit notes')),
+                  PopupMenuItem(value: 'connect', child: Text('Connect')),
+                  PopupMenuItem(value: 'remove', child: Text('Remove', style: TextStyle(color: Colors.red))),
                 ],
               ),
-              if (item.notes != null && item.notes.toString().isNotEmpty) ...[
-                const SizedBox(height: 10),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(8)),
-                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Icon(LucideIcons.stickyNote, size: 14, color: AppColors.textSecondary),
-                    const SizedBox(width: 6),
-                    Expanded(child: Text(item.notes, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary))),
-                  ]),
-                ),
-              ] else ...[
-                const SizedBox(height: 6),
-                InkWell(
+            ]),
+            if (item.notes != null && item.notes.toString().isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Container(width: double.infinity, padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(8)), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(LucideIcons.stickyNote, size: 14, color: AppColors.textSecondary), const SizedBox(width: 6), Expanded(child: Text(item.notes, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)))])),
+            ] else ...[
+              const SizedBox(height: 8),
+              Semantics(
+                button: true,
+                label: 'Add note',
+                child: InkWell(
                   onTap: () => _showNotesDialog(context, ref, item),
-                  child: const Row(children: [
-                    Icon(LucideIcons.plus, size: 12, color: AppColors.primary),
-                    SizedBox(width: 4),
-                    Text('Add note', style: TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w500)),
-                  ]),
+                  borderRadius: BorderRadius.circular(4),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4),
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(LucideIcons.plus, size: 12, color: AppColors.primary), SizedBox(width: 4), Text('Add note', style: TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w500))]),
+                  ),
                 ),
-              ],
+              ),
             ],
-          ),
+          ]),
         ),
       ),
     );
@@ -187,21 +163,14 @@ class TalentScoutShortlistScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('Notes for ${item.athlete.fullName}'),
-        content: TextField(
-          controller: ctrl,
-          maxLines: 4,
-          decoration: const InputDecoration(hintText: 'e.g. Strong left-footed striker, observed at Junior Nationals...', border: OutlineInputBorder()),
-          autofocus: true,
-        ),
+        content: TextField(controller: ctrl, maxLines: 4, decoration: const InputDecoration(hintText: 'e.g. Strong left-footed striker, observed at Junior Nationals...', border: OutlineInputBorder()), autofocus: true, maxLength: 1000),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           FilledButton(
             onPressed: () async {
               Navigator.pop(ctx);
               final ok = await ref.read(scoutShortlistProvider.notifier).updateNotes(item.athlete.id, ctrl.text.trim());
-              if (context.mounted) {
-                SnackBarUtils.showSuccess(context, ok ? 'Notes updated' : 'Failed to update notes');
-              }
+              if (context.mounted) SnackBarUtils.showSuccess(context, ok ? 'Notes updated' : ref.read(scoutShortlistProvider).error ?? 'Failed to update notes');
             },
             style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
             child: const Text('Save'),

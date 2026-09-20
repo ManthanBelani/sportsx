@@ -594,3 +594,69 @@ class SponsorDashboardSkeleton extends StatelessWidget {
     );
   }
 }
+
+class ScoutDashboardSkeleton extends StatelessWidget {
+  const ScoutDashboardSkeleton({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return ShimmerSkeleton(
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(20),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          // Welcome banner: avatar box + two text lines
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+            child: Row(children: [
+              const SkeletonBox(width: 56, height: 56, borderRadius: 8),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const SkeletonBox(width: 140, height: 16, borderRadius: 4),
+                  const SizedBox(height: 8),
+                  SkeletonBox(width: 180, height: 12, borderRadius: 4),
+                ]),
+              ),
+            ]),
+          ),
+          const SizedBox(height: 12),
+          // Profile completeness meter
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                const SkeletonBox(width: 130, height: 12, borderRadius: 4),
+                const SkeletonBox(width: 36, height: 12, borderRadius: 4),
+              ]),
+              const SizedBox(height: 8),
+              const SkeletonBox(width: double.infinity, height: 6, borderRadius: 4),
+            ]),
+          ),
+          const SizedBox(height: 16),
+          // Stats row: Shortlisted / Connections / Pending
+          Row(children: List.generate(3, (_) => Expanded(child: Container(margin: const EdgeInsets.only(right: 10), padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)), child: Column(children: [SkeletonBox(width: 32, height: 22, borderRadius: 4), const SizedBox(height: 6), SkeletonBox(width: 64, height: 10, borderRadius: 4)]))))),
+          const SizedBox(height: 16),
+          // Quick actions: Discover / Shortlist / Connections / Profile
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const SkeletonBox(width: 110, height: 14, borderRadius: 4),
+              const SizedBox(height: 12),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: List.generate(4, (_) => Column(children: [SkeletonBox(width: 48, height: 48, borderRadius: 8), const SizedBox(height: 6), SkeletonBox(width: 44, height: 10, borderRadius: 4)]))),
+            ]),
+          ),
+          const SizedBox(height: 16),
+          // Recent shortlist
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+            child: Column(children: List.generate(2, (_) => Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: Row(children: [const SkeletonBox(width: 40, height: 40, borderRadius: 20), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const SkeletonBox(width: 120, height: 12, borderRadius: 4), const SizedBox(height: 6), SkeletonBox(width: 80, height: 10, borderRadius: 4)]))])))),
+          ),
+        ]),
+      ),
+    );
+  }
+}

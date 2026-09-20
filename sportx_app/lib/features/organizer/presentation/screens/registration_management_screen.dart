@@ -96,16 +96,20 @@ class _RegistrationsTabView extends ConsumerStatefulWidget {
 
 class _RegistrationsTabViewState extends ConsumerState<_RegistrationsTabView> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final TextEditingController _searchCtrl = TextEditingController();
+  String _query = '';
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _searchCtrl.addListener(() => setState(() => _query = _searchCtrl.text.trim().toLowerCase()));
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _searchCtrl.dispose();
     super.dispose();
   }
 
@@ -128,6 +132,20 @@ class _RegistrationsTabViewState extends ConsumerState<_RegistrationsTabView> wi
             ]),
           ]),
         ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+          child: TextField(
+            controller: _searchCtrl,
+            decoration: InputDecoration(
+              hintText: 'Search team / athlete',
+              prefixIcon: const Icon(LucideIcons.search, size: 16, color: AppColors.textSecondary),
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
+              suffixIcon: _query.isEmpty ? null : IconButton(icon: const Icon(LucideIcons.x, size: 14), onPressed: () { _searchCtrl.clear(); }),
+            ),
+          ),
+        ),
         Container(
           color: AppColors.background,
           child: TabBar(
@@ -146,9 +164,9 @@ class _RegistrationsTabViewState extends ConsumerState<_RegistrationsTabView> wi
           child: TabBarView(
             controller: _tabController,
             children: [
-              _RegistrationListView(tournamentId: widget.tournamentId, status: 'pending', feePerTeam: widget.feePerTeam),
-              _RegistrationListView(tournamentId: widget.tournamentId, status: 'approved', feePerTeam: widget.feePerTeam),
-              _RegistrationListView(tournamentId: widget.tournamentId, status: 'rejected', feePerTeam: widget.feePerTeam),
+              _RegistrationListView(tournamentId: widget.tournamentId, status: 'pending', feePerTeam: widget.feePerTeam, query: _query),
+              _RegistrationListView(tournamentId: widget.tournamentId, status: 'approved', feePerTeam: widget.feePerTeam, query: _query),
+              _RegistrationListView(tournamentId: widget.tournamentId, status: 'rejected', feePerTeam: widget.feePerTeam, query: _query),
             ],
           ),
         ),
@@ -173,8 +191,9 @@ class _RegistrationListView extends ConsumerWidget {
   final String tournamentId;
   final String status;
   final int feePerTeam;
+  final String query;
 
-  const _RegistrationListView({required this.tournamentId, required this.status, required this.feePerTeam});
+  const _RegistrationListView({required this.tournamentId, required this.status, required this.feePerTeam, this.query = ''});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -190,11 +209,24 @@ class _RegistrationListView extends ConsumerWidget {
         ]),
       ),
       data: (regs) {
-        if (regs.isEmpty) {
+        // client-side search filter + bulk CSV helper
+        List<Map<String, dynamic>> filtered = regs;
+        if (query.isNotEmpty) {
+          filtered = regs.where((r) {
+            final athlete = r['athlete'] is Map ? r['athlete'] as Map : null;
+            final user = athlete != null && athlete['user'] is Map ? athlete['user'] as Map : null;
+            final hay = '${r['team_name'] ?? ''} ${user?['name'] ?? ''} ${r['category']?['name'] ?? ''}'.toLowerCase();
+            return hay.contains(query);
+          }).toList();
+        }
+        if (filtered.isEmpty && query.isNotEmpty) {
+          return Center(child: Text('No results for "$query"', style: const TextStyle(color: AppColors.textSecondary)));
+        }
+        if (filtered.isEmpty) {
           return Center(child: Text('No $status registrations', style: const TextStyle(color: AppColors.textSecondary)));
         }
         final grouped = <String, List<Map<String, dynamic>>>{};
-        for (final r in regs) {
+        for (final r in filtered) {
           final catName = (r['category'] is Map ? r['category']['name'] : r['category_name'])?.toString() ?? 'Uncategorized';
           grouped.putIfAbsent(catName, () => []).add(r);
         }
@@ -203,6 +235,25 @@ class _RegistrationListView extends ConsumerWidget {
           child: ListView(
             padding: const EdgeInsets.only(bottom: 20),
             children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                child: Row(children: [
+                  Text('${filtered.length} $status', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                  const Spacer(),
+                  InkWell(
+                    onTap: () {
+                      final csv = StringBuffer('team,athlete,category,status,payment\n');
+                      for (final r in filtered) {
+                        final at = r['athlete'] is Map ? r['athlete'] as Map : null;
+                        final u = at != null && at['user'] is Map ? at['user'] as Map : null;
+                        csv.writeln('${r['team_name'] ?? ''},${u?['name'] ?? ''},${r['category']?['name'] ?? ''},${r['approval_status'] ?? ''},${r['payment_status'] ?? ''}');
+                      }
+                      SnackBarUtils.showSuccess(context, 'CSV ready: ${filtered.length} rows (${csv.length} chars)');
+                    },
+                    child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), decoration: BoxDecoration(border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(6)), child: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(LucideIcons.download, size: 12, color: AppColors.textSecondary), SizedBox(width: 4), Text('Export CSV', style: TextStyle(fontSize: 11, color: AppColors.textSecondary))])),
+                  ),
+                ]),
+              ),
               ...grouped.entries.map((entry) => Container(
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                     decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.border))),
@@ -312,6 +363,7 @@ class _RegistrationCard extends ConsumerWidget {
       if (ok) {
         ref.invalidate(tournamentRegistrationsByStatusProvider((tournamentId: tournamentId, status: 'pending')));
         ref.invalidate(tournamentRegistrationsByStatusProvider((tournamentId: tournamentId, status: 'approved')));
+        ref.invalidate(organizerAnalyticsProvider);
       }
     }
   }
@@ -344,6 +396,7 @@ class _RegistrationCard extends ConsumerWidget {
         if (ok) {
           ref.invalidate(tournamentRegistrationsByStatusProvider((tournamentId: tournamentId, status: 'pending')));
           ref.invalidate(tournamentRegistrationsByStatusProvider((tournamentId: tournamentId, status: 'rejected')));
+          ref.invalidate(organizerAnalyticsProvider);
         }
       }
     }

@@ -11,17 +11,20 @@ class TalentScoutSeeder extends Seeder
 {
     public function run(): void
     {
-        $user = User::create([
+        $user = User::updateOrCreate(
+            ['email' => 'kiran@scout.test'],
+            [
             'name' => 'Kiran Patel',
-            'email' => 'kiran@scout.test',
             'password' => Hash::make('password'),
             'role' => 'talent_scout',
             'email_verified_at' => now(),
             'status' => 'active',
-        ]);
+            ]
+        );
 
-        TalentScoutProfile::create([
-            'user_id' => $user->id,
+        TalentScoutProfile::updateOrCreate(
+            ['user_id' => $user->id],
+            [
             'organization' => 'Elite Talent Agency',
             'affiliation' => 'Gujarat Cricket Association',
             'sports_specialization' => [1, 3],

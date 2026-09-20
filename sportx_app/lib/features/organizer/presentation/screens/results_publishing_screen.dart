@@ -22,163 +22,210 @@ class _MatchEditing {
   TextEditingController scoreA = TextEditingController();
   TextEditingController scoreB = TextEditingController();
   _MatchEditing({required this.teamA, required this.teamB});
-  void dispose(){ scoreA.dispose(); scoreB.dispose(); }
+  void dispose() { scoreA.dispose(); scoreB.dispose(); }
 }
 
 class _ResultsPublishingScreenState extends ConsumerState<ResultsPublishingScreen> {
-  final List<_MatchEditing> _semi = [
-    _MatchEditing(teamA: 'Rising Stars FC', teamB: 'Thunder United'),
-    _MatchEditing(teamA: 'TBD', teamB: 'TBD'),
-  ];
-  bool _saving=false;
-  List<Map<String,dynamic>> _categories = [];
+  List<_MatchEditing> _matches = [];
+  bool _saving = false;
+  List<Map<String, dynamic>> _categories = [];
   String? _selectedCategoryId;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    _semi[0].scoreA.text='3';
-    _semi[0].scoreB.text='1';
     _loadCategories();
   }
+
   @override
-  void dispose(){
-    for (final m in _semi) {
-      m.dispose();
-    }
+  void dispose() {
+    for (final m in _matches) m.dispose();
     super.dispose();
   }
 
   Future<void> _loadCategories() async {
-    try{
+    try {
       final resp = await ref.read(dioProvider).get('/tournaments/${widget.tournamentId}/capacity');
       final raw = resp.data;
       List data = raw is Map && raw['data'] is List ? raw['data'] as List : [];
-      setState(()=> _categories = data.map((e)=> Map<String,dynamic>.from(e as Map)).toList());
-      if (_categories.isNotEmpty) _selectedCategoryId = (_categories.first['category_id'] ?? _categories.first['id']).toString();
-    } catch (_){}
+      final cats = data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      setState(() {
+        _categories = cats;
+        if (_categories.isNotEmpty) {
+          _selectedCategoryId = (_categories.first['category_id'] ?? _categories.first['id']).toString();
+        }
+      });
+      if (_selectedCategoryId != null) _loadApprovedTeams();
+    } catch (_) {}
+  }
+
+  Future<void> _loadApprovedTeams() async {
+    if (_selectedCategoryId == null) return;
+    try {
+      // fetch approved registrations for this tournament
+      final regs = await ref.read(tournamentRegistrationsByStatusProvider((tournamentId: widget.tournamentId, status: 'approved')).future);
+      // filter by selected category
+      final filtered = regs.where((r) {
+        final catId = (r['category'] is Map ? r['category']['id'] : r['category_id'])?.toString();
+        return catId == _selectedCategoryId;
+      }).toList();
+      // dispose old
+      for (final m in _matches) m.dispose();
+      final newMatches = <_MatchEditing>[];
+      // pair teams sequentially
+      for (int i = 0; i < filtered.length; i += 2) {
+        final a = _teamName(filtered[i]);
+        final b = i + 1 < filtered.length ? _teamName(filtered[i + 1]) : 'TBD';
+        newMatches.add(_MatchEditing(teamA: a, teamB: b));
+      }
+      if (newMatches.isEmpty) {
+        // fallback: show empty pair to allow manual entry if no approved teams yet
+        newMatches.add(_MatchEditing(teamA: 'Team A', teamB: 'Team B'));
+      }
+      setState(() => _matches = newMatches);
+    } catch (_) {
+      // fallback to one empty match
+      setState(() => _matches = [_MatchEditing(teamA: 'Team A', teamB: 'Team B')]);
+    }
+  }
+
+  String _teamName(Map<String, dynamic> r) {
+    final athlete = r['athlete'] is Map ? r['athlete'] as Map : null;
+    final user = athlete != null && athlete['user'] is Map ? athlete['user'] as Map : null;
+    return (r['team_name'] ?? user?['name'] ?? 'Team').toString();
   }
 
   Future<void> _publish() async {
-    if (_selectedCategoryId==null){
+    if (_selectedCategoryId == null) {
       SnackBarUtils.showError(context, 'No category selected');
       return;
     }
-    // Determine winners from scores
-    final winners = <Map<String,dynamic>>[];
-    // For semi final match 1, winner is teamA if scoreA>scoreB else teamB
-    for (int i=0;i<_semi.length;i++){
-      final m = _semi[i];
-      final a = int.tryParse(m.scoreA.text) ?? 0;
-      final b = int.tryParse(m.scoreB.text) ?? 0;
-      final hasScore = m.scoreA.text.isNotEmpty && m.scoreB.text.isNotEmpty;
-      if (!hasScore) continue;
-      final winner = a>=b ? m.teamA : m.teamB;
-      // Only first match contributes to results for demo; map place 1..3
-      if (i==0) {
-        winners.add({'category_id': int.parse(_selectedCategoryId!), 'place': 1, 'winner_name': winner});
-        final loser = a>=b ? m.teamB : m.teamA;
-        winners.add({'category_id': int.parse(_selectedCategoryId!), 'place': 2, 'winner_name': loser});
-      }
-    }
-    if (winners.isEmpty){
-      SnackBarUtils.showError(context, 'Enter at least one result');
+    if (_matches.isEmpty) {
+      SnackBarUtils.showError(context, 'No matches to publish');
       return;
     }
-    setState(()=> _saving=true);
-    try{
+    final winners = <Map<String, dynamic>>[];
+    for (final m in _matches) {
+      final a = int.tryParse(m.scoreA.text) ?? -1;
+      final b = int.tryParse(m.scoreB.text) ?? -1;
+      final hasScore = m.scoreA.text.isNotEmpty && m.scoreB.text.isNotEmpty && a >= 0 && b >= 0;
+      if (!hasScore) continue;
+      if (m.teamA == 'TBD' || m.teamB == 'TBD') continue;
+      if (m.teamA == 'Team A' || m.teamB == 'Team B') {
+        SnackBarUtils.showError(context, 'No approved teams found for selected category. Approve registrations first.');
+        return;
+      }
+      final winner = a >= b ? m.teamA : m.teamB;
+      final loser = a >= b ? m.teamB : m.teamA;
+      winners.add({'category_id': int.parse(_selectedCategoryId!), 'place': 1, 'winner_name': winner});
+      winners.add({'category_id': int.parse(_selectedCategoryId!), 'place': 2, 'winner_name': loser});
+      break; // only first completed match as final result for now
+    }
+    if (winners.isEmpty) {
+      SnackBarUtils.showError(context, 'Enter scores for at least one completed match');
+      return;
+    }
+    setState(() => _saving = true);
+    try {
       await ref.read(dioProvider).post('/tournaments/${widget.tournamentId}/results', data: {'results': winners});
       ref.invalidate(tournamentResultsProvider(widget.tournamentId));
-      if (mounted){
+      if (mounted) {
         SnackBarUtils.showSuccess(context, 'Results published!');
         context.pop();
       }
-    } catch(e){
+    } catch (e) {
       if (mounted) SnackBarUtils.showError(context, e, 'Failed to publish results. Please try again.');
-    } finally{
-      if (mounted) setState(()=> _saving=false);
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final approvedAsync = _selectedCategoryId == null ? null : ref.watch(tournamentRegistrationsByStatusProvider((tournamentId: widget.tournamentId, status: 'approved')));
+    final approvedCount = approvedAsync?.valueOrNull?.where((r) {
+          final catId = (r['category'] is Map ? r['category']['id'] : r['category_id'])?.toString();
+          return catId == _selectedCategoryId;
+        }).length ??
+        0;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: ()=> context.pop()),
+        leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
         title: const Text('Publish Results', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-        bottom: PreferredSize(preferredSize: const Size.fromHeight(1), child: Container(height:1,color: AppColors.border)),
+        bottom: PreferredSize(preferredSize: const Size.fromHeight(1), child: Container(height: 1, color: AppColors.border)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[
-          // Tournament info card
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(widget.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
               const SizedBox(height: 4),
-              const Text('U-16 Semi Finals • Dec 16, 2024', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+              Text('$approvedCount approved team${approvedCount == 1 ? '' : 's'} • Select category to publish results', style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
               if (_categories.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   initialValue: _selectedCategoryId,
                   decoration: const InputDecoration(labelText: 'Category', isDense: true),
-                  items: _categories.map((c)=> DropdownMenuItem(value: (c['category_id'] ?? c['id']).toString(), child: Text((c['category_name'] ?? c['name']).toString()))).toList(),
-                  onChanged: (v)=> setState(()=> _selectedCategoryId=v),
+                  items: _categories.map((c) => DropdownMenuItem(value: (c['category_id'] ?? c['id']).toString(), child: Text((c['category_name'] ?? c['name']).toString()))).toList(),
+                  onChanged: (v) {
+                    setState(() => _selectedCategoryId = v);
+                    _loadApprovedTeams();
+                  },
                 ),
               ],
+              if (_categories.isEmpty) const Padding(padding: EdgeInsets.only(top: 8), child: Text('No categories found. Create tournament categories first.', style: TextStyle(fontSize: 12, color: AppColors.textSecondary))),
             ]),
           ),
           const SizedBox(height: 24),
-          const Text('SEMI FINALS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary, letterSpacing: 0.5)),
-          const SizedBox(height: 12),
-          _matchSection('Match 1 • Dec 16, 10:00 AM', _semi[0], true),
-          const SizedBox(height: 16),
-          _matchSection('Match 2 • Dec 16, 2:00 PM', _semi[1], false),
-          const SizedBox(height: 24),
-          const Text('QUARTER FINALS (COMPLETED)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary, letterSpacing: 0.5)),
-          const SizedBox(height: 12),
-          const Text('Match 1 • Dec 15, 9:00 AM', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-          const SizedBox(height: 8),
-          Row(children:[
-            const Expanded(child: _TeamSlot(text: 'Rising Stars FC', winner: true)),
-            const SizedBox(width: 12),
-            const Text('2 - 0', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary)),
-            const SizedBox(width: 12),
-            const Expanded(child: _TeamSlot(text: 'Falcons SC', winner: false)),
-          ]),
+          if (approvedCount == 0)
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(color: const Color(0xFFfef3c7), borderRadius: BorderRadius.circular(8)),
+              child: const Row(children: [Icon(LucideIcons.alertTriangle, size: 16, color: Color(0xFF92400e)), SizedBox(width: 8), Expanded(child: Text('No approved registrations in this category yet. Approve teams in Registrations first.', style: TextStyle(fontSize: 12, color: Color(0xFF92400e))))]),
+            )
+          else ...[
+            Text('MATCHES (${_matches.length})', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary, letterSpacing: 0.5)),
+            const SizedBox(height: 12),
+            ..._matches.asMap().entries.map((e) => Padding(padding: const EdgeInsets.only(bottom: 12), child: _matchSection('Match ${e.key + 1}', e.value))),
+          ],
           const SizedBox(height: 32),
         ]),
       ),
       bottomNavigationBar: Container(
-        padding: EdgeInsets.fromLTRB(20,16,20,16+MediaQuery.of(context).padding.bottom),
+        padding: EdgeInsets.fromLTRB(20, 16, 20, 16 + MediaQuery.of(context).padding.bottom),
         decoration: const BoxDecoration(border: Border(top: BorderSide(color: AppColors.border))),
-        child: SizedBox(width: double.infinity, child: FilledButton(
-          onPressed: _saving? null: _publish,
-          style: FilledButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.all(14)),
-          child: _saving? const SizedBox(height:20,width:20, child: CircularProgressIndicator(strokeWidth:2,color:Colors.white)) : const Text('Publish Results', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-        )),
+        child: SizedBox(
+          width: double.infinity,
+          child: FilledButton(
+            onPressed: _saving ? null : _publish,
+            style: FilledButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.all(14)),
+            child: _saving ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('Publish Results', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _matchSection(String round, _MatchEditing m, bool filled){
-    final isTbd = m.teamA=='TBD';
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children:[
+  Widget _matchSection(String round, _MatchEditing m) {
+    final isTbd = m.teamA == 'TBD' || m.teamB == 'TBD' || m.teamA == 'Team A';
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(round, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
       const SizedBox(height: 8),
-      Row(children:[
-        Expanded(child: _TeamSlot(text: m.teamA, winner: filled && !isTbd, tbd: isTbd)),
+      Row(children: [
+        Expanded(child: _TeamSlot(text: m.teamA, tbd: isTbd)),
         const SizedBox(width: 8),
-        SizedBox(width: 60, child: TextField(controller: m.scoreA, keyboardType: TextInputType.number, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w600), decoration: InputDecoration(hintText: '-', isDense: true, contentPadding: const EdgeInsets.symmetric(vertical:10), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border))))),
-        const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Text('-', style: TextStyle(fontSize:12, color: AppColors.textSecondary, fontWeight: FontWeight.w600))),
-        SizedBox(width: 60, child: TextField(controller: m.scoreB, keyboardType: TextInputType.number, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w600), decoration: InputDecoration(hintText: '-', isDense: true, contentPadding: const EdgeInsets.symmetric(vertical:10), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border))))),
+        SizedBox(width: 60, child: TextField(controller: m.scoreA, keyboardType: TextInputType.number, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w600), decoration: InputDecoration(hintText: '-', isDense: true, contentPadding: const EdgeInsets.symmetric(vertical: 10), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border))))),
+        const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Text('-', style: TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w600))),
+        SizedBox(width: 60, child: TextField(controller: m.scoreB, keyboardType: TextInputType.number, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w600), decoration: InputDecoration(hintText: '-', isDense: true, contentPadding: const EdgeInsets.symmetric(vertical: 10), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border))))),
         const SizedBox(width: 8),
-        Expanded(child: _TeamSlot(text: m.teamB, winner: false, tbd: isTbd)),
+        Expanded(child: _TeamSlot(text: m.teamB, tbd: isTbd)),
       ]),
     ]);
   }
@@ -186,17 +233,15 @@ class _ResultsPublishingScreenState extends ConsumerState<ResultsPublishingScree
 
 class _TeamSlot extends StatelessWidget {
   final String text;
-  final bool winner;
   final bool tbd;
-  const _TeamSlot({required this.text, this.winner=false, this.tbd=false});
+  const _TeamSlot({required this.text, this.tbd = false});
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     Color bg = AppColors.surface;
     Color fg = AppColors.textPrimary;
-    if (winner){ bg = const Color(0xFFd1fae5); fg = const Color(0xFF065f46);}
-    if (tbd){ fg = AppColors.textSecondary; }
+    if (tbd) fg = AppColors.textSecondary;
     return Container(
-      padding: const EdgeInsets.symmetric(vertical:12),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8)),
       alignment: Alignment.center,
       child: Text(text, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: fg), textAlign: TextAlign.center),

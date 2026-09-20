@@ -32,7 +32,10 @@ import 'package:sportx_app/features/coach/presentation/screens/coach_enrollment_
 import 'package:sportx_app/features/athlete/presentation/screens/my_coaching_enrollments_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/coach_dashboard_screen.dart';
 import 'package:sportx_app/features/academy/presentation/screens/academy_dashboard_screen.dart';
+import 'package:sportx_app/features/organizer/presentation/screens/organizer_analytics_screen.dart';
 import 'package:sportx_app/features/organizer/presentation/screens/organizer_dashboard_screen.dart';
+import 'package:sportx_app/features/organizer/presentation/screens/organizer_profile_screen.dart';
+import 'package:sportx_app/features/organizer/presentation/screens/tournament_edit_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/enquiry_inbox_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/enquiry_detail_screen.dart';
 import 'package:sportx_app/features/academy/presentation/screens/trial_posting_screen.dart';
@@ -89,6 +92,7 @@ import 'package:sportx_app/features/coach/presentation/screens/coach_profile_det
 import 'package:sportx_app/features/search/presentation/screens/universal_search_screen.dart';
 import 'package:sportx_app/features/connections/presentation/screens/my_connections_screen.dart';
 import 'package:sportx_app/features/connections/presentation/screens/connection_requests_screen.dart';
+import 'package:sportx_app/features/connections/presentation/screens/scout_requests_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/view_profile_screen.dart';
 import 'package:sportx_app/features/social/presentation/screens/post_detail_screen.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_login_screen.dart';
@@ -112,7 +116,7 @@ import 'package:sportx_app/features/talent_scout/presentation/screens/talent_sco
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_connection_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_connections_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_profile_screen.dart';
-import 'package:sportx_app/features/coach/presentation/screens/coach_enrollment_screen.dart';
+import 'package:sportx_app/features/talent_scout/presentation/widgets/scout_shell.dart';
 
 /// Maps a user role to the first onboarding screen they must complete.
 /// Returns null for roles with no onboarding (e.g. admin).
@@ -283,13 +287,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/organizer-onboarding', builder: (context, state) => const OrganizerOnboardingScreen()),
       GoRoute(path: '/sponsor-onboarding', builder: (context, state) => const SponsorOnboardingScreen()),
       GoRoute(path: '/scout-onboarding', builder: (context, state) => const TalentScoutOnboardingScreen()),
-      GoRoute(path: '/scout-dashboard', builder: (context, state) => const TalentScoutDashboardScreen()),
-      GoRoute(path: '/scout-discovery', builder: (context, state) => const TalentScoutAthleteDiscoveryScreen()),
+      ShellRoute(
+        builder: (context, state, child) => ScoutShell(child: child),
+        routes: [
+          GoRoute(path: '/scout-dashboard', builder: (context, state) => const TalentScoutDashboardScreen()),
+          GoRoute(path: '/scout-discovery', builder: (context, state) => const TalentScoutAthleteDiscoveryScreen()),
+          GoRoute(path: '/scout-shortlist', builder: (context, state) => const TalentScoutShortlistScreen()),
+          GoRoute(path: '/scout-connections', builder: (context, state) => const TalentScoutConnectionsScreen()),
+          GoRoute(path: '/scout-profile', builder: (context, state) => const TalentScoutProfileScreen()),
+        ],
+      ),
       GoRoute(path: '/scout-athlete/:id', builder: (context, state) => TalentScoutAthleteProfileViewScreen(athleteId: state.pathParameters['id']!)),
-      GoRoute(path: '/scout-shortlist', builder: (context, state) => const TalentScoutShortlistScreen()),
       GoRoute(path: '/scout-connect/:athleteId', builder: (context, state) => TalentScoutConnectionScreen(athleteId: state.pathParameters['athleteId']!)),
-      GoRoute(path: '/scout-connections', builder: (context, state) => const TalentScoutConnectionsScreen()),
-      GoRoute(path: '/scout-profile', builder: (context, state) => const TalentScoutProfileScreen()),
       GoRoute(path: '/sponsor-posting', builder: (context, state) => const SponsorshipPostingScreen()),
       GoRoute(path: '/sponsor-pitch/:id', builder: (context, state) => SponsorPitchScreen(sponsorId: state.pathParameters['id']!)),
       GoRoute(path: '/registrant-detail', builder: (context, state) {
@@ -330,6 +339,9 @@ final routerProvider = Provider<GoRouter>((ref) {
           title: extra?['title'] as String? ?? 'Tournament',
         );
       }),
+      GoRoute(path: '/organizer-analytics', builder: (context, state) => const OrganizerAnalyticsScreen()),
+      GoRoute(path: '/organizer-profile', builder: (context, state) => const OrganizerProfileScreen()),
+      GoRoute(path: '/edit-tournament/:id', builder: (context, state) => TournamentEditScreen(tournamentId: state.pathParameters['id']!)),
       GoRoute(path: '/sponsor-dashboard', builder: (context, state) => const SponsorDashboardScreen()),
       GoRoute(path: '/athlete-discovery', builder: (context, state) => const AthleteDiscoveryScreen()),
       GoRoute(path: '/athlete-profile-view', builder: (context, state) {
@@ -382,6 +394,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/search-filter', builder: (context, state) => const SearchFilterScreen()),
       GoRoute(path: '/my-connections', builder: (context, state) => const MyConnectionsScreen()),
       GoRoute(path: '/connection-requests', builder: (context, state) => const ConnectionRequestsScreen()),
+      GoRoute(path: '/scout-requests', builder: (context, state) => const ScoutRequestsScreen()),
       GoRoute(path: '/discover', builder: (context, state) => const DiscoverScreen()),
       GoRoute(path: '/view-profile', builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;

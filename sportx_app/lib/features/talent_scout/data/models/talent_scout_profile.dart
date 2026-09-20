@@ -8,6 +8,7 @@ class TalentScoutProfile {
   final int? cityId;
   final String? bio;
   final int? photoMediaId;
+  final String? photoUrl;
   final bool listingStatus;
 
   TalentScoutProfile({
@@ -20,23 +21,26 @@ class TalentScoutProfile {
     this.cityId,
     this.bio,
     this.photoMediaId,
+    this.photoUrl,
     this.listingStatus = true,
   });
 
   factory TalentScoutProfile.fromJson(Map<String, dynamic> json) {
+    final photo = json['photo'] as Map<String, dynamic>?;
     return TalentScoutProfile(
       id: json['id'] as int?,
       userId: json['user_id'] as int,
       organization: json['organization'] as String?,
       affiliation: json['affiliation'] as String?,
       sportsSpecialization: (json['sports_specialization'] as List<dynamic>?)
-              ?.map((e) => e as int)
+              ?.map((e) => (e as num).toInt())
               .toList() ??
           [],
-      experienceYears: json['experience_years'] as int?,
-      cityId: json['city_id'] as int?,
+      experienceYears: (json['experience_years'] as num?)?.toInt(),
+      cityId: (json['city_id'] as num?)?.toInt(),
       bio: json['bio'] as String?,
-      photoMediaId: json['photo_media_id'] as int?,
+      photoMediaId: (json['photo_media_id'] as num?)?.toInt(),
+      photoUrl: photo?['url'] as String?,
       listingStatus: json['listing_status'] == true || json['listing_status'] == 1,
     );
   }

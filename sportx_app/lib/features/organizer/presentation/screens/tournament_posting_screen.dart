@@ -17,13 +17,11 @@ class TournamentPostingScreen extends ConsumerStatefulWidget {
 
 class CategoryRow {
   TextEditingController name = TextEditingController();
-  TextEditingController age = TextEditingController();
-  TextEditingController fee = TextEditingController();
+  TextEditingController capacity = TextEditingController(text: '16');
   int? ageGroupId;
   void dispose() {
     name.dispose();
-    age.dispose();
-    fee.dispose();
+    capacity.dispose();
   }
 }
 
@@ -51,16 +49,21 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
   @override
   void initState() {
     super.initState();
-    _categories[0].age.text = '14-16';
-    _categories[0].fee.text = '3000';
-    _categories[1].age.text = '16-18';
-    _categories[1].fee.text = '3000';
-    _categories[2].age.text = '18+';
-    _categories[2].fee.text = '3500';
     _prizePool.text = '300000';
     _prize1.text = '150000';
     _prize2.text = '80000';
     _prize3.text = '40000';
+    // default age groups will be filled from meta after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ageGroups = ref.read(metaProvider).ageGroups;
+      if (ageGroups.isNotEmpty) {
+        for (int i = 0; i < _categories.length && i < ageGroups.length; i++) {
+          if (_categories[i].ageGroupId == null) {
+            setState(() => _categories[i].ageGroupId = ageGroups[i].id);
+          }
+        }
+      }
+    });
   }
 
   @override
@@ -97,17 +100,31 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
       SnackBarUtils.showError(context, 'Please select Sport and City');
       return;
     }
+    // Validate categories have age group
+    for (final c in _categories) {
+      if (c.name.text.trim().isNotEmpty && c.ageGroupId == null) {
+        SnackBarUtils.showError(context, 'Please select age group for category "${c.name.text.trim()}"');
+        return;
+      }
+    }
     setState(() => _saving = true);
     try {
-      final cats = _categories.where((c) => c.name.text.trim().isNotEmpty).map((c) {
-        return {
+      final cleanedCats = <Map<String, dynamic>>[];
+      for (final c in _categories) {
+        if (c.name.text.trim().isEmpty) continue;
+        cleanedCats.add({
           'name': c.name.text.trim(),
           'age_group_id': c.ageGroupId,
-          'capacity': int.tryParse(c.fee.text.replaceAll(RegExp(r'[^0-9]'), '')) != null ? int.tryParse(_maxTeams.text) ?? 16 : null,
-        }..removeWhere((k,v)=> v==null);
-      }).toList();
+          'capacity': int.tryParse(c.capacity.text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 16,
+          'waitlist_enabled': true,
+        });
+      }
+      if (cleanedCats.isEmpty) {
+        SnackBarUtils.showError(context, 'Add at least one category');
+        setState(() => _saving = false);
+        return;
+      }
 
-      // Build categories with capacity from maxTeams or per-row
       final payload = {
         'name': _name.text.trim(),
         'sport_id': _sportId,
@@ -122,22 +139,8 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
         'prize_pool': '₹${_prizePool.text.trim()} (1st: ₹${_prize1.text}, 2nd: ₹${_prize2.text}, 3rd: ₹${_prize3.text})',
         'rules': _description.text.trim().isEmpty ? null : _description.text.trim(),
         'status': status,
-        'categories': cats,
-      }..removeWhere((k,v)=> v==null);
-
-      // Fix categories payload: map to expected shape
-      final cleanedCats = <Map<String,dynamic>>[];
-      for (int i=0;i<_categories.length;i++) {
-        final c = _categories[i];
-        if (c.name.text.trim().isEmpty) continue;
-        cleanedCats.add({
-          'name': c.name.text.trim(),
-          if (c.ageGroupId != null) 'age_group_id': c.ageGroupId,
-          'capacity': int.tryParse(_maxTeams.text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 16,
-          'waitlist_enabled': true,
-        });
-      }
-      payload['categories'] = cleanedCats;
+        'categories': cleanedCats,
+      }..removeWhere((k, v) => v == null);
 
       await ref.read(dioProvider).post('/me/tournaments', data: payload);
       if (!mounted) return;
@@ -273,21 +276,30 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
             Row(children: [
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[_label('Entry Fee (per team/individual)'), TextField(controller: _entryFee, keyboardType: TextInputType.number, decoration: const InputDecoration(prefixText: '₹ ', hintText: '3000'))])),
               const SizedBox(width: 12),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[_label('Max Teams/Participants'), TextField(controller: _maxTeams, keyboardType: TextInputType.number, decoration: const InputDecoration(hintText: '48'))])),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[_label('Default capacity per category'), TextField(controller: _maxTeams, keyboardType: TextInputType.number, decoration: const InputDecoration(hintText: '16'), onChanged: (v){ final n = int.tryParse(v); if(n!=null){ for(final c in _categories){ if(c.capacity.text.isEmpty || c.capacity.text=='16') c.capacity.text = '$n'; } setState((){}); }})])),
             ]),
             const SizedBox(height: 16),
-            _label('Categories'),
+            _label('Categories (name + age group + capacity)'),
             ..._categories.asMap().entries.map((entry){
               final i = entry.key;
               final cat = entry.value;
               return Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: Row(children: [
-                  Expanded(child: TextField(controller: cat.name, decoration: const InputDecoration(hintText: 'Category'))),
+                  Expanded(flex: 2, child: TextField(controller: cat.name, decoration: const InputDecoration(hintText: 'e.g. U-16'))),
                   const SizedBox(width: 8),
-                  Expanded(child: TextField(controller: cat.age, decoration: const InputDecoration(hintText: 'Age'))),
+                  Expanded(
+                    flex: 2,
+                    child: DropdownButtonFormField<int>(
+                      initialValue: cat.ageGroupId,
+                      hint: const Text('Age group', style: TextStyle(fontSize: 12)),
+                      items: ref.watch(metaProvider).ageGroups.map((ag) => DropdownMenuItem(value: ag.id, child: Text(ag.label, style: const TextStyle(fontSize: 12)))).toList(),
+                      onChanged: (v) => setState(() => cat.ageGroupId = v),
+                      decoration: const InputDecoration(isDense: true, contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12)),
+                    ),
+                  ),
                   const SizedBox(width: 8),
-                  SizedBox(width: 90, child: TextField(controller: cat.fee, decoration: const InputDecoration(prefixText: '₹ ', hintText: 'Fee'))),
+                  SizedBox(width: 90, child: TextField(controller: cat.capacity, keyboardType: TextInputType.number, decoration: const InputDecoration(hintText: 'Capacity'))),
                   const SizedBox(width: 8),
                   InkWell(onTap: _categories.length>1 ? (){ setState(()=> _categories.removeAt(i)); } : null, child: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(8)), child: const Icon(LucideIcons.x, size: 14))),
                 ]),

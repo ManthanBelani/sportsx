@@ -10,11 +10,11 @@ class TalentScoutState {
 
   TalentScoutState({this.profile, this.isLoading = false, this.error});
 
-  TalentScoutState copyWith({TalentScoutProfile? profile, bool? isLoading, String? error}) {
+  TalentScoutState copyWith({TalentScoutProfile? profile, bool? isLoading, String? error, bool clearError = false}) {
     return TalentScoutState(
       profile: profile ?? this.profile,
       isLoading: isLoading ?? this.isLoading,
-      error: error ?? this.error,
+      error: clearError ? null : (error ?? this.error),
     );
   }
 }
@@ -23,11 +23,11 @@ class TalentScoutNotifier extends StateNotifier<TalentScoutState> {
   final Dio _dio;
 
   TalentScoutNotifier(this._dio) : super(TalentScoutState()) {
-    loadProfile();
+    Future.microtask(() => loadProfile());
   }
 
   Future<void> loadProfile() async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final resp = await _dio.get('/me/scout-profile');
       final data = resp.data['data'];
@@ -47,7 +47,7 @@ class TalentScoutNotifier extends StateNotifier<TalentScoutState> {
       state = TalentScoutState(profile: TalentScoutProfile.fromJson(resp.data['data']));
       return true;
     } on DioException catch (e) {
-      state = state.copyWith(error: ApiException.fromDio(e).message);
+      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
       return false;
     }
   }
@@ -55,10 +55,10 @@ class TalentScoutNotifier extends StateNotifier<TalentScoutState> {
   Future<bool> updateProfile(Map<String, dynamic> data) async {
     try {
       final resp = await _dio.put('/me/scout-profile', data: data);
-      state = state.copyWith(profile: TalentScoutProfile.fromJson(resp.data['data']));
+      state = TalentScoutState(profile: TalentScoutProfile.fromJson(resp.data['data']));
       return true;
     } on DioException catch (e) {
-      state = state.copyWith(error: ApiException.fromDio(e).message);
+      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
       return false;
     }
   }

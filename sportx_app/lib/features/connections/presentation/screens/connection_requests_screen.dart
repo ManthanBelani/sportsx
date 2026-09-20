@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/connections/presentation/providers/connections_provider.dart';
+import 'package:sportx_app/features/connections/presentation/providers/scout_requests_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
@@ -55,17 +57,85 @@ class _ConnectionRequestsScreenState extends ConsumerState<ConnectionRequestsScr
           ],
         ),
       ),
-      body: RefreshIndicator(
-        onRefresh: () async => ref.invalidate(connectionRequestsProvider(currentUserId)),
-        child: async.when(
-          loading: () => const ConnectionsSkeleton(),
-          error: (e, _) => Center(child: Text(ApiException.messageFor(e), style: const TextStyle(color: AppColors.textSecondary))),
-          data: (_) => TabBarView(
-            controller: _tabController,
+      body: Column(
+        children: [
+          _scoutRequestsEntry(),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(connectionRequestsProvider(currentUserId));
+                await ref.read(scoutRequestsProvider.notifier).load();
+              },
+              child: async.when(
+                loading: () => const ConnectionsSkeleton(),
+                error: (e, _) => Center(child: Text(ApiException.messageFor(e), style: const TextStyle(color: AppColors.textSecondary))),
+                data: (_) => TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildReceivedTab(requests, currentUserId),
+                    const Center(child: Text('Sent requests are not exposed by the API yet',
+                        style: TextStyle(color: AppColors.textSecondary))),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Entry to the talent-scout inbox. Scouts connect through a separate flow
+  /// (scout_connections), so their requests don't appear in the tabs below.
+  Widget _scoutRequestsEntry() {
+    final pending = ref.watch(scoutRequestsProvider).pendingCount;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: GestureDetector(
+        onTap: () => context.push('/scout-requests'),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+          ),
+          child: Row(
             children: [
-              _buildReceivedTab(requests, currentUserId),
-              const Center(child: Text('Sent requests are not exposed by the API yet',
-                  style: TextStyle(color: AppColors.textSecondary))),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                alignment: Alignment.center,
+                child: const Icon(LucideIcons.userSearch, size: 20, color: AppColors.primary),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Scout Requests',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                    const SizedBox(height: 2),
+                    Text(
+                      pending > 0 ? '$pending pending request${pending == 1 ? '' : 's'} from talent scouts' : 'Requests from talent scouts appear here',
+                      style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    ),
+                  ],
+                ),
+              ),
+              if (pending > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(12)),
+                  child: Text('$pending',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white)),
+                )
+              else
+                const Icon(LucideIcons.chevronRight, size: 18, color: AppColors.textSecondary),
             ],
           ),
         ),

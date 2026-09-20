@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security — SportX</title>
+  <meta name="description" content="SportX Security - How we protect your data and keep the platform safe.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="brand"><div class="brand-mark"><img src="assets/logo.png" alt="SportX Logo"></div> SportX</a>
+      <div class="nav-menu">
+        <a href="index.html">About</a>
+        <a href="index.html#ecosystem">Ecosystem</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="changelog.html">Changelog</a>
+        <a href="careers.html">Careers</a>
+        <a href="press.html">Press</a>
+        <a href="index.html#faq">FAQ</a>
+        <a href="index.html#contact">Contact</a>
+        <a href="security.html" class="active">Security</a>
+      </div>
+      <div class="nav-cta">
+        <a class="btn btn-ghost" href="../landing.html">View app</a>
+        <a class="btn btn-primary" href="../landing.html">Get the app</a>
+      </div>
+      <button class="nav-mobile-btn" id="mobileMenuBtn"><i data-lucide="menu"></i></button>
+    </div>
+  </nav>
+
+  <div class="nav-mobile" id="mobileMenu">
+    <div class="nav-mobile-head">
+      <a href="index.html" class="brand"><div class="brand-mark"><img src="assets/logo.png" alt="SportX Logo"></div> SportX</a>
+      <button class="nav-mobile-close" id="mobileMenuClose"><i data-lucide="x"></i></button>
+    </div>
+    <div class="nav-mobile-section">
+      <div class="nav-mobile-label">Pages</div>
+      <a class="nav-mobile-link" href="index.html">About</a>
+      <a class="nav-mobile-link" href="index.html#ecosystem">Ecosystem</a>
+      <a class="nav-mobile-link" href="pricing.html">Pricing</a>
+      <a class="nav-mobile-link" href="changelog.html">Changelog</a>
+      <a class="nav-mobile-link" href="careers.html">Careers</a>
+      <a class="nav-mobile-link" href="press.html">Press</a>
+      <a class="nav-mobile-link" href="index.html#faq">FAQ</a>
+      <a class="nav-mobile-link" href="index.html#contact">Contact</a>
+      <a class="nav-mobile-link active" href="security.html">Security</a>
+      <a class="nav-mobile-link" href="privacy.html">Privacy</a>
+      <a class="nav-mobile-link" href="terms.html">Terms</a>
+      <a class="nav-mobile-link" href="cookies.html">Cookies</a>
+    </div>
+  </div>
+
+  <header class="hero">
+    <div class="hero-grid-bg"></div>
+    <div class="hero-inner">
+      <h1>Security</h1>
+      <p class="lead">How we protect your data, your account, and your trust in SportX.</p>
+      <div class="hero-badges">
+        <div class="badge"><i data-lucide="shield-check"></i> TLS/SSL Encrypted</div>
+        <div class="badge"><i data-lucide="lock"></i> AES-256 Storage</div>
+        <div class="badge"><i data-lucide="server"></i> ISO 27001 Infra</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="content-page">
+    <a href="index.html" class="back-link"><i data-lucide="arrow-left"></i> Back to About</a>
+
+    <p>At SportX, security isn't an afterthought — it's foundational. We understand that you're trusting us with personal information, and we take that responsibility seriously.</p>
+
+    <div class="grid-3" style="margin: 32px 0;">
+      <div class="card" style="text-align:center;">
+        <div class="card-icon" style="margin: 0 auto 12px;"><i data-lucide="shield"></i></div>
+        <h3>Data Encryption</h3>
+        <p>All data encrypted in transit (TLS/SSL) and at rest (AES-256).</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="card-icon" style="margin: 0 auto 12px;"><i data-lucide="eye"></i></div>
+        <h3>Access Controls</h3>
+        <p>Strict role-based access controls for user data.</p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="card-icon" style="margin: 0 auto 12px;"><i data-lucide="refresh-cw"></i></div>
+        <h3>Regular Audits</h3>
+        <p>Quarterly security audits and penetration testing.</p>
+      </div>
+    </div>
+
+    <h2>Infrastructure Security</h2>
+    <p>Our Platform runs on ISO 27001-certified cloud infrastructure with:</p>
+    <ul>
+      <li><strong>Geographic redundancy</strong> — Data replicated across multiple availability zones</li>
+      <li><strong>DDoS protection</strong> — Cloud-native and application-layer DDoS mitigation</li>
+      <li><strong>Firewall & WAF</strong> — Web Application Firewall protecting against OWASP Top 10 threats</li>
+      <li><strong>Backup & recovery</strong> — Daily automated backups with point-in-time recovery</li>
+      <li><strong>24/7 monitoring</strong> — Real-time alerting for anomalous activity</li>
+    </ul>
+
+    <h2>Account Security</h2>
+    <ul>
+      <li><strong>Password Requirements</strong> — Passwords must be at least 8 characters. We never store passwords in plain text — only salted hashes.</li>
+      <li><strong>2-Factor Authentication</strong> — 2FA via OTP (SMS/Email) or authenticator apps is available for all users.</li>
+      <li><strong>Suspicious Login Alerts</strong> — We monitor for unusual login patterns and notify you immediately.</li>
+      <li><strong>Session Management</strong> — Active sessions are visible in account settings. You can revoke any session.</li>
+    </ul>
+
+    <h2>Payment Security</h2>
+    <p>All payments on SportX are processed through PCI-DSS compliant providers (Razorpay, UPI). SportX does not store your full card number, CVV, or bank account details. All payment data is tokenized and encrypted by the provider.</p>
+
+    <h2>Verification & Anti-Fraud</h2>
+    <p>We employ multiple layers to prevent fraud and fake accounts:</p>
+    <ul>
+      <li>Phone number and email verification during signup</li>
+      <li>Document verification for coaches, academies, and sponsors</li>
+      <li>ML-based anomaly detection for suspicious behaviour</li>
+      <li>Manual review of flagged listings and accounts</li>
+      <li>User reporting tools for inappropriate content or behaviour</li>
+    </ul>
+
+    <h2>Bug Bounty Program</h2>
+    <p>We run a responsible disclosure program for security researchers. If you discover a security vulnerability, report it to <a href="mailto:security@sportx.in">security@sportx.in</a>. We aim to acknowledge within 24 hours and resolve critical issues within 7 days.</p>
+
+    <h2>Report a Security Issue</h2>
+    <p>If you've identified a security vulnerability or have concerns about your account:</p>
+    <ul>
+      <li>Email: <a href="mailto:security@sportx.in">security@sportx.in</a> (for vulnerabilities)</li>
+      <li>Email: <a href="mailto:support@sportx.in">support@sportx.in</a> (for account issues)</li>
+    </ul>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand"><div class="brand-mark"><img src="assets/logo.png" alt="SportX Logo"></div> SportX</div>
+          <p class="footer-desc">India's sports network. From playground to podium.</p>
+          <div class="footer-social">
+            <a href="#" aria-label="Twitter"><i data-lucide="twitter"></i></a>
+            <a href="#" aria-label="LinkedIn"><i data-lucide="linkedin"></i></a>
+            <a href="#" aria-label="Instagram"><i data-lucide="instagram"></i></a>
+            <a href="#" aria-label="YouTube"><i data-lucide="youtube"></i></a>
+          </div>
+        </div>
+        <div class="footer-col"><h5>Product</h5><ul><li><a href="pricing.html">Pricing</a></li><li><a href="changelog.html">Changelog</a></li></ul></div>
+        <div class="footer-col"><h5>Company</h5><ul><li><a href="index.html">About</a></li><li><a href="careers.html">Careers</a></li><li><a href="press.html">Press</a></li><li><a href="index.html#contact">Contact</a></li></ul></div>
+        <div class="footer-col"><h5>Legal</h5><ul><li><a href="privacy.html">Privacy</a></li><li><a href="terms.html">Terms</a></li><li><a href="cookies.html">Cookies</a></li><li><a href="security.html">Security</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><div>© 2026 SportX Technologies Pvt. Ltd.</div><div>Made in India</div></div>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+    (function() {
+      const mb = document.getElementById('mobileMenu');
+      const mbBtn = document.getElementById('mobileMenuBtn');
+      const mbClose = document.getElementById('mobileMenuClose');
+      if (mbBtn) mbBtn.addEventListener('click', () => mb.classList.add('open'));
+      if (mbClose) mbClose.addEventListener('click', () => mb.classList.remove('open'));
+      if (mb) mb.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mb.classList.remove('open')));
+    })();
+  </script>
+</body>
+</html>

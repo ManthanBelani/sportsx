@@ -42,6 +42,8 @@ class AllSeeder extends Seeder
             RecentSearchSeeder::class,
             AchievementSeeder::class,
             MediaItemSeeder::class,
+            TalentScoutSeeder::class,
+            CoachingEnrollmentSeeder::class,
         ]);
     }
 }

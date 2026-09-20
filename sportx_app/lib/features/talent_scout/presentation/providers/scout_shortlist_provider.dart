@@ -14,7 +14,7 @@ class ScoutShortlistState {
     return ScoutShortlistState(
       items: items ?? this.items,
       isLoading: isLoading ?? this.isLoading,
-      error: error ?? this.error,
+      error: error,
     );
   }
 }
@@ -29,19 +29,19 @@ class ScoutShortlistNotifier extends StateNotifier<ScoutShortlistState> {
   Future<void> load() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final resp = await _dio.get('/me/shortlist');
+      final resp = await _dio.get('/me/scout-shortlist');
       final list = (resp.data['data'] as List? ?? [])
           .map((e) => ScoutShortlistItem.fromJson(e as Map<String, dynamic>))
           .toList();
       state = ScoutShortlistState(items: list);
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      state = ScoutShortlistState(items: state.items, isLoading: false, error: ApiException.fromDio(e).message);
     }
   }
 
   Future<bool> addToShortlist(String athleteId, {String? notes}) async {
     try {
-      await _dio.post('/me/shortlist/$athleteId', data: {'notes': notes});
+      await _dio.post('/me/scout-shortlist/$athleteId', data: {'notes': notes});
       await load();
       return true;
     } on DioException catch (e) {
@@ -55,23 +55,24 @@ class ScoutShortlistNotifier extends StateNotifier<ScoutShortlistState> {
   }
 
   Future<bool> removeFromShortlist(String athleteId) async {
+    final previous = List<ScoutShortlistItem>.from(state.items);
+    state = state.copyWith(items: state.items.where((e) => e.athlete.id != athleteId).toList());
     try {
-      await _dio.delete('/me/shortlist/$athleteId');
-      state = state.copyWith(
-        items: state.items.where((e) => e.athlete.id != athleteId).toList(),
-      );
+      await _dio.delete('/me/scout-shortlist/$athleteId');
       return true;
-    } on DioException {
+    } on DioException catch (e) {
+      state = ScoutShortlistState(items: previous, isLoading: false, error: ApiException.fromDio(e).message);
       return false;
     }
   }
 
   Future<bool> updateNotes(String athleteId, String notes) async {
     try {
-      await _dio.patch('/me/shortlist/$athleteId', data: {'notes': notes});
+      await _dio.patch('/me/scout-shortlist/$athleteId', data: {'notes': notes});
       await load();
       return true;
-    } on DioException {
+    } on DioException catch (e) {
+      state = state.copyWith(error: ApiException.fromDio(e).message);
       return false;
     }
   }

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\AthleteProfile;
+use App\Models\Sport;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -19,7 +20,7 @@ class AthleteProfileSeeder extends Seeder
 
         $profiles = [
             [
-                'user_id' => 2,
+                'email' => 'athlete@sportx.test',
                 'full_name' => 'John Athlete',
                 'phone' => '+91 98765 11111',
                 'date_of_birth' => '2012-05-15',
@@ -29,9 +30,10 @@ class AthleteProfileSeeder extends Seeder
                 'skill_level' => 'intermediate',
                 'position' => 'Batsman',
                 'experience' => '3 years',
+                'sports' => ['Cricket'],
             ],
             [
-                'user_id' => 7,
+                'email' => 'rahul@sportx.test',
                 'full_name' => 'Rahul Sharma',
                 'phone' => '+91 98765 22222',
                 'date_of_birth' => '2010-08-22',
@@ -41,9 +43,10 @@ class AthleteProfileSeeder extends Seeder
                 'skill_level' => 'competitive',
                 'position' => 'Midfielder',
                 'experience' => '5 years',
+                'sports' => ['Football'],
             ],
             [
-                'user_id' => 8,
+                'email' => 'priya@sportx.test',
                 'full_name' => 'Priya Patel',
                 'phone' => '+91 98765 33333',
                 'date_of_birth' => '2013-03-10',
@@ -53,14 +56,33 @@ class AthleteProfileSeeder extends Seeder
                 'skill_level' => 'advanced',
                 'position' => 'Freestyle',
                 'experience' => '4 years',
+                'sports' => ['Swimming'],
             ],
         ];
 
         foreach ($profiles as $profile) {
-            AthleteProfile::updateOrCreate(
-                ['user_id' => $profile['user_id']],
+            $user = User::where('email', $profile['email'])->first();
+            if (! $user) {
+                $this->command->warn("User {$profile['email']} not found. Run UserSeeder first.");
+                continue;
+            }
+
+            $sportNames = $profile['sports'];
+            unset($profile['sports'], $profile['email']);
+
+            $athlete = AthleteProfile::updateOrCreate(
+                ['user_id' => $user->id],
                 $profile
             );
+
+            // Discovery (GET /athletes) only lists athletes with at least one
+            // linked sport (whereHas('sports')), so sync sports by name.
+            $sportIds = Sport::whereIn('name', $sportNames)->pluck('id')->all();
+            if (! empty($sportIds)) {
+                $athlete->sports()->sync($sportIds);
+            } else {
+                $this->command->warn('Sports not found for ' . $user->email . '. Run MasterDataSeeder first.');
+            }
         }
 
         $this->command->info('Athlete profiles seeded: ' . count($profiles));

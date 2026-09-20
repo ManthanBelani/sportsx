@@ -32,9 +32,12 @@ class _TalentScoutAthleteDiscoveryScreenState
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-      () => ref.read(athleteDiscoveryProvider.notifier).searchAthletes(),
-    );
+    Future.microtask(() {
+      ref.read(athleteDiscoveryProvider.notifier).searchAthletes();
+      // Needed so the star icon can reflect shortlisted state even when
+      // discovery is opened directly (deep link) without visiting dashboard.
+      ref.read(scoutShortlistProvider.notifier).load();
+    });
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 200) {
@@ -86,12 +89,19 @@ class _TalentScoutAthleteDiscoveryScreenState
   Widget build(BuildContext context) {
     final state = ref.watch(athleteDiscoveryProvider);
     final meta = ref.watch(metaProvider);
+    // Shortlisted athlete ids drive the filled/outline star state per card.
+    final shortlistedIds = ref
+        .watch(scoutShortlistProvider)
+        .items
+        .map((e) => e.athlete.id)
+        .toSet();
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
+        automaticallyImplyLeading: false,
         title: const Text(
           'Discover Athletes',
           style: TextStyle(
@@ -99,10 +109,6 @@ class _TalentScoutAthleteDiscoveryScreenState
             fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
           ),
-        ),
-        leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
@@ -112,8 +118,10 @@ class _TalentScoutAthleteDiscoveryScreenState
       body: Column(
         children: [
           // Search Bar
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          Container(
+            width: double.infinity,
+            color: AppColors.background,
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
             child: Row(
               children: [
                 Expanded(
@@ -178,10 +186,13 @@ class _TalentScoutAthleteDiscoveryScreenState
           // Quick filter chips row (sport, age, city) per spec 5.3
           if (!_showFilters &&
               (meta.sports.isNotEmpty || meta.cities.isNotEmpty))
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: Row(
+            Container(
+              width: double.infinity,
+              color: AppColors.background,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                child:                     Row(
                 children: [
                   _filterChip('All', _selectedSport == null, () {
                     setState(() => _selectedSport = null);
@@ -206,11 +217,13 @@ class _TalentScoutAthleteDiscoveryScreenState
                 ],
               ),
             ),
+          ),
 
           // Advanced Filters Panel
           if (_showFilters)
             Container(
-              margin: const EdgeInsets.all(16),
+              width: double.infinity,
+              margin: const EdgeInsets.fromLTRB(20, 12, 20, 0),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.surface,
@@ -392,29 +405,28 @@ class _TalentScoutAthleteDiscoveryScreenState
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      Checkbox(
-                        value: _hasAchievements,
-                        onChanged: (v) =>
-                            setState(() => _hasAchievements = v ?? false),
-                        activeColor: AppColors.primary,
-                      ),
-                      const Text(
-                        'Has achievements',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textPrimary,
+                      Semantics(
+                        label: 'Has achievements',
+                        child: InkWell(
+                          onTap: () => setState(() => _hasAchievements = !_hasAchievements),
+                          borderRadius: BorderRadius.circular(4),
+                          child: Row(mainAxisSize: MainAxisSize.min, children: [
+                            Checkbox(
+                              value: _hasAchievements,
+                              onChanged: (v) => setState(() => _hasAchievements = v ?? false),
+                              activeColor: AppColors.primary,
+                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              visualDensity: VisualDensity.compact,
+                            ),
+                            const Text('Has achievements', style: TextStyle(fontSize: 13, color: AppColors.textPrimary)),
+                            const SizedBox(width: 8),
+                          ]),
                         ),
                       ),
                       const Spacer(),
                       FilledButton(
                         onPressed: _applyFilters,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 10,
-                          ),
-                        ),
+                        style: FilledButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10)),
                         child: const Text('Apply Filters'),
                       ),
                     ],
@@ -425,17 +437,13 @@ class _TalentScoutAthleteDiscoveryScreenState
 
           // Results count
           if (!state.isLoading)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  '${state.athletes.length} athlete${state.athletes.length == 1 ? '' : 's'} found',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
+            Container(
+              width: double.infinity,
+              color: AppColors.background,
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+              child: Text(
+                '${state.athletes.length} athlete${state.athletes.length == 1 ? '' : 's'} found',
+                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
               ),
             ),
 
@@ -492,10 +500,15 @@ class _TalentScoutAthleteDiscoveryScreenState
                     ),
                   )
                 : RefreshIndicator(
-                    onRefresh: () async => _applyFilters(),
+                    onRefresh: () async {
+                      await ref
+                          .read(scoutShortlistProvider.notifier)
+                          .load();
+                      _applyFilters();
+                    },
                     child: ListView.builder(
                       controller: _scrollController,
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(20),
                       itemCount:
                           state.athletes.length + (state.hasMore ? 1 : 0),
                       itemBuilder: (context, index) {
@@ -510,7 +523,11 @@ class _TalentScoutAthleteDiscoveryScreenState
                             ),
                           );
                         }
-                        return _buildAthleteCard(state.athletes[index]);
+                        return _buildAthleteCard(
+                          state.athletes[index],
+                          isShortlisted: shortlistedIds
+                              .contains(state.athletes[index].id.toString()),
+                        );
                       },
                     ),
                   ),
@@ -537,10 +554,11 @@ class _TalentScoutAthleteDiscoveryScreenState
     );
   }
 
-  Widget _buildAthleteCard(dynamic athlete) {
+  Widget _buildAthleteCard(dynamic athlete, {bool isShortlisted = false}) {
     return GestureDetector(
       onTap: () => context.push('/scout-athlete/${athlete.id}'),
       child: Container(
+        width: double.infinity,
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -640,9 +658,21 @@ class _TalentScoutAthleteDiscoveryScreenState
             Column(
               children: [
                 IconButton(
-                  icon: const Icon(LucideIcons.star, size: 20),
-                  color: AppColors.textSecondary,
+                  tooltip: isShortlisted
+                      ? 'Shortlisted — tap to view shortlist'
+                      : 'Add to shortlist',
+                  icon: Icon(
+                    isShortlisted ? Icons.star : LucideIcons.star,
+                    size: 20,
+                  ),
+                  color: isShortlisted
+                      ? Colors.amber
+                      : AppColors.textSecondary,
                   onPressed: () async {
+                    if (isShortlisted) {
+                      if (mounted) context.push('/scout-shortlist');
+                      return;
+                    }
                     final success = await ref
                         .read(scoutShortlistProvider.notifier)
                         .addToShortlist(athlete.id);

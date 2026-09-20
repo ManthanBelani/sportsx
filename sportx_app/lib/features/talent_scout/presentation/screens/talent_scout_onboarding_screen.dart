@@ -97,104 +97,112 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
         leading: IconButton(
             icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
             onPressed: () => context.pop()),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: AppColors.border),
-        ),
+        bottom: PreferredSize(preferredSize: const Size.fromHeight(1), child: Container(height: 1, color: AppColors.border)),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Step indicator per Implementation Guide: Organization + sports specialization is first setup
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(20)),
-              child: const Text('Step 1 of 1 — Scout Profile Setup', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary)),
-            ),
-            const SizedBox(height: 16),
-            const Text('Professional details help athletes trust your outreach', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-            const SizedBox(height: 20),
-            Center(
-              child: GestureDetector(
-                onTap: _pickPhoto,
-                child: Stack(alignment: Alignment.bottomRight, children: [
-                  CircleAvatar(
-                    radius: 44,
-                    backgroundColor: AppColors.surface,
-                    backgroundImage: _photoUrl != null ? NetworkImage(MediaUtils.resolveUrl(_photoUrl)) : null,
-                    child: _photoUrl == null ? const Icon(LucideIcons.camera, size: 28, color: AppColors.textSecondary) : null,
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-                    child: const Icon(LucideIcons.camera, size: 14, color: Colors.white),
-                  ),
-                ]),
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          // Header
+          Container(
+            width: double.infinity,
+            color: AppColors.background,
+            padding: const EdgeInsets.all(20),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(20)),
+                child: const Text('Step 1 of 1 — Scout Profile Setup', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary)),
               ),
-            ),
-            const SizedBox(height: 8),
-            Center(child: Text(_photoUrl == null ? 'Tap to add profile photo (optional)' : 'Photo ready — tap to change', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary))),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _organization,
-              decoration: const InputDecoration(labelText: 'Organization', hintText: 'Elite Talent Agency (optional)'),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _affiliation,
-              decoration: const InputDecoration(labelText: 'Affiliation', hintText: 'Gujarat Cricket Association (optional)'),
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<int>(
-              initialValue: _experienceYears,
-              decoration: const InputDecoration(labelText: 'Years of Experience'),
-              items: List.generate(31, (i) => DropdownMenuItem(value: i, child: Text('$i years'))),
-              onChanged: (v) => setState(() => _experienceYears = v),
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<int>(
-              initialValue: _cityId,
-              decoration: const InputDecoration(labelText: 'City'),
-              hint: const Text('Select city'),
-              items: meta.cities.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
-              onChanged: (v) => setState(() => _cityId = v),
-            ),
-            const SizedBox(height: 16),
-            const Text('Sports Specialization *',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
-            const SizedBox(height: 8),
-            if (meta.sports.isEmpty)
-              const Text('Loading sports...', style: TextStyle(fontSize: 13, color: AppColors.textSecondary))
-            else
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: meta.sports.map((s) => _buildSportChip(s.id, s.name)).toList(),
+              const SizedBox(height: 12),
+              const Text('Professional details help athletes trust your outreach', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+            ]),
+          ),
+          Container(height: 8, color: AppColors.surface),
+          // Photo
+          Container(
+            width: double.infinity,
+            color: AppColors.background,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            child: Column(children: [
+              Semantics(
+                label: 'Profile photo',
+                button: true,
+                child: InkWell(
+                  onTap: _pickPhoto,
+                  borderRadius: BorderRadius.circular(48),
+                  child: Stack(alignment: Alignment.bottomRight, children: [
+                    Container(
+                      width: 96,
+                      height: 96,
+                      decoration: const BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(colors: [AppColors.primary, Color(0xFF0d47a1)], begin: Alignment.topLeft, end: Alignment.bottomRight)),
+                      child: ClipOval(
+                        child: _photoUrl != null
+                            ? Image.network(MediaUtils.resolveUrl(_photoUrl), width: 96, height: 96, fit: BoxFit.cover, errorBuilder: (_, _, _) => const Icon(LucideIcons.user, size: 48, color: Colors.white))
+                            : const Icon(LucideIcons.user, size: 48, color: Colors.white),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                      child: const Icon(LucideIcons.camera, size: 14, color: Colors.white),
+                    ),
+                  ]),
+                ),
               ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _bio,
-              maxLines: 4,
-              decoration: const InputDecoration(labelText: 'Bio (optional)', hintText: 'Tell athletes about your scouting background...', alignLabelWithHint: true),
-            ),
-            const SizedBox(height: 8),
-            const Text('Visible on your public scout card', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: _saving ? null : _submit,
-                style: FilledButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.symmetric(vertical: 14)),
-                child: _saving
-                    ? const SizedBox(
-                        height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('Create Scout Profile', style: TextStyle(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 10),
+              Text(_photoUrl == null ? 'Tap to add profile photo (optional)' : 'Photo ready — tap to change', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            ]),
+          ),
+          Container(height: 8, color: AppColors.surface),
+          // Form
+          Container(
+            width: double.infinity,
+            color: AppColors.background,
+            padding: const EdgeInsets.all(20),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              TextField(controller: _organization, decoration: const InputDecoration(labelText: 'Organization', hintText: 'Elite Talent Agency (optional)')),
+              const SizedBox(height: 16),
+              TextField(controller: _affiliation, decoration: const InputDecoration(labelText: 'Affiliation', hintText: 'Gujarat Cricket Association (optional)')),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<int>(initialValue: _experienceYears,
+                decoration: const InputDecoration(labelText: 'Years of Experience'),
+                items: List.generate(31, (i) => DropdownMenuItem(value: i, child: Text('$i years'))),
+                onChanged: (v) => setState(() => _experienceYears = v),
               ),
-            ),
-          ],
-        ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<int>(initialValue: _cityId,
+                decoration: const InputDecoration(labelText: 'City'),
+                hint: const Text('Select city'),
+                items: meta.cities.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
+                onChanged: (v) => setState(() => _cityId = v),
+              ),
+              const SizedBox(height: 16),
+              const Text('Sports Specialization *', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
+              const SizedBox(height: 8),
+              if (meta.sports.isEmpty)
+                const Text('Loading sports...', style: TextStyle(fontSize: 13, color: AppColors.textSecondary))
+              else
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: meta.sports.map((s) => _buildSportChip(s.id, s.name)).toList(),
+                ),
+              const SizedBox(height: 16),
+              TextField(controller: _bio, maxLines: 4, decoration: const InputDecoration(labelText: 'Bio (optional)', hintText: 'Tell athletes about your scouting background...', alignLabelWithHint: true)),
+              const SizedBox(height: 8),
+              const Text('Visible on your public scout card', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: _saving ? null : _submit,
+                  style: FilledButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.symmetric(vertical: 14)),
+                  child: _saving ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('Create Scout Profile', style: TextStyle(fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ]),
+          ),
+        ]),
       ),
     );
   }
@@ -204,21 +212,10 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
     return FilterChip(
       label: Text(label),
       selected: selected,
-      onSelected: (val) {
-        setState(() {
-          if (val) {
-            _selectedSports.add(id);
-          } else {
-            _selectedSports.remove(id);
-          }
-        });
-      },
+      onSelected: (val) => setState(() => val ? _selectedSports.add(id) : _selectedSports.remove(id)),
       selectedColor: AppColors.primary.withValues(alpha: 0.15),
       checkmarkColor: AppColors.primary,
-      labelStyle: TextStyle(
-        color: selected ? AppColors.primary : AppColors.textSecondary,
-        fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-      ),
+      labelStyle: TextStyle(color: selected ? AppColors.primary : AppColors.textSecondary, fontWeight: selected ? FontWeight.w600 : FontWeight.normal),
     );
   }
 }

@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/academy/presentation/providers/academy_provider.dart';
+import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
@@ -94,7 +96,17 @@ class RegistrantListScreen extends ConsumerWidget {
                           final photoUrl = user?['avatar_url'] ?? athlete?['photo']?['url'];
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12),
-                            child: _buildRegistrantCard(context, name, phone.toString(), age.toString(), gender.toString(), isDocsComplete, approvalStatus, r['id']?.toString() ?? '', photoUrl?.toString()),
+                            child: _RegistrantCardWithActions(
+                              trialId: trialId,
+                              name: name,
+                              phone: phone.toString(),
+                              age: age.toString(),
+                              gender: gender.toString(),
+                              isDocsComplete: isDocsComplete,
+                              approvalStatus: approvalStatus,
+                              id: r['id']?.toString() ?? '',
+                              photoUrl: photoUrl?.toString(),
+                            ),
                           );
                         },
                       ),
@@ -106,11 +118,38 @@ class RegistrantListScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildRegistrantCard(BuildContext context, String name, String phone, String age, String gender, bool docsComplete, String approvalStatus, String id, String? photoUrl) {
-    final docsColor = docsComplete ? const Color(0xFFd1fae5) : const Color(0xFFfef3c7);
-    final docsTextColor = docsComplete ? const Color(0xFF065f46) : const Color(0xFF92400E);
+}
+
+class _RegistrantCardWithActions extends ConsumerWidget {
+  final String trialId;
+  final String name;
+  final String phone;
+  final String age;
+  final String gender;
+  final bool isDocsComplete;
+  final String approvalStatus;
+  final String id;
+  final String? photoUrl;
+
+  const _RegistrantCardWithActions({
+    required this.trialId,
+    required this.name,
+    required this.phone,
+    required this.age,
+    required this.gender,
+    required this.isDocsComplete,
+    required this.approvalStatus,
+    required this.id,
+    required this.photoUrl,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final docsColor = isDocsComplete ? const Color(0xFFd1fae5) : const Color(0xFFfef3c7);
+    final docsTextColor = isDocsComplete ? const Color(0xFF065f46) : const Color(0xFF92400E);
     final isApproved = approvalStatus == 'approved';
     final isRejected = approvalStatus == 'rejected';
+    final isPending = approvalStatus == 'pending';
     final statusColor = isApproved ? AppColors.success : isRejected ? Colors.red : AppColors.warning;
     final statusLabel = isApproved ? 'Approved' : isRejected ? 'Rejected' : 'Pending';
     return InkWell(
@@ -119,43 +158,91 @@ class RegistrantListScreen extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(color: AppColors.surface, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(12)),
-        child: Row(children: [
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-            backgroundImage: MediaUtils.resolveNullable(photoUrl) != null ? NetworkImage(MediaUtils.resolveUrl(photoUrl)) : null,
-            onBackgroundImageError: MediaUtils.resolveNullable(photoUrl) != null ? (e, s) {} : null,
-            child: MediaUtils.resolveNullable(photoUrl) == null ? const Icon(LucideIcons.user, color: AppColors.primary, size: 20) : null,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.textPrimary)),
-              const SizedBox(height: 2),
-              Text('Age $age • $gender', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-              const SizedBox(height: 2),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            CircleAvatar(
+              radius: 22,
+              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+              backgroundImage: MediaUtils.resolveNullable(photoUrl) != null ? NetworkImage(MediaUtils.resolveUrl(photoUrl)) : null,
+              onBackgroundImageError: MediaUtils.resolveNullable(photoUrl) != null ? (e, s) {} : null,
+              child: MediaUtils.resolveNullable(photoUrl) == null ? const Icon(LucideIcons.user, color: AppColors.primary, size: 20) : null,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.textPrimary)),
+                const SizedBox(height: 2),
+                Text('Age $age • $gender', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                const SizedBox(height: 2),
+                Row(children: [
+                  const Icon(LucideIcons.phone, size: 12, color: AppColors.textSecondary),
+                  const SizedBox(width: 4),
+                  Text(phone, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                ]),
+              ]),
+            ),
+            Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(color: docsColor, borderRadius: BorderRadius.circular(4)),
+                child: Text(isDocsComplete ? 'Complete' : 'Pending', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: docsTextColor)),
+              ),
+              const SizedBox(height: 6),
               Row(children: [
-                const Icon(LucideIcons.phone, size: 12, color: AppColors.textSecondary),
+                Icon(isApproved ? LucideIcons.checkCircle2 : isRejected ? LucideIcons.xCircle : LucideIcons.clock, size: 14, color: statusColor),
                 const SizedBox(width: 4),
-                Text(phone, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                Text(statusLabel, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: statusColor)),
               ]),
             ]),
-          ),
-          Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(color: docsColor, borderRadius: BorderRadius.circular(4)),
-              child: Text(docsComplete ? 'Complete' : 'Pending', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: docsTextColor)),
-            ),
-            const SizedBox(height: 6),
-            Row(children: [
-              Icon(isApproved ? LucideIcons.checkCircle2 : isRejected ? LucideIcons.xCircle : LucideIcons.clock, size: 14, color: statusColor),
-              const SizedBox(width: 4),
-              Text(statusLabel, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: statusColor)),
-            ]),
           ]),
+          if (isPending) ...[
+            const SizedBox(height: 12),
+            Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+              OutlinedButton(onPressed: () => _reject(context, ref), style: OutlinedButton.styleFrom(foregroundColor: Colors.red, padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8)), child: const Text('Reject', style: TextStyle(fontSize: 12))),
+              const SizedBox(width: 8),
+              FilledButton(onPressed: () => _approve(context, ref), style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8)), child: const Text('Approve', style: TextStyle(fontSize: 12))),
+            ]),
+          ],
         ]),
       ),
     );
+  }
+
+  Future<void> _approve(BuildContext context, WidgetRef ref) async {
+    final (ok, err) = await ref.read(providerTournamentActionsProvider).approveTrialRegistration(id);
+    if (context.mounted) {
+      if (ok) {
+        SnackBarUtils.showSuccess(context, 'Registration approved');
+        ref.invalidate(trialRegistrantsProvider(trialId));
+      } else {
+        SnackBarUtils.showError(context, err ?? 'Failed to approve');
+      }
+    }
+  }
+
+  Future<void> _reject(BuildContext context, WidgetRef ref) async {
+    final controller = TextEditingController();
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Reject Registration'),
+        content: TextField(controller: controller, decoration: const InputDecoration(labelText: 'Reason for rejection', hintText: 'Enter reason...'), maxLines: 3),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(onPressed: () => Navigator.pop(ctx, controller.text), child: const Text('Reject')),
+        ],
+      ),
+    );
+    if (reason != null && reason.trim().isNotEmpty && context.mounted) {
+      final (ok, err) = await ref.read(providerTournamentActionsProvider).rejectTrialRegistration(id, reason.trim());
+      if (context.mounted) {
+        if (ok) {
+          SnackBarUtils.showSuccess(context, 'Registration rejected');
+          ref.invalidate(trialRegistrantsProvider(trialId));
+        } else {
+          SnackBarUtils.showError(context, err ?? 'Failed to reject');
+        }
+      }
+    }
   }
 }

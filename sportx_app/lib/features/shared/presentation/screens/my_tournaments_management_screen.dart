@@ -101,6 +101,28 @@ class MyTournamentsManagementScreen extends ConsumerWidget {
               Text(dateStr.trim(), style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
             ])),
             Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: badgeColor, borderRadius: BorderRadius.circular(4)), child: Text(_capitalize(status), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: badgeText))),
+            PopupMenuButton<String>(
+              icon: const Icon(LucideIcons.moreVertical, size: 16, color: AppColors.textSecondary),
+              onSelected: (v) async {
+                final actions = ref.read(providerTournamentActionsProvider);
+                switch(v){
+                  case 'edit': context.push('/edit-tournament/$id'); break;
+                  case 'registrations': context.push('/registration-management', extra:{'id':id,'title':title}); break;
+                  case 'capacity': context.push('/capacity-management', extra:{'id':id}); break;
+                  case 'results': context.push('/results-publishing', extra:{'id':id,'title':title}); break;
+                  case 'publish': await actions.publish(id); break;
+                  case 'close': await actions.close(id); break;
+                }
+              },
+              itemBuilder: (_) => [
+                const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                const PopupMenuItem(value: 'registrations', child: Text('Registrations')),
+                const PopupMenuItem(value: 'capacity', child: Text('Capacity')),
+                const PopupMenuItem(value: 'results', child: Text('Results')),
+                if (status=='draft') const PopupMenuItem(value: 'publish', child: Text('Publish')),
+                if (status=='published') const PopupMenuItem(value: 'close', child: Text('Close')),
+              ],
+            ),
           ]),
           if (isPublished) ...[
             const SizedBox(height: 12),
@@ -114,27 +136,6 @@ class MyTournamentsManagementScreen extends ConsumerWidget {
                 TextSpan(text: '₹${collected.toStringAsFixed(0)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                 const TextSpan(text: ' collected', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
               ])),
-              const Spacer(),
-              PopupMenuButton<String>(
-                icon: const Icon(LucideIcons.moreVertical, size: 16, color: AppColors.textSecondary),
-                onSelected: (v) async {
-                  final actions = ref.read(providerTournamentActionsProvider);
-                  switch(v){
-                    case 'registrations': context.push('/registration-management', extra:{'id':id,'title':title}); break;
-                    case 'capacity': context.push('/capacity-management', extra:{'id':id}); break;
-                    case 'results': context.push('/results-publishing', extra:{'id':id,'title':title}); break;
-                    case 'publish': await actions.publish(id); break;
-                    case 'close': await actions.close(id); break;
-                  }
-                },
-                itemBuilder: (_) => [
-                  const PopupMenuItem(value: 'registrations', child: Text('Registrations')),
-                  const PopupMenuItem(value: 'capacity', child: Text('Capacity')),
-                  const PopupMenuItem(value: 'results', child: Text('Results')),
-                  if (status=='draft') const PopupMenuItem(value: 'publish', child: Text('Publish')),
-                  if (status=='published') const PopupMenuItem(value: 'close', child: Text('Close')),
-                ],
-              ),
             ]),
             // capacity section per design - show first category example
             if (t.categories != null && (t.categories as List).isNotEmpty) ...[
