@@ -14,7 +14,10 @@ class AcademyController extends Controller
         $academy = $request->user()->academies;
         abort_if(! $academy, 404);
 
-        return response()->json(['data' => $academy->load(['city', 'sports.sport', 'logo', 'cover'])]);
+        $academy = $academy->load(['city', 'sports.sport', 'logo', 'cover']);
+        SocialLinksController::attach($academy, $request->user());
+
+        return response()->json(['data' => $academy]);
     }
 
     public function update(Request $request)

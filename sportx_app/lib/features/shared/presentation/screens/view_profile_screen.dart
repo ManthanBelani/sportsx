@@ -6,6 +6,9 @@ import 'package:share_plus/share_plus.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/features/chat/presentation/providers/chat_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/social_links.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
@@ -27,6 +30,13 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
   bool _isLoading = true;
   Map<String, dynamic>? _profileData;
 
+  // Athlete-to-athlete connect state (generic Connection graph).
+  String? _connStatus; // none | pending | accepted
+  bool _connIsInitiator = true;
+  bool _connLoading = false;
+  bool _connecting = false;
+  bool _openingChat = false;
+
   @override
   void initState() {
     super.initState();
@@ -45,6 +55,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
           _profileData = response.data['data'];
           _isLoading = false;
         });
+        _loadConnStatus();
       }
     } catch (e) {
       if (mounted) {
@@ -55,6 +66,107 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
         SnackBarUtils.showError(context, ApiException.fromDio(e is DioException ? e : DioException(requestOptions: RequestOptions(path: ''), error: e)));
       }
     }
+  }
+
+  /// user_id of the profile being viewed (athlete/coach payloads embed `user`).
+  String? get _profileUserId {
+    final u = _profileData?['user'];
+    if (u is Map && u['id'] != null) return u['id'].toString();
+    return _profileData?['user_id']?.toString();
+  }
+
+  bool get _isOwnProfile {
+    final me = ref.read(authProvider).user?.id.toString();
+    return me != null && _profileUserId != null && me == _profileUserId;
+  }
+
+  /// Load generic connection status for athlete-to-athlete connect/chat.
+  Future<void> _loadConnStatus() async {
+    if (widget.type != 'athlete' || _profileUserId == null || _isOwnProfile) return;
+    setState(() => _connLoading = true);
+    try {
+      final resp = await ref.read(dioProvider).get('/me/connections/status/$_profileUserId');
+      if (!mounted) return;
+      final data = resp.data['data'] as Map<String, dynamic>?;
+      setState(() {
+        _connStatus = data?['status']?.toString() ?? 'none';
+        _connIsInitiator = data?['is_initiator'] != false;
+        _connLoading = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _connLoading = false);
+    }
+  }
+
+  Future<void> _handleConnect() async {
+    if (_profileUserId == null) return;
+    setState(() => _connecting = true);
+    try {
+      await ref.read(dioProvider).post('/me/connections/request', data: {'user_id': int.parse(_profileUserId!)});
+      if (!mounted) return;
+      SnackBarUtils.showSuccess(context, 'Connection request sent');
+      await _loadConnStatus();
+    } on DioException catch (e) {
+      if (!mounted) return;
+      final code = e.response?.data?['error']?['code']?.toString();
+      final msg = e.response?.data?['error']?['message']?.toString();
+      if (code == 'CONFLICT') {
+        SnackBarUtils.showError(context, 'Request already sent');
+        await _loadConnStatus();
+      } else {
+        SnackBarUtils.showError(context, msg ?? 'Could not send request');
+      }
+    } finally {
+      if (mounted) setState(() => _connecting = false);
+    }
+  }
+
+  Future<void> _handleMessage() async {
+    if (_profileUserId == null) return;
+    setState(() => _openingChat = true);
+    try {
+      final (chatId, err) = await startConversationResult(ref, int.parse(_profileUserId!));
+      if (!mounted) return;
+      if (chatId != null) {
+        context.push('/chat-screen', extra: {
+          'id': chatId,
+          'name': _profileData!['name'] ?? _profileData!['full_name'] ?? 'Profile',
+          'avatar': _profileData!['profile_photo_url'],
+        });
+      } else {
+        SnackBarUtils.showError(context, err ?? 'Could not open chat');
+      }
+    } finally {
+      if (mounted) setState(() => _openingChat = false);
+    }
+  }
+
+  Widget _connectButton({bool expanded = true}) {
+    final btn = _connLoading
+        ? const OutlinedButton(onPressed: null, child: SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2)))
+        : _connStatus == 'accepted'
+            ? FilledButton.icon(onPressed: () => context.push('/my-connections'), icon: const Icon(Icons.check, size: 18), label: const Text('Connected'))
+            : _connStatus == 'pending'
+                ? OutlinedButton.icon(onPressed: _connIsInitiator ? null : () => context.push('/connection-requests'), icon: const Icon(Icons.hourglass_empty, size: 18), label: Text(_connIsInitiator ? 'Request Sent' : 'Respond'))
+                : ElevatedButton.icon(
+                    onPressed: _connecting ? null : _handleConnect,
+                    icon: _connecting
+                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                        : const Icon(Icons.person_add, size: 18),
+                    label: const Text('Connect'),
+                  );
+    return expanded ? Expanded(child: btn) : btn;
+  }
+
+  Widget _messageButton({bool expanded = true}) {
+    final btn = OutlinedButton.icon(
+      onPressed: _openingChat ? null : _handleMessage,
+      icon: _openingChat
+          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+          : const Icon(Icons.chat),
+      label: const Text('Message'),
+    );
+    return expanded ? Expanded(child: btn) : btn;
   }
 
   @override
@@ -249,49 +361,15 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
   }
 
   Widget _buildActionButtons() {
+    // Athlete-to-athlete connect + chat. Other profile types keep Message only.
+    final showConnect = widget.type == 'athlete' && !_isOwnProfile && _profileUserId != null;
     return Row(
       children: [
-        /*
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: _isConnecting ? null : _handleConnect,
-            icon: _isConnecting
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Icon(
-                    isPending
-                        ? Icons.hourglass_empty
-                        : isConnected
-                            ? Icons.check
-                            : Icons.person_add,
-                  ),
-            label: Text(
-              isPending
-                  ? 'Pending'
-                  : isConnected
-                      ? 'Connected'
-                      : 'Connect',
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        */
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: () {
-              context.push('/chat-screen', extra: {
-                'id': widget.id,
-                'name': _profileData!['name'] ?? _profileData!['full_name'] ?? 'Profile',
-                'avatar': _profileData!['profile_photo_url'],
-              });
-            },
-            icon: const Icon(Icons.chat),
-            label: const Text('Message'),
-          ),
-        ),
+        if (showConnect) ...[
+          _connectButton(),
+          const SizedBox(width: 12),
+        ],
+        _messageButton(),
       ],
     );
   }
@@ -515,34 +593,8 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
   }
 
   Widget _buildSocialLinksSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Social Links', style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 12),
-        _buildSocialLink(Icons.language, 'Website', 'https://example.com'),
-        _buildSocialLink(Icons.camera_alt, 'Instagram', '@username'),
-        _buildSocialLink(Icons.play_circle, 'YouTube', 'Channel Name'),
-      ],
-    );
-  }
-
-  Widget _buildSocialLink(IconData icon, String platform, String handle) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: AppColors.infoLight,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(icon, color: AppColors.primary, size: 22),
-      ),
-      title: Text(platform, style: const TextStyle(fontWeight: FontWeight.w500)),
-      subtitle: Text(handle),
-      trailing: const Icon(Icons.open_in_new, size: 18, color: AppColors.textTertiary),
-      onTap: () {},
-    );
+    // Real links from the profile payload (user.social_links); hidden when empty.
+    return SocialLinksSection(profile: _profileData);
   }
 
   Widget _buildBottomActions() {
@@ -561,47 +613,11 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
         ),
         child: Row(
           children: [
-            /*
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: _isConnecting ? null : _handleConnect,
-                icon: _isConnecting
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Icon(
-                        isPending
-                            ? Icons.hourglass_empty
-                            : isConnected
-                                ? Icons.check
-                                : Icons.person_add,
-                      ),
-                label: Text(
-                  isPending
-                      ? 'Pending'
-                      : isConnected
-                          ? 'Connected'
-                          : 'Connect',
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            */
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  context.push('/chat-screen', extra: {
-                    'id': widget.id,
-                    'name': _profileData!['name'] ?? _profileData!['full_name'] ?? 'Profile',
-                    'avatar': _profileData!['profile_photo_url'],
-                  });
-                },
-                icon: const Icon(Icons.chat),
-                label: const Text('Message'),
-              ),
-            ),
+            if (widget.type == 'athlete' && !_isOwnProfile && _profileUserId != null) ...[
+              _connectButton(),
+              const SizedBox(width: 12),
+            ],
+            _messageButton(),
           ],
         ),
       ),

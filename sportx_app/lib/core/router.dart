@@ -71,6 +71,7 @@ import 'package:sportx_app/features/shared/presentation/screens/activity_hub_scr
 import 'package:sportx_app/features/notifications/presentation/screens/notifications_screen.dart';
 import 'package:sportx_app/features/settings/presentation/screens/settings_screen.dart';
 import 'package:sportx_app/features/settings/presentation/screens/help_support_screen.dart';
+import 'package:sportx_app/features/settings/presentation/screens/social_links_screen.dart';
 import 'package:sportx_app/features/scholarship/presentation/screens/scholarship_list_screen.dart';
 import 'package:sportx_app/features/scholarship/presentation/screens/scholarship_detail_screen.dart';
 import 'package:sportx_app/features/sponsorship/presentation/screens/sponsorship_list_screen.dart';
@@ -93,6 +94,8 @@ import 'package:sportx_app/features/search/presentation/screens/universal_search
 import 'package:sportx_app/features/connections/presentation/screens/my_connections_screen.dart';
 import 'package:sportx_app/features/connections/presentation/screens/connection_requests_screen.dart';
 import 'package:sportx_app/features/connections/presentation/screens/scout_requests_screen.dart';
+import 'package:sportx_app/features/connections/presentation/screens/scout_directory_screen.dart';
+import 'package:sportx_app/features/connections/presentation/screens/athlete_directory_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/view_profile_screen.dart';
 import 'package:sportx_app/features/social/presentation/screens/post_detail_screen.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_login_screen.dart';
@@ -365,6 +368,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/my-coaching-enrollments', builder: (context, state) => const MyCoachingEnrollmentsScreen()),
       GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
       GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
+      GoRoute(path: '/social-links', builder: (context, state) => const SocialLinksScreen()),
       GoRoute(path: '/help-support', builder: (context, state) => const HelpSupportScreen()),
       GoRoute(path: '/scholarships', builder: (context, state) => const ScholarshipListScreen()),
       GoRoute(path: '/scholarship-detail/:id', builder: (context, state) => ScholarshipDetailScreen(scholarshipId: state.pathParameters['id']!)),
@@ -395,6 +399,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/my-connections', builder: (context, state) => const MyConnectionsScreen()),
       GoRoute(path: '/connection-requests', builder: (context, state) => const ConnectionRequestsScreen()),
       GoRoute(path: '/scout-requests', builder: (context, state) => const ScoutRequestsScreen()),
+      GoRoute(path: '/scout-directory', builder: (context, state) => const ScoutDirectoryScreen()),
+      GoRoute(path: '/athlete-directory', builder: (context, state) => const AthleteDirectoryScreen()),
       GoRoute(path: '/discover', builder: (context, state) => const DiscoverScreen()),
       GoRoute(path: '/view-profile', builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;

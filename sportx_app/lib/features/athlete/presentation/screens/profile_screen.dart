@@ -7,6 +7,8 @@ import 'package:sportx_app/core/config/api_config.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/models/social_links.dart';
+import 'package:sportx_app/shared/presentation/widgets/social_links.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
@@ -41,6 +43,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final List<Map<String, dynamic>> _tournamentHistory = [];
 
   final List<Map<String, dynamic>> _performanceStats = [];
+
+  Map<String, String> _socialLinks = const {};
 
   @override
   void initState() {
@@ -79,6 +83,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           _location = (city?['name'] ?? _location) as String;
           _isVerified = data['is_verified'] == true;
           _avatarUrl = photo?['url'] as String?;
+          _socialLinks = socialLinksOf(Map<String, dynamic>.from(data as Map));
           _uploadedMedia = mediaItems
               .whereType<Map>()
               .map((m) => Map<String, dynamic>.from(m))
@@ -164,6 +169,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     _buildPerformanceStatsSection(),
                     _buildSectionDivider(),
                     _buildMediaGallerySection(),
+                    _buildSectionDivider(),
+                    _buildSocialSection(),
                     _buildSectionDivider(),
                     _buildShareProfileButton(),
                     _buildSectionDivider(),
@@ -275,6 +282,33 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         _bio,
         style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.5),
       ),
+    );
+  }
+
+  Widget _buildSocialSection() {
+    if (_socialLinks.isEmpty) {
+      return _buildSection(
+        title: 'Social Links',
+        action: GestureDetector(
+          onTap: () => context.push('/social-links'),
+          child: const Text('Add', style: TextStyle(fontSize: 13, color: AppColors.primary)),
+        ),
+        child: const Text(
+          'No social links yet. Add them so others can find you.',
+          style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+        ),
+      );
+    }
+    return _buildSection(
+      title: 'Social Links',
+      action: GestureDetector(
+        onTap: () async {
+          await context.push('/social-links');
+          _loadProfile();
+        },
+        child: const Text('Edit', style: TextStyle(fontSize: 13, color: AppColors.primary)),
+      ),
+      child: SocialLinksRow(links: _socialLinks),
     );
   }
 

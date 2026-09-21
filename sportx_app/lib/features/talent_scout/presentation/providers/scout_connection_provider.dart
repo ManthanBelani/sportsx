@@ -18,12 +18,14 @@ class ScoutConnectionStats {
 
 class ScoutConnectionState {
   final List<Map<String, dynamic>> connections;
+  final List<Map<String, dynamic>> incoming;
   final ScoutConnectionStats stats;
   final bool isLoading;
   final String? error;
 
   ScoutConnectionState({
     this.connections = const [],
+    this.incoming = const [],
     this.stats = const ScoutConnectionStats(),
     this.isLoading = false,
     this.error,
@@ -31,12 +33,14 @@ class ScoutConnectionState {
 
   ScoutConnectionState copyWith({
     List<Map<String, dynamic>>? connections,
+    List<Map<String, dynamic>>? incoming,
     ScoutConnectionStats? stats,
     bool? isLoading,
     String? error,
   }) {
     return ScoutConnectionState(
       connections: connections ?? this.connections,
+      incoming: incoming ?? this.incoming,
       stats: stats ?? this.stats,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
@@ -74,8 +78,18 @@ class ScoutConnectionNotifier extends StateNotifier<ScoutConnectionState> {
         }
       }
 
+      // Incoming athlete-initiated requests (two-way connect).
+      List<Map<String, dynamic>> incoming = state.incoming;
+      try {
+        final inResp = await _dio.get('/me/scout-connections/incoming');
+        incoming = List<Map<String, dynamic>>.from(inResp.data['data'] ?? []);
+      } catch (_) {
+        // Non-fatal: older backend or no incoming.
+      }
+
       state = ScoutConnectionState(
         connections: list,
+        incoming: incoming,
         stats: ScoutConnectionStats(
           totalCount: list.length,
           acceptedCount: accepted,
@@ -102,6 +116,30 @@ class ScoutConnectionNotifier extends StateNotifier<ScoutConnectionState> {
   Future<bool> cancelConnection(String connectionId) async {
     try {
       await _dio.delete('/me/scout-connections/$connectionId');
+      await load();
+      return true;
+    } on DioException catch (e) {
+      state = state.copyWith(error: ApiException.fromDio(e).message);
+      return false;
+    }
+  }
+
+  /// Accept an athlete-initiated request (scout side, two-way connect).
+  Future<bool> acceptIncoming(String connectionId) async {
+    try {
+      await _dio.post('/me/scout-connections/$connectionId/accept');
+      await load();
+      return true;
+    } on DioException catch (e) {
+      state = state.copyWith(error: ApiException.fromDio(e).message);
+      return false;
+    }
+  }
+
+  /// Reject an athlete-initiated request (scout side).
+  Future<bool> rejectIncoming(String connectionId) async {
+    try {
+      await _dio.post('/me/scout-connections/$connectionId/reject');
       await load();
       return true;
     } on DioException catch (e) {

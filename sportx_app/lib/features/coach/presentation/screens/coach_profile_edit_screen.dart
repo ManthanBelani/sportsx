@@ -505,6 +505,21 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
                     : const Text('Save Changes', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               ),
             ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => context.push('/social-links'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.primary,
+                  side: const BorderSide(color: AppColors.primary),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                icon: const Icon(LucideIcons.share2, size: 18),
+                label: const Text('Manage Social Links', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              ),
+            ),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,

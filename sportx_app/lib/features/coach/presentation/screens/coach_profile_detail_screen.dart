@@ -8,6 +8,7 @@ import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/features/coach/presentation/widgets/coach_enrollment_section.dart';
 import 'package:sportx_app/features/saved/presentation/providers/saved_provider.dart';
 import 'package:sportx_app/shared/models/coach.dart';
+import 'package:sportx_app/shared/presentation/widgets/social_links.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
@@ -137,6 +138,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
                           const SizedBox(height: 24),
                           _buildContactSection(),
                           const SizedBox(height: 24),
+                          SocialLinksSection(profile: _coachData),
                           _buildShareProfileButton(),
                           const SizedBox(height: 100),
                         ]),

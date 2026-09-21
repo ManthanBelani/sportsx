@@ -80,6 +80,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         onTap: () => context.push('/media-gallery'),
                       ),
                       _buildSettingsItem(
+                        icon: LucideIcons.share2,
+                        title: 'Social Links',
+                        subtitle: 'Instagram, YouTube, website…',
+                        onTap: () => context.push('/social-links'),
+                      ),
+                      _buildSettingsItem(
                         icon: LucideIcons.lock,
                         title: 'Change Password',
                         subtitle: 'Update your password',

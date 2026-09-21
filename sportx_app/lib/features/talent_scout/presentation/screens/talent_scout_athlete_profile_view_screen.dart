@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
+import 'package:sportx_app/features/chat/presentation/providers/chat_provider.dart';
+import 'package:sportx_app/shared/models/social_links.dart';
+import 'package:sportx_app/shared/presentation/widgets/social_links.dart';
 import 'package:sportx_app/features/talent_scout/presentation/providers/scout_connection_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/providers/scout_shortlist_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
@@ -164,6 +167,8 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
                             _buildPerformanceStatsSection(),
                             _buildSectionDivider(),
                             _buildMediaGallerySection(),
+                            _buildSectionDivider(),
+                            _buildSocialSection(),
                             _buildSectionDivider(),
                             _buildActionButtons(),
                             const SizedBox(height: 12),
@@ -478,6 +483,12 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
     );
   }
 
+  Widget _buildSocialSection() {
+    final links = socialLinksOf(_athlete);
+    if (links.isEmpty) return const SizedBox.shrink();
+    return _buildSection(title: 'Social Links', child: SocialLinksRow(links: links));
+  }
+
   Widget _buildActionButtons() {
     return Container(
       width: double.infinity,
@@ -544,10 +555,25 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
       }
     }
     if (status == 'accepted') {
+      final athleteUserId = (_athlete!['user'] as Map<String, dynamic>?)?['id'];
       return FilledButton.icon(
-        onPressed: () => context.push('/scout-connections'),
-        icon: const Icon(LucideIcons.check, size: 18),
-        label: const Text('Connected'),
+        onPressed: () async {
+          if (athleteUserId == null) {
+            context.push('/scout-connections');
+            return;
+          }
+          final (chatId, err) = await startConversationResult(
+              ref, int.parse(athleteUserId.toString()));
+          if (!context.mounted) return;
+          if (chatId != null) {
+            context.push('/chat-screen',
+                extra: {'id': chatId, 'name': _name, 'avatar': _photoUrl ?? ''});
+          } else {
+            SnackBarUtils.showError(context, err ?? 'Could not open chat');
+          }
+        },
+        icon: const Icon(LucideIcons.messageCircle, size: 18),
+        label: const Text('Message'),
         style: FilledButton.styleFrom(backgroundColor: const Color(0xFF065f46), minimumSize: const Size.fromHeight(48), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
       );
     }

@@ -34,6 +34,7 @@ class Academy {
   final City? city;
   final Sport? sport;
   final bool isSaved;
+  final Map<String, String> socialLinks;
 
   Academy({
     required this.id,
@@ -60,6 +61,7 @@ class Academy {
     this.city,
     this.sport,
     this.isSaved = false,
+    this.socialLinks = const {},
   });
 
   factory Academy.fromJson(Map<String, dynamic> json) {
@@ -93,7 +95,19 @@ class Academy {
       city: json['city'] != null ? City.fromJson(json['city']) : null,
       sport: json['sport'] != null ? Sport.fromJson(json['sport']) : null,
       isSaved: json['is_saved'] == true || json['is_saved'] == 1,
+      socialLinks: _toLinkMap(json['social_links']),
     );
+  }
+
+  static Map<String, String> _toLinkMap(dynamic v) {
+    final out = <String, String>{};
+    if (v is Map) {
+      v.forEach((k, val) {
+        final s = val?.toString().trim() ?? '';
+        if (s.isNotEmpty) out[k.toString()] = s;
+      });
+    }
+    return out;
   }
 
   Map<String, dynamic> toJson() => {

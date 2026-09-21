@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/shared/presentation/widgets/async_state_view.dart';
 import 'package:sportx_app/shared/presentation/widgets/detail_page_template.dart';
+import 'package:sportx_app/shared/presentation/widgets/social_links.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -48,6 +49,18 @@ class AcademyDetailScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             Text(a.description!, style: TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.5)),
+          ],
+          if (a.socialLinks.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Icon(LucideIcons.share2, size: 18, color: AppColors.primary),
+                const SizedBox(width: 8),
+                Text('Social Links', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            SocialLinksRow(links: a.socialLinks),
           ],
         ],
         addressStr: a.address ?? a.city?.name ?? '',

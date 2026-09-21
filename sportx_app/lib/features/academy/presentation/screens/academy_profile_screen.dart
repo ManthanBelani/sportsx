@@ -6,6 +6,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/academy/presentation/providers/academy_provider.dart';
 import 'package:sportx_app/shared/models/academy.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/social_links.dart';
 import 'package:sportx_app/shared/models/trial.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -173,6 +174,15 @@ class _ProfileBody extends StatelessWidget {
               ],
             ),
           ),
+          _Section(
+            icon: LucideIcons.share2,
+            title: 'Social Links',
+            trailing: _EditLinksButton(),
+            child: academy.socialLinks.isEmpty
+                ? const Text('No social links yet. Tap edit to add them.',
+                    style: TextStyle(fontSize: 13, color: AppColors.textSecondary))
+                : SocialLinksRow(links: academy.socialLinks),
+          ),
         ],
       ),
     );
@@ -298,8 +308,9 @@ class _Section extends StatelessWidget {
   final IconData icon;
   final String title;
   final Widget child;
+  final Widget? trailing;
 
-  const _Section({required this.icon, required this.title, required this.child});
+  const _Section({required this.icon, required this.title, required this.child, this.trailing});
 
   @override
   Widget build(BuildContext context) {
@@ -319,9 +330,12 @@ class _Section extends StatelessWidget {
             children: [
               Icon(icon, size: 18, color: AppColors.primary),
               const SizedBox(width: 8),
-              Text(title,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+              Expanded(
+                child: Text(title,
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+              ),
+              if (trailing != null) trailing!,
             ],
           ),
           const SizedBox(height: 12),
@@ -393,6 +407,18 @@ class _InfoGrid extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+class _EditLinksButton extends StatelessWidget {
+  const _EditLinksButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push('/social-links'),
+      child: const Text('Edit', style: TextStyle(fontSize: 13, color: AppColors.primary)),
     );
   }
 }

@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/connections/presentation/providers/connections_provider.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/features/chat/presentation/providers/chat_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -43,6 +45,11 @@ class _MyConnectionsScreenState extends ConsumerState<MyConnectionsScreen> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
         actions: [
           IconButton(
+            icon: const Icon(LucideIcons.userSearch, color: AppColors.textPrimary),
+            tooltip: 'Find athletes',
+            onPressed: () => context.push('/athlete-directory'),
+          ),
+          IconButton(
             icon: const Icon(LucideIcons.userPlus, color: AppColors.textPrimary),
             onPressed: () => context.push('/connection-requests'),
           ),
@@ -77,6 +84,13 @@ class _MyConnectionsScreenState extends ConsumerState<MyConnectionsScreen> {
                           const Icon(LucideIcons.users, size: 64, color: AppColors.textTertiary),
                           const SizedBox(height: 16),
                           Text('No connections yet', style: TextStyle(color: AppColors.textSecondary)),
+                          const SizedBox(height: 12),
+                          FilledButton.icon(
+                            onPressed: () => context.push('/athlete-directory'),
+                            style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+                            icon: const Icon(LucideIcons.userSearch, size: 16),
+                            label: const Text('Find Athletes'),
+                          ),
                         ])),
                       ])
                     : ListView.separated(
@@ -101,7 +115,18 @@ class _MyConnectionsScreenState extends ConsumerState<MyConnectionsScreen> {
       subtitle: Text(connection.other.role ?? '', style: const TextStyle(color: AppColors.textSecondary)),
       trailing: IconButton(
         icon: const Icon(LucideIcons.messageCircle, color: AppColors.primary),
-        onPressed: () => context.push('/chat-list'),
+        tooltip: 'Message',
+        onPressed: () async {
+          final uid = int.tryParse(connection.other.id);
+          if (uid == null) return;
+          final (chatId, err) = await startConversationResult(ref, uid);
+          if (!context.mounted) return;
+          if (chatId != null) {
+            context.push('/chat-screen', extra: {'id': chatId, 'name': connection.other.name, 'avatar': ''});
+          } else {
+            SnackBarUtils.showError(context, err ?? 'Could not open chat');
+          }
+        },
       ),
       onTap: () => context.push('/view-profile', extra: {'type': 'athlete', 'id': connection.other.id}),
       onLongPress: () => _confirmRemove(connection, currentUserId),

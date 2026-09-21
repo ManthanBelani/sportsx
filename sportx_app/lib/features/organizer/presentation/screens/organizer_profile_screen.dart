@@ -123,6 +123,18 @@ class _OrganizerProfileScreenState extends ConsumerState<OrganizerProfileScreen>
                 decoration: BoxDecoration(color: const Color(0xFFdbeafe), borderRadius: BorderRadius.circular(8)),
                 child: const Row(children: [Icon(LucideIcons.info, size: 14, color: AppColors.primary), SizedBox(width: 8), Expanded(child: Text('Verification documents are managed via onboarding. Contact support to update them.', style: TextStyle(fontSize: 12, color: AppColors.primary)))]),
               ),
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: () => context.push('/social-links'),
+                icon: const Icon(LucideIcons.share2, size: 16),
+                label: const Text('Manage Social Links'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.primary,
+                  side: const BorderSide(color: AppColors.primary),
+                  minimumSize: const Size.fromHeight(48),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
             ]),
           );
         },

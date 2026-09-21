@@ -7,6 +7,7 @@ import 'package:sportx_app/features/auth/presentation/providers/auth_provider.da
 import 'package:sportx_app/features/settings/presentation/providers/settings_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/providers/talent_scout_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/social_links.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
@@ -234,6 +235,8 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
               _buildSectionDivider(),
               _buildListingStatusSection(),
               _buildSectionDivider(),
+              _buildSocialLinksSection(),
+              _buildSectionDivider(),
               _buildEditFormSection(meta),
               _buildSectionDivider(),
               _buildAccountActions(),
@@ -419,6 +422,35 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
           activeThumbColor: AppColors.primary,
           onChanged: (v) => setState(() => _listingStatus = v),
         ),
+      ]),
+    );
+  }
+
+  Widget _buildSocialLinksSection() {
+    final links = ref.watch(talentScoutProvider).profile?.socialLinks ?? const <String, String>{};
+    return Container(
+      width: double.infinity,
+      color: AppColors.background,
+      padding: const EdgeInsets.all(20),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          const Text('Social Links',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+          GestureDetector(
+            onTap: () async {
+              await context.push('/social-links');
+              _load();
+            },
+            child: Text(links.isEmpty ? 'Add' : 'Edit',
+                style: const TextStyle(fontSize: 13, color: AppColors.primary)),
+          ),
+        ]),
+        const SizedBox(height: 12),
+        if (links.isEmpty)
+          const Text('No social links yet. Add them so athletes can find you elsewhere.',
+              style: TextStyle(fontSize: 13, color: AppColors.textSecondary))
+        else
+          SocialLinksRow(links: links),
       ]),
     );
   }

@@ -48,6 +48,7 @@ class Coach {
   final bool isSaved;
   final double? rating;
   final double? avgRating;
+  final Map<String, String> socialLinks;
 
   Coach({
     required this.id,
@@ -80,6 +81,7 @@ class Coach {
     this.isSaved = false,
     this.rating,
     this.avgRating,
+    this.socialLinks = const {},
   });
 
   factory Coach.fromJson(Map<String, dynamic> json) {
@@ -172,7 +174,19 @@ class Coach {
       isSaved: json['is_saved'] == true || json['is_saved'] == 1,
       rating: _parseDouble(json['rating']),
       avgRating: _parseDouble(json['avg_rating'] ?? json['avgRating'] ?? json['average_rating']),
+      socialLinks: _toLinkMap(json['social_links'] ?? (json['user'] is Map ? (json['user'] as Map)['social_links'] : null)),
     );
+  }
+
+  static Map<String, String> _toLinkMap(dynamic v) {
+    final out = <String, String>{};
+    if (v is Map) {
+      v.forEach((k, val) {
+        final s = val?.toString().trim() ?? '';
+        if (s.isNotEmpty) out[k.toString()] = s;
+      });
+    }
+    return out;
   }
 
   Map<String, dynamic> toJson() => {

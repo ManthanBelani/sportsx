@@ -10,6 +10,7 @@ class TalentScoutProfile {
   final int? photoMediaId;
   final String? photoUrl;
   final bool listingStatus;
+  final Map<String, String> socialLinks;
 
   TalentScoutProfile({
     this.id,
@@ -23,6 +24,7 @@ class TalentScoutProfile {
     this.photoMediaId,
     this.photoUrl,
     this.listingStatus = true,
+    this.socialLinks = const {},
   });
 
   factory TalentScoutProfile.fromJson(Map<String, dynamic> json) {
@@ -42,7 +44,19 @@ class TalentScoutProfile {
       photoMediaId: (json['photo_media_id'] as num?)?.toInt(),
       photoUrl: photo?['url'] as String?,
       listingStatus: json['listing_status'] == true || json['listing_status'] == 1,
+      socialLinks: _toLinkMap(json['social_links']),
     );
+  }
+
+  static Map<String, String> _toLinkMap(dynamic v) {
+    final out = <String, String>{};
+    if (v is Map) {
+      v.forEach((k, val) {
+        final s = val?.toString().trim() ?? '';
+        if (s.isNotEmpty) out[k.toString()] = s;
+      });
+    }
+    return out;
   }
 
   Map<String, dynamic> toJson() {

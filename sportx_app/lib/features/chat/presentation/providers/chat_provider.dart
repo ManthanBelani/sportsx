@@ -83,10 +83,23 @@ Future<bool> sendMessage(WidgetRef ref, String conversationId, String body) asyn
 }
 
 Future<String?> startConversation(WidgetRef ref, int participantId) async {
+  final result = await startConversationResult(ref, participantId);
+  return result.$1;
+}
+
+/// Starts (or reuses) a 1:1 conversation, surfacing gate errors.
+/// Returns (conversationId, errorMessage). errorMessage is e.g. 'Connect first…'
+/// when the backend returns 403 CONNECTION_REQUIRED for scout<->athlete pairs.
+Future<(String?, String?)> startConversationResult(WidgetRef ref, int participantId) async {
   try {
     final resp = await ref.read(dioProvider).post('/me/conversations', data: {'participant_id': participantId});
-    return resp.data['data']?['id']?.toString();
-  } on DioException {
-    return null;
+    return (resp.data['data']?['id']?.toString(), null);
+  } on DioException catch (e) {
+    final code = e.response?.data?['error']?['code']?.toString();
+    final message = e.response?.data?['error']?['message']?.toString();
+    if (code == 'CONNECTION_REQUIRED') {
+      return (null, message ?? 'Connect and get accepted before chatting.');
+    }
+    return (null, message ?? 'Could not start chat.');
   }
 }

@@ -14,6 +14,7 @@ class CoachProfileController extends Controller
             if ($profile->achievements === null) {
                 $profile->setAttribute('achievements', []);
             }
+            SocialLinksController::attach($profile, $request->user());
         }
         return response()->json(['data' => $profile]);
     }

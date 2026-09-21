@@ -207,6 +207,7 @@ class AuthController extends Controller
             'phone' => $user->phone,
             'email_verified_at' => $user->email_verified_at?->toIso8601String(),
             'status' => $user->status,
+            'social_links' => $user->social_links,
         ];
     }
 

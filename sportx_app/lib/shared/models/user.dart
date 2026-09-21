@@ -18,6 +18,7 @@ class User {
   final String role;
   final String? profilePhotoUrl;
   final bool isVerified;
+  final Map<String, String> socialLinks;
 
   User({
     required this.id,
@@ -27,9 +28,18 @@ class User {
     required this.role,
     this.profilePhotoUrl,
     this.isVerified = false,
+    this.socialLinks = const {},
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
+    final rawLinks = json['social_links'];
+    final links = <String, String>{};
+    if (rawLinks is Map) {
+      rawLinks.forEach((k, v) {
+        final s = v?.toString().trim() ?? '';
+        if (s.isNotEmpty) links[k.toString()] = s;
+      });
+    }
     return User(
       id: _parseInt(json['id'])!,
       name: json['name'] as String? ?? '',
@@ -38,6 +48,7 @@ class User {
       role: json['role'] as String? ?? 'athlete',
       profilePhotoUrl: MediaUtils.resolveNullable(json['profile_photo_url'] as String?),
       isVerified: json['is_verified'] == true || json['is_verified'] == 1,
+      socialLinks: links,
     );
   }
 

@@ -40,6 +40,28 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
       body: Column(
         children: [
           _buildSearchBar(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => context.push('/scout-directory'),
+                icon: const Icon(Icons.person_search_outlined, size: 18),
+                label: const Text('Find Talent Scouts & Chat'),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => context.push('/athlete-directory'),
+                icon: const Icon(Icons.group_outlined, size: 18),
+                label: const Text('Find Athletes & Chat'),
+              ),
+            ),
+          ),
           _buildTabPills(),
           _buildFilterChips(),
           Expanded(

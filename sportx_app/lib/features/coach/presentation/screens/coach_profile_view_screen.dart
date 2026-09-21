@@ -6,6 +6,7 @@ import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/features/coach/presentation/providers/coach_provider.dart';
 import 'package:sportx_app/shared/models/coach.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/social_links.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class CoachProfileViewScreen extends ConsumerWidget {
@@ -59,6 +60,7 @@ class CoachProfileViewScreen extends ConsumerWidget {
               ),
             ),
             _buildInfoCard(context, profile),
+            _buildSocialCard(context, profile),
             _buildCertificationsCard(profile),
             _buildLanguagesCard(profile),
             _buildFeeCard(profile),
@@ -219,8 +221,21 @@ class CoachProfileViewScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildCertificationsCard(Coach profile) {
-    final certs = profile.certifications ?? [];
+  Widget _buildSocialCard(BuildContext context, Coach profile) {
+    return _buildSectionCard(
+      title: 'Social Links',
+      trailing: GestureDetector(
+        onTap: () => context.push('/social-links'),
+        child: Text(profile.socialLinks.isEmpty ? 'Add' : 'Edit',
+            style: const TextStyle(fontSize: 13, color: AppColors.primary)),
+      ),
+      child: profile.socialLinks.isEmpty
+          ? const Text('No social links yet.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary))
+          : SocialLinksRow(links: profile.socialLinks),
+    );
+  }
+
+  Widget _buildCertificationsCard(Coach profile) {    final certs = profile.certifications ?? [];
     final achievements = profile.achievements;
     return _buildSectionCard(
       title: 'Certifications & Achievements',
@@ -337,7 +352,7 @@ class CoachProfileViewScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSectionCard({required String title, required Widget child}) {
+  Widget _buildSectionCard({required String title, required Widget child, Widget? trailing}) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 16),
@@ -350,7 +365,14 @@ class CoachProfileViewScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+          Row(
+            children: [
+              Expanded(
+                child: Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+              ),
+              if (trailing != null) trailing,
+            ],
+          ),
           const SizedBox(height: 12),
           child,
         ],

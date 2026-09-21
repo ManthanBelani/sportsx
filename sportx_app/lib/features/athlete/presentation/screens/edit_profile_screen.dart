@@ -244,6 +244,22 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ],
               ),
               _buildDropdown('Dominant Hand/Foot', _dominantSide, _dominantSides, (val) => setState(() => _dominantSide = val!)),
+              const SizedBox(height: 24),
+              _buildSectionTitle('Social Links'),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => context.push('/social-links'),
+                  icon: const Icon(LucideIcons.share2, size: 16),
+                  label: const Text('Manage Social Links'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    side: const BorderSide(color: AppColors.primary),
+                    minimumSize: const Size.fromHeight(48),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ),
             ],
           ),
         ),

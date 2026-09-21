@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/features/chat/presentation/providers/chat_provider.dart';
 import 'package:sportx_app/features/connections/presentation/providers/scout_requests_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/widgets/athlete_avatar.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
@@ -204,6 +205,30 @@ class _ScoutRequestsScreenState extends ConsumerState<ScoutRequestsScreen> {
                   ),
                 ),
               ],
+            ),
+          ],
+          if (status == 'accepted') ...[
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () async {
+                  final scoutUserId = scoutUser?['id'];
+                  if (scoutUserId == null) return;
+                  final (chatId, err) = await startConversationResult(
+                      ref, int.parse(scoutUserId.toString()));
+                  if (!mounted) return;
+                  if (chatId != null) {
+                    context.push('/chat-screen',
+                        extra: {'id': chatId, 'name': name, 'avatar': photoUrl ?? ''});
+                  } else {
+                    SnackBarUtils.showError(context, err ?? 'Could not open chat');
+                  }
+                },
+                icon: const Icon(LucideIcons.messageCircle, size: 16),
+                label: const Text('Message Scout'),
+                style: OutlinedButton.styleFrom(foregroundColor: AppColors.primary, side: const BorderSide(color: AppColors.primary)),
+              ),
             ),
           ],
         ],
