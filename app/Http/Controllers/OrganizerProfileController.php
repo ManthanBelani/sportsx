@@ -10,6 +10,8 @@ class OrganizerProfileController extends Controller
     {
         $profile = $request->user()->organizerProfile;
         abort_if(! $profile, 404, 'Organizer profile not found');
+        SocialLinksController::attach($profile, $request->user());
+
         return response()->json(['data' => $profile]);
     }
 

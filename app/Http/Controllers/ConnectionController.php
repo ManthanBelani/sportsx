@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Connection;
+use App\Models\Conversation;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
 class ConnectionController extends Controller
@@ -31,9 +33,16 @@ class ConnectionController extends Controller
         $userId = $request->user()->id;
         $targetId = $validated['user_id'];
 
-        $connection = Connection::firstOrCreate(
-            ['follower_user_id' => $userId, 'followee_user_id' => $targetId],
-            ['status' => 'pending']
+        $duplicate = Connection::where('follower_user_id', $userId)
+            ->where('followee_user_id', $targetId)
+            ->first();
+
+        if ($duplicate) {
+            return response()->json(['error' => ['code' => 'CONFLICT', 'message' => 'Connection request already exists.']], 409);
+        }
+
+        $connection = Connection::create(
+            ['follower_user_id' => $userId, 'followee_user_id' => $targetId, 'status' => 'pending']
         );
 
         // Auto-accept if the counterpart already follows (mutual consent).
@@ -43,6 +52,31 @@ class ConnectionController extends Controller
 
         if ($reverse && $reverse->status === 'accepted') {
             $connection->update(['status' => 'accepted']);
+            $this->ensurePrivateConversation($userId, $targetId);
+        } elseif ($reverse && $reverse->status === 'pending') {
+            // Mutual interest: both sides requested → accept both, open chat.
+            $reverse->update(['status' => 'accepted']);
+            $connection->update(['status' => 'accepted']);
+            $this->ensurePrivateConversation($userId, $targetId);
+            NotificationService::createStatic([
+                'user_id' => $targetId,
+                'type' => 'status_update',
+                'title' => 'Connection accepted',
+                'body' => "{$request->user()->name} also sent you a request. You are now connected and can chat.",
+                'notifiable_type' => 'connection',
+                'notifiable_id' => $reverse->id,
+                'action_url' => '/my-connections',
+            ]);
+        } else {
+            NotificationService::createStatic([
+                'user_id' => $targetId,
+                'type' => 'status_update',
+                'title' => 'New connection request',
+                'body' => "{$request->user()->name} wants to connect with you.",
+                'notifiable_type' => 'connection',
+                'notifiable_id' => $connection->id,
+                'action_url' => '/connection-requests',
+            ]);
         }
 
         return response()->json(['data' => $connection], 201);
@@ -57,6 +91,17 @@ class ConnectionController extends Controller
             ->firstOrFail();
 
         $connection->update(['status' => 'accepted']);
+        $this->ensurePrivateConversation($connection->follower_user_id, $connection->followee_user_id);
+
+        NotificationService::createStatic([
+            'user_id' => $connection->follower_user_id,
+            'type' => 'status_update',
+            'title' => 'Connection accepted',
+            'body' => "{$request->user()->name} accepted your connection request. You can now chat.",
+            'notifiable_type' => 'connection',
+            'notifiable_id' => $connection->id,
+            'action_url' => '/my-connections',
+        ]);
 
         return response()->json(['data' => $connection]);
     }
@@ -135,5 +180,29 @@ class ConnectionController extends Controller
             ->count();
 
         return response()->json(['data' => ['count' => $count]]);
+    }
+
+    /**
+     * Create (or reuse) a private 1:1 conversation once a connection is
+     * accepted, so both inboxes show "Say hi".
+     */
+    private function ensurePrivateConversation(int $userId, int $otherUserId): void
+    {
+        $exists = Conversation::where('type', 'private')
+            ->whereHas('participants', fn ($q) => $q->where('user_id', $userId))
+            ->whereHas('participants', fn ($q) => $q->where('user_id', $otherUserId))
+            ->exists();
+
+        if ($exists) {
+            return;
+        }
+
+        $conversation = Conversation::create(['type' => 'private']);
+        $conversation->participants()->sync([$userId, $otherUserId]);
+        $conversation->messages()->create([
+            'sender_user_id' => $userId,
+            'body' => 'You are now connected. Say hi!',
+            'type' => 'system',
+        ]);
     }
 }

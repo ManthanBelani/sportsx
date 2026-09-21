@@ -20,9 +20,19 @@ class RoleGateTest extends TestCase
     {
         Sanctum::actingAs(User::factory()->create(['role' => 'athlete']));
 
-        $resp = $this->getJson('/api/v1/athletes');
+        // Sponsor-only route stays gated (athlete peer discovery opened GET /athletes).
+        $resp = $this->getJson('/api/v1/me/sponsorships');
 
         $resp->assertStatus(403)->assertJsonPath('message', 'Insufficient permissions');
+    }
+
+    public function test_athlete_can_access_peer_discovery(): void
+    {
+        Sanctum::actingAs(User::factory()->create(['role' => 'athlete']));
+
+        $resp = $this->getJson('/api/v1/athletes');
+
+        $resp->assertStatus(200);
     }
 
     public function test_sponsor_can_access_sponsor_endpoint(): void

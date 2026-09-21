@@ -24,6 +24,7 @@ use App\Http\Controllers\SavedItemController;
 use App\Http\Controllers\ScholarshipController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\SocialLinksController;
 use App\Http\Controllers\SponsorEngagementController;
 use App\Http\Controllers\SponsorshipController;
 use App\Http\Controllers\SportsVenueController;
@@ -150,8 +151,8 @@ Route::prefix('v1')->group(function () {
     Route::post('/enquiries/{id}/messages', [EnquiryController::class, 'reply'])->middleware('auth:sanctum');
     Route::put('/enquiries/{id}/read', [EnquiryController::class, 'markRead'])->middleware('auth:sanctum');
 
-    // ── Athlete Discovery (sponsor) ──
-    Route::get('/athletes', [AthleteDiscoveryController::class, 'index'])->middleware(['auth:sanctum', 'role:sponsor,talent_scout']);
+    // ── Athlete Discovery (sponsor/scout + athlete peer discovery) ──
+    Route::get('/athletes', [AthleteDiscoveryController::class, 'index'])->middleware(['auth:sanctum', 'role:sponsor,talent_scout,athlete']);
     Route::get('/athletes/{id}', [AthleteDiscoveryController::class, 'show'])->middleware('auth:sanctum');
 
     // ── Talent Scout routes ──
@@ -168,7 +169,17 @@ Route::prefix('v1')->group(function () {
 
         // Connections (namespaced to avoid clashing with generic GET /me/connections)
         Route::get('/me/scout-connections', [ScoutConnectionController::class, 'index']);
+        Route::get('/me/scout-connections/incoming', [ScoutConnectionController::class, 'incomingForScout']);
+        Route::post('/me/scout-connections/{connection}/accept', [ScoutConnectionController::class, 'acceptForScout']);
+        Route::post('/me/scout-connections/{connection}/reject', [ScoutConnectionController::class, 'rejectForScout']);
         Route::delete('/me/scout-connections/{connection}', [ScoutConnectionController::class, 'destroy']);
+        Route::get('/scout-connection-status/{type}/{id}', [ScoutConnectionController::class, 'status']);
+    });
+
+    // ── Scout directory (athlete discovers scouts — two-way connect) ──
+    Route::get('/scouts', [TalentScoutController::class, 'index'])->middleware(['auth:sanctum', 'role:athlete']);
+    Route::middleware(['auth:sanctum', 'role:athlete'])->group(function () {
+        Route::post('/scouts/{scout}/connect', [ScoutConnectionController::class, 'storeFromAthlete']);
     });
 
     Route::middleware(['auth:sanctum'])->group(function () {
@@ -262,6 +273,10 @@ Route::prefix('v1')->group(function () {
     Route::post('/me/device-tokens', [NotificationController::class, 'registerDeviceToken'])->middleware('auth:sanctum');
     Route::delete('/me/device-tokens', [NotificationController::class, 'unregisterDeviceToken'])->middleware('auth:sanctum');
     Route::post('/me/notifications/{notification}/send-push', [NotificationController::class, 'sendPushNotification'])->middleware('auth:sanctum');
+
+    // ── Social Links (all roles — stored on users.social_links) ──
+    Route::get('/me/social-links', [SocialLinksController::class, 'show'])->middleware('auth:sanctum');
+    Route::put('/me/social-links', [SocialLinksController::class, 'update'])->middleware('auth:sanctum');
 
     // ── Settings (Phase 2) ──
     Route::get('/me/settings', [SettingsController::class, 'show'])->middleware('auth:sanctum');

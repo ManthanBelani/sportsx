@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ScoutConnection extends Model
 {
     protected $fillable = [
-        'talent_scout_profile_id', 'athlete_profile_id', 'status', 'message',
+        'talent_scout_profile_id', 'athlete_profile_id', 'requested_by_user_id', 'status', 'message',
     ];
 
     protected $casts = [

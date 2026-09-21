@@ -7,6 +7,49 @@ use Illuminate\Http\Request;
 
 class TalentScoutController extends Controller
 {
+    /**
+     * Athlete-facing directory of scouts (two-way discovery).
+     * GET /scouts [role:athlete]
+     */
+    public function index(Request $request)
+    {
+        $query = TalentScoutProfile::with(['user', 'city', 'photo'])
+            ->whereHas('user', fn ($q) => $q->where('status', 'active'));
+
+        $search = $request->input('q') ?? $request->input('search');
+        $cityId = $request->input('city_id');
+        $sportId = $request->input('sport_id');
+
+        $query->when($search, fn ($q) => $q->where(function ($w) use ($search) {
+            $w->where('organization', 'like', "%{$search}%")
+                ->orWhere('affiliation', 'like', "%{$search}%")
+                ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%"));
+        }))
+        ->when($cityId, fn ($q) => $q->where('city_id', $cityId))
+        ->when($sportId, fn ($q) => $q->whereJsonContains('sports_specialization', (int) $sportId));
+
+        // Append connection status for the authenticated athlete, if any.
+        $athleteProfileId = $request->user()?->athleteProfile?->id;
+
+        $paginator = $query->latest()->paginate(min((int) ($request->input('per_page') ?? 20), 50));
+
+        if ($athleteProfileId) {
+            $scoutIds = $paginator->getCollection()->pluck('id');
+            $connections = \App\Models\ScoutConnection::where('athlete_profile_id', $athleteProfileId)
+                ->whereIn('talent_scout_profile_id', $scoutIds)
+                ->get()
+                ->keyBy('talent_scout_profile_id');
+            $paginator->getCollection()->transform(function ($scout) use ($connections) {
+                $conn = $connections->get($scout->id);
+                $scout->setAttribute('connection_status', $conn?->status);
+                $scout->setAttribute('connection_id', $conn?->id);
+                return $scout;
+            });
+        }
+
+        return response()->json($paginator);
+    }
+
     public function show(Request $request)
     {
         $profile = $request->user()->talentScoutProfile()->with(['city', 'photo'])->first();
@@ -14,6 +57,8 @@ class TalentScoutController extends Controller
         if (!$profile) {
             return response()->json(['error' => ['code' => 'NOT_FOUND', 'message' => 'Scout profile not found.']], 404);
         }
+
+        SocialLinksController::attach($profile, $request->user());
 
         return response()->json(['data' => $profile]);
     }

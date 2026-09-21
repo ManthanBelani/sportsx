@@ -29,6 +29,10 @@ class ProfileController extends Controller
             }
         }
 
+        if ($profile) {
+            SocialLinksController::attach($profile, $user);
+        }
+
         return response()->json(['data' => $profile]);
     }
 

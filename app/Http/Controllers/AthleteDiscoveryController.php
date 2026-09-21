@@ -13,6 +13,12 @@ class AthleteDiscoveryController extends Controller
             ->withCount('achievements')
             ->whereHas('sports');
 
+        // Peer discovery: athletes browsing other athletes should not see themselves.
+        $ownAthleteId = $request->user()?->athleteProfile?->id;
+        if ($ownAthleteId) {
+            $query->where('id', '!=', $ownAthleteId);
+        }
+
         // Support aliases: q / search / query / keyword all mean text search; sport_id may be array or single; age_group_id / city_id / skill_level / has_achievements
         $search = $request->input('q') ?? $request->input('search') ?? $request->input('query') ?? $request->input('keyword');
         $sportId = $request->input('sport_id');

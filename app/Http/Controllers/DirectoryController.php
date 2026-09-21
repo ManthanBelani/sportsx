@@ -25,9 +25,11 @@ class DirectoryController extends Controller
 
     public function academy(string $id)
     {
-        $academy = Academy::published()->with(['city', 'logo', 'cover', 'headCoach', 'coaches', 'sports.sport'])->findOrFail($id);
+        $academy = Academy::published()->with(['city', 'logo', 'cover', 'headCoach', 'coaches', 'sports.sport', 'owner'])->findOrFail($id);
+        $resource = $this->academyResource($academy);
+        $resource['social_links'] = SocialLinksController::forUser($academy->owner);
 
-        return response()->json(['data' => $this->academyResource($academy)]);
+        return response()->json(['data' => $resource]);
     }
 
     public function coaches(Request $request)
@@ -46,7 +48,9 @@ class DirectoryController extends Controller
 
     public function coach(string $id)
     {
-        $coach = CoachProfile::where('listing_status', 'published')->with(['city', 'sport', 'photo', 'academy'])->findOrFail($id);
+        $coach = CoachProfile::where('listing_status', 'published')->with(['city', 'sport', 'photo', 'academy', 'user'])->findOrFail($id);
+        $coach->setAttribute('social_links', SocialLinksController::forUser($coach->user));
+        $coach->unsetRelation('user');
 
         return response()->json(['data' => $coach]);
     }

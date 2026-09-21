@@ -16,7 +16,7 @@ class User extends Authenticatable
     protected $fillable = [
         'role', 'name', 'email', 'phone', 'password', 'google_id',
         'status', 'email_verified_at', 'admin_2fa_verified_at',
-        'notification_prefs', 'language',
+        'notification_prefs', 'social_links', 'language',
         'verification_token', 'reset_password_token', 'reset_password_sent_at',
     ];
 
@@ -29,6 +29,7 @@ class User extends Authenticatable
             'admin_2fa_verified_at' => 'datetime',
             'password' => 'hashed',
             'notification_prefs' => 'array',
+            'social_links' => 'array',
         ];
     }
 
