@@ -1,0 +1,372 @@
+<!DOCTYPE html><html><head><title>SportX v2 — Role-wise Design Hub · 125 screens</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+:root{
+--white:#FFFFFF;--yellow:#FFC107;--yellow-deep:#D9A400;--yellow-tint:#FFF6DA;--yellow-soft:#FFF9E6;
+--black:#111111;--dark:#2B2B2B;--med:#6B7280;--faint:#9CA3AF;
+--bg:#F4F5F7;--card:#FFFFFF;--border:#E8EAED;--border-soft:#EFF1F4;
+--success:#22C55E;--success-bg:#DCFCE7;--error:#EF4444;--error-bg:#FEE2E2;
+--info:#3B82F6;--info-bg:#E3EFFF;--warn:#B45309;
+--purple:#8A6AEA;--pink:#F24C96;--amber-deep:#FE9710;--orange-deep:#FB802E;--green-media:#03B94C;
+--r-sm:10px;--r-md:16px;--r-lg:22px;--r-full:999px;
+--e1:0 1px 2px rgba(16,18,21,.05),0 1px 3px rgba(16,18,21,.04);
+--e2:0 8px 24px -8px rgba(16,18,21,.14),0 2px 6px rgba(16,18,21,.05);
+--fab-shadow:0 10px 22px -6px rgba(255,193,7,.55),0 3px 8px rgba(17,17,17,.18);
+--btn-shadow:0 6px 16px -6px rgba(255,193,7,.55),inset 0 1px 0 rgba(255,255,255,.55);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;background:#E9EBEF;color:var(--dark);min-height:100vh;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(900px 480px at 15% -5%,rgba(255,193,7,.14),transparent 60%),radial-gradient(800px 500px at 95% 10%,rgba(58,130,246,.10),transparent 60%);pointer-events:none;z-index:0}
+h1,h2,h3,.sora{font-family:'Sora','Inter',sans-serif;letter-spacing:-.02em}
+a{color:inherit}
+img{display:block;max-width:100%}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:14px;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;border:none;font-family:inherit;transition:transform .15s,box-shadow .15s,filter .15s}
+.btn:active{transform:scale(.98)}
+.btn-pri{background:linear-gradient(180deg,#FFD54A,var(--yellow) 55%,#F5B400);color:#161300;min-height:46px;padding:12px 20px;box-shadow:var(--btn-shadow);border:1px solid rgba(120,80,0,.18)}
+.btn-sec{background:#fff;color:var(--dark);border:1px solid var(--border);min-height:44px;padding:10px 16px;box-shadow:var(--e1)}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:5px 11px;border-radius:999px;white-space:nowrap;letter-spacing:.01em}
+.wrap{max-width:1180px;margin:0 auto;padding:34px 22px;position:relative;z-index:1}
+.card{background:var(--card);border:1px solid var(--border);border-radius:22px;box-shadow:var(--e1);padding:20px}
+.card.dark{background:linear-gradient(150deg,#191B20,#0B0C0F 70%);border:1px solid #26282e;color:#fff}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:11px}
+.gal a{background:#fff;border:1px solid #E8EAED;border-radius:15px;padding:14px 15px;text-decoration:none;color:#111;box-shadow:0 1px 2px rgba(16,18,21,.05);transition:transform .16s,box-shadow .16s,border-color .16s;display:block;position:relative}
+.gal a:hover{transform:translateY(-3px);box-shadow:0 12px 28px -10px rgba(16,18,21,.18);border-color:var(--yellow)}
+.gal b{font-size:13.5px;font-family:Sora;display:block;line-height:1.25}
+.gal span{font-size:11.5px;color:#6B7280;word-break:break-all}
+.gal small{font-size:10px;color:var(--faint);display:block;margin-top:4px;letter-spacing:.02em}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.pills span{font-size:11.5px;font-weight:700;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:6px 12px;border-radius:999px}
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:22px 0}
+.shot{background:#fff;border:1px solid #E8EAED;border-radius:18px;overflow:hidden;text-decoration:none;color:#111}
+.shot img{width:100%;height:150px;object-fit:cover}
+.shot div{padding:12px 14px;font-weight:700;font-size:13.5px;font-family:Sora}
+.shot small{color:#6B7280;font-weight:500;font-family:Inter}
+/* role hub extras */
+.role-nav{position:sticky;top:0;z-index:20;background:rgba(244,245,247,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);margin:0 -22px;padding:14px 22px;border-bottom:1px solid var(--border);display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.role-nav::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;height:36px;padding:0 16px;border-radius:999px;background:#fff;border:1px solid var(--border);font-size:13px;font-weight:600;color:var(--dark);display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-family:inherit;box-shadow:var(--e1);transition:all .15s;white-space:nowrap}
+.chip.on{background:var(--black);color:#fff;border-color:var(--black);box-shadow:var(--e2)}
+.chip.yellow.on{background:var(--yellow);color:#161300;border-color:rgba(120,80,0,.2)}
+.role-sec{margin-top:26px;scroll-margin-top:80px}
+.role-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;padding:16px 18px;background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:var(--e1)}
+.role-icon{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 14px -6px rgba(0,0,0,.25)}
+.role-head h2{font-size:18px;color:var(--black);line-height:1}
+.role-head p{font-size:12.5px;color:var(--med);margin-top:4px;line-height:1.5;max-width:620px}
+.role-count{margin-left:auto;flex-shrink:0;background:var(--black);color:#fff;font-size:11px;font-weight:800;padding:7px 11px;border-radius:999px;letter-spacing:.03em}
+.role-count.yellow{background:var(--yellow);color:#161300;border:1px solid rgba(120,80,0,.15)}
+.folder-tag{font-size:11px;font-weight:700;color:var(--med);background:var(--bg);border:1px solid var(--border);padding:5px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px}
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:18px 0}
+.stat{background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:var(--e1);text-align:center}
+.stat b{font-family:Sora;font-size:22px;color:var(--black)}
+.stat span{font-size:11px;color:var(--med);display:block;margin-top:2px;letter-spacing:.02em;text-transform:uppercase;font-weight:700}
+.badge-role{position:absolute;top:10px;right:10px;font-size:10px;font-weight:800;padding:4px 8px;border-radius:999px;letter-spacing:.04em}
+@media(max-width:640px){.role-head{flex-direction:column}.role-count{margin-left:0}}
+</style></head>
+<body>
+<div class="wrap">
+
+<!-- HERO -->
+<div class="card dark" style="border-radius:24px;padding:42px 32px;background:linear-gradient(150deg,#191B20,#0B0C0F 70%);position:relative;overflow:hidden">
+<div style="position:absolute;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(255,193,7,.22),transparent 65%);top:-180px;right:-140px"></div>
+<div style="position:absolute;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(58,130,246,.14),transparent 65%);bottom:-120px;left:-80px"></div>
+<div style="position:relative;z-index:1">
+<span class="pill" style="background:var(--yellow);color:#161300;font-weight:800">ROLE-WISE HUB · 125 SCREENS · 8 WORKSPACES</span>
+<h1 class="sora" style="font-size:clamp(30px,5vw,52px);line-height:1.05;margin:14px 0 10px;color:#fff">Sport<em style="font-style:normal;background:var(--yellow);color:#111;padding:0 10px;border-radius:10px">X</em> v2 —<br>organized by role.</h1>
+<p style="color:#A7ACB5;max-width:680px;font-size:14.5px;line-height:1.6">Flat 125-file dump → <b style="color:#fff">8 role folders</b>. Every screen now lives where its owner expects it. Original files stay in root for backward-compat; copies live in <code style="background:rgba(255,255,255,.1);padding:2px 6px;border-radius:6px;color:#FFD54A">00-* … 08-*</code> folders. Click any role pill or card below.</p>
+<div class="pills"><span>00 Auth</span><span>01 Athlete 23</span><span>02 Coach 8</span><span>03 Academy 10</span><span>04 Organizer 10</span><span>05 Scout 12</span><span>06 Sponsor 6</span><span>07 Admin 14</span><span>08 Shared 27</span></div>
+<div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap">
+<a class="btn btn-pri" href="#athlete"><i data-lucide="user" style="width:16px;height:16px"></i> Explore Athlete</a>
+<a class="btn btn-sec" href="role-selection.html" style="background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.2)">Role Selection →</a>
+<a class="btn btn-sec" href="index.original.html" style="background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.2)">Flat index (old)</a>
+</div>
+</div>
+</div>
+
+<!-- STATS -->
+<div class="stat-row">
+<div class="stat"><b>125</b><span>Total screens</span></div>
+<div class="stat"><b>8</b><span>Role workspaces</span></div>
+<div class="stat"><b>14</b><span>Auth & Onboarding</span></div>
+<div class="stat"><b>27</b><span>Shared / Common</span></div>
+</div>
+
+<!-- FOLDER MAP -->
+<div class="card" style="padding:16px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+<b style="font-family:Sora;font-size:13px;color:var(--black)">Folder map →</b>
+<span class="folder-tag"><i data-lucide="folder" style="width:13px;height:13px"></i> 00-auth-and-onboarding</span>
+<span class="folder-tag">01-athlete</span>
+<span class="folder-tag">02-coach</span>
+<span class="folder-tag">03-academy</span>
+<span class="folder-tag">04-organizer</span>
+<span class="folder-tag">05-scout</span>
+<span class="folder-tag">06-sponsor</span>
+<span class="folder-tag">07-admin</span>
+<span class="folder-tag">08-shared-common</span>
+<span style="font-size:11px;color:var(--med);margin-left:auto">root/*.html still works</span>
+</div>
+
+<!-- FILTER BAR -->
+<div class="role-nav" id="roleNav">
+<button class="chip yellow on" data-filter="all"><i data-lucide="layout-grid" style="width:14px;height:14px"></i> All roles</button>
+<button class="chip" data-filter="auth"><i data-lucide="key-round" style="width:14px;height:14px"></i> Auth & Onboarding</button>
+<button class="chip" data-filter="athlete"><i data-lucide="user" style="width:14px;height:14px"></i> Athlete</button>
+<button class="chip" data-filter="coach"><i data-lucide="award" style="width:14px;height:14px"></i> Coach</button>
+<button class="chip" data-filter="academy"><i data-lucide="building-2" style="width:14px;height:14px"></i> Academy</button>
+<button class="chip" data-filter="organizer"><i data-lucide="calendar-days" style="width:14px;height:14px"></i> Organizer</button>
+<button class="chip" data-filter="scout"><i data-lucide="eye" style="width:14px;height:14px"></i> Scout</button>
+<button class="chip" data-filter="sponsor"><i data-lucide="briefcase" style="width:14px;height:14px"></i> Sponsor</button>
+<button class="chip" data-filter="admin"><i data-lucide="shield" style="width:14px;height:14px"></i> Admin</button>
+<button class="chip" data-filter="shared"><i data-lucide="compass" style="width:14px;height:14px"></i> Shared</button>
+</div>
+
+<!-- 00 AUTH -->
+<section class="role-sec" data-role="auth" id="auth">
+<div class="role-head">
+<div class="role-icon" style="background:linear-gradient(135deg,#6B7280,#111827)"><i data-lucide="key-round" style="width:20px;height:20px"></i></div>
+<div style="flex:1"><h2>00 — Auth & Onboarding</h2><p>First-run experience. Splash → Login/OTP → Role selection → Sport + Location → 5 role-specific onboarding flows + Admin login. Entry point for every persona.</p><span class="folder-tag" style="margin-top:8px"><i data-lucide="folder" style="width:12px;height:12px"></i> 00-auth-and-onboarding/</span></div>
+<span class="role-count">14 SCREENS</span>
+</div>
+<div class="gal">
+<a href="00-auth-and-onboarding/splash.html"><b>Splash</b><span>splash.html</span><small>00-auth-and-onboarding/</small></a>
+<a href="00-auth-and-onboarding/login.html"><b>Login</b><span>login.html</span><small>00-auth-and-onboarding/</small></a>
+<a href="00-auth-and-onboarding/otp.html"><b>OTP Verify</b><span>otp.html</span><small>00-auth-and-onboarding/</small></a>
+<a href="00-auth-and-onboarding/sign-up.html"><b>Sign Up</b><span>sign-up.html</span><small>00-auth-and-onboarding/</small></a>
+<a href="00-auth-and-onboarding/role-selection.html"><b>Role Selection</b><span>role-selection.html</span><small>00-auth-and-onboarding/</small></a>
+<a href="00-auth-and-onboarding/onboarding.html"><b>Onboarding</b><span>onboarding.html</span><small>00-auth-and-onboarding/</small></a>
+<a href="00-auth-and-onboarding/onboarding-sport.html"><b>Onboarding — Sport</b><span>onboarding-sport.html</span><small>00-auth-and-onboarding/</small></a>
+<a href="00-auth-and-onboarding/onboarding-location.html"><b>Onboarding — Location</b><span>onboarding-location.html</span><small>00-auth-and-onboarding/</small></a>
+<a href="00-auth-and-onboarding/academy-onboarding.html"><b>Academy Onboarding</b><span>academy-onboarding.html</span><small>00-auth-and-onboarding/</small></a>
+<a href="00-auth-and-onboarding/coach-onboarding.html"><b>Coach Onboarding</b><span>coach-onboarding.html</span><small>00-auth-and-onboarding/</small></a>
+<a href="00-auth-and-onboarding/organizer-onboarding.html"><b>Organizer Onboarding</b><span>organizer-onboarding.html</span><small>00-auth-and-onboarding/</small></a>
+<a href="00-auth-and-onboarding/scout-onboarding.html"><b>Scout Onboarding</b><span>scout-onboarding.html</span><small>00-auth-and-onboarding/</small></a>
+<a href="00-auth-and-onboarding/sponsor-onboarding.html"><b>Sponsor Onboarding</b><span>sponsor-onboarding.html</span><small>00-auth-and-onboarding/</small></a>
+<a href="00-auth-and-onboarding/admin-login.html"><b>Admin Login</b><span>admin-login.html</span><small>00-auth-and-onboarding/</small></a>
+</div>
+</section>
+
+<!-- 01 ATHLETE -->
+<section class="role-sec" data-role="athlete" id="athlete">
+<div class="role-head">
+<div class="role-icon" style="background:linear-gradient(135deg,#FFC107,#F59E0B)"><i data-lucide="user" style="width:20px;height:20px;color:#161300"></i></div>
+<div style="flex:1"><h2>01 — Athlete Workspace</h2><p>Core consumer. Home + profile, achievements, trials/tournaments/scholarships/sponsorships, registrations, applications, coaching enrollments, connections, results & saved. Yellow is the athlete’s primary.</p><span class="folder-tag" style="margin-top:8px"><i data-lucide="folder" style="width:12px;height:12px"></i> 01-athlete/</span></div>
+<span class="role-count yellow">23 SCREENS</span>
+</div>
+<div class="gal">
+<a href="01-athlete/home.html"><b>Home</b><span>home.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/profile.html"><b>My Profile</b><span>profile.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/profile-view.html"><b>Profile View</b><span>profile-view.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/edit-profile.html"><b>Edit Profile</b><span>edit-profile.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/add-achievement.html"><b>Add Achievement</b><span>add-achievement.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/my-trials.html"><b>My Trials</b><span>my-trials.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/my-tournaments.html"><b>My Tournaments</b><span>my-tournaments.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/my-registrations.html"><b>My Registrations</b><span>my-registrations.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/my-applications.html"><b>My Applications</b><span>my-applications.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/my-coaching-enrollments.html"><b>My Coaching Enrollments</b><span>my-coaching-enrollments.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/my-sponsorships.html"><b>My Sponsorships</b><span>my-sponsorships.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/my-connections.html"><b>My Connections</b><span>my-connections.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/trial-registration.html"><b>Trial Registration</b><span>trial-registration.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/tournament-registration.html"><b>Tournament Registration</b><span>tournament-registration.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/apply-sponsor.html"><b>Apply Sponsor</b><span>apply-sponsor.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/application-status.html"><b>Application Status</b><span>application-status.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/application-detail.html"><b>Application Detail</b><span>application-detail.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/registration-confirmation.html"><b>Registration Confirmation</b><span>registration-confirmation.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/results-view.html"><b>Results View</b><span>results-view.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/saved.html"><b>Saved</b><span>saved.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/shortlist.html"><b>Shortlist</b><span>shortlist.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/coach-enrollment.html"><b>Coach Enrollment</b><span>coach-enrollment.html</span><small>01-athlete/</small></a>
+<a href="01-athlete/enquire.html"><b>Enquire</b><span>enquire.html</span><small>01-athlete/</small></a>
+</div>
+</section>
+
+<!-- 02 COACH -->
+<section class="role-sec" data-role="coach" id="coach">
+<div class="role-head">
+<div class="role-icon" style="background:linear-gradient(135deg,#8A6AEA,#6D4DE0)"><i data-lucide="award" style="width:20px;height:20px"></i></div>
+<div style="flex:1"><h2>02 — Coach</h2><p>Provider side. Dashboard + public directory/detail, profile edit/posting, credential, and enquiry inbox/detail for athlete leads.</p><span class="folder-tag" style="margin-top:8px"><i data-lucide="folder" style="width:12px;height:12px"></i> 02-coach/</span></div>
+<span class="role-count" style="background:#8A6AEA">8 SCREENS</span>
+</div>
+<div class="gal">
+<a href="02-coach/coach-dashboard.html"><b>Coach Dashboard</b><span>coach-dashboard.html</span><small>02-coach/</small></a>
+<a href="02-coach/coach-directory.html"><b>Coach Directory</b><span>coach-directory.html</span><small>02-coach/</small></a>
+<a href="02-coach/coach-detail.html"><b>Coach Detail</b><span>coach-detail.html</span><small>02-coach/</small></a>
+<a href="02-coach/coach-profile-edit.html"><b>Coach Profile Edit</b><span>coach-profile-edit.html</span><small>02-coach/</small></a>
+<a href="02-coach/coach-profile-posting.html"><b>Coach Profile Posting</b><span>coach-profile-posting.html</span><small>02-coach/</small></a>
+<a href="02-coach/add-credential.html"><b>Add Credential</b><span>add-credential.html</span><small>02-coach/</small></a>
+<a href="02-coach/enquiry-inbox.html"><b>Enquiry Inbox</b><span>enquiry-inbox.html</span><small>02-coach/</small></a>
+<a href="02-coach/enquiry-detail.html"><b>Enquiry Detail</b><span>enquiry-detail.html</span><small>02-coach/</small></a>
+</div>
+</section>
+
+<!-- 03 ACADEMY -->
+<section class="role-sec" data-role="academy" id="academy">
+<div class="role-head">
+<div class="role-icon" style="background:linear-gradient(135deg,#03B94C,#059669)"><i data-lucide="building-2" style="width:20px;height:20px"></i></div>
+<div style="flex:1"><h2>03 — Academy</h2><p>Provider side. Dashboard, directory/detail, profile create/edit, facilities, trial posting form, registrant list/detail, capacity.</p><span class="folder-tag" style="margin-top:8px"><i data-lucide="folder" style="width:12px;height:12px"></i> 03-academy/</span></div>
+<span class="role-count" style="background:#03B94C">10 SCREENS</span>
+</div>
+<div class="gal">
+<a href="03-academy/academy-dashboard.html"><b>Academy Dashboard</b><span>academy-dashboard.html</span><small>03-academy/</small></a>
+<a href="03-academy/academy-directory.html"><b>Academy Directory</b><span>academy-directory.html</span><small>03-academy/</small></a>
+<a href="03-academy/academy-detail.html"><b>Academy Detail</b><span>academy-detail.html</span><small>03-academy/</small></a>
+<a href="03-academy/academy-profile.html"><b>Academy Profile</b><span>academy-profile.html</span><small>03-academy/</small></a>
+<a href="03-academy/academy-profile-posting.html"><b>Academy Listing Edit</b><span>academy-profile-posting.html</span><small>03-academy/</small></a>
+<a href="03-academy/edit-facilities.html"><b>Edit Facilities</b><span>edit-facilities.html</span><small>03-academy/</small></a>
+<a href="03-academy/trial-posting-form.html"><b>Trial Posting Form</b><span>trial-posting-form.html</span><small>03-academy/</small></a>
+<a href="03-academy/registrant-list.html"><b>Registrant List</b><span>registrant-list.html</span><small>03-academy/</small></a>
+<a href="03-academy/registrant-detail.html"><b>Registrant Detail</b><span>registrant-detail.html</span><small>03-academy/</small></a>
+<a href="03-academy/capacity-management.html"><b>Capacity Management</b><span>capacity-management.html</span><small>03-academy/</small></a>
+</div>
+</section>
+
+<!-- 04 ORGANIZER -->
+<section class="role-sec" data-role="organizer" id="organizer">
+<div class="role-head">
+<div class="role-icon" style="background:linear-gradient(135deg,#FB802E,#E65A1A)"><i data-lucide="calendar-days" style="width:20px;height:20px"></i></div>
+<div style="flex:1"><h2>04 — Organizer</h2><p>Tournament owner. Dashboard + analytics, organizer profile, create/edit tournament, calendar, registration management, results publishing, notification targeting.</p><span class="folder-tag" style="margin-top:8px"><i data-lucide="folder" style="width:12px;height:12px"></i> 04-organizer/</span></div>
+<span class="role-count" style="background:#FB802E">10 SCREENS</span>
+</div>
+<div class="gal">
+<a href="04-organizer/organizer-dashboard.html"><b>Organizer Dashboard</b><span>organizer-dashboard.html</span><small>04-organizer/</small></a>
+<a href="04-organizer/organizer-analytics.html"><b>Organizer Analytics</b><span>organizer-analytics.html</span><small>04-organizer/</small></a>
+<a href="04-organizer/organizer-profile.html"><b>Organizer Profile</b><span>organizer-profile.html</span><small>04-organizer/</small></a>
+<a href="04-organizer/tournament-create.html"><b>Tournament Create</b><span>tournament-create.html</span><small>04-organizer/</small></a>
+<a href="04-organizer/tournament-edit.html"><b>Tournament Edit</b><span>tournament-edit.html</span><small>04-organizer/</small></a>
+<a href="04-organizer/tournament-calendar.html"><b>Tournament Calendar</b><span>tournament-calendar.html</span><small>04-organizer/</small></a>
+<a href="04-organizer/registration-management.html"><b>Registration Management</b><span>registration-management.html</span><small>04-organizer/</small></a>
+<a href="04-organizer/results-publishing.html"><b>Results Publishing</b><span>results-publishing.html</span><small>04-organizer/</small></a>
+<a href="04-organizer/compose-notification.html"><b>Compose Notification</b><span>compose-notification.html</span><small>04-organizer/</small></a>
+<a href="04-organizer/notification-targeting.html"><b>Notification Targeting</b><span>notification-targeting.html</span><small>04-organizer/</small></a>
+</div>
+</section>
+
+<!-- 05 SCOUT -->
+<section class="role-sec" data-role="scout" id="scout">
+<div class="role-head">
+<div class="role-icon" style="background:linear-gradient(135deg,#3B82F6,#1D4ED8)"><i data-lucide="eye" style="width:20px;height:20px"></i></div>
+<div style="flex:1"><h2>05 — Scout (Talent)</h2><p>Discovery buyer. Dashboard, profile, directory/discovery, athlete view, connections/requests, shortlist, showcase. Athlete directory also lives here for scouting.</p><span class="folder-tag" style="margin-top:8px"><i data-lucide="folder" style="width:12px;height:12px"></i> 05-scout/</span></div>
+<span class="role-count" style="background:#3B82F6">12 SCREENS</span>
+</div>
+<div class="gal">
+<a href="05-scout/scout-dashboard.html"><b>Scout Dashboard</b><span>scout-dashboard.html</span><small>05-scout/</small></a>
+<a href="05-scout/scout-profile.html"><b>Scout Profile</b><span>scout-profile.html</span><small>05-scout/</small></a>
+<a href="05-scout/scout-directory.html"><b>Scout Directory</b><span>scout-directory.html</span><small>05-scout/</small></a>
+<a href="05-scout/scout-discovery.html"><b>Scout Discovery</b><span>scout-discovery.html</span><small>05-scout/</small></a>
+<a href="05-scout/scout-athlete-view.html"><b>Scout Athlete View</b><span>scout-athlete-view.html</span><small>05-scout/</small></a>
+<a href="05-scout/scout-connection.html"><b>Scout Connection</b><span>scout-connection.html</span><small>05-scout/</small></a>
+<a href="05-scout/scout-connections.html"><b>Scout Connections</b><span>scout-connections.html</span><small>05-scout/</small></a>
+<a href="05-scout/scout-requests.html"><b>Scout Requests</b><span>scout-requests.html</span><small>05-scout/</small></a>
+<a href="05-scout/scout-shortlist.html"><b>Scout Shortlist</b><span>scout-shortlist.html</span><small>05-scout/</small></a>
+<a href="05-scout/showcase-athletes.html"><b>Showcase Athletes</b><span>showcase-athletes.html</span><small>05-scout/</small></a>
+<a href="05-scout/athlete-directory.html"><b>Athlete Directory</b><span>athlete-directory.html</span><small>05-scout/</small></a>
+<a href="05-scout/athlete-discovery.html"><b>Athlete Discovery</b><span>athlete-discovery.html</span><small>05-scout/</small></a>
+</div>
+</section>
+
+<!-- 06 SPONSOR -->
+<section class="role-sec" data-role="sponsor" id="sponsor">
+<div class="role-head">
+<div class="role-icon" style="background:linear-gradient(135deg,#111111,#2B2B2B)"><i data-lucide="briefcase" style="width:20px;height:20px"></i></div>
+<div style="flex:1"><h2>06 — Sponsor</h2><p>Funding side. Dashboard, directory, athlete profile (sponsor view), sponsorship create/detail/list. Funds athletes, tracks ROI.</p><span class="folder-tag" style="margin-top:8px"><i data-lucide="folder" style="width:12px;height:12px"></i> 06-sponsor/</span></div>
+<span class="role-count">6 SCREENS</span>
+</div>
+<div class="gal">
+<a href="06-sponsor/sponsor-dashboard.html"><b>Sponsor Dashboard</b><span>sponsor-dashboard.html</span><small>06-sponsor/</small></a>
+<a href="06-sponsor/sponsor-directory.html"><b>Sponsor Directory</b><span>sponsor-directory.html</span><small>06-sponsor/</small></a>
+<a href="06-sponsor/sponsor-athlete-profile.html"><b>Sponsor Athlete Profile</b><span>sponsor-athlete-profile.html</span><small>06-sponsor/</small></a>
+<a href="06-sponsor/sponsorship-create.html"><b>Sponsorship Create</b><span>sponsorship-create.html</span><small>06-sponsor/</small></a>
+<a href="06-sponsor/sponsorship-detail.html"><b>Sponsorship Detail</b><span>sponsorship-detail.html</span><small>06-sponsor/</small></a>
+<a href="06-sponsor/sponsorships.html"><b>Sponsorships</b><span>sponsorships.html</span><small>06-sponsor/</small></a>
+</div>
+</section>
+
+<!-- 07 ADMIN -->
+<section class="role-sec" data-role="admin" id="admin">
+<div class="role-head">
+<div class="role-icon" style="background:linear-gradient(135deg,#EF4444,#B91C1C)"><i data-lucide="shield" style="width:20px;height:20px"></i></div>
+<div style="flex:1"><h2>07 — Admin (Platform)</h2><p>Back-office web layout. Dashboard, analytics, users, moderation queues, content list/picker, settings, approval queues, reports & verification.</p><span class="folder-tag" style="margin-top:8px"><i data-lucide="folder" style="width:12px;height:12px"></i> 07-admin/</span></div>
+<span class="role-count" style="background:#EF4444">14 SCREENS</span>
+</div>
+<div class="gal">
+<a href="07-admin/admin-dashboard.html"><b>Admin Dashboard</b><span>admin-dashboard.html</span><small>07-admin/</small></a>
+<a href="07-admin/admin-analytics.html"><b>Admin Analytics</b><span>admin-analytics.html</span><small>07-admin/</small></a>
+<a href="07-admin/admin-users.html"><b>User Management</b><span>admin-users.html</span><small>07-admin/</small></a>
+<a href="07-admin/admin-moderation.html"><b>Listing Moderation</b><span>admin-moderation.html</span><small>07-admin/</small></a>
+<a href="07-admin/admin-content-list.html"><b>Content List</b><span>admin-content-list.html</span><small>07-admin/</small></a>
+<a href="07-admin/admin-content-picker.html"><b>Content Picker</b><span>admin-content-picker.html</span><small>07-admin/</small></a>
+<a href="07-admin/admin-settings.html"><b>System Settings</b><span>admin-settings.html</span><small>07-admin/</small></a>
+<a href="07-admin/admin-web-layout.html"><b>Admin Web Layout</b><span>admin-web-layout.html</span><small>07-admin/</small></a>
+<a href="07-admin/opp-approval-queue.html"><b>Opp Approval Queue</b><span>opp-approval-queue.html</span><small>07-admin/</small></a>
+<a href="07-admin/opp-review-detail.html"><b>Opp Review Detail</b><span>opp-review-detail.html</span><small>07-admin/</small></a>
+<a href="07-admin/pending-approvals.html"><b>Pending Approvals</b><span>pending-approvals.html</span><small>07-admin/</small></a>
+<a href="07-admin/platform-reports.html"><b>Platform Reports</b><span>platform-reports.html</span><small>07-admin/</small></a>
+<a href="07-admin/report-listing.html"><b>Report Listing</b><span>report-listing.html</span><small>07-admin/</small></a>
+<a href="07-admin/user-detail-verify.html"><b>User Detail Verify</b><span>user-detail-verify.html</span><small>07-admin/</small></a>
+</div>
+</section>
+
+<!-- 08 SHARED -->
+<section class="role-sec" data-role="shared" id="shared">
+<div class="role-head">
+<div class="role-icon" style="background:linear-gradient(135deg,#FE9710,#FB5A2A)"><i data-lucide="compass" style="width:20px;height:20px"></i></div>
+<div style="flex:1"><h2>08 — Shared / Common</h2><p>Used by ≥2 roles. Discovery (trials/tournaments/scholarships/venues), search/universal, network/chat/notifications, social posts, activity hubs, help & settings. The glue.</p><span class="folder-tag" style="margin-top:8px"><i data-lucide="folder" style="width:12px;height:12px"></i> 08-shared-common/</span></div>
+<span class="role-count" style="background:#FE9710">27 SCREENS</span>
+</div>
+<div class="gal">
+<a href="08-shared-common/discover.html"><b>Discover</b><span>discover.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/opportunities.html"><b>Opportunities</b><span>opportunities.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/trials.html"><b>Trials</b><span>trials.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/trial-detail.html"><b>Trial Detail</b><span>trial-detail.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/tournaments.html"><b>Tournaments</b><span>tournaments.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/tournament-detail.html"><b>Tournament Detail</b><span>tournament-detail.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/scholarships.html"><b>Scholarships</b><span>scholarships.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/scholarship-detail.html"><b>Scholarship Detail</b><span>scholarship-detail.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/venue-list.html"><b>Venue List</b><span>venue-list.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/venue-detail.html"><b>Venue Detail</b><span>venue-detail.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/search-screen.html"><b>Search Screen</b><span>search-screen.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/search-filter.html"><b>Search Filter</b><span>search-filter.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/universal-search.html"><b>Universal Search</b><span>universal-search.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/network.html"><b>Network</b><span>network.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/connection-requests.html"><b>Connection Requests</b><span>connection-requests.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/chat-list.html"><b>Chat List</b><span>chat-list.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/chat-screen.html"><b>Chat Screen</b><span>chat-screen.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/notifications.html"><b>Notifications</b><span>notifications.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/activity-hub.html"><b>Activity Hub</b><span>activity-hub.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/create-post.html"><b>Create Post</b><span>create-post.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/create-sheet.html"><b>Create Sheet</b><span>create-sheet.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/post-detail.html"><b>Post Detail</b><span>post-detail.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/media-gallery.html"><b>Media Gallery</b><span>media-gallery.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/help-support.html"><b>Help Support</b><span>help-support.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/settings.html"><b>Settings</b><span>settings.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/social-links.html"><b>Social Links</b><span>social-links.html</span><small>08-shared-common/</small></a>
+<a href="08-shared-common/applications-inbox.html"><b>Applications Inbox</b><span>applications-inbox.html</span><small>08-shared-common/</small></a>
+</div>
+</section>
+
+<div class="card" style="margin-top:28px;background:linear-gradient(180deg,#fff,#FFFCF0);border-color:#F0E3B2;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+<i data-lucide="info" style="width:22px;height:22px;color:var(--warn)"></i>
+<div style="flex:1;min-width:240px"><b style="font-size:13px;color:var(--black)">Heads-up</b><p style="font-size:12.5px;color:var(--med);margin-top:2px">Original flat files are <b>still in root</b> so old bookmarks/links don’t break. New role folders are <b>copies</b> for clarity. To make them primary, delete root duplicates later. See <a href="index.original.html" style="color:var(--info);font-weight:700">index.original.html</a> for previous flat view.</p></div>
+<a class="btn btn-pri" href="#auth">↑ Back to top</a>
+</div>
+
+<p style="text-align:center;font-size:11px;color:var(--faint);margin:22px 0 8px">SportX v2 · Design System v3 · Role-wise hub · index.html · 125 screens · Last organized Sep 2026</p>
+
+</div>
+<script>
+lucide.createIcons();
+const chips=[...document.querySelectorAll('.chip')];
+const secs=[...document.querySelectorAll('.role-sec')];
+chips.forEach(c=>c.addEventListener('click',()=>{
+  chips.forEach(x=>x.classList.remove('on','yellow'));
+  c.classList.add('on');
+  if(c.dataset.filter==='all') c.classList.add('yellow');
+  const f=c.dataset.filter;
+  secs.forEach(s=>{
+    s.style.display=(f==='all'||s.dataset.role===f)?'':'none';
+  });
+  if(f!=='all') document.getElementById(f)?.scrollIntoView({behavior:'smooth',block:'start'});
+}));
+</script>
+</body></html>

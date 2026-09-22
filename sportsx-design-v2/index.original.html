@@ -1,0 +1,200 @@
+﻿<!DOCTYPE html><html><head><title>SportX v2 â€” Refined Â· 124 screens</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script><style>/* SportX v2 â€” Design System v3 refined stylesheet. Pure CSS, no scripts. */
+:root{
+--white:#FFFFFF;--yellow:#FFC107;--yellow-deep:#D9A400;--yellow-tint:#FFF6DA;--yellow-soft:#FFF9E6;
+--black:#111111;--dark:#2B2B2B;--med:#6B7280;--faint:#9CA3AF;
+--bg:#F4F5F7;--card:#FFFFFF;--border:#E8EAED;--border-soft:#EFF1F4;
+--success:#22C55E;--success-bg:#DCFCE7;--error:#EF4444;--error-bg:#FEE2E2;
+--info:#3B82F6;--info-bg:#E3EFFF;--warn:#B45309;
+--purple:#8A6AEA;--pink:#F24C96;--amber-deep:#FE9710;--orange-deep:#FB802E;--green-media:#03B94C;
+--r-sm:10px;--r-md:16px;--r-lg:22px;--r-full:999px;
+--e1:0 1px 2px rgba(16,18,21,.05),0 1px 3px rgba(16,18,21,.04);
+--e2:0 8px 24px -8px rgba(16,18,21,.14),0 2px 6px rgba(16,18,21,.05);
+--fab-shadow:0 10px 22px -6px rgba(255,193,7,.55),0 3px 8px rgba(17,17,17,.18);
+--btn-shadow:0 6px 16px -6px rgba(255,193,7,.55),inset 0 1px 0 rgba(255,255,255,.55);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;background:#E9EBEF;color:var(--dark);min-height:100vh;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(900px 480px at 15% -5%,rgba(255,193,7,.14),transparent 60%),radial-gradient(800px 500px at 95% 10%,rgba(58,130,246,.10),transparent 60%);pointer-events:none;z-index:0}
+h1,h2,h3,.sora{font-family:'Sora','Inter',sans-serif;letter-spacing:-.02em}
+a{color:inherit}
+img{display:block;max-width:100%}
+.phone{max-width:430px;margin:0 auto;background:var(--bg);min-height:100vh;position:relative;z-index:1;padding-bottom:104px;box-shadow:0 0 0 1px rgba(16,18,21,.06),0 30px 80px -30px rgba(16,18,21,.35)}
+@media(min-width:520px){body{padding:28px 0}.phone{border-radius:30px;overflow:hidden;outline:8px solid #101114;outline-offset:-1px}}@media(min-width:520px){.bottomnav{position:absolute;bottom:0;left:0;right:0;width:100%;max-width:100%;margin:0;border-radius:0 0 22px 22px}}
+.topbar{background:rgba(255,255,255,.88);backdrop-filter:saturate(160%) blur(16px);-webkit-backdrop-filter:saturate(160%) blur(16px);border-bottom:1px solid var(--border);padding:13px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}
+.brand{font-family:'Sora';font-weight:800;font-size:19px;letter-spacing:-.04em;color:var(--black);display:flex;align-items:center;gap:8px}
+.brand::before{content:'S';display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:9px;background:var(--black);color:var(--yellow);font-size:15px;font-weight:800}
+.brand em{font-style:normal;background:var(--yellow);padding:1px 7px;border-radius:7px;box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
+.topbar h1{font-size:17px;font-weight:700;color:var(--black)}
+.iconbtn{width:40px;height:40px;border-radius:50%;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--dark);cursor:pointer;position:relative;text-decoration:none;box-shadow:var(--e1);transition:transform .18s,box-shadow .18s}
+.iconbtn:hover{transform:translateY(-1px);box-shadow:var(--e2)}
+.iconbtn svg{width:19px;height:19px}
+.badge{position:absolute;top:-3px;right:-3px;min-width:19px;height:19px;background:var(--error);color:#fff;font-size:11px;font-weight:700;border-radius:999px;display:flex;align-items:center;justify-content:center;padding:0 5px;border:2px solid #fff;box-shadow:0 2px 6px rgba(239,68,68,.5)}
+.content{padding:16px 16px 8px;animation:rise .35s ease}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-md);box-shadow:var(--e1);padding:16px}
+.card.dark{background:linear-gradient(160deg,#17191D,#0C0D10);border:1px solid #26282e;color:#fff}
+.sect{margin-bottom:24px}
+.sect-h{display:flex;align-items:center;justify-content:space-between;margin:2px 2px 12px}
+.sect-h h2{font-size:19px;font-weight:700;color:var(--black)}
+.seeall{font-size:12.5px;font-weight:700;color:var(--med);text-decoration:none;display:inline-flex;align-items:center;gap:2px;padding:6px 12px;background:#fff;border:1px solid var(--border);border-radius:999px}
+.seeall svg{width:14px;height:14px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;border-radius:14px;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;border:none;font-family:inherit;transition:transform .15s,box-shadow .15s,filter .15s}
+.btn:active{transform:scale(.98)}
+.btn-pri{background:linear-gradient(180deg,#FFD54A,var(--yellow) 55%,#F5B400);color:#161300;min-height:50px;padding:13px 20px;box-shadow:var(--btn-shadow);border:1px solid rgba(120,80,0,.18)}
+.btn-pri:hover{transform:translateY(-1px);filter:saturate(1.05)}
+.btn-sec{background:#fff;color:var(--dark);border:1px solid var(--border);min-height:46px;padding:11px 16px;box-shadow:var(--e1)}
+.btn-sm{min-height:36px;padding:7px 14px;font-size:13px;border-radius:11px}
+.btn svg{width:17px;height:17px}
+.stickybar{position:sticky;bottom:84px;z-index:15;background:rgba(255,255,255,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--border);box-shadow:var(--e2);padding:12px;border-radius:18px;margin-top:14px}
+.entity{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--border);border-radius:var(--r-md);padding:12px;margin-bottom:10px;box-shadow:var(--e1);transition:transform .16s,box-shadow .16s}
+a.entity:hover{transform:translateY(-1px);box-shadow:var(--e2)}
+.avatar{border-radius:50%;background:linear-gradient(135deg,#FFE9A8,#FFC107 60%,#F5B400);display:flex;align-items:center;justify-content:center;color:#191300;font-weight:800;flex-shrink:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.6);overflow:hidden;position:relative}
+.avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.av56{width:56px;height:56px;font-size:20px}.av40{width:42px;height:42px;font-size:15px}.av96{width:96px;height:96px;font-size:34px;border:3px solid #fff;box-shadow:var(--e2)}
+.entity h3{font-size:14.5px;font-weight:600;color:var(--black)}
+.entity .meta{font-size:12px;color:var(--med);margin-top:2px}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:5px 11px;border-radius:999px;white-space:nowrap;letter-spacing:.01em}
+.pill-pend{background:var(--yellow-tint);color:var(--warn);border:1px solid rgba(245,158,11,.25)}.pill-ok{background:var(--success-bg);color:#15803D;border:1px solid rgba(34,197,94,.25)}
+.pill-no{background:var(--error-bg);color:#B91C1C;border:1px solid rgba(239,68,68,.25)}.pill-draft{background:#F1F3F5;color:var(--med);border:1px solid var(--border)}
+.pill-feat{background:linear-gradient(180deg,#2BD56B,#16A34A);color:#fff;position:absolute;top:10px;left:10px;z-index:3;box-shadow:0 4px 10px rgba(34,197,94,.4)}
+.chiprow{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;margin-bottom:12px;scrollbar-width:none}
+.chiprow::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;height:34px;padding:0 15px;border-radius:11px;background:#fff;border:1px solid var(--border);font-size:13px;font-weight:500;color:var(--dark);display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-family:inherit;box-shadow:var(--e1);transition:all .15s}
+.chip svg{width:14px;height:14px}
+.chip.on{background:var(--yellow);border-color:rgba(120,80,0,.2);color:#161300;font-weight:700;box-shadow:var(--btn-shadow)}
+.utabs{display:flex;gap:22px;border-bottom:1px solid var(--border);margin-bottom:14px;overflow-x:auto}
+.utabs a{padding:11px 2px;font-size:13.5px;color:var(--med);text-decoration:none;font-weight:500;white-space:nowrap;border-bottom:2.5px solid transparent;margin-bottom:-1px;transition:all .15s}
+.utabs a.on{color:var(--black);font-weight:700;border-bottom-color:var(--yellow)}
+.ptabs{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.ptabs a{flex-shrink:0;padding:9px 17px;border-radius:999px;background:#fff;border:1px solid var(--border);font-size:12.5px;font-weight:600;color:var(--dark);text-decoration:none;box-shadow:var(--e1)}
+.ptabs a.on{background:var(--yellow);border-color:rgba(120,80,0,.2);color:#161300;font-weight:800;box-shadow:var(--btn-shadow)}
+.inp{width:100%;height:50px;background:#fff;border:1.5px solid var(--border);border-radius:13px;padding:0 16px;font-size:14px;font-family:inherit;color:var(--dark);outline:none;transition:border-color .15s,box-shadow .15s;box-shadow:inset 0 1px 2px rgba(16,18,21,.04)}
+.inp:focus{border-color:var(--yellow-deep);box-shadow:0 0 0 4px rgba(255,193,7,.22)}
+.inp::placeholder{color:var(--faint)}
+textarea.inp{height:auto;min-height:96px;padding:12px 16px;resize:vertical}
+.lbl{font-size:12px;font-weight:700;color:var(--dark);margin:14px 0 7px;display:block;letter-spacing:.02em;text-transform:uppercase}
+.searchbar{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:0 14px;height:50px;color:var(--med);box-shadow:var(--e1)}
+.searchbar svg{width:18px;height:18px;flex-shrink:0}
+.searchbar input{flex:1;border:none;background:transparent;outline:none;font-size:14px;font-family:inherit;color:var(--dark)}
+.opp{background:#fff;border:1px solid var(--border);border-radius:18px;overflow:hidden;margin-bottom:13px;box-shadow:var(--e1);transition:transform .18s,box-shadow .18s}
+.opp:hover{transform:translateY(-2px);box-shadow:var(--e2)}
+.opp-thumb{height:158px;position:relative;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.95);font-weight:800;overflow:hidden;background:#14161a}
+.opp-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.opp-thumb::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05) 30%,rgba(8,8,10,.55));pointer-events:none;z-index:1}
+.opp-thumb svg{width:46px;height:46px;opacity:.95;filter:drop-shadow(0 6px 14px rgba(0,0,0,.35));z-index:0}
+.opp-body{padding:13px 15px 14px}
+.opp-body h3{font-size:15px;color:var(--black);font-weight:700}
+.opp-org{font-size:12.5px;color:var(--med);margin:3px 0 9px}
+.opp-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--med)}
+.opp-meta span{display:inline-flex;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--border-soft);padding:5px 9px;border-radius:999px}
+.opp-meta svg{width:13px;height:13px}
+.urgent{color:var(--error);font-weight:700}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
+.tile{background:#fff;border:1px solid var(--border);border-radius:var(--r-md);padding:13px 14px;display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--dark);box-shadow:var(--e1);transition:transform .16s,box-shadow .16s}
+.tile:hover{transform:translateY(-2px);box-shadow:var(--e2)}
+.tile .tic{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
+.tile .tic svg{width:20px;height:20px}
+.tile b{font-size:13.5px;color:var(--black)}
+.greet{background:linear-gradient(180deg,#fff,#FFFCF0);border:1px solid #F0E3B2;border-radius:18px;padding:15px;margin-bottom:14px;box-shadow:var(--e1)}
+.pbar{height:8px;background:#EDEFF2;border-radius:999px;overflow:hidden;margin-top:9px;box-shadow:inset 0 1px 2px rgba(0,0,0,.06)}
+.pbar i{display:block;height:100%;background:linear-gradient(90deg,#FFD54A,#F5B400);border-radius:999px;box-shadow:0 1px 4px rgba(245,180,0,.5)}
+.hero{position:relative;min-height:208px;display:flex;align-items:flex-end;overflow:hidden;background:#0E0F12}
+.hero .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff}
+.hero .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hero::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05) 30%,rgba(10,10,12,.72));pointer-events:none}
+.hero-top{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;z-index:2}
+.hbtn{width:38px;height:38px;border-radius:50%;background:rgba(20,20,22,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;color:#fff;border:1px solid rgba(255,255,255,.25);cursor:pointer;text-decoration:none}
+.hbtn svg{width:18px;height:18px}
+.cattag{position:absolute;bottom:12px;left:16px;z-index:2;background:var(--yellow);color:#161300;font-size:10.5px;font-weight:800;padding:6px 12px;border-radius:999px;text-transform:uppercase;letter-spacing:.6px;box-shadow:0 4px 12px rgba(255,193,7,.45)}
+.bottomnav{position:fixed;bottom:0;left:0;right:0;width:100%;max-width:430px;margin:0 auto;background:rgba(255,255,255,.94);backdrop-filter:saturate(160%) blur(16px);-webkit-backdrop-filter:saturate(160%) blur(16px);border-top:1px solid var(--border);box-shadow:0 -10px 30px rgba(16,18,21,.10);display:flex;align-items:flex-end;justify-content:space-around;padding:9px 4px calc(10px + env(safe-area-inset-bottom));z-index:30}
+@media(min-width:520px){body{padding:28px 0}.phone{border-radius:30px;overflow:hidden;outline:8px solid #101114;outline-offset:-1px}}@media(min-width:520px){.bottomnav{position:absolute;bottom:0;left:0;right:0;width:100%;max-width:100%;margin:0;border-radius:0 0 22px 22px}}
+.navi{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--faint);text-decoration:none;font-size:10.5px;font-weight:600;padding:6px 15px;min-width:64px;transition:color .15s}
+.navi svg{width:22px;height:22px}
+.navi.on{color:#8a6d00;font-weight:800}
+.navi.on svg{color:var(--yellow-deep);fill:rgba(255,193,7,.22)}
+.fab{width:58px;height:58px;border-radius:50%;background:linear-gradient(180deg,#FFD54A,#FFC107 60%,#F0AD00);color:#161300;display:flex;align-items:center;justify-content:center;border:2px solid #fff;cursor:pointer;box-shadow:var(--fab-shadow);margin-top:-30px;text-decoration:none;transition:transform .18s}
+.fab:hover{transform:translateY(-2px) scale(1.03)}
+.fab svg{width:26px;height:26px}
+.setrow{display:flex;align-items:center;gap:12px;padding:15px 6px;border-bottom:1px solid var(--border-soft);text-decoration:none;color:var(--dark);font-size:14px;font-weight:500}
+.setrow svg{width:20px;height:20px;color:var(--med)}
+.setrow .chev{margin-left:auto;color:#C9CDD3}
+.logout{background:var(--error-bg);color:#B91C1C;font-weight:700;text-align:center;border-radius:14px;padding:15px;margin-top:20px;text-decoration:none;display:block;font-size:14px;border:1px solid rgba(239,68,68,.25)}
+.timeline{position:relative;padding-left:8px}
+.tstep{display:flex;gap:12px;position:relative;padding-bottom:24px}
+.tstep::before{content:'';position:absolute;left:23px;top:34px;bottom:0;width:2px;background:linear-gradient(180deg,var(--success),var(--border))}
+.tstep:last-child::before{display:none}
+.tdot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1;box-shadow:var(--e1)}
+.tdot svg{width:15px;height:15px}
+.tdot.done{background:linear-gradient(180deg,#2BD56B,#16A34A);color:#fff}.tdot.cur{background:linear-gradient(180deg,#FFD54A,#F5B400);color:#161300;box-shadow:0 4px 12px rgba(255,193,7,.5)}.tdot.next{background:#fff;border:2px solid var(--border);color:var(--med)}
+.tstep h4{font-size:14px;color:var(--black)}
+.tstep p{font-size:12px;color:var(--med);margin-top:2px}
+.createrow{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--border);border-radius:var(--r-md);padding:12px;margin-bottom:10px;text-decoration:none;color:var(--dark);box-shadow:var(--e1);transition:transform .15s,box-shadow .15s}
+.createrow:hover{transform:translateY(-1px);box-shadow:var(--e2)}
+.createrow .ct{width:50px;height:50px;border-radius:15px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 6px 14px -6px rgba(16,18,21,.35)}
+.createrow .ct svg{width:22px;height:22px}
+.createrow h3{font-size:14.5px;color:var(--black)}
+.createrow p{font-size:12px;color:var(--med)}
+.stat3{display:grid;grid-template-columns:1fr 1fr 1fr;text-align:center;padding:15px 0;border-top:1px solid var(--border-soft);border-bottom:1px solid var(--border-soft);margin:14px 0}
+.stat3 b{font-size:18px;color:var(--black);font-family:'Sora'}
+.stat3 span{font-size:11px;color:var(--med)}
+.dash-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.dstat{background:linear-gradient(180deg,#fff,#FAFBFC);border:1px solid var(--border);border-radius:var(--r-md);padding:15px;box-shadow:var(--e1)}
+.dstat b{font-size:23px;font-family:'Sora';color:var(--black)}
+.dstat span{font-size:12px;color:var(--med)}
+.confcheck{width:76px;height:76px;border-radius:50%;background:linear-gradient(180deg,#2BD56B,#16A34A);color:#fff;display:flex;align-items:center;justify-content:center;margin:24px auto 16px;box-shadow:0 12px 28px -8px rgba(34,197,94,.6)}
+.confcheck svg{width:34px;height:34px}
+.chatb{max-width:78%;padding:11px 15px;border-radius:16px;font-size:13.5px;margin-bottom:8px;line-height:1.5;box-shadow:var(--e1)}
+.chat-in{background:#fff;border:1px solid var(--border);border-top-left-radius:5px}
+.chat-out{background:var(--black);color:#fff;border-top-right-radius:5px;margin-left:auto;box-shadow:var(--e2)}
+.medgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.medgrid div{aspect-ratio:1;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:var(--e1);overflow:hidden;position:relative}
+.medgrid div img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.medgrid svg{width:24px;height:24px}
+.xscroll{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none}
+.xscroll::-webkit-scrollbar{display:none}
+.rail-card{min-width:148px;background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--e1);text-align:center}
+.rail-card .rp{height:96px;position:relative;background:#14161a;overflow:hidden}
+.rail-card .rp img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.rail-card .rp::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(8,8,10,.5))}
+.skel{position:relative;overflow:hidden;background:#ECEEF1;border-radius:10px;min-height:14px}
+.skel::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);animation:sh 1.4s infinite}
+@keyframes sh{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+:focus-visible{outline:3px solid rgba(255,193,7,.5);outline-offset:2px}
+@media(max-width:519px){body{background:#E9EBEF}.phone{border-radius:0;box-shadow:none;min-height:100dvh;padding-bottom:104px}}@media(prefers-reduced-motion:reduce){*{animation:none;transition:none}}
+
+.wrap{max-width:1160px;margin:0 auto;padding:34px 22px;position:relative;z-index:1}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:13px}
+.gal a{background:#fff;border:1px solid #E8EAED;border-radius:16px;padding:15px;text-decoration:none;color:#111;box-shadow:0 1px 2px rgba(16,18,21,.05);transition:transform .16s,box-shadow .16s;display:block}
+.gal a:hover{transform:translateY(-3px);box-shadow:0 12px 28px -10px rgba(16,18,21,.18);border-color:#FFC107}
+.gal b{font-size:13.5px;font-family:Sora}.gal span{font-size:11.5px;color:#6B7280}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.pills span{font-size:11.5px;font-weight:700;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:6px 12px;border-radius:999px}
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:22px 0}
+.shot{background:#fff;border:1px solid #E8EAED;border-radius:18px;overflow:hidden;text-decoration:none;color:#111}
+.shot img{width:100%;height:150px;object-fit:cover}
+.shot div{padding:12px 14px;font-weight:700;font-size:13.5px;font-family:Sora}
+.shot small{color:#6B7280;font-weight:500;font-family:Inter}
+</style></head><body>
+<div class="wrap">
+<div class="card dark" style="border-radius:24px;padding:44px 36px;background:linear-gradient(150deg,#191B20,#0B0C0F 70%);position:relative;overflow:hidden">
+<div style="position:absolute;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(255,193,7,.28),transparent 65%);top:-160px;right:-120px"></div>
+<span class="pill" style="background:#FFC107;color:#161300;font-weight:800">DESIGN SYSTEM v3 Â· REFINED Â· 124 SCREENS</span>
+<h1 class="sora" style="font-size:clamp(32px,5vw,56px);line-height:1.04;margin:16px 0 10px;color:#fff">Sport<em style="font-style:normal;background:#FFC107;color:#111;padding:0 10px;border-radius:10px">X</em> v2 â€”<br>polished, premium, consistent.</h1>
+<p style="color:#A7ACB5;max-width:660px;font-size:15px;line-height:1.6">Real photography, face avatars, blurred sticky bars, gradient CTA, tinted meta chips, device-framed canvas. One shared stylesheet drives all 124 screens. v1 untouched.</p>
+<div class="pills"><span>#FFC107 CTA</span><span>Home Â· Discover Â· [+] Â· Network Â· Me</span><span>Sora + Inter</span><span>Underline + pill tabs</span><span>Status pills</span><span>Stepper timeline</span></div>
+<div style="display:flex;gap:10px;margin-top:22px;flex-wrap:wrap"><a class="btn btn-pri" href="home.html" style="padding:13px 24px;text-decoration:none">Open Home</a><a class="btn" href="trial-detail.html" style="border:1px solid #333;color:#fff;padding:13px 24px;border-radius:14px;text-decoration:none">Sample detail</a><a class="btn" href="profile.html" style="border:1px solid #333;color:#fff;padding:13px 24px;border-radius:14px;text-decoration:none">Sample profile</a></div></div>
+<h2 class="sora" style="margin:30px 0 6px;font-size:24px;color:#111">Flagship screens</h2>
+<div class="shots">
+<a class="shot" href="home.html"><img src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=600&q=50" alt=""><div>Home<br><small>home.html</small></div></a>
+<a class="shot" href="trial-detail.html"><img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=50" alt=""><div>Trial Detail<br><small>trial-detail.html</small></div></a>
+<a class="shot" href="profile.html"><img src="https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&w=600&q=50" alt=""><div>Athlete Profile<br><small>profile.html</small></div></a>
+<a class="shot" href="discover.html"><img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=600&q=50" alt=""><div>Discover<br><small>discover.html</small></div></a>
+</div>
+<h2 class="sora" style="margin:26px 0 6px;font-size:24px;color:#111">All 124 screens</h2>
+<p style="color:#6B7280;font-size:13px;margin-bottom:14px">Click any card to open the live mockup.</p>
+<div class="gal"><a href="academy-dashboard.html"><b>Academy Dashboard</b><br><span>academy-dashboard.html</span></a><a href="academy-detail.html"><b>Elite Cricket Academy</b><br><span>academy-detail.html</span></a><a href="academy-directory.html"><b>Academies</b><br><span>academy-directory.html</span></a><a href="academy-onboarding.html"><b>Academy</b><br><span>academy-onboarding.html</span></a><a href="academy-profile-posting.html"><b>Academy Listing Edit</b><br><span>academy-profile-posting.html</span></a><a href="academy-profile.html"><b>Academy Profile</b><br><span>academy-profile.html</span></a><a href="activity-hub.html"><b>Activity</b><br><span>activity-hub.html</span></a><a href="add-achievement.html"><b>Add Achievement</b><br><span>add-achievement.html</span></a><a href="add-credential.html"><b>Add Credential</b><br><span>add-credential.html</span></a><a href="admin-analytics.html"><b>Analytics</b><br><span>admin-analytics.html</span></a><a href="admin-content-list.html"><b>Content List</b><br><span>admin-content-list.html</span></a><a href="admin-content-picker.html"><b>Content Picker</b><br><span>admin-content-picker.html</span></a><a href="admin-dashboard.html"><b>Admin Dashboard</b><br><span>admin-dashboard.html</span></a><a href="admin-login.html"><b>Admin Login</b><br><span>admin-login.html</span></a><a href="admin-moderation.html"><b>Listing Moderation</b><br><span>admin-moderation.html</span></a><a href="admin-settings.html"><b>System Settings</b><br><span>admin-settings.html</span></a><a href="admin-users.html"><b>User Management</b><br><span>admin-users.html</span></a><a href="admin-web-layout.html"><b>Admin Web Layout</b><br><span>admin-web-layout.html</span></a><a href="application-detail.html"><b>Application</b><br><span>application-detail.html</span></a><a href="application-status.html"><b>Application Status</b><br><span>application-status.html</span></a><a href="applications-inbox.html"><b>Inbox</b><br><span>applications-inbox.html</span></a><a href="apply-sponsor.html"><b>Apply for Sponsorship</b><br><span>apply-sponsor.html</span></a><a href="athlete-directory.html"><b>Athlete Directory</b><br><span>athlete-directory.html</span></a><a href="athlete-discovery.html"><b>Discover Athletes</b><br><span>athlete-discovery.html</span></a><a href="capacity-management.html"><b>Capacity</b><br><span>capacity-management.html</span></a><a href="chat-list.html"><b>Messages</b><br><span>chat-list.html</span></a><a href="chat-screen.html"><b>Chat</b><br><span>chat-screen.html</span></a><a href="coach-dashboard.html"><b>Coach Dashboard</b><br><span>coach-dashboard.html</span></a><a href="coach-detail.html"><b>Coach Profile</b><br><span>coach-detail.html</span></a><a href="coach-directory.html"><b>Coaches</b><br><span>coach-directory.html</span></a><a href="coach-enrollment.html"><b>Enroll with Coach</b><br><span>coach-enrollment.html</span></a><a href="coach-onboarding.html"><b>Coach</b><br><span>coach-onboarding.html</span></a><a href="coach-profile-edit.html"><b>Coach Profile Edit</b><br><span>coach-profile-edit.html</span></a><a href="coach-profile-posting.html"><b>Coach Listing</b><br><span>coach-profile-posting.html</span></a><a href="compose-notification.html"><b>Compose Notification</b><br><span>compose-notification.html</span></a><a href="connection-requests.html"><b>Requests</b><br><span>connection-requests.html</span></a><a href="create-post.html"><b>Create Post</b><br><span>create-post.html</span></a><a href="create-sheet.html"><b>Create</b><br><span>create-sheet.html</span></a><a href="discover.html"><b>Discover</b><br><span>discover.html</span></a><a href="edit-facilities.html"><b>Edit Facilities</b><br><span>edit-facilities.html</span></a><a href="edit-profile.html"><b>Edit Profile</b><br><span>edit-profile.html</span></a><a href="enquire.html"><b>Send Enquiry</b><br><span>enquire.html</span></a><a href="enquiry-detail.html"><b>Chat</b><br><span>enquiry-detail.html</span></a><a href="enquiry-inbox.html"><b>Enquiries</b><br><span>enquiry-inbox.html</span></a><a href="help-support.html"><b>Help</b><br><span>help-support.html</span></a><a href="home.html"><b>Home</b><br><span>home.html</span></a><a href="login.html"><b>Welcome back</b><br><span>login.html</span></a><a href="media-gallery.html"><b>Media</b><br><span>media-gallery.html</span></a><a href="my-applications.html"><b>Activity</b><br><span>my-applications.html</span></a><a href="my-coaching-enrollments.html"><b>My Enrollments</b><br><span>my-coaching-enrollments.html</span></a><a href="my-connections.html"><b>My Connections</b><br><span>my-connections.html</span></a><a href="my-registrations.html"><b>My Registrations</b><br><span>my-registrations.html</span></a><a href="my-sponsorships.html"><b>My Sponsorships</b><br><span>my-sponsorships.html</span></a><a href="my-tournaments.html"><b>My Tournaments</b><br><span>my-tournaments.html</span></a><a href="my-trials.html"><b>My Trials</b><br><span>my-trials.html</span></a><a href="network.html"><b>Network</b><br><span>network.html</span></a><a href="notification-targeting.html"><b>Targeting</b><br><span>notification-targeting.html</span></a><a href="notifications.html"><b>Notifications</b><br><span>notifications.html</span></a><a href="onboarding-location.html"><b>Location</b><br><span>onboarding-location.html</span></a><a href="onboarding-sport.html"><b>Pick Sport</b><br><span>onboarding-sport.html</span></a><a href="onboarding.html"><b>Onboarding</b><br><span>onboarding.html</span></a><a href="opp-approval-queue.html"><b>Approval Queue</b><br><span>opp-approval-queue.html</span></a><a href="opp-review-detail.html"><b>Review Detail</b><br><span>opp-review-detail.html</span></a><a href="opportunities.html"><b>Opportunities</b><br><span>opportunities.html</span></a><a href="organizer-analytics.html"><b>Event Analytics</b><br><span>organizer-analytics.html</span></a><a href="organizer-dashboard.html"><b>Organizer Dashboard</b><br><span>organizer-dashboard.html</span></a><a href="organizer-onboarding.html"><b>Organizer</b><br><span>organizer-onboarding.html</span></a><a href="organizer-profile.html"><b>Organizer Profile</b><br><span>organizer-profile.html</span></a><a href="otp.html"><b>OTP</b><br><span>otp.html</span></a><a href="pending-approvals.html"><b>Pending Approvals</b><br><span>pending-approvals.html</span></a><a href="platform-reports.html"><b>Reports</b><br><span>platform-reports.html</span></a><a href="post-detail.html"><b>Post</b><br><span>post-detail.html</span></a><a href="profile-view.html"><b>Athlete</b><br><span>profile-view.html</span></a><a href="profile.html"><b>My Profile</b><br><span>profile.html</span></a><a href="registrant-detail.html"><b>Registrant</b><br><span>registrant-detail.html</span></a><a href="registrant-list.html"><b>Registrants</b><br><span>registrant-list.html</span></a><a href="registration-confirmation.html"><b>Success</b><br><span>registration-confirmation.html</span></a><a href="registration-management.html"><b>Registrations</b><br><span>registration-management.html</span></a><a href="report-listing.html"><b>Report</b><br><span>report-listing.html</span></a><a href="results-publishing.html"><b>Publish Results</b><br><span>results-publishing.html</span></a><a href="results-view.html"><b>Results</b><br><span>results-view.html</span></a><a href="role-selection.html"><b>Role Selection</b><br><span>role-selection.html</span></a><a href="saved.html"><b>Saved</b><br><span>saved.html</span></a><a href="scholarship-detail.html"><b>State Sports Scholarship 2026</b><br><span>scholarship-detail.html</span></a><a href="scholarships.html"><b>Scholarships</b><br><span>scholarships.html</span></a><a href="scout-athlete-view.html"><b>Athlete (Scout lens)</b><br><span>scout-athlete-view.html</span></a><a href="scout-connection.html"><b>Send Request</b><br><span>scout-connection.html</span></a><a href="scout-connections.html"><b>Scout Connections</b><br><span>scout-connections.html</span></a><a href="scout-dashboard.html"><b>Scout Dashboard</b><br><span>scout-dashboard.html</span></a><a href="scout-directory.html"><b>Scout Directory</b><br><span>scout-directory.html</span></a><a href="scout-discovery.html"><b>Scout Discovery</b><br><span>scout-discovery.html</span></a><a href="scout-onboarding.html"><b>Scout</b><br><span>scout-onboarding.html</span></a><a href="scout-profile.html"><b>Scout Profile</b><br><span>scout-profile.html</span></a><a href="scout-requests.html"><b>Scout Requests</b><br><span>scout-requests.html</span></a><a href="scout-shortlist.html"><b>Scout Shortlist</b><br><span>scout-shortlist.html</span></a><a href="search-filter.html"><b>Filters</b><br><span>search-filter.html</span></a><a href="search-screen.html"><b>Search</b><br><span>search-screen.html</span></a><a href="settings.html"><b>Settings</b><br><span>settings.html</span></a><a href="shortlist.html"><b>Shortlist</b><br><span>shortlist.html</span></a><a href="showcase-athletes.html"><b>Showcase Athletes</b><br><span>showcase-athletes.html</span></a><a href="sign-up.html"><b>Create account</b><br><span>sign-up.html</span></a><a href="social-links.html"><b>Social Links</b><br><span>social-links.html</span></a><a href="splash.html"><b>Splash</b><br><span>splash.html</span></a><a href="sponsor-athlete-profile.html"><b>Athlete View</b><br><span>sponsor-athlete-profile.html</span></a><a href="sponsor-dashboard.html"><b>Sponsor Dashboard</b><br><span>sponsor-dashboard.html</span></a><a href="sponsor-directory.html"><b>Sponsor Directory</b><br><span>sponsor-directory.html</span></a><a href="sponsor-onboarding.html"><b>Sponsor</b><br><span>sponsor-onboarding.html</span></a><a href="sponsorship-create.html"><b>New Sponsorship</b><br><span>sponsorship-create.html</span></a><a href="sponsorship-detail.html"><b>XSports Kit Sponsorship</b><br><span>sponsorship-detail.html</span></a><a href="sponsorships.html"><b>Sponsorships</b><br><span>sponsorships.html</span></a><a href="tournament-calendar.html"><b>Calendar</b><br><span>tournament-calendar.html</span></a><a href="tournament-create.html"><b>Create Tournament</b><br><span>tournament-create.html</span></a><a href="tournament-detail.html"><b>U-16 State Cricket Cup</b><br><span>tournament-detail.html</span></a><a href="tournament-edit.html"><b>Edit Tournament</b><br><span>tournament-edit.html</span></a><a href="tournament-registration.html"><b>Tournament Registration</b><br><span>tournament-registration.html</span></a><a href="tournaments.html"><b>Tournaments</b><br><span>tournaments.html</span></a><a href="trial-detail.html"><b>State Level Football Trial</b><br><span>trial-detail.html</span></a><a href="trial-posting-form.html"><b>Post a Trial</b><br><span>trial-posting-form.html</span></a><a href="trial-registration.html"><b>Trial Registration</b><br><span>trial-registration.html</span></a><a href="trials.html"><b>Trials</b><br><span>trials.html</span></a><a href="universal-search.html"><b>Search</b><br><span>universal-search.html</span></a><a href="user-detail-verify.html"><b>Verify User</b><br><span>user-detail-verify.html</span></a><a href="venue-detail.html"><b>Sardar Patel Stadium</b><br><span>venue-detail.html</span></a><a href="venue-list.html"><b>Venues</b><br><span>venue-list.html</span></a></div>
+</div><script>lucide.createIcons();</script></body></html>

@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SportX v2 — Role-wise Design Showcase · 125 screens</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg:#ffffff; --bg-alt:#F4F5F7; --surface:#F5F7FA; --surface-2:#EDEFF2;
+      --fg:#111111; --fg-2:#2B2B2B; --muted:#6B7280; --muted-2:#9CA3AF;
+      --border:#E8EAED; --border-2:#D1D5DB;
+      --accent:#FFC107; --accent-dark:#D9A400; --accent-light:#FFF6DA; --accent-bg:#FFFCF0;
+      --success:#22C55E; --warning:#F59E0B; --danger:#EF4444;
+      --athlete:#F59E0B; --coach:#8A6AEA; --academy:#03B94C; --organizer:#FB802E; --scout:#3B82F6; --sponsor:#111111; --admin:#EF4444; --shared:#06B6D4;
+      --auth:#6B7280;
+      --radius:12px; --radius-sm:8px; --radius-lg:20px;
+      --shadow-sm:0 1px 2px rgba(0,0,0,0.04);
+      --shadow:0 2px 8px rgba(0,0,0,0.04),0 1px 2px rgba(0,0,0,0.06);
+      --shadow-lg:0 20px 40px -12px rgba(15,23,42,0.12),0 4px 12px rgba(0,0,0,0.04);
+      --shadow-xl:0 32px 64px -16px rgba(15,23,42,0.18);
+      --gradient-hero:linear-gradient(135deg,#111111 0%,#1E1B0F 38%,#D9A400 100%);
+      --gradient-soft:linear-gradient(180deg,#FFFCF0 0%,#ffffff 100%);
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg-alt);color:var(--fg);line-height:1.5;-webkit-font-smoothing:antialiased}
+    /* NAV */
+    .top-nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.85);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--border)}
+    .top-nav-inner{max-width:1440px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:-0.4px;color:var(--fg);text-decoration:none}
+    .brand-mark{width:32px;height:32px;background:var(--fg);color:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Sora';font-weight:800;font-size:15px;box-shadow:0 4px 12px rgba(17,17,17,0.18)}
+    .nav-links{display:flex;gap:4px;align-items:center}
+    .nav-link{padding:8px 14px;border-radius:8px;font-size:14px;font-weight:500;color:var(--fg-2);text-decoration:none;transition:all 0.15s ease}
+    .nav-link:hover{background:var(--surface);color:var(--fg)}
+    .nav-cta{padding:9px 16px;background:var(--accent);color:#161300;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:6px;box-shadow:0 6px 16px -6px rgba(255,193,7,.45)}
+    .nav-switcher{display:flex;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:10px}
+    .nav-switcher a{padding:7px 14px;border-radius:7px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:6px;transition:all 0.15s ease;white-space:nowrap}
+    .nav-switcher a:hover{color:var(--fg)}
+    .nav-switcher a.active{background:var(--fg);color:white;box-shadow:var(--shadow-sm)}
+    .nav-groups{display:flex;gap:4px;align-items:center}
+    .nav-group{position:relative}
+    .nav-trigger{padding:8px 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--fg-2);background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;transition:all 0.15s ease;white-space:nowrap}
+    .nav-trigger:hover{background:var(--surface);color:var(--fg)}
+    .nav-trigger svg.chev{width:14px;height:14px;transition:transform 0.2s ease}
+    .nav-group.open .nav-trigger{background:var(--surface);color:var(--fg)}
+    .nav-group.open .nav-trigger svg.chev{transform:rotate(180deg)}
+    .nav-dropdown{position:absolute;top:calc(100% + 8px);left:0;min-width:280px;background:white;border:1px solid var(--border);border-radius:14px;padding:10px;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transform:translateY(-4px);transition:opacity 0.18s ease,transform 0.18s ease;z-index:100}
+    .nav-group.open .nav-dropdown{opacity:1;pointer-events:auto;transform:translateY(0)}
+    .nav-dropdown.right{left:auto;right:0}
+    .nav-dd-section-label{padding:6px 10px 4px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted)}
+    .nav-dd-divider{height:1px;background:var(--border);margin:6px -2px}
+    .nav-dd-list{display:flex;flex-direction:column;gap:2px}
+    .nav-dd-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:var(--fg-2);text-decoration:none;transition:all 0.15s ease}
+    .nav-dd-item:hover{background:var(--surface);color:var(--fg)}
+    .nav-dd-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .nav-dd-icon svg{width:16px;height:16px}
+    .nav-dd-text{display:flex;flex-direction:column;gap:1px;min-width:0}
+    .nav-dd-title{font-size:13px;font-weight:600;color:var(--fg);line-height:1.2}
+    .nav-dd-sub{font-size:11px;color:var(--muted)}
+    .nav-dd-item.role-athlete .nav-dd-icon{background:rgba(245,158,11,0.14);color:var(--athlete)}
+    .nav-dd-item.role-coach .nav-dd-icon{background:rgba(138,106,234,0.14);color:var(--coach)}
+    .nav-dd-item.role-academy .nav-dd-icon{background:rgba(3,185,76,0.14);color:var(--academy)}
+    .nav-dd-item.role-organizer .nav-dd-icon{background:rgba(251,128,46,0.14);color:var(--organizer)}
+    .nav-dd-item.role-scout .nav-dd-icon{background:rgba(59,130,246,0.14);color:var(--scout)}
+    .nav-dd-item.role-sponsor .nav-dd-icon{background:rgba(17,17,17,0.08);color:var(--sponsor)}
+    .nav-dd-item.role-admin .nav-dd-icon{background:rgba(239,68,68,0.14);color:var(--admin)}
+    .nav-mobile-btn{display:none;width:40px;height:40px;border-radius:8px;background:var(--surface);border:1px solid var(--border);align-items:center;justify-content:center;cursor:pointer}
+    .nav-mobile{position:fixed;top:0;left:0;right:0;bottom:0;background:white;z-index:200;padding:20px;overflow-y:auto;transform:translateX(100%);transition:transform 0.3s ease}
+    .nav-mobile.open{transform:translateX(0)}
+    .nav-mobile-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+    .nav-mobile-close{width:40px;height:40px;border-radius:8px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer}
+    .nav-mobile-section{margin-bottom:20px}
+    .nav-mobile-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;padding:0 6px}
+    .nav-mobile-link{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;color:var(--fg-2);text-decoration:none;font-size:14px;font-weight:500;width:100%;text-align:left;background:none;border:none;font-family:inherit;cursor:pointer}
+    .nav-mobile-link:hover,.nav-mobile-link.active{background:var(--surface);color:var(--fg)}
+    @media (max-width:1080px){.nav-groups,.nav-switcher{display:none}.nav-mobile-btn{display:flex}}
+    /* HERO */
+    .hero{position:relative;padding:80px 32px 64px;background:var(--gradient-hero);overflow:hidden}
+    .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(900px 480px at 15% 10%,rgba(255,193,7,0.28),transparent 60%),radial-gradient(600px 300px at 85% 70%,rgba(59,130,246,0.15),transparent);pointer-events:none}
+    .hero-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1}
+    .hero-pill{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.18);border-radius:100px;color:white;font-size:12px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:24px}
+    .hero-pill-dot{width:6px;height:6px;background:var(--accent);border-radius:50%;box-shadow:0 0 0 3px rgba(255,193,7,0.25)}
+    .hero h1{font-family:'Sora';font-size:clamp(40px,7vw,72px);font-weight:800;color:white;letter-spacing:-2px;line-height:1.02;margin-bottom:20px}
+    .hero h1 .grad{background:linear-gradient(135deg,#FFD54A 0%,#FFC107 55%,#F5B400 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .hero h1 em{font-style:normal;background:var(--accent);color:#111;padding:0 10px;border-radius:10px}
+    .hero p.lead{font-size:clamp(16px,1.8vw,19px);color:rgba(255,255,255,0.82);max-width:740px;line-height:1.6;margin-bottom:32px}
+    .hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+    .btn{padding:14px 22px;border-radius:12px;font-size:14px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:8px;cursor:pointer;transition:all 0.15s ease;border:none;font-family:inherit}
+    .btn-primary{background:var(--accent);color:#161300;box-shadow:0 8px 20px -6px rgba(255,193,7,.55)}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 12px 28px -8px rgba(255,193,7,.6)}
+    .btn-ghost{background:rgba(255,255,255,0.12);color:white;border:1px solid rgba(255,255,255,0.2)}
+    .btn-ghost:hover{background:rgba(255,255,255,0.18)}
+    /* STATS */
+    .stats-bar{max-width:1200px;margin:-36px auto 0;padding:0 32px;position:relative;z-index:2}
+    .stats-grid{background:white;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-lg);display:grid;grid-template-columns:repeat(5,1fr);overflow:hidden}
+    .stat{padding:20px 16px;text-align:center;border-right:1px solid var(--border)}
+    .stat:last-child{border-right:none}
+    .stat-value{font-family:'Sora';font-size:28px;font-weight:800;color:var(--fg);letter-spacing:-1px;line-height:1}
+    .stat-value .accent{color:var(--accent-dark)}
+    .stat-label{font-size:11px;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:0.5px;font-weight:700}
+    /* SECTIONS */
+    section{padding:72px 32px}
+    .section-inner{max-width:1200px;margin:0 auto}
+    .section-eyebrow{font-size:12px;font-weight:700;color:var(--accent-dark);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
+    .section-title{font-family:'Sora';font-size:clamp(28px,4vw,38px);font-weight:800;letter-spacing:-1px;margin-bottom:12px;color:var(--fg)}
+    .section-sub{font-size:16px;color:var(--muted);max-width:680px;line-height:1.6;margin-bottom:40px}
+    /* TOKENS */
+    .tokens-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:24px}
+    .token-card{background:white;border:1px solid var(--border);border-radius:16px;padding:28px}
+    .token-card h3{font-family:'Sora';font-size:16px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+    .token-card h3 svg{width:18px;height:18px;color:var(--accent-dark)}
+    .color-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+    .color-chip{height:74px;border-radius:10px;border:1px solid var(--border)}
+    .color-name{font-size:13px;font-weight:600;margin-top:6px}
+    .color-hex{font-size:11px;color:var(--muted);font-family:ui-monospace,monospace}
+    .type-row{display:flex;align-items:baseline;gap:16px;padding:10px 0;border-bottom:1px solid var(--border)}
+    .type-row:last-child{border-bottom:none}
+    .type-name{font-size:11px;color:var(--muted);font-family:ui-monospace,monospace;min-width:90px}
+    /* ROLES OVERVIEW */
+    .roles-overview{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+    @media (max-width:900px){.roles-overview{grid-template-columns:repeat(3,1fr)}}
+    @media (max-width:600px){.roles-overview{grid-template-columns:repeat(2,1fr)}}
+    .role-tile{padding:18px;background:white;border:1px solid var(--border);border-radius:14px;text-decoration:none;color:inherit;transition:all 0.2s ease;cursor:pointer;display:flex;flex-direction:column;gap:10px}
+    .role-tile:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--accent)}
+    .role-icon-box{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center}
+    .role-icon-box svg{width:20px;height:20px}
+    .role-name{font-family:'Sora';font-size:14px;font-weight:700}
+    .role-count{font-size:12px;color:var(--muted)}
+    .role-tile[data-role="athlete"] .role-icon-box{background:rgba(245,158,11,0.14);color:var(--athlete)}
+    .role-tile[data-role="coach"] .role-icon-box{background:rgba(138,106,234,0.14);color:var(--coach)}
+    .role-tile[data-role="academy"] .role-icon-box{background:rgba(3,185,76,0.14);color:var(--academy)}
+    .role-tile[data-role="organizer"] .role-icon-box{background:rgba(251,128,46,0.14);color:var(--organizer)}
+    .role-tile[data-role="scout"] .role-icon-box{background:rgba(59,130,246,0.14);color:var(--scout)}
+    .role-tile[data-role="sponsor"] .role-icon-box{background:rgba(17,17,17,0.08);color:var(--sponsor)}
+    .role-tile[data-role="admin"] .role-icon-box{background:rgba(239,68,68,0.12);color:var(--admin)}
+    .role-tile[data-role="shared"] .role-icon-box{background:rgba(6,182,212,0.12);color:var(--shared)}
+    .role-tile[data-role="auth"] .role-icon-box{background:rgba(107,114,128,0.12);color:var(--auth)}
+    /* ROLE SECTION */
+    .role-section{padding-top:48px;padding-bottom:12px}
+    .role-header{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+    .role-header .role-icon-box{width:48px;height:48px;border-radius:12px}
+    .role-header h2{font-family:'Sora';font-size:26px;font-weight:800;letter-spacing:-0.8px}
+    .role-header .role-tag{padding:4px 10px;background:var(--surface);border:1px solid var(--border);border-radius:100px;font-size:11px;font-weight:700;color:var(--muted)}
+    .role-description{font-size:14px;color:var(--muted);margin-bottom:22px;max-width:760px;line-height:1.6}
+    /* SCREEN GRID */
+    .screen-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px}
+    .screen-card{background:white;border-radius:22px;overflow:hidden;transition:all 0.25s ease;border:1px solid var(--border);text-decoration:none;color:inherit;display:flex;flex-direction:column;box-shadow:0 1px 3px rgba(16,18,21,.06)}
+    .screen-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--accent-dark)}
+    .device-frame{position:relative;width:100%;aspect-ratio:9/18.8;background:#0E0F12;overflow:hidden;border-bottom:1px solid var(--border);border-radius:20px 20px 0 0;display:flex;align-items:flex-start;justify-content:center}
+    .device-frame::before{content:'';position:absolute;top:8px;left:50%;transform:translateX(-50%);width:88px;height:6px;background:#1a1d22;border-radius:99px;z-index:3;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+    .device-frame iframe{position:absolute;top:0;left:0;width:430px;height:884px;max-width:none;border:none;transform-origin:top left;pointer-events:none;will-change:transform;background:white;border-radius:20px 20px 0 0}
+    .screen-meta{padding:12px 14px 14px}
+    .screen-name{font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .screen-name .badge{font-size:9px;font-weight:800;padding:3px 6px;border-radius:4px;background:var(--accent-light);color:var(--accent-dark);text-transform:uppercase;letter-spacing:0.3px}
+    .screen-name .badge.flow{background:rgba(34,197,94,0.14);color:#15803D}
+    .screen-path{font-size:11px;color:var(--muted-2);margin-top:3px;word-break:break-all}
+    /* FLOWS */
+    .flows-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+    .flow-card{background:white;border:1px solid var(--border);border-radius:16px;padding:20px}
+    .flow-card h4{font-family:'Sora';font-size:14px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+    .flow-card h4 .num{width:22px;height:22px;background:var(--fg);color:white;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+    .flow-card p{font-size:12.5px;color:var(--muted);margin-bottom:12px;line-height:1.5}
+    .flow-steps{display:flex;flex-direction:column;gap:6px}
+    .flow-step{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface);border-radius:8px;font-size:12.5px;text-decoration:none;color:var(--fg-2);transition:all 0.15s ease}
+    .flow-step:hover{background:var(--accent-light);color:var(--fg)}
+    .flow-step svg{width:14px;height:14px;color:var(--muted)}
+    footer{background:var(--fg);color:white;padding:48px 32px 28px}
+    .footer-inner{max-width:1200px;margin:0 auto}
+    .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px;margin-bottom:32px}
+    .footer-brand{font-family:'Sora';font-size:20px;font-weight:800;display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .footer-desc{color:rgba(255,255,255,0.6);font-size:13px;line-height:1.6;max-width:340px}
+    .footer-col h5{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:14px;color:rgba(255,255,255,0.4)}
+    .footer-col ul{list-style:none}
+    .footer-col li{margin-bottom:8px}
+    .footer-col a{color:rgba(255,255,255,0.7);text-decoration:none;font-size:13px}
+    .footer-col a:hover{color:white}
+    .footer-bottom{padding-top:20px;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;align-items:center;font-size:12px;color:rgba(255,255,255,0.5)}
+    .anchor-target{scroll-margin-top:80px}
+    @media (max-width:1024px){.stats-grid{grid-template-columns:repeat(3,1fr)}.stat:nth-child(3){border-right:none}.stat:nth-child(4),.stat:nth-child(5){border-top:1px solid var(--border)}.tokens-grid{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr 1fr}}
+    @media (max-width:720px){
+      .top-nav-inner{padding:12px 16px}.hero{padding:56px 20px 48px}section{padding:40px 16px}.stats-grid{grid-template-columns:repeat(2,1fr)}.stat{border-right:none;border-bottom:1px solid var(--border)}.stat:nth-child(odd){border-right:1px solid var(--border)}.stat:nth-child(5){border-bottom:none}
+      .screen-grid{grid-template-columns:1fr;gap:16px}
+      .footer-grid{grid-template-columns:1fr}.footer-bottom{flex-direction:column;gap:8px}
+    }
+    @media (max-width:400px){
+      .hero h1{font-size:32px;letter-spacing:-1.2px}
+      .roles-overview{grid-template-columns:1fr 1fr;gap:10px}
+    }
+  </style>
+</head>
+<body>
+  <nav class="top-nav">
+    <div class="top-nav-inner">
+      <a href="#top" class="brand"><span class="brand-mark">S</span> Sport<em style="font-style:normal;background:var(--accent);padding:0 6px;border-radius:6px;color:#111">X</em> v2</a>
+      <div class="nav-groups">
+        <div class="nav-group" data-dropdown="sections">
+          <button class="nav-trigger" type="button"><i data-lucide="list"></i> Sections <i class="chev" data-lucide="chevron-down"></i></button>
+          <div class="nav-dropdown">
+            <div class="nav-dd-section-label">On this page</div>
+            <div class="nav-dd-list">
+              <a class="nav-dd-item" href="#overview"><div class="nav-dd-icon" style="background:rgba(255,193,7,.16);color:#8a6d00"><i data-lucide="users"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Overview</div><div class="nav-dd-sub">Roles & platform</div></div></a>
+              <a class="nav-dd-item" href="#design-system"><div class="nav-dd-icon" style="background:rgba(59,130,246,.12);color:#3B82F6"><i data-lucide="palette"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Design system</div><div class="nav-dd-sub">Tokens & components</div></div></a>
+              <a class="nav-dd-item" href="#flows"><div class="nav-dd-icon" style="background:rgba(139,92,246,.12);color:#8b5cf6"><i data-lucide="workflow"></i></div><div class="nav-dd-text"><div class="nav-dd-title">User flows</div><div class="nav-dd-sub">10 end-to-end journeys</div></div></a>
+              <a class="nav-dd-item" href="#screens"><div class="nav-dd-icon" style="background:rgba(34,197,94,.12);color:#15803D"><i data-lucide="layout-grid"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Screen library</div><div class="nav-dd-sub">All 125 screens</div></div></a>
+            </div>
+          </div>
+        </div>
+        <div class="nav-group" data-dropdown="roles">
+          <button class="nav-trigger" type="button"><i data-lucide="users-2"></i> Roles <i class="chev" data-lucide="chevron-down"></i></button>
+          <div class="nav-dropdown">
+            <div class="nav-dd-section-label">Jump to a role</div>
+            <div class="nav-dd-list">
+              <a class="nav-dd-item role-auth" href="#role-auth"><div class="nav-dd-icon" style="background:rgba(107,114,128,.14);color:#6B7280"><i data-lucide="key-round"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Auth & Onboarding</div><div class="nav-dd-sub">14 screens</div></div></a>
+              <a class="nav-dd-item role-athlete" href="#role-athlete"><div class="nav-dd-icon"><i data-lucide="user"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Athlete</div><div class="nav-dd-sub">23 screens</div></div></a>
+              <a class="nav-dd-item role-coach" href="#role-coach"><div class="nav-dd-icon"><i data-lucide="award"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Coach</div><div class="nav-dd-sub">8 screens</div></div></a>
+              <a class="nav-dd-item role-academy" href="#role-academy"><div class="nav-dd-icon"><i data-lucide="building-2"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Academy</div><div class="nav-dd-sub">10 screens</div></div></a>
+              <a class="nav-dd-item role-organizer" href="#role-organizer"><div class="nav-dd-icon"><i data-lucide="calendar-days"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Organizer</div><div class="nav-dd-sub">10 screens</div></div></a>
+              <a class="nav-dd-item role-scout" href="#role-scout"><div class="nav-dd-icon"><i data-lucide="eye"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Scout</div><div class="nav-dd-sub">12 screens</div></div></a>
+              <a class="nav-dd-item role-sponsor" href="#role-sponsor"><div class="nav-dd-icon"><i data-lucide="briefcase"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Sponsor</div><div class="nav-dd-sub">6 screens</div></div></a>
+              <a class="nav-dd-item role-admin" href="#role-admin"><div class="nav-dd-icon"><i data-lucide="shield"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Admin</div><div class="nav-dd-sub">14 screens</div></div></a>
+              <a class="nav-dd-item role-shared" href="#role-shared"><div class="nav-dd-icon" style="background:rgba(6,182,212,.14);color:#06B6D4"><i data-lucide="compass"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Shared</div><div class="nav-dd-sub">27 screens</div></div></a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="nav-switcher">
+        <a class="active" href="index.html"><i data-lucide="layout-grid"></i> Showcase</a>
+        <a href="home.html"><i data-lucide="smartphone"></i> App Preview</a>
+        <a href="index.original.html"><i data-lucide="layers"></i> Flat index</a>
+      </div>
+      <button class="nav-mobile-btn" id="mobileMenuBtn" aria-label="Open menu"><i data-lucide="menu"></i></button>
+    </div>
+  </nav>
+
+  <div class="nav-mobile" id="mobileMenu">
+    <div class="nav-mobile-head">
+      <a href="#top" class="brand"><span class="brand-mark">S</span> SportX v2</a>
+      <button class="nav-mobile-close" id="mobileMenuClose" aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+    <div class="nav-mobile-section"><div class="nav-mobile-label">Showcase</div><a class="nav-mobile-link active" href="index.html"><i data-lucide="layout-grid" style="width:18px;height:18px"></i> Showcase</a><a class="nav-mobile-link" href="home.html"><i data-lucide="smartphone" style="width:18px;height:18px"></i> App Preview (Home)</a><a class="nav-mobile-link" href="index.original.html"><i data-lucide="layers" style="width:18px;height:18px"></i> Flat index</a></div>
+    <div class="nav-mobile-section"><div class="nav-mobile-label">Sections</div><a class="nav-mobile-link" href="#overview">Overview</a><a class="nav-mobile-link" href="#design-system">Design system</a><a class="nav-mobile-link" href="#flows">User flows</a><a class="nav-mobile-link" href="#screens">Screen library</a></div>
+    <div class="nav-mobile-section"><div class="nav-mobile-label">Roles</div><a class="nav-mobile-link" href="#role-auth">Auth & Onboarding</a><a class="nav-mobile-link" href="#role-athlete">Athlete</a><a class="nav-mobile-link" href="#role-coach">Coach</a><a class="nav-mobile-link" href="#role-academy">Academy</a><a class="nav-mobile-link" href="#role-organizer">Organizer</a><a class="nav-mobile-link" href="#role-scout">Scout</a><a class="nav-mobile-link" href="#role-sponsor">Sponsor</a><a class="nav-mobile-link" href="#role-admin">Admin</a><a class="nav-mobile-link" href="#role-shared">Shared</a></div>
+  </div>
+
+  <header class="hero" id="top">
+    <div class="hero-inner">
+      <div class="hero-pill"><span class="hero-pill-dot"></span> Design v2 · 125 screens · Role-wise · Mobile-first</div>
+      <h1>Sport<em>X</em> — <span class="grad">every role,<br>one system.</span></h1>
+      <p class="lead">v2 is a polished, premium upgrade — yellow CTAs, Sora + Inter, blurred nav, real photography, 430px device frame. Now reorganized <b style="color:white">by role</b> so you can jump straight to the athlete, coach, academy, organizer, scout, sponsor or admin workspace. Same tokens, 125 screens, zero flat-file chaos.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#screens"><i data-lucide="layout-grid" style="width:18px;height:18px"></i> Explore 125 screens</a>
+        <a class="btn btn-ghost" href="home.html"><i data-lucide="smartphone" style="width:18px;height:18px"></i> Open App (Home)</a>
+        <a class="btn btn-ghost" href="role-selection.html"><i data-lucide="users-2" style="width:18px;height:18px"></i> Role selection</a>
+      </div>
+      <p style="margin-top:14px;color:rgba(255,255,255,0.6);font-size:12px">Folders: <code style="background:rgba(255,255,255,0.12);padding:3px 7px;border-radius:6px;color:#FFD54A">00-auth · 01-athlete · 02-coach · 03-academy · 04-organizer · 05-scout · 06-sponsor · 07-admin · 08-shared</code> — originals stay in root</p>
+    </div>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-value">125</div><div class="stat-label">Screens</div></div>
+      <div class="stat"><div class="stat-value">9<span class="accent"> workspaces</span></div><div class="stat-label">Roles (inc. Auth)</div></div>
+      <div class="stat"><div class="stat-value">10<span class="accent">+</span></div><div class="stat-label">Core flows</div></div>
+      <div class="stat"><div class="stat-value">430<span class="accent">px</span></div><div class="stat-label">Phone frame</div></div>
+      <div class="stat"><div class="stat-value">v2</div><div class="stat-label">Yellow · Sora</div></div>
+    </div>
+  </div>
+
+  <section id="overview">
+    <div class="section-inner">
+      <div class="section-eyebrow">Platform overview</div>
+      <h2 class="section-title">Nine workspaces, one design language.</h2>
+      <p class="section-sub">Every screen lives where its owner expects it. Tap a tile to jump to live iframe previews — each mockup is scaled to its real 430px phone frame.</p>
+      <div class="roles-overview">
+        <a class="role-tile" data-role="auth" href="#role-auth"><div class="role-icon-box"><i data-lucide="key-round"></i></div><div class="role-name">Auth & Onboarding</div><div class="role-count">14 screens</div></a>
+        <a class="role-tile" data-role="athlete" href="#role-athlete"><div class="role-icon-box"><i data-lucide="user"></i></div><div class="role-name">Athlete</div><div class="role-count">23 screens</div></a>
+        <a class="role-tile" data-role="coach" href="#role-coach"><div class="role-icon-box"><i data-lucide="award"></i></div><div class="role-name">Coach</div><div class="role-count">8 screens</div></a>
+        <a class="role-tile" data-role="academy" href="#role-academy"><div class="role-icon-box"><i data-lucide="building-2"></i></div><div class="role-name">Academy</div><div class="role-count">10 screens</div></a>
+        <a class="role-tile" data-role="organizer" href="#role-organizer"><div class="role-icon-box"><i data-lucide="calendar-days"></i></div><div class="role-name">Organizer</div><div class="role-count">10 screens</div></a>
+        <a class="role-tile" data-role="scout" href="#role-scout"><div class="role-icon-box"><i data-lucide="eye"></i></div><div class="role-name">Scout</div><div class="role-count">12 screens</div></a>
+        <a class="role-tile" data-role="sponsor" href="#role-sponsor"><div class="role-icon-box"><i data-lucide="briefcase"></i></div><div class="role-name">Sponsor</div><div class="role-count">6 screens</div></a>
+        <a class="role-tile" data-role="admin" href="#role-admin"><div class="role-icon-box"><i data-lucide="shield"></i></div><div class="role-name">Admin</div><div class="role-count">14 screens</div></a>
+        <a class="role-tile" data-role="shared" href="#role-shared"><div class="role-icon-box"><i data-lucide="compass"></i></div><div class="role-name">Shared</div><div class="role-count">27 screens</div></a>
+      </div>
+    </div>
+  </section>
+
+  <section id="design-system" style="background:var(--bg-alt)">
+    <div class="section-inner">
+      <div class="section-eyebrow">Design system v3 · Refined</div>
+      <h2 class="section-title">Yellow CTA, Sora headlines, phone-frame truth.</h2>
+      <p class="section-sub">v2 tokens are production-locked. Every screen uses the same palette, type scale and elevation — no drift.</p>
+      <div class="tokens-grid">
+        <div class="token-card">
+          <h3><i data-lucide="palette"></i> Color · v2 palette</h3>
+          <div class="color-grid">
+            <div><div class="color-chip" style="background:#FFC107"></div><div class="color-name">Accent / CTA</div><div class="color-hex">#FFC107</div></div>
+            <div><div class="color-chip" style="background:#111111"></div><div class="color-name">Foreground / Black</div><div class="color-hex">#111111</div></div>
+            <div><div class="color-chip" style="background:#F4F5F7"></div><div class="color-name">Background</div><div class="color-hex">#F4F5F7</div></div>
+            <div><div class="color-chip" style="background:#E8EAED"></div><div class="color-name">Border</div><div class="color-hex">#E8EAED</div></div>
+            <div><div class="color-chip" style="background:#8A6AEA"></div><div class="color-name">Coach Purple</div><div class="color-hex">#8A6AEA</div></div>
+            <div><div class="color-chip" style="background:#03B94C"></div><div class="color-name">Academy Green</div><div class="color-hex">#03B94C</div></div>
+            <div><div class="color-chip" style="background:#3B82F6"></div><div class="color-name">Scout Blue</div><div class="color-hex">#3B82F6</div></div>
+            <div><div class="color-chip" style="background:#EF4444"></div><div class="color-name">Admin Red</div><div class="color-hex">#EF4444</div></div>
+          </div>
+        </div>
+        <div class="token-card">
+          <h3><i data-lucide="type"></i> Typography · Sora + Inter</h3>
+          <div class="type-row"><div style="font-family:'Sora';font-size:28px;font-weight:800;letter-spacing:-1.2px">Sora 800</div><div class="type-name">Display · 800</div></div>
+          <div class="type-row"><div style="font-family:'Sora';font-size:20px;font-weight:700">Sora 700</div><div class="type-name">H1 · 700</div></div>
+          <div class="type-row"><div style="font-size:15px;font-weight:600">Inter 600</div><div class="type-name">Body · 15px</div></div>
+          <div class="type-row"><div style="font-size:13px;color:var(--muted)">Inter 400 · muted</div><div class="type-name">Caption</div></div>
+          <div class="type-row"><div style="font-size:11px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;color:var(--muted)">Label</div><div class="type-name">11px · 700 · CAPS</div></div>
+          <div style="margin-top:16px;padding:12px;background:var(--accent-light);border:1px solid #F0E3B2;border-radius:10px;font-size:12px;line-height:1.5"><b>Phone frame:</b> 430px max, 8px outline on ≥520px, blurred sticky topbar + bottom nav (Home · Discover · <b style="color:#D9A400">[+]</b> · Network · Me), yellow progress: <code>#FFC107</code></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="flows">
+    <div class="section-inner">
+      <div class="section-eyebrow">Core user flows</div>
+      <h2 class="section-title">10 journeys, fully clickable.</h2>
+      <p class="section-sub">Every flow is end-to-end. Click any step to open the live mockup (role-folder path).</p>
+      <div class="flows-grid">
+        <div class="flow-card"><h4><span class="num">1</span> Athlete onboarding</h4><p>Splash → Role → Sport → Location → Home</p><div class="flow-steps"><a class="flow-step" href="00-auth-and-onboarding/splash.html"><i data-lucide="circle-dot"></i><span>splash.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="00-auth-and-onboarding/role-selection.html"><i data-lucide="circle-dot"></i><span>role-selection.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="00-auth-and-onboarding/onboarding-sport.html"><i data-lucide="circle-dot"></i><span>onboarding-sport.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="01-athlete/home.html"><i data-lucide="circle-dot"></i><span>home.html → athlete home</span></a></div></div>
+        <div class="flow-card"><h4><span class="num">2</span> Trial discovery → register</h4><p>Trials list → Detail → Registration → Confirmation</p><div class="flow-steps"><a class="flow-step" href="08-shared-common/trials.html"><i data-lucide="circle-dot"></i><span>trials.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="08-shared-common/trial-detail.html"><i data-lucide="circle-dot"></i><span>trial-detail.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="01-athlete/trial-registration.html"><i data-lucide="circle-dot"></i><span>trial-registration.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="01-athlete/registration-confirmation.html"><i data-lucide="circle-dot"></i><span>registration-confirmation.html</span></a></div></div>
+        <div class="flow-card"><h4><span class="num">3</span> Academy ops</h4><p>Dashboard → Post trial → My trials → Registrants</p><div class="flow-steps"><a class="flow-step" href="03-academy/academy-dashboard.html"><i data-lucide="circle-dot"></i><span>academy-dashboard.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="03-academy/trial-posting-form.html"><i data-lucide="circle-dot"></i><span>trial-posting-form.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="03-academy/registrant-list.html"><i data-lucide="circle-dot"></i><span>registrant-list.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="03-academy/registrant-detail.html"><i data-lucide="circle-dot"></i><span>registrant-detail.html</span></a></div></div>
+        <div class="flow-card"><h4><span class="num">4</span> Organizer tournament</h4><p>Create tournament → Calendar → Registrations → Results</p><div class="flow-steps"><a class="flow-step" href="04-organizer/organizer-dashboard.html"><i data-lucide="circle-dot"></i><span>organizer-dashboard.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="04-organizer/tournament-create.html"><i data-lucide="circle-dot"></i><span>tournament-create.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="04-organizer/registration-management.html"><i data-lucide="circle-dot"></i><span>registration-management.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="04-organizer/results-publishing.html"><i data-lucide="circle-dot"></i><span>results-publishing.html</span></a></div></div>
+        <div class="flow-card"><h4><span class="num">5</span> Scout discovery</h4><p>Discover → Athlete view → Shortlist → Connection</p><div class="flow-steps"><a class="flow-step" href="05-scout/scout-discovery.html"><i data-lucide="circle-dot"></i><span>scout-discovery.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="05-scout/scout-athlete-view.html"><i data-lucide="circle-dot"></i><span>scout-athlete-view.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="05-scout/scout-shortlist.html"><i data-lucide="circle-dot"></i><span>scout-shortlist.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="05-scout/scout-connections.html"><i data-lucide="circle-dot"></i><span>scout-connections.html</span></a></div></div>
+        <div class="flow-card"><h4><span class="num">6</span> Sponsor funding</h4><p>Dashboard → Athlete profile → Create sponsorship → Detail</p><div class="flow-steps"><a class="flow-step" href="06-sponsor/sponsor-dashboard.html"><i data-lucide="circle-dot"></i><span>sponsor-dashboard.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="06-sponsor/sponsor-athlete-profile.html"><i data-lucide="circle-dot"></i><span>sponsor-athlete-profile.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="06-sponsor/sponsorship-create.html"><i data-lucide="circle-dot"></i><span>sponsorship-create.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="06-sponsor/sponsorship-detail.html"><i data-lucide="circle-dot"></i><span>sponsorship-detail.html</span></a></div></div>
+        <div class="flow-card"><h4><span class="num">7</span> Coach enquiries</h4><p>Directory → Detail → Enquire → Inbox → Detail</p><div class="flow-steps"><a class="flow-step" href="02-coach/coach-directory.html"><i data-lucide="circle-dot"></i><span>coach-directory.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="01-athlete/enquire.html"><i data-lucide="circle-dot"></i><span>enquire.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="02-coach/enquiry-inbox.html"><i data-lucide="circle-dot"></i><span>enquiry-inbox.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="02-coach/enquiry-detail.html"><i data-lucide="circle-dot"></i><span>enquiry-detail.html</span></a></div></div>
+        <div class="flow-card"><h4><span class="num">8</span> Admin moderation</h4><p>Dashboard → Users → Moderation → Approval queue</p><div class="flow-steps"><a class="flow-step" href="07-admin/admin-dashboard.html"><i data-lucide="circle-dot"></i><span>admin-dashboard.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="07-admin/admin-users.html"><i data-lucide="circle-dot"></i><span>admin-users.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="07-admin/admin-moderation.html"><i data-lucide="circle-dot"></i><span>admin-moderation.html</span><i data-lucide="chevron-right" style="margin-left:auto"></i></a><a class="flow-step" href="07-admin/opp-approval-queue.html"><i data-lucide="circle-dot"></i><span>opp-approval-queue.html</span></a></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screens" style="background:var(--bg-alt)">
+    <div class="section-inner">
+      <div class="section-eyebrow">Screen library · 125 screens</div>
+      <h2 class="section-title">Every screen, live in its phone frame.</h2>
+      <p class="section-sub">Each card is a real 430px mockup rendered at scale. Click to open full-screen. Use the role nav to jump.</p>
+
+      <div id="role-auth" class="anchor-target role-section"><div class="role-header"><div class="role-icon-box" style="background:rgba(107,114,128,0.12);color:#6B7280"><i data-lucide="key-round"></i></div><h2>Auth & Onboarding</h2><span class="role-tag">14 screens · 00-auth-and-onboarding/</span></div><p class="role-description">Entry for every persona. Splash → login/OTP → sign-up → role selection → sport + location → role-specific onboarding + admin login.</p><div class="screen-grid" id="grid-auth"></div></div>
+      <div id="role-athlete" class="anchor-target role-section"><div class="role-header"><div class="role-icon-box" style="background:rgba(245,158,11,0.14);color:#F59E0B"><i data-lucide="user"></i></div><h2>Athlete</h2><span class="role-tag">23 screens · 01-athlete/</span></div><p class="role-description">Home + profile, achievements, trials/tournaments/scholarships/sponsorships, registrations, applications, enrollments, results & saved.</p><div class="screen-grid" id="grid-athlete"></div></div>
+      <div id="role-coach" class="anchor-target role-section"><div class="role-header"><div class="role-icon-box" style="background:rgba(138,106,234,0.14);color:#8A6AEA"><i data-lucide="award"></i></div><h2>Coach</h2><span class="role-tag">8 screens · 02-coach/</span></div><p class="role-description">Dashboard + directory/detail, profile posting/edit, credential, enquiry inbox/detail for athlete leads.</p><div class="screen-grid" id="grid-coach"></div></div>
+      <div id="role-academy" class="anchor-target role-section"><div class="role-header"><div class="role-icon-box" style="background:rgba(3,185,76,0.14);color:#03B94C"><i data-lucide="building-2"></i></div><h2>Academy</h2><span class="role-tag">10 screens · 03-academy/</span></div><p class="role-description">Dashboard, directory/detail, profile create/edit, facilities, trial form, registrants & capacity.</p><div class="screen-grid" id="grid-academy"></div></div>
+      <div id="role-organizer" class="anchor-target role-section"><div class="role-header"><div class="role-icon-box" style="background:rgba(251,128,46,0.14);color:#FB802E"><i data-lucide="calendar-days"></i></div><h2>Organizer</h2><span class="role-tag">10 screens · 04-organizer/</span></div><p class="role-description">Tournament owner: dashboard, analytics, profile, create/edit, calendar, registrations, results & notifications.</p><div class="screen-grid" id="grid-organizer"></div></div>
+      <div id="role-scout" class="anchor-target role-section"><div class="role-header"><div class="role-icon-box" style="background:rgba(59,130,246,0.14);color:#3B82F6"><i data-lucide="eye"></i></div><h2>Scout</h2><span class="role-tag">12 screens · 05-scout/</span></div><p class="role-description">Talent discovery: dashboard, profile, directory/discovery, athlete view, connections/requests, shortlist & showcase.</p><div class="screen-grid" id="grid-scout"></div></div>
+      <div id="role-sponsor" class="anchor-target role-section"><div class="role-header"><div class="role-icon-box" style="background:rgba(17,17,17,0.08);color:#111"><i data-lucide="briefcase"></i></div><h2>Sponsor</h2><span class="role-tag">6 screens · 06-sponsor/</span></div><p class="role-description">Funding side: dashboard, directory, athlete profile (sponsor view), sponsorship create/detail/list.</p><div class="screen-grid" id="grid-sponsor"></div></div>
+      <div id="role-admin" class="anchor-target role-section"><div class="role-header"><div class="role-icon-box" style="background:rgba(239,68,68,0.12);color:#EF4444"><i data-lucide="shield"></i></div><h2>Admin</h2><span class="role-tag">14 screens · 07-admin/</span></div><p class="role-description">Back-office: dashboard, analytics, users, moderation, content, settings, approval queues & reports.</p><div class="screen-grid" id="grid-admin"></div></div>
+      <div id="role-shared" class="anchor-target role-section"><div class="role-header"><div class="role-icon-box" style="background:rgba(6,182,212,0.12);color:#06B6D4"><i data-lucide="compass"></i></div><h2>Shared / Common</h2><span class="role-tag">27 screens · 08-shared-common/</span></div><p class="role-description">Cross-role glue: discovery (trials/tournaments/scholarships/venues), search, network/chat/notifications, social, help & settings.</p><div class="screen-grid" id="grid-shared"></div></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-grid">
+        <div><div class="footer-brand"><span class="brand-mark" style="background:var(--accent);color:#111">S</span> SportX v2</div><p class="footer-desc">India's sports network — v2 refined. Yellow CTA, Sora + Inter, 430px phone frame, 125 screens across 9 workspaces. Role-wise, mobile-first, production-ready.</p></div>
+        <div class="footer-col"><h5>Explore</h5><ul><li><a href="#overview">Overview</a></li><li><a href="#design-system">Design system</a></li><li><a href="#flows">Flows</a></li><li><a href="#screens">All screens</a></li></ul></div>
+        <div class="footer-col"><h5>Roles A–O</h5><ul><li><a href="#role-auth">Auth</a></li><li><a href="#role-athlete">Athlete</a></li><li><a href="#role-coach">Coach</a></li><li><a href="#role-academy">Academy</a></li><li><a href="#role-organizer">Organizer</a></li></ul></div>
+        <div class="footer-col"><h5>Roles S–Shared</h5><ul><li><a href="#role-scout">Scout</a></li><li><a href="#role-sponsor">Sponsor</a></li><li><a href="#role-admin">Admin</a></li><li><a href="#role-shared">Shared</a></li><li><a href="index.original.html">Flat index</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><div>SportX v2 · 125 screens · 9 workspaces · Role-wise hub</div><div>Yellow #FFC107 · Sora + Inter · Mobile-first 430px · Sep 2026</div></div>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+    (function(){
+      const groups=document.querySelectorAll('.nav-group[data-dropdown]');
+      groups.forEach(g=>{
+        const trig=g.querySelector('.nav-trigger');
+        trig.addEventListener('click',e=>{
+          e.stopPropagation();
+          const was=g.classList.contains('open');
+          groups.forEach(o=>o.classList.remove('open'));
+          if(!was) g.classList.add('open');
+        });
+      });
+      document.addEventListener('click',()=>groups.forEach(g=>g.classList.remove('open')));
+      document.addEventListener('keydown',e=>{if(e.key==='Escape') groups.forEach(g=>g.classList.remove('open'))});
+      const mb=document.getElementById('mobileMenu'),mbBtn=document.getElementById('mobileMenuBtn'),mbClose=document.getElementById('mobileMenuClose');
+      if(mbBtn) mbBtn.addEventListener('click',()=>mb.classList.add('open'));
+      if(mbClose) mbClose.addEventListener('click',()=>mb.classList.remove('open'));
+      if(mb) mb.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>mb.classList.remove('open')));
+    })();
+
+    const screens={
+      auth:[
+        {name:'Splash',path:'00-auth-and-onboarding/splash.html',badge:'flow'},
+        {name:'Login',path:'00-auth-and-onboarding/login.html',badge:'flow'},
+        {name:'OTP Verify',path:'00-auth-and-onboarding/otp.html',badge:'flow'},
+        {name:'Sign Up',path:'00-auth-and-onboarding/sign-up.html'},
+        {name:'Role Selection',path:'00-auth-and-onboarding/role-selection.html',badge:'flow'},
+        {name:'Onboarding',path:'00-auth-and-onboarding/onboarding.html'},
+        {name:'Onboarding · Sport',path:'00-auth-and-onboarding/onboarding-sport.html',badge:'flow'},
+        {name:'Onboarding · Location',path:'00-auth-and-onboarding/onboarding-location.html',badge:'flow'},
+        {name:'Academy Onboarding',path:'00-auth-and-onboarding/academy-onboarding.html'},
+        {name:'Coach Onboarding',path:'00-auth-and-onboarding/coach-onboarding.html'},
+        {name:'Organizer Onboarding',path:'00-auth-and-onboarding/organizer-onboarding.html'},
+        {name:'Scout Onboarding',path:'00-auth-and-onboarding/scout-onboarding.html'},
+        {name:'Sponsor Onboarding',path:'00-auth-and-onboarding/sponsor-onboarding.html'},
+        {name:'Admin Login',path:'00-auth-and-onboarding/admin-login.html'}
+      ],
+      athlete:[
+        {name:'Home',path:'01-athlete/home.html',badge:'flow'},
+        {name:'My Profile',path:'01-athlete/profile.html'},
+        {name:'Profile View',path:'01-athlete/profile-view.html'},
+        {name:'Edit Profile',path:'01-athlete/edit-profile.html'},
+        {name:'Add Achievement',path:'01-athlete/add-achievement.html'},
+        {name:'My Trials',path:'01-athlete/my-trials.html'},
+        {name:'My Tournaments',path:'01-athlete/my-tournaments.html'},
+        {name:'My Registrations',path:'01-athlete/my-registrations.html'},
+        {name:'My Applications',path:'01-athlete/my-applications.html'},
+        {name:'My Coaching Enrollments',path:'01-athlete/my-coaching-enrollments.html'},
+        {name:'My Sponsorships',path:'01-athlete/my-sponsorships.html'},
+        {name:'My Connections',path:'01-athlete/my-connections.html'},
+        {name:'Trial Registration',path:'01-athlete/trial-registration.html',badge:'flow'},
+        {name:'Tournament Registration',path:'01-athlete/tournament-registration.html',badge:'flow'},
+        {name:'Apply Sponsor',path:'01-athlete/apply-sponsor.html'},
+        {name:'Application Status',path:'01-athlete/application-status.html'},
+        {name:'Application Detail',path:'01-athlete/application-detail.html'},
+        {name:'Registration Confirmation',path:'01-athlete/registration-confirmation.html',badge:'flow'},
+        {name:'Results View',path:'01-athlete/results-view.html'},
+        {name:'Saved',path:'01-athlete/saved.html'},
+        {name:'Shortlist',path:'01-athlete/shortlist.html'},
+        {name:'Coach Enrollment',path:'01-athlete/coach-enrollment.html'},
+        {name:'Enquire',path:'01-athlete/enquire.html',badge:'flow'}
+      ],
+      coach:[
+        {name:'Coach Dashboard',path:'02-coach/coach-dashboard.html',badge:'flow'},
+        {name:'Coach Directory',path:'02-coach/coach-directory.html'},
+        {name:'Coach Detail',path:'02-coach/coach-detail.html'},
+        {name:'Coach Profile Edit',path:'02-coach/coach-profile-edit.html'},
+        {name:'Coach Profile Posting',path:'02-coach/coach-profile-posting.html'},
+        {name:'Add Credential',path:'02-coach/add-credential.html'},
+        {name:'Enquiry Inbox',path:'02-coach/enquiry-inbox.html',badge:'flow'},
+        {name:'Enquiry Detail',path:'02-coach/enquiry-detail.html'}
+      ],
+      academy:[
+        {name:'Academy Dashboard',path:'03-academy/academy-dashboard.html',badge:'flow'},
+        {name:'Academy Directory',path:'03-academy/academy-directory.html'},
+        {name:'Academy Detail',path:'03-academy/academy-detail.html'},
+        {name:'Academy Profile',path:'03-academy/academy-profile.html'},
+        {name:'Academy Listing Edit',path:'03-academy/academy-profile-posting.html'},
+        {name:'Edit Facilities',path:'03-academy/edit-facilities.html'},
+        {name:'Trial Posting Form',path:'03-academy/trial-posting-form.html',badge:'flow'},
+        {name:'Registrant List',path:'03-academy/registrant-list.html'},
+        {name:'Registrant Detail',path:'03-academy/registrant-detail.html'},
+        {name:'Capacity Management',path:'03-academy/capacity-management.html'}
+      ],
+      organizer:[
+        {name:'Organizer Dashboard',path:'04-organizer/organizer-dashboard.html',badge:'flow'},
+        {name:'Organizer Analytics',path:'04-organizer/organizer-analytics.html'},
+        {name:'Organizer Profile',path:'04-organizer/organizer-profile.html'},
+        {name:'Tournament Create',path:'04-organizer/tournament-create.html',badge:'flow'},
+        {name:'Tournament Edit',path:'04-organizer/tournament-edit.html'},
+        {name:'Tournament Calendar',path:'04-organizer/tournament-calendar.html'},
+        {name:'Registration Management',path:'04-organizer/registration-management.html'},
+        {name:'Results Publishing',path:'04-organizer/results-publishing.html',badge:'flow'},
+        {name:'Compose Notification',path:'04-organizer/compose-notification.html'},
+        {name:'Notification Targeting',path:'04-organizer/notification-targeting.html'}
+      ],
+      scout:[
+        {name:'Scout Dashboard',path:'05-scout/scout-dashboard.html',badge:'flow'},
+        {name:'Scout Profile',path:'05-scout/scout-profile.html'},
+        {name:'Scout Directory',path:'05-scout/scout-directory.html'},
+        {name:'Scout Discovery',path:'05-scout/scout-discovery.html',badge:'flow'},
+        {name:'Scout Athlete View',path:'05-scout/scout-athlete-view.html'},
+        {name:'Scout Connection',path:'05-scout/scout-connection.html'},
+        {name:'Scout Connections',path:'05-scout/scout-connections.html'},
+        {name:'Scout Requests',path:'05-scout/scout-requests.html'},
+        {name:'Scout Shortlist',path:'05-scout/scout-shortlist.html',badge:'flow'},
+        {name:'Showcase Athletes',path:'05-scout/showcase-athletes.html'},
+        {name:'Athlete Directory',path:'05-scout/athlete-directory.html'},
+        {name:'Athlete Discovery',path:'05-scout/athlete-discovery.html'}
+      ],
+      sponsor:[
+        {name:'Sponsor Dashboard',path:'06-sponsor/sponsor-dashboard.html',badge:'flow'},
+        {name:'Sponsor Directory',path:'06-sponsor/sponsor-directory.html'},
+        {name:'Sponsor Athlete Profile',path:'06-sponsor/sponsor-athlete-profile.html'},
+        {name:'Sponsorship Create',path:'06-sponsor/sponsorship-create.html',badge:'flow'},
+        {name:'Sponsorship Detail',path:'06-sponsor/sponsorship-detail.html'},
+        {name:'Sponsorships',path:'06-sponsor/sponsorships.html'}
+      ],
+      admin:[
+        {name:'Admin Dashboard',path:'07-admin/admin-dashboard.html',badge:'flow'},
+        {name:'Analytics',path:'07-admin/admin-analytics.html'},
+        {name:'User Management',path:'07-admin/admin-users.html'},
+        {name:'Listing Moderation',path:'07-admin/admin-moderation.html'},
+        {name:'Content List',path:'07-admin/admin-content-list.html'},
+        {name:'Content Picker',path:'07-admin/admin-content-picker.html'},
+        {name:'System Settings',path:'07-admin/admin-settings.html'},
+        {name:'Admin Web Layout',path:'07-admin/admin-web-layout.html'},
+        {name:'Opp Approval Queue',path:'07-admin/opp-approval-queue.html',badge:'flow'},
+        {name:'Opp Review Detail',path:'07-admin/opp-review-detail.html'},
+        {name:'Pending Approvals',path:'07-admin/pending-approvals.html'},
+        {name:'Platform Reports',path:'07-admin/platform-reports.html'},
+        {name:'Report Listing',path:'07-admin/report-listing.html'},
+        {name:'User Detail Verify',path:'07-admin/user-detail-verify.html'}
+      ],
+      shared:[
+        {name:'Discover',path:'08-shared-common/discover.html',badge:'flow'},
+        {name:'Opportunities',path:'08-shared-common/opportunities.html'},
+        {name:'Trials',path:'08-shared-common/trials.html',badge:'flow'},
+        {name:'Trial Detail',path:'08-shared-common/trial-detail.html',badge:'flow'},
+        {name:'Tournaments',path:'08-shared-common/tournaments.html'},
+        {name:'Tournament Detail',path:'08-shared-common/tournament-detail.html'},
+        {name:'Scholarships',path:'08-shared-common/scholarships.html'},
+        {name:'Scholarship Detail',path:'08-shared-common/scholarship-detail.html'},
+        {name:'Venue List',path:'08-shared-common/venue-list.html'},
+        {name:'Venue Detail',path:'08-shared-common/venue-detail.html'},
+        {name:'Search Screen',path:'08-shared-common/search-screen.html'},
+        {name:'Search Filter',path:'08-shared-common/search-filter.html'},
+        {name:'Universal Search',path:'08-shared-common/universal-search.html'},
+        {name:'Network',path:'08-shared-common/network.html'},
+        {name:'Connection Requests',path:'08-shared-common/connection-requests.html'},
+        {name:'Chat List',path:'08-shared-common/chat-list.html'},
+        {name:'Chat Screen',path:'08-shared-common/chat-screen.html'},
+        {name:'Notifications',path:'08-shared-common/notifications.html'},
+        {name:'Activity Hub',path:'08-shared-common/activity-hub.html'},
+        {name:'Create Post',path:'08-shared-common/create-post.html'},
+        {name:'Create Sheet',path:'08-shared-common/create-sheet.html'},
+        {name:'Post Detail',path:'08-shared-common/post-detail.html'},
+        {name:'Media Gallery',path:'08-shared-common/media-gallery.html'},
+        {name:'Help Support',path:'08-shared-common/help-support.html'},
+        {name:'Settings',path:'08-shared-common/settings.html'},
+        {name:'Social Links',path:'08-shared-common/social-links.html'},
+        {name:'Applications Inbox',path:'08-shared-common/applications-inbox.html'}
+      ]
+    };
+    Object.keys(screens).forEach(role=>{
+      const grid=document.getElementById('grid-'+role);
+      if(!grid) return;
+      grid.innerHTML=screens[role].map(s=>`
+        <a class="screen-card" href="${s.path}" target="_blank" rel="noopener">
+          <div class="device-frame"><iframe src="${s.path}" loading="lazy" sandbox="allow-same-origin allow-scripts"></iframe></div>
+          <div class="screen-meta"><div class="screen-name"><span>${s.name}</span>${s.badge==='flow'?'<span class="badge flow">Flow</span>':''}</div><div class="screen-path">${s.path}</div></div>
+        </a>
+      `).join('');
+    });
+    // Auto-scale iframes to fit device-frame exactly — fixes mobile blur/crop
+    function rescale(){
+      document.querySelectorAll('.device-frame').forEach(f=>{
+        const ifr=f.querySelector('iframe');
+        if(!ifr) return;
+        const w=f.clientWidth;
+        if(w===0) return;
+        const scale=w/430;
+        ifr.style.transform='scale('+scale+')';
+        // keep height proportional so bottom not cut
+        const h=884*scale;
+        f.style.height=h+'px';
+      });
+    }
+    window.addEventListener('load',()=>{ rescale(); lucide.createIcons(); });
+    window.addEventListener('resize',rescale);
+    // rescale after grids rendered and fonts loaded
+    setTimeout(rescale,300); setTimeout(rescale,1200);
+    // also observe grid changes
+    const ro=new ResizeObserver(rescale);
+    document.querySelectorAll('.screen-grid').forEach(g=>ro.observe(g));
+  </script>
+</body>
+</html>
