@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -9,6 +10,7 @@ import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -189,9 +191,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final meta = ref.watch(metaProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
         elevation: 0,
         leadingWidth: 80,
         leading: GestureDetector(
@@ -200,7 +202,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             child: Text('Cancel', style: TextStyle(fontSize: 15, color: AppColors.textSecondary)),
           ),
         ),
-        title: const Text('Edit Profile', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Edit Profile',
+            style: GoogleFonts.sora(
+                fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
         centerTitle: true,
         actions: [
           GestureDetector(
@@ -248,16 +252,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               _buildSectionTitle('Social Links'),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton.icon(
+                child: SecondaryButton(
+                  label: 'Manage Social Links',
+                  icon: LucideIcons.share2,
                   onPressed: () => context.push('/social-links'),
-                  icon: const Icon(LucideIcons.share2, size: 16),
-                  label: const Text('Manage Social Links'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                    side: const BorderSide(color: AppColors.primary),
-                    minimumSize: const Size.fromHeight(48),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
                 ),
               ),
             ],
@@ -277,7 +275,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
-                colors: [AppColors.primary, Color(0xFF0d47a1)],
+                colors: [AppColors.yellow, AppColors.ctaDark],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -293,10 +291,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           height: 96,
                           fit: BoxFit.cover,
                           errorBuilder: (_, _, _) =>
-                              const Icon(LucideIcons.user, size: 40, color: Colors.white),
+                              const Icon(LucideIcons.user, size: 40, color: AppColors.ink),
                         ),
                       )
-                    : const Icon(LucideIcons.user, size: 40, color: Colors.white)),
+                    : const Icon(LucideIcons.user, size: 40, color: AppColors.ink)),
           ),
           const SizedBox(height: 12),
           GestureDetector(
@@ -340,7 +338,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             keyboardType: isNumber ? TextInputType.number : TextInputType.text,
             decoration: InputDecoration(
               filled: true,
-              fillColor: AppColors.surface,
+              fillColor: Colors.white,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(color: AppColors.border),
@@ -374,7 +372,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             maxLines: 4,
             decoration: InputDecoration(
               filled: true,
-              fillColor: AppColors.surface,
+              fillColor: Colors.white,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(color: AppColors.border),
@@ -410,7 +408,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             icon: const Icon(LucideIcons.chevronDown, size: 20),
             decoration: InputDecoration(
               filled: true,
-              fillColor: AppColors.surface,
+              fillColor: Colors.white,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(color: AppColors.border),
@@ -448,7 +446,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 decoration: InputDecoration(
                   hintText: 'YYYY-MM-DD',
                   filled: true,
-                  fillColor: AppColors.surface,
+                  fillColor: Colors.white,
                   suffixIcon: const Icon(LucideIcons.calendar, size: 18, color: AppColors.textSecondary),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
                   enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
@@ -480,7 +478,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             icon: const Icon(LucideIcons.chevronDown, size: 20),
             decoration: InputDecoration(
               filled: true,
-              fillColor: AppColors.surface,
+              fillColor: Colors.white,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary)),
@@ -509,7 +507,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             icon: const Icon(LucideIcons.chevronDown, size: 20),
             decoration: InputDecoration(
               filled: true,
-              fillColor: AppColors.surface,
+              fillColor: Colors.white,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary)),
@@ -537,7 +535,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             icon: const Icon(LucideIcons.chevronDown, size: 20),
             decoration: InputDecoration(
               filled: true,
-              fillColor: AppColors.surface,
+              fillColor: Colors.white,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary)),
@@ -574,7 +572,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             icon: const Icon(LucideIcons.chevronDown, size: 20),
             decoration: InputDecoration(
               filled: true,
-              fillColor: AppColors.surface,
+              fillColor: Colors.white,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(color: AppColors.border),

@@ -97,9 +97,10 @@ class _TalentScoutAthleteDiscoveryScreenState
         .toSet();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
         title: const Text(
@@ -120,7 +121,7 @@ class _TalentScoutAthleteDiscoveryScreenState
           // Search Bar
           Container(
             width: double.infinity,
-            color: AppColors.background,
+            color: AppColors.surface,
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
             child: Row(
               children: [
@@ -188,7 +189,7 @@ class _TalentScoutAthleteDiscoveryScreenState
               (meta.sports.isNotEmpty || meta.cities.isNotEmpty))
             Container(
               width: double.infinity,
-              color: AppColors.background,
+              color: AppColors.surface,
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
@@ -439,7 +440,7 @@ class _TalentScoutAthleteDiscoveryScreenState
           if (!state.isLoading)
             Container(
               width: double.infinity,
-              color: AppColors.background,
+              color: AppColors.surface,
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
               child: Text(
                 '${state.athletes.length} athlete${state.athletes.length == 1 ? '' : 's'} found',
@@ -662,7 +663,7 @@ class _TalentScoutAthleteDiscoveryScreenState
                       ? 'Shortlisted — tap to view shortlist'
                       : 'Add to shortlist',
                   icon: Icon(
-                    isShortlisted ? Icons.star : LucideIcons.star,
+                    isShortlisted ? LucideIcons.star : LucideIcons.star,
                     size: 20,
                   ),
                   color: isShortlisted

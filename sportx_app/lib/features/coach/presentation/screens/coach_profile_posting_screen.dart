@@ -80,9 +80,9 @@ class _CoachProfilePostingScreenState extends ConsumerState<CoachProfilePostingS
   Widget build(BuildContext context) {
     final meta = ref.watch(metaProvider);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         elevation: 0,
         title: const Text('Edit My Listing',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
@@ -145,7 +145,7 @@ class _CoachProfilePostingScreenState extends ConsumerState<CoachProfilePostingS
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.border)),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border)),
               child: const Text('Set your weekly slots in the full editor (Mon–Sun, 4–6 PM etc.)', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
             ),
             const SizedBox(height: 32),
@@ -153,7 +153,10 @@ class _CoachProfilePostingScreenState extends ConsumerState<CoachProfilePostingS
               width: double.infinity,
               child: FilledButton(
                 onPressed: _saving ? null : _save,
-                style: FilledButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.symmetric(vertical: 14)),
+                style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.yellow,
+                    foregroundColor: AppColors.ink,
+                    padding: const EdgeInsets.symmetric(vertical: 14)),
                 child: _saving
                     ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                     : const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.w600)),

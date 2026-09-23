@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -177,12 +179,13 @@ class _TournamentEditScreenState extends ConsumerState<TournamentEditScreen> {
       return Scaffold(appBar: AppBar(title: const Text('Edit Tournament')), body: const Center(child: CircularProgressIndicator()));
     }
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         backgroundColor: AppColors.background,
+        scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
-        title: const Text('Edit Tournament', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Edit Tournament', style: GoogleFonts.sora(fontSize: 19, fontWeight: FontWeight.w700, color: AppColors.ink)),
         actions: [
           PopupMenuButton<String>(
             onSelected: (v) {
@@ -249,14 +252,14 @@ class _TournamentEditScreenState extends ConsumerState<TournamentEditScreen> {
           }),
           InkWell(onTap: () => setState(() => _categories.add(CategoryEditRow())), child: const Row(children: [Icon(LucideIcons.plus, size: 14, color: AppColors.primary), SizedBox(width: 6), Text('+ Add Category', style: TextStyle(color: AppColors.primary, fontSize: 14))])),
           const SizedBox(height: 24),
-          SizedBox(width: double.infinity, child: FilledButton(onPressed: _saving ? null : _save, style: FilledButton.styleFrom(padding: const EdgeInsets.all(14), backgroundColor: AppColors.primary), child: _saving ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.w600)))),
+          SizedBox(width: double.infinity, child: PrimaryButton(label: 'Save Changes', icon: LucideIcons.check, onPressed: _saving ? null : _save)),
           const SizedBox(height: 8),
-          Center(child: Text('Status: $_status', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary))),
+          Center(child: StatusPill(label: 'Status: $_status', kind: _status == 'published' ? PillKind.ok : PillKind.draft)),
           const SizedBox(height: 32),
         ]),
       ),
     );
   }
 
-  Widget _label(String t) => Padding(padding: const EdgeInsets.only(bottom: 6), child: Text(t, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)));
+  Widget _label(String t) => Padding(padding: const EdgeInsets.only(bottom: 6), child: Text(t, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)));
 }

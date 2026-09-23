@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_web_layout.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class PendingApprovalsScreen extends ConsumerStatefulWidget {
   const PendingApprovalsScreen({super.key});
@@ -29,7 +32,7 @@ class _PendingApprovalsScreenState extends ConsumerState<PendingApprovalsScreen>
       title: 'Pending Approvals',
       actions: [
         IconButton(
-          icon: const Icon(Icons.refresh),
+          icon: const Icon(LucideIcons.refreshCw),
           onPressed: () {
             ref.read(adminProvider.notifier).loadPendingApprovals();
           },
@@ -42,13 +45,14 @@ class _PendingApprovalsScreenState extends ConsumerState<PendingApprovalsScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.check_circle_outline, size: 64, color: AppColors.success),
+                      Icon(LucideIcons.circleCheck, size: 64, color: AppColors.success),
                       const SizedBox(height: 16),
                       Text(
                         'No pending approvals',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                        style: GoogleFonts.sora(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.ink),
                       ),
                     ],
                   ),
@@ -81,8 +85,14 @@ class _PendingApprovalsScreenState extends ConsumerState<PendingApprovalsScreen>
     required VoidCallback onApprove,
     required VoidCallback onReject,
   }) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: SportXShadows.e1,
+      ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -90,16 +100,25 @@ class _PendingApprovalsScreenState extends ConsumerState<PendingApprovalsScreen>
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: AppColors.primaryLight,
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFFFFE9A8), Color(0xFFFFC107), Color(0xFFF5B400)],
+                    ),
+                  ),
+                  alignment: Alignment.center,
                   child: Icon(
                     role == 'coach'
-                        ? Icons.fitness_center
+                        ? LucideIcons.dumbbell
                         : role == 'sponsor'
-                            ? Icons.business
-                            : Icons.school,
-                    color: AppColors.primary,
+                            ? LucideIcons.building2
+                            : LucideIcons.graduationCap,
+                    color: AppColors.ink,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -109,38 +128,26 @@ class _PendingApprovalsScreenState extends ConsumerState<PendingApprovalsScreen>
                     children: [
                       Text(
                         name,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                        style: GoogleFonts.sora(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.ink,
                         ),
                       ),
                       Text(
                         email,
-                        style: TextStyle(color: AppColors.textSecondary),
+                        style: GoogleFonts.inter(color: AppColors.textSecondary),
                       ),
                       if (city != null)
                         Text(
                           city,
-                          style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                          style: GoogleFonts.inter(
+                              color: AppColors.textSecondary, fontSize: 12),
                         ),
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.warning.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    role.toUpperCase(),
-                    style: TextStyle(
-                      color: AppColors.warning,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
+                StatusPill(label: role.toUpperCase(), kind: PillKind.pending),
               ],
             ),
             if (documents != null && documents.isNotEmpty) ...[
@@ -171,27 +178,12 @@ class _PendingApprovalsScreenState extends ConsumerState<PendingApprovalsScreen>
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: onReject,
-                    icon: const Icon(Icons.close),
-                    label: const Text('Reject'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.error,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                  ),
+                  child: SecondaryButton(label: 'Reject', onPressed: onReject),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: onApprove,
-                    icon: const Icon(Icons.check),
-                    label: const Text('Approve'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.success,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                  ),
+                  child: PrimaryButton(
+                      label: 'Approve', icon: LucideIcons.check, onPressed: onApprove),
                 ),
               ],
             ),

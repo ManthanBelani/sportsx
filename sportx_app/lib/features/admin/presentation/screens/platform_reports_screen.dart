@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_web_layout.dart';
@@ -27,7 +30,7 @@ class _PlatformReportsScreenState extends ConsumerState<PlatformReportsScreen> {
       title: 'Platform Reports',
       actions: [
         IconButton(
-          icon: const Icon(Icons.refresh),
+          icon: const Icon(LucideIcons.refreshCw),
           onPressed: () {
             ref.read(adminProvider.notifier).loadPlatformStats();
           },
@@ -72,25 +75,25 @@ class _PlatformReportsScreenState extends ConsumerState<PlatformReportsScreen> {
             AdminStatCard(
               title: 'Total Users',
               value: '${stats?.totalUsers ?? 0}',
-              icon: Icons.people_outline,
+              icon: LucideIcons.users,
               color: AppColors.primary,
             ),
             AdminStatCard(
               title: 'Pending Approvals',
               value: '${stats?.pendingApprovals ?? 0}',
-              icon: Icons.pending_actions,
+              icon: LucideIcons.clock,
               color: AppColors.warning,
             ),
             AdminStatCard(
               title: 'Reports Today',
               value: '${stats?.reportsToday ?? 0}',
-              icon: Icons.report_outlined,
+              icon: LucideIcons.flag,
               color: AppColors.error,
             ),
             AdminStatCard(
               title: 'Active Sessions',
               value: '${stats?.activityMetrics['Active Sessions'] ?? 0}',
-              icon: Icons.trending_up,
+              icon: LucideIcons.trendingUp,
               color: AppColors.success,
             ),
           ],
@@ -120,6 +123,9 @@ class _PlatformReportsScreenState extends ConsumerState<PlatformReportsScreen> {
         const AdminSectionLabel(label: 'Users by Role'),
         const SizedBox(height: 12),
         Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -175,6 +181,9 @@ class _PlatformReportsScreenState extends ConsumerState<PlatformReportsScreen> {
         const AdminSectionLabel(label: 'Users by Region'),
         const SizedBox(height: 12),
         Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
           child: ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -224,6 +233,9 @@ class _PlatformReportsScreenState extends ConsumerState<PlatformReportsScreen> {
         const AdminSectionLabel(label: 'Users by Sport'),
         const SizedBox(height: 12),
         Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
           child: ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -233,7 +245,7 @@ class _PlatformReportsScreenState extends ConsumerState<PlatformReportsScreen> {
               final entry = stats.usersBySport.entries.elementAt(index);
               return ListTile(
                 leading: Icon(
-                  Icons.sports,
+                  LucideIcons.trophy,
                   color: AppColors.primary,
                 ),
                 title: Text(entry.key),
@@ -270,9 +282,10 @@ class _PlatformReportsScreenState extends ConsumerState<PlatformReportsScreen> {
             return Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.border),
+                boxShadow: SportXShadows.e1,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -280,15 +293,17 @@ class _PlatformReportsScreenState extends ConsumerState<PlatformReportsScreen> {
                 children: [
                   Text(
                     entry.value.toString(),
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                    style: GoogleFonts.sora(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.ink,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     entry.key,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
                       color: AppColors.textSecondary,
                     ),
                   ),

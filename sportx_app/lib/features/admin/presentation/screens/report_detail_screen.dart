@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
@@ -59,6 +61,9 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
     final isPending = report.status == 'pending';
 
     return Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -66,22 +71,9 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
           children: [
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isPending
-                        ? AppColors.warning.withValues(alpha: 0.1)
-                        : AppColors.success.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    isPending ? 'PENDING' : 'REVIEWED',
-                    style: TextStyle(
-                      color: isPending ? AppColors.warning : AppColors.success,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                StatusPill(
+                  label: isPending ? 'PENDING' : 'REVIEWED',
+                  kind: isPending ? PillKind.pending : PillKind.ok,
                 ),
                 const SizedBox(width: 12),
                 Text(
@@ -121,6 +113,9 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
 
   Widget _buildContentPreview(Report report) {
     return Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -171,6 +166,9 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
 
   Widget _buildReporterInfo(Report report) {
     return Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -183,7 +181,7 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
               leading: CircleAvatar(
                 radius: 30,
                 backgroundColor: AppColors.infoLight,
-                child: Icon(Icons.person, color: AppColors.info),
+                child: Icon(LucideIcons.user, color: AppColors.info),
               ),
               title: Text(
                 report.reportedByName,
@@ -201,6 +199,9 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
     final isPending = report.status == 'pending';
 
     return Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -211,29 +212,16 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
             if (isPending) ...[
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => _handleResolve(),
-                  icon: const Icon(Icons.check_circle_outline),
-                  label: const Text('Mark as Resolved'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.success,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                ),
+                child: PrimaryButton(
+                    label: 'Mark as Resolved',
+                    icon: LucideIcons.circleCheck,
+                    onPressed: () => _handleResolve()),
               ),
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => _handleDismiss(),
-                  icon: const Icon(Icons.close),
-                  label: const Text('Dismiss Report'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.textSecondary,
-                    side: BorderSide(color: AppColors.border),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                ),
+                child: SecondaryButton(
+                    label: 'Dismiss Report', onPressed: () => _handleDismiss()),
               ),
             ] else
               Text(
@@ -252,13 +240,13 @@ class _ReportDetailScreenState extends ConsumerState<ReportDetailScreen> {
   IconData _getIconForContentType(String type) {
     switch (type) {
       case 'post':
-        return Icons.article_outlined;
+        return LucideIcons.fileText;
       case 'comment':
-        return Icons.comment_outlined;
+        return LucideIcons.messageCircle;
       case 'profile':
-        return Icons.person_outlined;
+        return LucideIcons.user;
       default:
-        return Icons.report_outlined;
+        return LucideIcons.flag;
     }
   }
 

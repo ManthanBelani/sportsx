@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/services/push_notification_service.dart';
 import 'package:sportx_app/features/auth/presentation/screens/splash_screen.dart';
 import 'package:sportx_app/features/auth/presentation/screens/role_selection_screen.dart';
@@ -458,24 +461,29 @@ class MainShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final role = ref.watch(authProvider).user?.role;
+    final selected = _calculateSelectedIndex(context);
     return Scaffold(
       body: child,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Colors.grey[300]!)),
+          color: Colors.white.withValues(alpha: 0.94),
+          border: const Border(top: BorderSide(color: AppColors.border)),
+          boxShadow: const [
+            BoxShadow(color: Color(0x1A101415), blurRadius: 30, offset: Offset(0, -10)),
+          ],
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.fromLTRB(4, 9, 4, 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                _buildNavItem(context, role, 0, Icons.home_outlined, Icons.home, 'Home'),
-                _buildNavItem(context, role, 1, Icons.search_outlined, Icons.search, 'Search'),
-                _buildNavItem(context, role, 2, Icons.bookmark_outline, Icons.bookmark, 'Saved'),
-                _buildNavItem(context, role, 3, Icons.list_alt_outlined, Icons.list_alt, 'Activity'),
-                _buildNavItem(context, role, 4, Icons.person_outline, Icons.person, 'Profile'),
+                _buildNavItem(context, role, 0, LucideIcons.house, 'Home', selected == 0),
+                _buildNavItem(context, role, 1, LucideIcons.compass, 'Discover', selected == 1),
+                _buildFab(context, role, selected == 2),
+                _buildNavItem(context, role, 3, LucideIcons.users, 'Network', selected == 3),
+                _buildNavItem(context, role, 4, LucideIcons.user, 'Me', selected == 4),
               ],
             ),
           ),
@@ -484,27 +492,58 @@ class MainShell extends ConsumerWidget {
     );
   }
 
-  Widget _buildNavItem(BuildContext context, String? role, int index, IconData icon, IconData activeIcon, String label) {
-    final isSelected = _calculateSelectedIndex(context) == index;
-    final color = isSelected ? const Color(0xFF1677ff) : const Color(0xFF6b7280);
+  Widget _buildFab(BuildContext context, String? role, bool selected) {
+    return GestureDetector(
+      onTap: () => _onItemTapped(2, context, role),
+      child: Container(
+        width: 58,
+        height: 58,
+        margin: const EdgeInsets.only(top: 0),
+        transform: Matrix4.translationValues(0, -18, 0),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFFFD54A), Color(0xFFFFC107), Color(0xFFF0AD00)],
+          ),
+          border: Border.all(color: Colors.white, width: 2),
+          boxShadow: const [
+            BoxShadow(color: Color(0x8CFFC107), blurRadius: 22, offset: Offset(0, 10)),
+            BoxShadow(color: Color(0x2E111111), blurRadius: 8, offset: Offset(0, 3)),
+          ],
+        ),
+        alignment: Alignment.center,
+        child: Icon(selected ? LucideIcons.bookmark : LucideIcons.plus,
+            color: AppColors.ink, size: 26),
+      ),
+    );
+  }
 
+  Widget _buildNavItem(
+      BuildContext context, String? role, int index, IconData icon, String label, bool isSelected) {
+    final color = isSelected ? AppColors.primaryDarker : AppColors.textTertiary;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => _onItemTapped(index, context, role),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(isSelected ? activeIcon : icon, color: color, size: 24),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: color,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 6),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon,
+                color: isSelected ? AppColors.yellowDeep : AppColors.textTertiary, size: 22),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 10.5,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                color: color,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

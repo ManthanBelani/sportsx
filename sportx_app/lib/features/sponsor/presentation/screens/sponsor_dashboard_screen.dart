@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -31,9 +32,10 @@ class _SponsorDashboardScreenState extends ConsumerState<SponsorDashboardScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
         title: const Text('SportX', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary)),
         actions: [
@@ -120,11 +122,11 @@ class _SponsorDashboardScreenState extends ConsumerState<SponsorDashboardScreen>
                   child: const Icon(LucideIcons.award, color: Colors.white, size: 28),
                 ),
                 const SizedBox(width: 14),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Sponsor Dashboard', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                      Text('Sponsor Dashboard', style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
                       SizedBox(height: 2),
                       Text('Manage your sponsorships & applications', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                     ],
@@ -295,7 +297,7 @@ class _SponsorDashboardScreenState extends ConsumerState<SponsorDashboardScreen>
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.background,
+              color: AppColors.surface,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: AppColors.border),
             ),
@@ -313,8 +315,8 @@ class _SponsorDashboardScreenState extends ConsumerState<SponsorDashboardScreen>
     Color badgeColor;
     Color badgeText;
     if (status == 'Active') {
-      badgeColor = const Color(0xFFd1fae5);
-      badgeText = const Color(0xFF065f46);
+      badgeColor = AppColors.successLight;
+      badgeText = AppColors.success;
     } else {
       badgeColor = AppColors.surface;
       badgeText = AppColors.textSecondary;

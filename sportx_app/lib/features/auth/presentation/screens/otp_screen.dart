@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
@@ -78,13 +80,16 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(authProvider).status == AuthStatus.loading;
+    final canVerify = _otp.length == 6;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         backgroundColor: AppColors.background,
+        scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary, size: 24),
+          icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary, size: 22),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -93,11 +98,11 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
             }
           },
         ),
-        title: const Text(
+        title: Text(
           'Verify Account',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+          style: GoogleFonts.sora(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
           ),
         ),
@@ -112,16 +117,21 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               Container(
                 width: 72,
                 height: 72,
-                decoration: const BoxDecoration(
-                  color: AppColors.surface,
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFFFFE9A8), Color(0xFFFFC107), Color(0xFFF5B400)],
+                  ),
+                  boxShadow: SportXShadows.btnShadow,
                 ),
-                child: const Icon(LucideIcons.mail, color: AppColors.primary, size: 32),
+                child: const Icon(LucideIcons.mail, color: AppColors.ink, size: 30),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Check your email',
-                style: TextStyle(
+                style: GoogleFonts.sora(
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
@@ -131,18 +141,18 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               Text.rich(
                 TextSpan(
                   text: 'We sent a verification code to\n',
-                  style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.5),
+                  style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary, height: 1.5),
                   children: [
                     TextSpan(
                       text: widget.email,
-                      style: const TextStyle(color: AppColors.primary),
+                      style: GoogleFonts.inter(color: AppColors.primaryDarker, fontWeight: FontWeight.w700),
                     ),
                   ],
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
-              
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(6, (i) => Padding(
@@ -156,24 +166,10 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                       textAlign: TextAlign.center,
                       keyboardType: TextInputType.number,
                       maxLength: 1,
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
-                      decoration: InputDecoration(
+                      style: GoogleFonts.sora(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                      decoration: const InputDecoration(
                         counterText: '',
                         contentPadding: EdgeInsets.zero,
-                        filled: true,
-                        fillColor: AppColors.background,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: AppColors.border),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: AppColors.border),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: AppColors.primary),
-                        ),
                       ),
                       onChanged: (v) {
                         if (v.isNotEmpty && i < 5) _focusNodes[i + 1].requestFocus();
@@ -185,58 +181,71 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                 )),
               ),
               const SizedBox(height: 24),
-              
+
               Text.rich(
                 TextSpan(
                   text: 'Resend code in ',
-                  style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                  style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary),
                   children: [
                     TextSpan(
                       text: '0:${_secondsLeft.toString().padLeft(2, '0')}',
-                      style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.inter(color: AppColors.textPrimary, fontWeight: FontWeight.w700),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 12),
-              
-              ElevatedButton(
-                onPressed: _otp.length == 6 ? _verify : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: AppColors.border,
-                  disabledForegroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 52),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+
+              if (isLoading)
+                Container(
+                  height: 50,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0xFFFFD54A), Color(0xFFFFC107), Color(0xFFF5B400)],
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0x2E785000)),
+                    boxShadow: SportXShadows.btnShadow,
+                  ),
+                  alignment: Alignment.center,
+                  child: const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: AppColors.ink, strokeWidth: 2)),
+                )
+              else
+                Opacity(
+                  opacity: canVerify ? 1.0 : 0.5,
+                  child: PrimaryButton(
+                    label: 'Verify & Continue',
+                    icon: LucideIcons.shieldCheck,
+                    onPressed: canVerify ? _verify : null,
+                  ),
                 ),
-                child: ref.watch(authProvider).status == AuthStatus.loading
-                    ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Text('Verify & Continue', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-              ),
-              
+
               const SizedBox(height: 24),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppColors.cardBackground,
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: SportXShadows.e1,
                 ),
                 child: Text.rich(
                   TextSpan(
                     text: 'Didn\'t receive the code? Check your spam folder or ',
-                    style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.5),
+                    style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary, height: 1.5),
                     children: [
                       WidgetSpan(
                         child: GestureDetector(
                           onTap: _secondsLeft == 0 ? _resend : null,
                           child: Text(
                             'resend',
-                            style: TextStyle(
+                            style: GoogleFonts.inter(
                               fontSize: 13,
-                              color: _secondsLeft == 0 ? AppColors.primary : AppColors.textSecondary,
-                              fontWeight: FontWeight.w500,
+                              color: _secondsLeft == 0 ? AppColors.primaryDarker : AppColors.textSecondary,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),

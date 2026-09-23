@@ -142,9 +142,9 @@ class _AcademyProfilePostingScreenState extends ConsumerState<AcademyProfilePost
         (!academyAsync.isLoading && !academyAsync.hasValue);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         elevation: 0,
         title: const Text('Edit Academy Listing',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
@@ -286,7 +286,9 @@ class _AcademyProfilePostingScreenState extends ConsumerState<AcademyProfilePost
                       child: FilledButton(
                         onPressed: _saving ? null : _save,
                         style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.primary, minimumSize: const Size.fromHeight(52)),
+                            backgroundColor: AppColors.yellow,
+                            foregroundColor: AppColors.ink,
+                            minimumSize: const Size.fromHeight(52)),
                         child: _saving
                             ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                             : const Text('Save Changes',
@@ -317,15 +319,15 @@ class _AcademyProfilePostingScreenState extends ConsumerState<AcademyProfilePost
       label: Text(label),
       selected: selected,
       onSelected: onSelected,
-      selectedColor: AppColors.primary,
-      checkmarkColor: Colors.white,
+      selectedColor: AppColors.yellow,
+      checkmarkColor: AppColors.ink,
       labelStyle: TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.w500,
-        color: selected ? Colors.white : AppColors.textPrimary,
+        color: selected ? AppColors.ink : AppColors.textPrimary,
       ),
-      side: BorderSide(color: selected ? AppColors.primary : AppColors.border),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      side: BorderSide(color: selected ? AppColors.yellowDeep : AppColors.border),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       showCheckmark: false,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
     );
@@ -337,9 +339,9 @@ class _AcademyProfilePostingScreenState extends ConsumerState<AcademyProfilePost
         filled: true,
         fillColor: AppColors.background,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.primary)),
       );
 
   String? _req(String? v) => (v == null || v.trim().isEmpty) ? 'Required' : null;
@@ -366,8 +368,8 @@ class _AcademyProfilePostingScreenState extends ConsumerState<AcademyProfilePost
       child: Container(
         height: 120,
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(8),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
           image: url != null ? DecorationImage(image: NetworkImage(MediaUtils.resolveUrl(url)), fit: BoxFit.cover) : null,
         ),

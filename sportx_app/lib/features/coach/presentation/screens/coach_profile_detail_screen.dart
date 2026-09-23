@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
@@ -106,7 +108,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
           : _coachData == null
               ? Center(
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    const Icon(Icons.error_outline, size: 48, color: AppColors.textSecondary),
+                    const Icon(LucideIcons.triangleAlert, size: 48, color: AppColors.textSecondary),
                     const SizedBox(height: 12),
                     const Text('Coach not found or unavailable'),
                     const SizedBox(height: 12),
@@ -163,7 +165,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF1E3A5F), Color(0xFF2E5A8F)],
+                  colors: [AppColors.ink, AppColors.coach],
                 ),
               ),
             ),
@@ -190,9 +192,9 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
                     backgroundImage: _coachData!['profile_photo_url'] != null
                         ? NetworkImage(MediaUtils.resolveUrl(_coachData!['profile_photo_url']))
                         : null,
-                    backgroundColor: AppColors.surface,
+                    backgroundColor: Colors.white,
                     child: _coachData!['profile_photo_url'] == null
-                        ? const Icon(Icons.person, size: 40, color: AppColors.textTertiary)
+                        ? const Icon(LucideIcons.user, size: 40, color: AppColors.textTertiary)
                         : null,
                   ),
                   const SizedBox(width: 16),
@@ -213,7 +215,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
                             ),
                             if (_coachData!['is_verified'] == true) ...[
                               const SizedBox(width: 6),
-                              const Icon(Icons.verified, color: AppColors.primary, size: 20),
+                              const Icon(LucideIcons.badgeCheck, color: AppColors.yellow, size: 20),
                             ],
                           ],
                         ),
@@ -233,7 +235,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
       ),
       actions: [
         IconButton(
-          icon: Icon(_isSaved ? Icons.favorite : Icons.favorite_border, color: Colors.white),
+          icon: Icon(LucideIcons.heart, color: _isSaved ? AppColors.error : Colors.white),
           onPressed: () async {
             final saved = await ref.read(savedProvider.notifier).toggle(type: 'coach_profile', itemId: widget.coachId);
             if (mounted) {
@@ -243,7 +245,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
           },
         ),
         IconButton(
-          icon: const Icon(Icons.more_vert, color: Colors.white),
+          icon: const Icon(LucideIcons.ellipsisVertical, color: Colors.white),
           onPressed: () => _showMoreMenu(context),
         ),
       ],
@@ -258,7 +260,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.share),
+              leading: const Icon(LucideIcons.share2),
               title: const Text('Share Profile'),
               onTap: () {
                 Navigator.pop(context);
@@ -268,7 +270,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
               },
             ),
             ListTile(
-              leading: const Icon(Icons.link),
+              leading: const Icon(LucideIcons.link),
               title: const Text('Copy Link'),
               onTap: () {
                 Navigator.pop(context);
@@ -276,7 +278,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
               },
             ),
             ListTile(
-              leading: const Icon(Icons.flag_outlined, color: Colors.red),
+              leading: const Icon(LucideIcons.flag, color: Colors.red),
               title: const Text('Report', style: TextStyle(color: Colors.red)),
               onTap: () async {
                 Navigator.pop(context);
@@ -305,14 +307,14 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
       children: [
         Row(
           children: [
-            Icon(Icons.work_outline, size: 16, color: AppColors.textSecondary),
+            Icon(LucideIcons.briefcase, size: 16, color: AppColors.textSecondary),
             const SizedBox(width: 4),
             Text(
               '${_coachData!['experience'] ?? 0} years experience',
               style: TextStyle(color: AppColors.textSecondary),
             ),
             const SizedBox(width: 16),
-            Icon(Icons.payments_outlined, size: 16, color: AppColors.textSecondary),
+            Icon(LucideIcons.wallet, size: 16, color: AppColors.textSecondary),
             const SizedBox(width: 4),
             Text(
               '₹${_coachData!['hourly_rate'] ?? 0}/hour',
@@ -329,17 +331,17 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildStatItem('12', 'Credentials', Icons.verified_outlined),
+          _buildStatItem('12', 'Credentials', LucideIcons.badgeCheck),
           Container(width: 1, height: 32, color: AppColors.border),
-          _buildStatItem('5', 'Facilities', Icons.business_outlined),
+          _buildStatItem('5', 'Facilities', LucideIcons.building2),
           Container(width: 1, height: 32, color: AppColors.border),
-          _buildStatItem('8', 'Athletes', Icons.people_outline),
+          _buildStatItem('8', 'Athletes', LucideIcons.users),
         ],
       ),
     );
@@ -385,12 +387,12 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(8),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.verified, color: AppColors.success, size: 20),
+                  const Icon(LucideIcons.badgeCheck, color: AppColors.success, size: 20),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -433,8 +435,8 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: isProgram ? AppColors.infoLight : AppColors.surface,
-                borderRadius: BorderRadius.circular(8),
+                color: isProgram ? AppColors.infoLight : Colors.white,
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: isProgram ? AppColors.primary : AppColors.border,
                 ),
@@ -443,7 +445,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    isProgram ? Icons.calendar_today : Icons.business,
+                    isProgram ? LucideIcons.calendar : LucideIcons.building2,
                     size: 16,
                     color: isProgram ? AppColors.primary : AppColors.textSecondary,
                   ),
@@ -497,9 +499,9 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
                     backgroundImage: athlete['profile_photo_url'] != null
                         ? NetworkImage(MediaUtils.resolveUrl(athlete['profile_photo_url']))
                         : null,
-                    backgroundColor: AppColors.surface,
+                    backgroundColor: Colors.white,
                     child: athlete['profile_photo_url'] == null
-                        ? const Icon(Icons.person, color: AppColors.textTertiary)
+                        ? const Icon(LucideIcons.user, color: AppColors.textTertiary)
                         : null,
                   ),
                   const SizedBox(height: 4),
@@ -526,13 +528,13 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
         const SizedBox(height: 12),
         if (_coachData!['contact_number'] != null)
           _buildContactItem(
-            icon: Icons.phone_outlined,
+            icon: LucideIcons.phone,
             label: _coachData!['contact_number'],
             onTap: () {},
           ),
         if (_coachData!['email'] != null)
           _buildContactItem(
-            icon: Icons.email_outlined,
+            icon: LucideIcons.mail,
             label: _coachData!['email'],
             onTap: () {},
           ),
@@ -557,7 +559,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
         child: Icon(icon, color: AppColors.primary, size: 22),
       ),
       title: Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
-      trailing: const Icon(Icons.chevron_right, color: AppColors.textTertiary),
+      trailing: const Icon(LucideIcons.chevronRight, color: AppColors.textTertiary),
       onTap: onTap,
     );
   }
@@ -571,7 +573,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
             'Check out this coach on SportX India!\nhttps://sportx.in/coach/${widget.coachId}',
           );
         },
-        icon: const Icon(Icons.share_outlined),
+        icon: const Icon(LucideIcons.share2),
         label: const Text('Share Profile'),
       ),
     );
@@ -601,7 +603,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
                 onPressed: (_isConnecting || isPending || isConnected) ? null : _handleConnect,
                 icon: _isConnecting
                     ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                    : Icon(isPending ? Icons.hourglass_empty : isConnected ? Icons.check : Icons.person_add),
+                    : Icon(isPending ? LucideIcons.hourglass : isConnected ? LucideIcons.check : LucideIcons.userPlus),
                 label: Text(isPending ? 'Pending' : isConnected ? 'Connected' : 'Connect'),
               ),
             ),

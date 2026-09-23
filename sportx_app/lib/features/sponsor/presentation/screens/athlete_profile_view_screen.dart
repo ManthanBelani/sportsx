@@ -29,9 +29,10 @@ class AthleteProfileViewScreen extends ConsumerWidget {
     final async = ref.watch(athleteDetailProvider(athleteId));
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
         title: async.maybeWhen(data: (a) => Text(a['name'] ?? a['full_name'] ?? 'Athlete'), orElse: () => const Text('Athlete')),
         leading: IconButton(
@@ -121,7 +122,7 @@ class AthleteProfileViewScreen extends ConsumerWidget {
 }
                           }
                         },
-                        style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+                        style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink),
                         icon: const Icon(LucideIcons.star),
                         label: const Text('Shortlist'),
                       ),

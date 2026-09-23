@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/shared/providers/enquiry_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/date_format_utils.dart';
 
@@ -123,9 +124,9 @@ class _CoachEnquiryInboxScreenState extends ConsumerState<CoachEnquiryInboxScree
     return DefaultTabController(
       length: _tabKeys.length,
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         appBar: AppBar(
-          backgroundColor: AppColors.background,
+          backgroundColor: AppColors.surface,
           elevation: 0,
           leading: IconButton(
             icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
@@ -183,7 +184,7 @@ class _CoachEnquiryInboxScreenState extends ConsumerState<CoachEnquiryInboxScree
           children: [
             CircleAvatar(
               radius: 24,
-              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+              backgroundColor: AppColors.coach.withValues(alpha: 0.12),
               child: e.athletePhotoUrl != null
                   ? ClipOval(
                       child: Image.network(
@@ -191,10 +192,10 @@ class _CoachEnquiryInboxScreenState extends ConsumerState<CoachEnquiryInboxScree
                         width: 48,
                         height: 48,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => const Icon(LucideIcons.user, color: AppColors.primary),
+                        errorBuilder: (_, _, _) => const Icon(LucideIcons.user, color: AppColors.coach),
                       ),
                     )
-                  : const Icon(LucideIcons.user, color: AppColors.primary),
+                  : const Icon(LucideIcons.user, color: AppColors.coach),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -260,42 +261,15 @@ class _CoachEnquiryInboxScreenState extends ConsumerState<CoachEnquiryInboxScree
   }
 
   Widget _buildStatusBadge(String status) {
-    Color bgColor;
-    Color textColor;
-    String label;
-
     switch (status) {
       case 'new':
-        bgColor = const Color(0xFFdbeafe);
-        textColor = AppColors.primary;
-        label = 'New';
-        break;
+        return const StatusPill(label: 'New', kind: PillKind.pending);
       case 'replied':
-        bgColor = const Color(0xFFd1fae5);
-        textColor = const Color(0xFF065f46);
-        label = 'Replied';
-        break;
+        return const StatusPill(label: 'Replied', kind: PillKind.ok);
       case 'closed':
-        bgColor = const Color(0xFFF3F4F6);
-        textColor = AppColors.textSecondary;
-        label = 'Closed';
-        break;
+        return const StatusPill(label: 'Closed', kind: PillKind.draft);
       default:
-        bgColor = AppColors.surface;
-        textColor = AppColors.textSecondary;
-        label = status;
+        return StatusPill(label: status, kind: PillKind.draft);
     }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: textColor),
-      ),
-    );
   }
 }

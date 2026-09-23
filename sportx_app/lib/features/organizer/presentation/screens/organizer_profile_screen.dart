@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class OrganizerProfileScreen extends ConsumerStatefulWidget {
@@ -75,27 +77,28 @@ class _OrganizerProfileScreenState extends ConsumerState<OrganizerProfileScreen>
   Widget build(BuildContext context) {
     final async = ref.watch(myOrganizerProvider);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         backgroundColor: AppColors.background,
+        scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
-        title: const Text('Organization Profile', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Organization Profile', style: GoogleFonts.sora(fontSize: 19, fontWeight: FontWeight.w700, color: AppColors.ink)),
         bottom: const PreferredSize(preferredSize: Size.fromHeight(1), child: Divider(height: 1, color: AppColors.border)),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),
-            child: FilledButton(
-              onPressed: _saving ? null : _save,
-              style: FilledButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8)),
-              child: _saving ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('Save'),
+            child: Center(
+              child: _saving
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primaryDarker))
+                  : PrimaryButton(small: true, label: 'Save', icon: LucideIcons.check, onPressed: _save),
             ),
           ),
         ],
       ),
       body: async.when(
         loading: () => const GenericListSkeleton(),
-        error: (e, _) => Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Text(ApiException.messageFor(e)), const SizedBox(height: 12), ElevatedButton(onPressed: () => ref.invalidate(myOrganizerProvider), child: const Text('Retry'))])),
+        error: (e, _) => Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Text(ApiException.messageFor(e)), const SizedBox(height: 12), SecondaryButton(label: 'Retry', onPressed: () => ref.invalidate(myOrganizerProvider))])),
         data: (profile) {
           _fillFromProfile(profile);
           return SingleChildScrollView(
@@ -120,19 +123,20 @@ class _OrganizerProfileScreenState extends ConsumerState<OrganizerProfileScreen>
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: const Color(0xFFdbeafe), borderRadius: BorderRadius.circular(8)),
-                child: const Row(children: [Icon(LucideIcons.info, size: 14, color: AppColors.primary), SizedBox(width: 8), Expanded(child: Text('Verification documents are managed via onboarding. Contact support to update them.', style: TextStyle(fontSize: 12, color: AppColors.primary)))]),
+                decoration: BoxDecoration(
+                  color: AppColors.infoLight,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.info.withValues(alpha: 0.3)),
+                ),
+                child: Row(children: [Icon(LucideIcons.info, size: 16, color: AppColors.info), SizedBox(width: 8), Expanded(child: Text('Verification documents are managed via onboarding. Contact support to update them.', style: GoogleFonts.inter(fontSize: 12, color: AppColors.info)))]),
               ),
               const SizedBox(height: 16),
-              OutlinedButton.icon(
-                onPressed: () => context.push('/social-links'),
-                icon: const Icon(LucideIcons.share2, size: 16),
-                label: const Text('Manage Social Links'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primary,
-                  side: const BorderSide(color: AppColors.primary),
-                  minimumSize: const Size.fromHeight(48),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              SizedBox(
+                width: double.infinity,
+                child: SecondaryButton(
+                  label: 'Manage Social Links',
+                  icon: LucideIcons.share2,
+                  onPressed: () => context.push('/social-links'),
                 ),
               ),
             ]),
@@ -142,5 +146,5 @@ class _OrganizerProfileScreenState extends ConsumerState<OrganizerProfileScreen>
     );
   }
 
-  Widget _label(String t) => Padding(padding: const EdgeInsets.only(bottom: 6), child: Text(t, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)));
+  Widget _label(String t) => Padding(padding: const EdgeInsets.only(bottom: 6), child: Text(t, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)));
 }

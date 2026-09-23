@@ -76,9 +76,9 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
   Widget build(BuildContext context) {
     final meta = ref.watch(metaProvider);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary, size: 24),
@@ -145,8 +145,8 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
                     return ChoiceChip(
                       label: Text(s.name),
                       selected: selected,
-                      selectedColor: AppColors.primary,
-                      labelStyle: TextStyle(color: selected ? Colors.white : AppColors.textPrimary, fontWeight: FontWeight.w500),
+                      selectedColor: AppColors.yellow,
+                      labelStyle: TextStyle(color: selected ? AppColors.ink : AppColors.textPrimary, fontWeight: FontWeight.w500),
                       onSelected: (sel) => setState(() => sel ? _sportIds.add(s.id) : _sportIds.remove(s.id)),
                     );
                   }).toList(),
@@ -158,13 +158,13 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
                 ElevatedButton(
                   onPressed: _saving ? null : _submit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppColors.yellow,
+                    foregroundColor: AppColors.ink,
                     disabledBackgroundColor: AppColors.border,
                     disabledForegroundColor: Colors.white,
                     minimumSize: const Size.fromHeight(52),
                     elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: _saving
                       ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
@@ -188,8 +188,8 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
         filled: true,
         fillColor: AppColors.background,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.primary)),
       );
 
   String? _req(String? v) => (v == null || v.trim().isEmpty) ? 'Required' : null;
@@ -200,8 +200,8 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
       child: Container(
         height: 120,
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(8),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
           image: url != null ? DecorationImage(image: NetworkImage(MediaUtils.resolveUrl(url)), fit: BoxFit.cover) : null,
         ),
@@ -236,7 +236,7 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.border)),
+      decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border)),
       child:       DropdownButtonFormField<int>(
         initialValue: value,
         decoration: const InputDecoration(border: InputBorder.none),

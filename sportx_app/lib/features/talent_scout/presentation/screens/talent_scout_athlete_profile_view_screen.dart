@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -105,12 +106,13 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
-        title: const Text('Athlete Profile',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Athlete Profile',
+            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         centerTitle: false,
         leading: IconButton(
             icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
@@ -139,7 +141,7 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
                           });
                           _loadAthlete();
                         },
-                        style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+                        style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink),
                         child: const Text('Retry'),
                       ),
                     ],
@@ -197,7 +199,7 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
 
     return Container(
       width: double.infinity,
-      color: AppColors.background,
+      color: AppColors.surface,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
       child: Column(
         children: [
@@ -206,7 +208,7 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
             height: 96,
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              gradient: LinearGradient(colors: [AppColors.primary, Color(0xFF0d47a1)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+              gradient: LinearGradient(colors: [AppColors.primary, AppColors.scout], begin: Alignment.topLeft, end: Alignment.bottomRight),
             ),
             child: ClipOval(
               child: resolved != null
@@ -329,9 +331,9 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
             child: Row(children: [
               Container(
                 width: 40, height: 40,
-                decoration: BoxDecoration(color: const Color(0xFFfef3c7), borderRadius: BorderRadius.circular(8)),
+                decoration: BoxDecoration(color: AppColors.yellowTint, borderRadius: BorderRadius.circular(8)),
                 alignment: Alignment.center,
-                child: const Icon(LucideIcons.award, size: 18, color: Color(0xFF92400e)),
+                child: const Icon(LucideIcons.award, size: 18, color: AppColors.warnText),
               ),
               const SizedBox(width: 12),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -492,7 +494,7 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
   Widget _buildActionButtons() {
     return Container(
       width: double.infinity,
-      color: AppColors.background,
+      color: AppColors.surface,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Column(children: [
         Row(children: [
@@ -574,7 +576,7 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
         },
         icon: const Icon(LucideIcons.messageCircle, size: 18),
         label: const Text('Message'),
-        style: FilledButton.styleFrom(backgroundColor: const Color(0xFF065f46), minimumSize: const Size.fromHeight(48), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+        style: FilledButton.styleFrom(backgroundColor: AppColors.success, minimumSize: const Size.fromHeight(48), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
       );
     }
     if (status == 'pending') {
@@ -582,7 +584,7 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
         onPressed: () => context.push('/scout-connections'),
         icon: const Icon(LucideIcons.clock, size: 18),
         label: const Text('Request Sent'),
-        style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFF92400e), side: const BorderSide(color: Color(0xFF92400e)), minimumSize: const Size.fromHeight(48), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+        style: OutlinedButton.styleFrom(foregroundColor: AppColors.warnText, side: const BorderSide(color: AppColors.warnText), minimumSize: const Size.fromHeight(48), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
       );
     }
     return FilledButton.icon(
@@ -596,7 +598,7 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
   Widget _buildSection({required String title, Widget? action, required Widget child}) {
     return Container(
       width: double.infinity,
-      color: AppColors.background,
+      color: AppColors.surface,
       padding: const EdgeInsets.all(20),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [

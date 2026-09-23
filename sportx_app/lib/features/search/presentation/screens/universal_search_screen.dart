@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -6,6 +7,7 @@ import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/features/search/presentation/providers/search_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class UniversalSearchScreen extends ConsumerStatefulWidget {
   const UniversalSearchScreen({super.key});
@@ -46,7 +48,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
     final hasResults = searchState.results != null;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -65,6 +67,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: const BoxDecoration(
+        color: Colors.white,
         border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
       child: Row(
@@ -105,7 +108,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   border: Border.all(color: AppColors.border),
-                  borderRadius: BorderRadius.circular(22),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(
                   children: [
@@ -176,7 +179,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (searchState.recentSearches.isNotEmpty) ...[
-            const Text('Recent Searches', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+            Text('Recent Searches', style: GoogleFonts.sora(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
             const SizedBox(height: 12),
             ...searchState.recentSearches.map((search) {
               return GestureDetector(
@@ -208,7 +211,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
             const SizedBox(height: 24),
           ],
 
-          const Text('Trending', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+          Text('Trending', style: GoogleFonts.sora(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
@@ -217,7 +220,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
           ),
 
           const SizedBox(height: 24),
-          const Text('Quick Links', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+          Text('Quick Links', style: GoogleFonts.sora(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
           const SizedBox(height: 12),
           GridView.count(
             shrinkWrap: true,
@@ -255,54 +258,23 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
   }
 
   Widget _buildTrendingChip(String label, IconData icon) {
-    return GestureDetector(
+    return SportXChip(
+      label: label,
+      icon: icon,
       onTap: () {
         _searchController.text = label;
         _onSearchSubmitted(label);
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: AppColors.textPrimary),
-            const SizedBox(width: 6),
-            Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
-          ],
-        ),
-      ),
     );
   }
 
   Widget _buildQuickLink(String label, IconData icon, String route) {
-    return GestureDetector(
+    return QuickTile(
+      label: label,
+      icon: icon,
+      tintBg: AppColors.yellowTint,
+      tintFg: AppColors.primaryDarker,
       onTap: () => context.push(route),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: AppColors.primary, size: 24),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                label,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -342,7 +314,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFFE6F0FF) : AppColors.surface,
+                      color: isSelected ? AppColors.yellowTint : AppColors.surface,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
@@ -523,7 +495,11 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(title,
+                      style: GoogleFonts.sora(
+                          fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.ink),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
                   if (subtitle.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(subtitle, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),

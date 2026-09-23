@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -100,7 +101,7 @@ class _SponsorOnboardingScreenState extends ConsumerState<SponsorOnboardingScree
   Widget build(BuildContext context) {
     final meta = ref.watch(metaProvider);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       body: SafeArea(
         child: Column(children: [
           Padding(
@@ -120,7 +121,8 @@ class _SponsorOnboardingScreenState extends ConsumerState<SponsorOnboardingScree
                 child: Container(width: 40, height: 40, decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)), alignment: Alignment.center, child: const Icon(LucideIcons.arrowLeft, size: 18, color: AppColors.textPrimary)),
               ),
               const SizedBox(width: 12),
-              const Text('Sponsor Setup', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+              Text('Sponsor Setup',
+            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
             ]),
           ),
           Container(margin: const EdgeInsets.only(top: 12), height: 1, color: AppColors.border),
@@ -186,12 +188,12 @@ class _SponsorOnboardingScreenState extends ConsumerState<SponsorOnboardingScree
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(border: Border.all(color: _logoMediaId != null ? AppColors.primary : AppColors.border, style: BorderStyle.solid), borderRadius: BorderRadius.circular(8), color: AppColors.surface),
                     child: Column(children: [
-                      Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(8)), child: Icon(_logoMediaId != null ? LucideIcons.check : LucideIcons.image, color: AppColors.primary, size: 32)),
+                      Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)), child: Icon(_logoMediaId != null ? LucideIcons.check : LucideIcons.image, color: AppColors.primary, size: 32)),
                       const SizedBox(height: 12),
                       const Text('Upload brand logo', textAlign: TextAlign.center, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                       const SizedBox(height: 4),
                       const Text('PNG, JPG up to 5MB, 400x400 recommended', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                      if (_logoMediaId != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text('✓ ${_logoName ?? 'logo.png'} uploaded', style: const TextStyle(fontSize: 12, color: Color(0xFF065f46), fontWeight: FontWeight.w600))),
+                      if (_logoMediaId != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text('✓ ${_logoName ?? 'logo.png'} uploaded', style: const TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600))),
                       if (_logoMediaId == null) const Padding(padding: EdgeInsets.only(top: 8), child: Text('Click to upload or drag and drop', style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500))),
                     ]),
                   ),
@@ -207,11 +209,11 @@ class _SponsorOnboardingScreenState extends ConsumerState<SponsorOnboardingScree
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(border: Border.all(color: _docMediaId != null ? AppColors.primary : AppColors.border, style: BorderStyle.solid), borderRadius: BorderRadius.circular(8), color: AppColors.surface),
                     child: Column(children: [
-                      Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(8)), child: Icon(_docMediaId != null ? LucideIcons.check : LucideIcons.fileText, color: AppColors.primary, size: 32)),
+                      Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)), child: Icon(_docMediaId != null ? LucideIcons.check : LucideIcons.fileText, color: AppColors.primary, size: 32)),
                       const SizedBox(height: 12),
                       const Text('Upload business registration certificate', textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
                       const SizedBox(height: 8),
-                      if (_docMediaId != null) Text('✓ ${_docName ?? 'business_cert.pdf'} uploaded', style: const TextStyle(fontSize: 12, color: Color(0xFF065f46), fontWeight: FontWeight.w600)) else const Text('Click to upload or drag and drop', style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500)),
+                      if (_docMediaId != null) Text('✓ ${_docName ?? 'business_cert.pdf'} uploaded', style: const TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600)) else const Text('Click to upload or drag and drop', style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500)),
                       const SizedBox(height: 4),
                       const Text('PDF, JPG up to 10MB', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                     ]),

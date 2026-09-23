@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -6,6 +8,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
@@ -173,13 +176,25 @@ class _AddAchievementScreenState extends ConsumerState<AddAchievementScreen> {
   Widget build(BuildContext context) {
     if (_isLoadingProfile) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Add Achievement')),
+        backgroundColor: AppColors.surface,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          title: Text('Add Achievement',
+              style: GoogleFonts.sora(
+                  fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
+        ),
         body: const AddAchievementSkeleton(),
       );
     }
     return Scaffold(
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        title: const Text('Add Achievement'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Text('Add Achievement',
+            style: GoogleFonts.sora(
+                fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -228,7 +243,9 @@ class _AddAchievementScreenState extends ConsumerState<AddAchievementScreen> {
                 },
               ),
               const SizedBox(height: 24),
-              Text('Certificate / Photo', style: Theme.of(context).textTheme.titleMedium),
+              Text('Certificate / Photo',
+                  style: GoogleFonts.sora(
+                      fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink)),
               const SizedBox(height: 8),
               Text(
                 'Upload a certificate or photo as proof (optional)',
@@ -241,7 +258,7 @@ class _AddAchievementScreenState extends ConsumerState<AddAchievementScreen> {
                   width: double.infinity,
                   height: 150,
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: _certificateFile != null ? AppColors.primary : AppColors.border,
@@ -256,7 +273,7 @@ class _AddAchievementScreenState extends ConsumerState<AddAchievementScreen> {
                       : Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.cloud_upload_outlined, size: 40, color: AppColors.textTertiary),
+                            Icon(LucideIcons.uploadCloud, size: 40, color: AppColors.textTertiary),
                             const SizedBox(height: 8),
                             Text(
                               'Tap to upload',
@@ -277,7 +294,7 @@ class _AddAchievementScreenState extends ConsumerState<AddAchievementScreen> {
                   alignment: Alignment.centerRight,
                   child: TextButton.icon(
                     onPressed: () => setState(() => _certificateFile = null),
-                    icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.error),
+                    icon: const Icon(LucideIcons.trash2, size: 18, color: AppColors.error),
                     label: const Text('Remove', style: TextStyle(color: AppColors.error)),
                   ),
                 ),
@@ -285,17 +302,26 @@ class _AddAchievementScreenState extends ConsumerState<AddAchievementScreen> {
               const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _isSaving ? null : _saveAchievement,
-                  child: _isSaving
-                      ? const SizedBox(
+                child: _isSaving
+                    ? Container(
+                        height: 48,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: AppColors.yellow,
+                          borderRadius: BorderRadius.circular(13),
+                        ),
+                        child: const SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Text('Add Achievement'),
-                ),
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: AppColors.ink),
+                        ),
+                      )
+                    : PrimaryButton(
+                        label: 'Add Achievement',
+                        icon: LucideIcons.trophy,
+                        onPressed: _saveAchievement,
+                      ),
               ),
             ],
           ),

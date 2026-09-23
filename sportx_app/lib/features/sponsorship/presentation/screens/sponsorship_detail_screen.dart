@@ -25,7 +25,7 @@ class SponsorshipDetailScreen extends ConsumerWidget {
         final benefitsList = s.benefits?.split(',').map((e) => e.trim()).toList() ?? [];
 
         return Scaffold(
-          backgroundColor: AppColors.background,
+          backgroundColor: AppColors.surface,
           body: CustomScrollView(
             slivers: [
               SliverAppBar(
@@ -68,7 +68,7 @@ class SponsorshipDetailScreen extends ConsumerWidget {
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [Color(0xFF111111), Color(0xFF1a1a1a)],
+                        colors: [AppColors.ink, AppColors.ink],
                       ),
                     ),
                     child: SafeArea(
@@ -205,7 +205,7 @@ class SponsorshipDetailScreen extends ConsumerWidget {
                           child: Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFd1fae5),
+                              color: AppColors.successLight,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Row(
@@ -213,7 +213,7 @@ class SponsorshipDetailScreen extends ConsumerWidget {
                                 const Icon(
                                   LucideIcons.check,
                                   size: 18,
-                                  color: Color(0xFF065f46),
+                                  color: AppColors.success,
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
@@ -222,7 +222,7 @@ class SponsorshipDetailScreen extends ConsumerWidget {
                                     style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
-                                      color: Color(0xFF065f46),
+                                      color: AppColors.success,
                                     ),
                                   ),
                                 ),
@@ -296,7 +296,7 @@ class SponsorshipDetailScreen extends ConsumerWidget {
           bottomNavigationBar: Container(
             padding: const EdgeInsets.all(20),
             decoration: const BoxDecoration(
-              color: AppColors.background,
+              color: AppColors.surface,
               border: Border(
                 top: BorderSide(color: AppColors.border),
               ),

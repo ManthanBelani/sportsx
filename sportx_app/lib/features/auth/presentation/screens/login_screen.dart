@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
@@ -42,13 +44,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = ref.watch(authProvider);
+    final isLoading = auth.status == AuthStatus.loading;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         backgroundColor: AppColors.background,
+        scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary, size: 24),
+          icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary, size: 22),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -57,11 +61,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             }
           },
         ),
-        title: const Text(
+        title: Text(
           'Log In',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+          style: GoogleFonts.sora(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
           ),
         ),
@@ -74,19 +78,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'SportX India',
-                style: TextStyle(
+                style: GoogleFonts.sora(
                   fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
+                  letterSpacing: -1.0,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Welcome back! Log in to continue',
-                style: TextStyle(
+                style: GoogleFonts.inter(
                   fontSize: 14,
                   color: AppColors.textSecondary,
                 ),
@@ -94,7 +99,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 32),
 
-              const Text('Email Address', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+              Text('Email Address', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
               const SizedBox(height: 8),
               TextField(
                 controller: _emailController,
@@ -102,27 +107,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 decoration: InputDecoration(
                   hintText: 'you@example.com',
                   errorText: auth.fieldErrors['email'],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.border),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.border),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.primary),
-                  ),
-                  filled: true,
-                  fillColor: AppColors.background,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  prefixIcon: const Icon(LucideIcons.mail, size: 18, color: AppColors.textSecondary),
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
 
               const SizedBox(height: 16),
-              const Text('Password', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+              Text('Password', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
               const SizedBox(height: 8),
               TextField(
                 controller: _passwordController,
@@ -130,23 +121,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 decoration: InputDecoration(
                   hintText: 'Enter your password',
                   errorText: auth.fieldErrors['password'],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.border),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.border),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.primary),
-                  ),
-                  filled: true,
-                  fillColor: AppColors.background,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  prefixIcon: const Icon(LucideIcons.lock, size: 18, color: AppColors.textSecondary),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: AppColors.textSecondary),
+                    icon: Icon(_obscurePassword ? LucideIcons.eyeOff : LucideIcons.eye, color: AppColors.textSecondary, size: 20),
                     onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                   ),
                 ),
@@ -162,31 +139,40 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  child: const Text('Forgot Password?', style: TextStyle(color: AppColors.primary, fontSize: 14)),
+                  child: Text('Forgot Password?', style: GoogleFonts.inter(color: AppColors.primaryDarker, fontSize: 14, fontWeight: FontWeight.w700)),
                 ),
               ),
               const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _login,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 52),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              if (isLoading)
+                Container(
+                  height: 50,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0xFFFFD54A), Color(0xFFFFC107), Color(0xFFF5B400)],
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0x2E785000)),
+                    boxShadow: SportXShadows.btnShadow,
+                  ),
+                  alignment: Alignment.center,
+                  child: const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: AppColors.ink, strokeWidth: 2)),
+                )
+              else
+                PrimaryButton(
+                  label: 'Log In',
+                  icon: LucideIcons.arrowRight,
+                  onPressed: _login,
                 ),
-                child: auth.status == AuthStatus.loading
-                    ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Text('Log In', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-              ),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text("Don't have an account? ", style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                  Text("Don't have an account? ", style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary)),
                   GestureDetector(
                     onTap: () => context.go('/role-selection'),
-                    child: const Text('Sign up', style: TextStyle(fontSize: 14, color: AppColors.primary, fontWeight: FontWeight.w500)),
+                    child: Text('Sign up', style: GoogleFonts.inter(fontSize: 14, color: AppColors.primaryDarker, fontWeight: FontWeight.w700)),
                   ),
                 ],
               ),

@@ -271,9 +271,9 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
       final skeleton = const CoachEditFormSkeleton();
       if (widget.isTabContent) return skeleton;
       return Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         appBar: AppBar(
-          backgroundColor: AppColors.background,
+          backgroundColor: AppColors.surface,
           elevation: 0,
           leading: IconButton(
             icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
@@ -290,9 +290,9 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
@@ -384,7 +384,7 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
                     label: Text(cert, style: const TextStyle(fontSize: 12, color: AppColors.textPrimary)),
                     deleteIcon: const Icon(LucideIcons.x, size: 14),
                     onDeleted: () => _removeCertification(cert),
-                    backgroundColor: AppColors.surface,
+                    backgroundColor: Colors.white,
                     side: const BorderSide(color: AppColors.border),
                   );
                 }).toList(),
@@ -415,7 +415,7 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
                     label: Text(lang, style: const TextStyle(fontSize: 12, color: AppColors.textPrimary)),
                     deleteIcon: const Icon(LucideIcons.x, size: 14),
                     onDeleted: () => _removeLanguage(lang),
-                    backgroundColor: AppColors.surface,
+                    backgroundColor: Colors.white,
                     side: const BorderSide(color: AppColors.border),
                   );
                 }).toList(),
@@ -426,8 +426,8 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(8),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.border),
               ),
               child: Row(
@@ -460,8 +460,8 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(8),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
                 children: [
@@ -491,10 +491,10 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
               child: ElevatedButton(
                 onPressed: _saving ? null : _save,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.yellow,
+                  foregroundColor: AppColors.ink,
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 child: _saving
                     ? const SizedBox(
@@ -514,7 +514,7 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
                   foregroundColor: AppColors.primary,
                   side: const BorderSide(color: AppColors.primary),
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 icon: const Icon(LucideIcons.share2, size: 18),
                 label: const Text('Manage Social Links', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
@@ -531,7 +531,7 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
                   foregroundColor: Colors.red,
                   side: const BorderSide(color: Colors.red),
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 icon: const Icon(LucideIcons.logOut, size: 18),
                 label: const Text('Log out', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
@@ -555,10 +555,10 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
         CircleAvatar(
           key: ValueKey(photoUrl ?? 'no-photo'),
           radius: 40,
-          backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+          backgroundColor: AppColors.coach.withValues(alpha: 0.12),
           backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
           onBackgroundImageError: photoUrl != null ? (_, _) {} : null,
-          child: photoUrl == null ? const Icon(LucideIcons.user, color: AppColors.primary, size: 32) : null,
+          child: photoUrl == null ? const Icon(LucideIcons.user, color: AppColors.coach, size: 32) : null,
         ),
         const SizedBox(width: 16),
         OutlinedButton.icon(
@@ -599,12 +599,12 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
             hintText: hint,
             hintStyle: const TextStyle(color: AppColors.textSecondary),
             filled: true,
-            fillColor: AppColors.surface,
+            fillColor: Colors.white,
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary)),
-            errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.red)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.primary)),
+            errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Colors.red)),
           ),
         ),
       ],
@@ -626,11 +626,11 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
             hintText: 'Select $label',
             hintStyle: const TextStyle(color: AppColors.textSecondary),
             filled: true,
-            fillColor: AppColors.surface,
+            fillColor: Colors.white,
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.primary)),
           ),
           isExpanded: true,
           items: options.map((o) => DropdownMenuItem<String>(value: o, child: Text(o, style: const TextStyle(fontSize: 14)))).toList(),
@@ -655,11 +655,11 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
             hintText: 'Select $label',
             hintStyle: const TextStyle(color: AppColors.textSecondary),
             filled: true,
-            fillColor: AppColors.surface,
+            fillColor: Colors.white,
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.primary)),
           ),
           isExpanded: true,
           items: items.map((i) => DropdownMenuItem<int>(value: i.value, child: Text(i.label, style: const TextStyle(fontSize: 14)))).toList(),
@@ -727,8 +727,8 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
                       margin: const EdgeInsets.symmetric(horizontal: 2),
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       decoration: BoxDecoration(
-                        color: isSelected ? AppColors.primary : AppColors.surface,
-                        borderRadius: BorderRadius.circular(4),
+                        color: isSelected ? AppColors.primary : Colors.white,
+                        borderRadius: BorderRadius.circular(999),
                         border: Border.all(color: isSelected ? AppColors.primary : AppColors.border),
                       ),
                       child: Center(
@@ -736,7 +736,7 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
                           slot,
                           style: TextStyle(
                             fontSize: 9,
-                            color: isSelected ? Colors.white : AppColors.textSecondary,
+                            color: isSelected ? AppColors.ink : AppColors.textSecondary,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -756,11 +756,11 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
         hintText: hint,
         hintStyle: const TextStyle(color: AppColors.textSecondary),
         filled: true,
-        fillColor: AppColors.surface,
+        fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.primary)),
       );
 
   String? _required(String? v) => (v == null || v.trim().isEmpty) ? 'Required' : null;

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class OrganizerAnalyticsScreen extends ConsumerWidget {
@@ -14,12 +16,13 @@ class OrganizerAnalyticsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(organizerAnalyticsProvider);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         backgroundColor: AppColors.background,
+        scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
-        title: const Text('Analytics', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Analytics', style: GoogleFonts.sora(fontSize: 19, fontWeight: FontWeight.w700, color: AppColors.ink)),
         actions: [
           IconButton(icon: const Icon(LucideIcons.refreshCw, size: 18, color: AppColors.textPrimary), onPressed: () => ref.invalidate(organizerAnalyticsProvider)),
         ],
@@ -31,7 +34,7 @@ class OrganizerAnalyticsScreen extends ConsumerWidget {
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             Text(ApiException.messageFor(e), style: const TextStyle(color: AppColors.textSecondary)),
             const SizedBox(height: 12),
-            ElevatedButton(onPressed: () => ref.invalidate(organizerAnalyticsProvider), child: const Text('Retry')),
+            SecondaryButton(label: 'Retry', onPressed: () => ref.invalidate(organizerAnalyticsProvider)),
           ]),
         ),
         data: (a) => RefreshIndicator(
@@ -43,7 +46,7 @@ class OrganizerAnalyticsScreen extends ConsumerWidget {
               Row(children: [
                 Expanded(child: _statCard('${a.totalRegistrations}', 'Total Registrations', LucideIcons.users)),
                 const SizedBox(width: 10),
-                Expanded(child: _statCard('${a.pendingRegistrations}', 'Pending', LucideIcons.clock, color: Colors.orange)),
+                Expanded(child: _statCard('${a.pendingRegistrations}', 'Pending', LucideIcons.clock, color: AppColors.amberDeep)),
                 const SizedBox(width: 10),
                 Expanded(child: _statCard('${a.approvalRate}%', 'Approval Rate', LucideIcons.trendingUp, color: AppColors.success)),
               ]),
@@ -60,26 +63,31 @@ class OrganizerAnalyticsScreen extends ConsumerWidget {
               // Registrations breakdown
               Container(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: SportXShadows.e1,
+                ),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Text('Registrations Breakdown', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                  Text('Registrations Breakdown', style: GoogleFonts.sora(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
                   const SizedBox(height: 12),
                   Row(children: [
                     Expanded(child: _breakdownItem('Approved', '${a.approvedRegistrations}', AppColors.success)),
-                    Expanded(child: _breakdownItem('Pending', '${a.pendingRegistrations}', Colors.orange)),
-                    Expanded(child: _breakdownItem('Rejected', '${a.rejectedRegistrations}', Colors.red)),
-                    Expanded(child: _breakdownItem('Total', '${a.totalRegistrations}', AppColors.primary)),
+                    Expanded(child: _breakdownItem('Pending', '${a.pendingRegistrations}', AppColors.amberDeep)),
+                    Expanded(child: _breakdownItem('Rejected', '${a.rejectedRegistrations}', AppColors.error)),
+                    Expanded(child: _breakdownItem('Total', '${a.totalRegistrations}', AppColors.primaryDarker)),
                   ]),
                   const SizedBox(height: 12),
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(999),
                     child: Row(children: [
                       if (a.approvedRegistrations > 0)
                         Expanded(flex: a.approvedRegistrations, child: Container(height: 8, color: AppColors.success)),
                       if (a.pendingRegistrations > 0)
-                        Expanded(flex: a.pendingRegistrations, child: Container(height: 8, color: Colors.orange)),
+                        Expanded(flex: a.pendingRegistrations, child: Container(height: 8, color: AppColors.amberDeep)),
                       if (a.rejectedRegistrations > 0)
-                        Expanded(flex: a.rejectedRegistrations, child: Container(height: 8, color: Colors.red)),
+                        Expanded(flex: a.rejectedRegistrations, child: Container(height: 8, color: AppColors.error)),
                       if (a.totalRegistrations == 0) Container(height: 8, color: AppColors.border),
                     ]),
                   ),
@@ -90,22 +98,27 @@ class OrganizerAnalyticsScreen extends ConsumerWidget {
               // Capacity utilization
               Container(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: SportXShadows.e1,
+                ),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    const Text('Capacity Utilization', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                    Text('${a.utilizationPercent}%', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                    Text('Capacity Utilization', style: GoogleFonts.sora(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                    Text('${a.utilizationPercent}%', style: GoogleFonts.sora(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.primaryDarker)),
                   ]),
                   const SizedBox(height: 8),
-                  Text('${a.totalRegistered}/${a.totalCapacity} spots filled • ${a.spotsLeft} left', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                  Text('${a.totalRegistered}/${a.totalCapacity} spots filled • ${a.spotsLeft} left', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
                   const SizedBox(height: 10),
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(999),
                     child: LinearProgressIndicator(
                       value: a.totalCapacity == 0 ? 0 : (a.totalRegistered / a.totalCapacity).clamp(0, 1),
                       minHeight: 8,
-                      backgroundColor: AppColors.border,
-                      valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+                      backgroundColor: AppColors.borderSoft,
+                      valueColor: const AlwaysStoppedAnimation(AppColors.ctaDark),
                     ),
                   ),
                 ]),
@@ -115,9 +128,14 @@ class OrganizerAnalyticsScreen extends ConsumerWidget {
               // Tournament & Trial status
               Container(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: SportXShadows.e1,
+                ),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Text('Events Status', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                  Text('Events Status', style: GoogleFonts.sora(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
                   const SizedBox(height: 12),
                   Row(children: [
                     Expanded(child: _eventStatusCard('Tournaments', a.publishedTournaments, a.draftTournaments, a.closedTournaments, a.totalTournaments)),
@@ -132,14 +150,18 @@ class OrganizerAnalyticsScreen extends ConsumerWidget {
               if (a.deadlineAlert != null)
                 Container(
                   padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(color: const Color(0xFFfee2e2), borderRadius: BorderRadius.circular(8)),
+                  decoration: BoxDecoration(
+                    color: AppColors.errorLight,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                  ),
                   child: Row(children: [
-                    const Icon(LucideIcons.clock, size: 18, color: Color(0xFFdc2626)),
+                    const Icon(LucideIcons.triangleAlert, size: 18, color: AppColors.error),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         '${a.deadlineAlert!['tournament_name']} closes in ${a.deadlineAlert!['days_left']} days',
-                        style: const TextStyle(fontSize: 13, color: Color(0xFFdc2626), fontWeight: FontWeight.w500),
+                        style: GoogleFonts.inter(fontSize: 13, color: AppColors.error, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ]),
@@ -150,9 +172,14 @@ class OrganizerAnalyticsScreen extends ConsumerWidget {
               if (a.categoryBreakdown.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: AppColors.border),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: SportXShadows.e1,
+                  ),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Text('Capacity by Category', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                    Text('Capacity by Category', style: GoogleFonts.sora(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
                     const SizedBox(height: 12),
                     ...a.categoryBreakdown.map((cat) {
                       final cap = (cat['capacity'] ?? 0) as int;
@@ -167,15 +194,15 @@ class OrganizerAnalyticsScreen extends ConsumerWidget {
                           ]),
                           const SizedBox(height: 4),
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(3),
+                            borderRadius: BorderRadius.circular(999),
                             child: LinearProgressIndicator(
                               value: cap == 0 ? 0 : (reg / cap).clamp(0, 1),
                               minHeight: 6,
-                              backgroundColor: AppColors.border,
-                              valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+                              backgroundColor: AppColors.borderSoft,
+                              valueColor: const AlwaysStoppedAnimation(AppColors.ctaDark),
                             ),
                           ),
-                          if (pending > 0) Padding(padding: const EdgeInsets.only(top: 2), child: Text('$pending pending approval', style: const TextStyle(fontSize: 11, color: Colors.orange))),
+                          if (pending > 0) Padding(padding: const EdgeInsets.only(top: 2), child: Text('$pending pending approval', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.amberDeep))),
                         ]),
                       );
                     }),
@@ -192,53 +219,64 @@ class OrganizerAnalyticsScreen extends ConsumerWidget {
   Widget _statCard(String value, String label, IconData icon, {Color color = AppColors.primary}) {
     return Container(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: SportXShadows.e1,
+      ),
       child: Column(children: [
-        Icon(icon, size: 18, color: color),
+        Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(color: color.withValues(alpha: 0.12), shape: BoxShape.circle),
+          alignment: Alignment.center,
+          child: Icon(icon, size: 18, color: color),
+        ),
         const SizedBox(height: 6),
-        Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: color)),
+        Text(value, style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.ink)),
         const SizedBox(height: 2),
-        Text(label, style: const TextStyle(fontSize: 10, color: AppColors.textSecondary), textAlign: TextAlign.center),
+        Text(label, style: GoogleFonts.inter(fontSize: 10, color: AppColors.textSecondary), textAlign: TextAlign.center),
       ]),
     );
   }
 
   Widget _breakdownItem(String label, String value, Color color) {
     return Column(children: [
-      Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: color)),
+      Text(value, style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w800, color: color)),
       const SizedBox(height: 2),
-      Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+      Text(label, style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondary)),
     ]);
   }
 
   Widget _eventStatusCard(String title, int published, int drafts, int closed, int total) {
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.border)),
+      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.border)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        Text(title, style: GoogleFonts.sora(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.ink)),
         const SizedBox(height: 8),
         Row(children: [
-          Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFFd1fae5), shape: BoxShape.circle)),
+          Container(width: 8, height: 8, decoration: const BoxDecoration(color: AppColors.successLight, shape: BoxShape.circle)),
           const SizedBox(width: 6),
-          Text('Published $published', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+          Text('Published $published', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
         ]),
         const SizedBox(height: 4),
         Row(children: [
-          Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFFfef3c7), shape: BoxShape.circle)),
+          Container(width: 8, height: 8, decoration: const BoxDecoration(color: AppColors.yellowTint, shape: BoxShape.circle)),
           const SizedBox(width: 6),
-          Text('Drafts $drafts', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+          Text('Drafts $drafts', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
         ]),
         if (closed > 0) ...[
           const SizedBox(height: 4),
           Row(children: [
             Container(width: 8, height: 8, decoration: const BoxDecoration(color: AppColors.border, shape: BoxShape.circle)),
             const SizedBox(width: 6),
-            Text('Closed $closed', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            Text('Closed $closed', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
           ]),
         ],
         const SizedBox(height: 6),
-        Text('Total $total', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary)),
+        Text('Total $total', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.primaryDarker)),
       ]),
     );
   }

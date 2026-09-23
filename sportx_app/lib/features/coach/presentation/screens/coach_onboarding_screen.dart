@@ -115,9 +115,9 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
   Widget build(BuildContext context) {
     final meta = ref.watch(metaProvider);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary, size: 24),
@@ -228,7 +228,7 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
                               label: Text(cert, style: const TextStyle(fontSize: 12)),
                               deleteIcon: const Icon(LucideIcons.x, size: 14),
                               onDeleted: () => _removeCertification(cert),
-                              backgroundColor: AppColors.surface,
+                              backgroundColor: Colors.white,
                               side: const BorderSide(color: AppColors.border),
                             );
                           }).toList(),
@@ -264,7 +264,7 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
                               label: Text(lang, style: const TextStyle(fontSize: 12)),
                               deleteIcon: const Icon(LucideIcons.x, size: 14),
                               onDeleted: () => _removeLanguage(lang),
-                              backgroundColor: AppColors.surface,
+                              backgroundColor: Colors.white,
                               side: const BorderSide(color: AppColors.border),
                             );
                           }).toList(),
@@ -287,8 +287,8 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: AppColors.border),
                         ),
                         child: Row(
@@ -339,13 +339,13 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
                   child: ElevatedButton(
                     onPressed: _saving ? null : _submit,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppColors.yellow,
+                      foregroundColor: AppColors.ink,
                       disabledBackgroundColor: AppColors.border,
                       disabledForegroundColor: Colors.white,
                       minimumSize: const Size(double.infinity, 52),
                       elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     child: _saving
                         ? const SizedBox(
@@ -385,18 +385,18 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
   InputDecoration _inputDecoration(String hint) => InputDecoration(
         hintText: hint,
         filled: true,
-        fillColor: AppColors.surface,
+        fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: AppColors.primary),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: Colors.red),
         ),
       );
@@ -457,8 +457,8 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.primary : AppColors.background,
-              border: Border.all(color: isSelected ? AppColors.primary : AppColors.border),
+              color: isSelected ? AppColors.yellow : AppColors.background,
+              border: Border.all(color: isSelected ? AppColors.yellowDeep : AppColors.border),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
@@ -467,7 +467,7 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
                 Icon(
                   _getSportIcon(s.name as String),
                   size: 16,
-                  color: isSelected ? Colors.white : AppColors.textPrimary,
+                  color: isSelected ? AppColors.ink : AppColors.textPrimary,
                 ),
                 const SizedBox(width: 6),
                 Text(
@@ -475,7 +475,7 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: isSelected ? Colors.white : AppColors.textPrimary,
+                    color: isSelected ? AppColors.ink : AppColors.textPrimary,
                   ),
                 ),
               ],
@@ -519,8 +519,8 @@ class _DropdownField extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(8),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: state.hasError ? Colors.red : AppColors.border,
                 ),

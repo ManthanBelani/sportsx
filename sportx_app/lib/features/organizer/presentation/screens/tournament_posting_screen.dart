@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -157,12 +159,13 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
   Widget build(BuildContext context) {
     final meta = ref.watch(metaProvider);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         backgroundColor: AppColors.background,
+        scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
-        title: const Text('Create Tournament', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Create Tournament', style: GoogleFonts.sora(fontSize: 19, fontWeight: FontWeight.w700, color: AppColors.ink)),
         bottom: PreferredSize(preferredSize: const Size.fromHeight(1), child: Container(height: 1, color: AppColors.border)),
       ),
       body: SingleChildScrollView(
@@ -171,7 +174,7 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Tournament Details section
-            const Text('Tournament Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+            Text('Tournament Details', style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
             const SizedBox(height: 16),
             _label('Tournament Name'),
             TextField(controller: _name, decoration: const InputDecoration(hintText: 'State Level Athletics Meet 2025')),
@@ -254,7 +257,7 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
             const SizedBox(height: 24),
 
             // Prize Pool
-            const Text('Prize Pool', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+            Text('Prize Pool', style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
             const SizedBox(height: 16),
             _label('Total Prize Pool'),
             TextField(controller: _prizePool, keyboardType: TextInputType.number, decoration: const InputDecoration(prefixText: '₹ ', hintText: '300000')),
@@ -271,7 +274,7 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
             const SizedBox(height: 24),
 
             // Entry Fee & Categories
-            const Text('Entry Fee & Categories', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+            Text('Entry Fee & Categories', style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
             const SizedBox(height: 16),
             Row(children: [
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[_label('Entry Fee (per team/individual)'), TextField(controller: _entryFee, keyboardType: TextInputType.number, decoration: const InputDecoration(prefixText: '₹ ', hintText: '3000'))])),
@@ -311,7 +314,7 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
             const SizedBox(height: 24),
 
             // Registration Deadline
-            const Text('Registration Deadline', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+            Text('Registration Deadline', style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
             const SizedBox(height: 16),
             _label('Deadline Date'),
             TextField(controller: _deadline, readOnly: true, onTap: ()=> _pickDate(_deadline), decoration: const InputDecoration(hintText: 'YYYY-MM-DD', suffixIcon: Icon(LucideIcons.calendar, size: 18))),
@@ -321,15 +324,15 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
       ),
       bottomNavigationBar: Container(
         padding: EdgeInsets.fromLTRB(20, 16, 20, 16 + MediaQuery.of(context).padding.bottom),
-        decoration: const BoxDecoration(border: Border(top: BorderSide(color: AppColors.border))),
+        decoration: const BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: AppColors.border))),
         child: Row(children: [
-          Expanded(child: OutlinedButton(onPressed: _saving? null: ()=> _submit('draft'), style: OutlinedButton.styleFrom(padding: const EdgeInsets.all(14), side: const BorderSide(color: AppColors.border)), child: const Text('Save as Draft', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600)))),
+          Expanded(child: SecondaryButton(label: 'Save as Draft', onPressed: _saving ? null : ()=> _submit('draft'))),
           const SizedBox(width: 12),
-          Expanded(child: FilledButton(onPressed: _saving? null: ()=> _submit('published'), style: FilledButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.all(14)), child: _saving ? const SizedBox(height: 20,width:20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('Publish Tournament', style: TextStyle(fontWeight: FontWeight.w600)))),
+          Expanded(child: PrimaryButton(label: 'Publish Tournament', icon: LucideIcons.trophy, onPressed: _saving ? null : ()=> _submit('published'))),
         ]),
       ),
     );
   }
 
-  Widget _label(String t)=> Padding(padding: const EdgeInsets.only(bottom:6), child: Text(t, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)));
+  Widget _label(String t)=> Padding(padding: const EdgeInsets.only(bottom:6), child: Text(t, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)));
 }

@@ -80,9 +80,9 @@ class CoachProfileViewScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
@@ -114,11 +114,11 @@ class CoachProfileViewScreen extends ConsumerWidget {
             icon: const Icon(LucideIcons.edit2, size: 16),
             label: const Text('Edit Profile'),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.yellow,
+              foregroundColor: AppColors.ink,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
         ],
@@ -132,8 +132,8 @@ class CoachProfileViewScreen extends ConsumerWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
       ),
       child: Row(
@@ -141,10 +141,10 @@ class CoachProfileViewScreen extends ConsumerWidget {
           CircleAvatar(
             key: ValueKey(photoUrl ?? 'no-photo'),
             radius: 42,
-            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+            backgroundColor: AppColors.coach.withValues(alpha: 0.12),
             backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
             onBackgroundImageError: photoUrl != null ? (_, _) {} : null,
-            child: photoUrl == null ? const Icon(LucideIcons.user, color: AppColors.primary, size: 36) : null,
+            child: photoUrl == null ? const Icon(LucideIcons.user, color: AppColors.coach, size: 36) : null,
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -251,7 +251,7 @@ class CoachProfileViewScreen extends ConsumerWidget {
                     children: certs
                         .map((c) => Chip(
                               label: Text(c, style: const TextStyle(fontSize: 12, color: AppColors.textPrimary)),
-                              backgroundColor: AppColors.background,
+                              backgroundColor: Colors.white,
                               side: const BorderSide(color: AppColors.border),
                               avatar: const Icon(LucideIcons.award, size: 14, color: AppColors.primary),
                             ))
@@ -262,7 +262,7 @@ class CoachProfileViewScreen extends ConsumerWidget {
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(8)),
+                    decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(16)),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -288,7 +288,7 @@ class CoachProfileViewScreen extends ConsumerWidget {
         children: langs
             .map((l) => Chip(
                   label: Text(l, style: const TextStyle(fontSize: 12, color: AppColors.textPrimary)),
-                  backgroundColor: AppColors.background,
+                  backgroundColor: Colors.white,
                   side: const BorderSide(color: AppColors.border),
                 ))
             .toList(),
@@ -358,8 +358,8 @@ class CoachProfileViewScreen extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
       ),
       child: Column(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -78,12 +79,14 @@ class _AthleteDirectoryScreenState extends ConsumerState<AthleteDirectoryScreen>
     final state = ref.watch(athleteDirectoryProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
-        title: const Text('Find Athletes', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Find Athletes',
+            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         actions: [
           IconButton(icon: const Icon(LucideIcons.userPlus, color: AppColors.textPrimary), tooltip: 'Requests', onPressed: () => context.push('/connection-requests')),
           IconButton(icon: const Icon(LucideIcons.messageCircle, color: AppColors.textPrimary), tooltip: 'Chats', onPressed: () => context.push('/chat-list')),
@@ -118,7 +121,7 @@ class _AthleteDirectoryScreenState extends ConsumerState<AthleteDirectoryScreen>
                       const SizedBox(height: 12),
                       Padding(padding: const EdgeInsets.symmetric(horizontal: 32), child: Text(state.error!, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary), textAlign: TextAlign.center)),
                       const SizedBox(height: 12),
-                      FilledButton(onPressed: () => ref.read(athleteDirectoryProvider.notifier).load(), style: FilledButton.styleFrom(backgroundColor: AppColors.primary), child: const Text('Retry')),
+                      FilledButton(onPressed: () => ref.read(athleteDirectoryProvider.notifier).load(), style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink), child: const Text('Retry')),
                     ]))
                   : state.athletes.isEmpty
                       ? const Center(child: Text('No athletes found', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)))
@@ -203,7 +206,7 @@ class _AthleteDirectoryScreenState extends ConsumerState<AthleteDirectoryScreen>
       width: double.infinity,
       child: FilledButton(
         onPressed: busy ? null : () => _connect(athlete!),
-        style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+        style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink),
         child: busy
             ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
             : const Text('Connect'),

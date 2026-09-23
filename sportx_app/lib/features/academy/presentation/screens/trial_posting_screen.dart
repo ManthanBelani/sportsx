@@ -131,9 +131,9 @@ class _TrialPostingScreenState extends ConsumerState<TrialPostingScreen> {
   Widget build(BuildContext context) {
     final meta = ref.watch(metaProvider);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         elevation: 0,
         title: const Text('Post a New Trial',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
@@ -302,7 +302,8 @@ class _TrialPostingScreenState extends ConsumerState<TrialPostingScreen> {
                     child: FilledButton(
                       onPressed: _saving ? null : () => _save(publish: true),
                       style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: AppColors.yellow,
+                        foregroundColor: AppColors.ink,
                         minimumSize: const Size.fromHeight(48),
                       ),
                       child: _saving
@@ -355,9 +356,9 @@ class _TrialPostingScreenState extends ConsumerState<TrialPostingScreen> {
         fillColor: AppColors.background,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         suffixIcon: icon != null ? Icon(icon, size: 20, color: AppColors.textSecondary) : null,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.primary)),
       );
 
   String? _req(String? v) => (v == null || v.trim().isEmpty) ? 'Required' : null;

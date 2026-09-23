@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/social/presentation/providers/posts_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
@@ -40,11 +42,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     final async = ref.watch(postDetailProvider(widget.postId));
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text('Post', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Post',
+            style: GoogleFonts.sora(
+                fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
       ),
       body: Column(
@@ -56,7 +60,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
                   Text(ApiException.messageFor(e), style: const TextStyle(color: AppColors.textSecondary)),
                   const SizedBox(height: 12),
-                  ElevatedButton(onPressed: () => ref.invalidate(postDetailProvider(widget.postId)), child: const Text('Retry')),
+                  PrimaryButton(
+                      label: 'Retry',
+                      onPressed: () =>
+                          ref.invalidate(postDetailProvider(widget.postId))),
                 ]),
               ),
               data: (post) => SingleChildScrollView(
@@ -66,7 +73,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     Padding(
                       padding: const EdgeInsets.all(16),
                       child: Row(children: [
-                        const CircleAvatar(radius: 24, backgroundColor: AppColors.primary, child: Icon(LucideIcons.user, color: Colors.white)),
+                        const CircleAvatar(
+                            radius: 24,
+                            backgroundColor: AppColors.yellow,
+                            child: Icon(LucideIcons.user, color: AppColors.ink)),
                         const SizedBox(width: 12),
                         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                           Text(post.authorName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: AppColors.textPrimary)),
@@ -91,7 +101,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     const Divider(color: AppColors.border),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: Text('Comments (${post.commentsCount})', style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                      child: SectionHeader(
+                          title: 'Comments (${post.commentsCount})'),
                     ),
                   ],
                 ),
@@ -139,8 +150,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             ),
             const SizedBox(width: 8),
             Container(
-              decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-              child: IconButton(icon: const Icon(LucideIcons.sendHorizontal, color: Colors.white, size: 20), onPressed: _submitComment),
+              decoration: const BoxDecoration(color: AppColors.yellow, shape: BoxShape.circle),
+              child: IconButton(icon: const Icon(LucideIcons.sendHorizontal, color: AppColors.ink, size: 20), onPressed: _submitComment),
             ),
           ],
         ),

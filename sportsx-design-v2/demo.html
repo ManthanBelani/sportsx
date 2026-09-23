@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="assets/images/logo.png" type="image/png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SportX v2 — Client Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+:root{--bg:#F4F5F7;--fg:#111;--muted:#6B7280;--border:#E8EAED;--accent:#FFC107;--accent-dark:#D9A400}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--fg)}
+.hero{background:linear-gradient(135deg,#111 0%,#1E1B0F 40%,#D9A400 100%);color:#fff;padding:56px 24px 48px;text-align:center}
+.hero h1{font-family:'Sora';font-size:clamp(32px,6vw,52px);font-weight:800;letter-spacing:-1.5px}
+.hero h1 em{font-style:normal;background:var(--accent);color:#111;padding:0 10px;border-radius:10px}
+.hero p{color:rgba(255,255,255,.75);max-width:640px;margin:14px auto 24px;line-height:1.6}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 22px;border-radius:12px;font-weight:700;font-size:14px;text-decoration:none;border:none;cursor:pointer}
+.btn-pri{background:var(--accent);color:#161300;box-shadow:0 8px 20px -6px rgba(255,193,7,.55)}
+.btn-ghost{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.wrap{max-width:1080px;margin:0 auto;padding:32px 20px 64px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:20px}
+.card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:20px;text-decoration:none;color:inherit;transition:all .18s}
+.card:hover{transform:translateY(-3px);box-shadow:0 20px 40px -12px rgba(15,23,42,.15);border-color:var(--accent-dark)}
+.card .ic{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.card h3{font-family:'Sora';font-size:15px}.card p{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.5}
+.sec-t{font-family:'Sora';font-size:22px;font-weight:800;letter-spacing:-.5px;margin:36px 0 4px}
+.sec-s{font-size:14px;color:var(--muted)}
+.note{background:#FFFCF0;border:1px solid #F0E3B2;border-radius:12px;padding:14px 16px;font-size:13px;margin-top:24px;line-height:1.6}
+</style>
+</head>
+<body>
+<header class="hero">
+<div style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:100px;font-size:12px;font-weight:700;letter-spacing:.5px">CLIENT DEMO · SPORTX V2 · 125 SCREENS</div>
+<h1 style="margin-top:16px">Sport<em>X</em> — live prototype</h1>
+<p>Start from Splash like a real user, or jump straight into any role workspace. Every screen is clickable with working back links and bottom nav.</p>
+<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+<a class="btn btn-pri" href="00-auth-and-onboarding/splash.html"><i data-lucide="play" style="width:18px;height:18px"></i> Start App (Splash)</a>
+<a class="btn btn-ghost" href="index.html"><i data-lucide="layout-grid" style="width:18px;height:18px"></i> Full showcase (125)</a>
+<a class="btn btn-ghost" href="00-auth-and-onboarding/role-selection.html"><i data-lucide="users" style="width:18px;height:18px"></i> Role selection</a>
+</div>
+</header>
+<div class="wrap">
+<div class="sec-t">1 · Start here — real user flow</div>
+<div class="sec-s">Splash → Onboarding → Role → Login → Home. Best path to show the client.</div>
+<div class="grid">
+<a class="card" href="00-auth-and-onboarding/splash.html"><div class="ic" style="background:#111;color:#FFC107"><i data-lucide="zap"></i></div><h3>Splash → Onboarding</h3><p>Auto-plays to onboarding. Shows brand + entry.</p></a>
+<a class="card" href="00-auth-and-onboarding/role-selection.html"><div class="ic" style="background:rgba(255,193,7,.16);color:#8a6d00"><i data-lucide="users"></i></div><h3>Role selection</h3><p>Each tile routes to its real dashboard now.</p></a>
+<a class="card" href="00-auth-and-onboarding/login.html"><div class="ic" style="background:rgba(59,130,246,.12);color:#3B82F6"><i data-lucide="key-round"></i></div><h3>Login → Athlete home</h3><p>Login CTA lands on athlete home with bottom nav.</p></a>
+<a class="card" href="01-athlete/home.html"><div class="ic" style="background:rgba(245,158,11,.14);color:#F59E0B"><i data-lucide="home"></i></div><h3>Athlete home</h3><p>Trials, tournaments, scholarships, opportunities.</p></a>
+</div>
+<div class="sec-t">2 · All roles — one tap each</div>
+<div class="sec-s">For the “show every dashboard” part of the meeting.</div>
+<div class="grid">
+<a class="card" href="01-athlete/home.html"><div class="ic" style="background:rgba(245,158,11,.14);color:#F59E0B"><i data-lucide="user"></i></div><h3>Athlete</h3><p>Home · trials · profile · registrations</p></a>
+<a class="card" href="02-coach/coach-dashboard.html"><div class="ic" style="background:rgba(138,106,234,.14);color:#8A6AEA"><i data-lucide="award"></i></div><h3>Coach</h3><p>Dashboard · directory · enquiries</p></a>
+<a class="card" href="03-academy/academy-dashboard.html"><div class="ic" style="background:rgba(3,185,76,.14);color:#03B94C"><i data-lucide="building-2"></i></div><h3>Academy</h3><p>Dashboard · trial form · registrants</p></a>
+<a class="card" href="04-organizer/organizer-dashboard.html"><div class="ic" style="background:rgba(251,128,46,.14);color:#FB802E"><i data-lucide="calendar-days"></i></div><h3>Organizer</h3><p>Dashboard · create · registrations · results</p></a>
+<a class="card" href="05-scout/scout-dashboard.html"><div class="ic" style="background:rgba(59,130,246,.14);color:#3B82F6"><i data-lucide="eye"></i></div><h3>Scout</h3><p>Discovery · shortlist · connections</p></a>
+<a class="card" href="06-sponsor/sponsor-dashboard.html"><div class="ic" style="background:rgba(17,17,17,.08);color:#111"><i data-lucide="briefcase"></i></div><h3>Sponsor</h3><p>Dashboard · directory · sponsorships</p></a>
+<a class="card" href="07-admin/admin-dashboard.html"><div class="ic" style="background:rgba(239,68,68,.12);color:#EF4444"><i data-lucide="shield"></i></div><h3>Admin</h3><p>Dashboard · users · moderation · reports</p></a>
+<a class="card" href="08-shared-common/discover.html"><div class="ic" style="background:rgba(6,182,212,.12);color:#06B6D4"><i data-lucide="compass"></i></div><h3>Shared discovery</h3><p>Trials · tournaments · chat · network</p></a>
+</div>
+<div class="sec-t">3 · Money flows clients care about</div>
+<div class="grid">
+<a class="card" href="08-shared-common/trials.html"><div class="ic" style="background:#FEE2E2;color:#EF4444"><i data-lucide="trophy"></i></div><h3>Trials → detail → register</h3><p>08-shared-common/trials.html → trial-detail → 01-athlete/trial-registration</p></a>
+<a class="card" href="04-organizer/tournament-create.html"><div class="ic" style="background:#ECE9FF;color:#8A6AEA"><i data-lucide="medal"></i></div><h3>Create tournament</h3><p>Organizer create → calendar → registrations</p></a>
+<a class="card" href="06-sponsor/sponsorship-create.html"><div class="ic" style="background:#E3EFFF;color:#3B82F6"><i data-lucide="wallet"></i></div><h3>Create sponsorship</h3><p>Sponsor dashboard → create → detail</p></a>
+<a class="card" href="05-scout/scout-discovery.html"><div class="ic" style="background:rgba(59,130,246,.14);color:#3B82F6"><i data-lucide="search"></i></div><h3>Scout discovery</h3><p>Discover → athlete view → shortlist</p></a>
+</div>
+<div class="note"><b>How to present:</b> 1) Open <b>Start App (Splash)</b> on a phone or 430px window. 2) Pick a role in Role selection — each lands on the correct dashboard. 3) Use bottom nav (Home · Discover · + · Network · Me) — all links fixed across 122 files. 4) For the full library, use <b>Full showcase</b>. All role-folder links verified with zero broken hrefs.</div>
+</div>
+<script>lucide.createIcons();</script>
+</body>
+</html>

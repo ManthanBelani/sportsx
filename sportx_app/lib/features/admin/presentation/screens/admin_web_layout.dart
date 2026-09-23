@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class AdminWebLayout extends StatelessWidget {
   final String title;
@@ -17,16 +20,22 @@ class AdminWebLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        foregroundColor: AppColors.ink,
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(LucideIcons.arrowLeft, color: AppColors.ink),
           onPressed: () => context.pop(),
         ),
-        title: Text(title),
+        title: Text(title,
+            style: GoogleFonts.sora(
+                fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         actions: [
           if (actions != null) ...actions!,
           IconButton(
-            icon: const Icon(Icons.settings_outlined),
+            icon: const Icon(LucideIcons.settings, color: AppColors.ink),
             onPressed: () {},
           ),
         ],
@@ -59,9 +68,10 @@ class AdminStatCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.circular(12),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
+          boxShadow: SportXShadows.e1,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,31 +79,28 @@ class AdminStatCard extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(9),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(icon, color: color, size: 20),
                 ),
                 const Spacer(),
                 if (onTap != null)
-                  Icon(Icons.chevron_right, color: AppColors.textTertiary),
+                  const Icon(LucideIcons.chevronRight, color: AppColors.textTertiary),
               ],
             ),
             const SizedBox(height: 12),
             Text(
               value,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: GoogleFonts.sora(
+                  fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.ink),
             ),
             const SizedBox(height: 4),
             Text(
               title,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: GoogleFonts.inter(fontSize: 12.5, color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -123,31 +130,31 @@ class AdminSectionLabel extends StatelessWidget {
           children: [
             Text(
               label,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: GoogleFonts.sora(
+                  fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink),
             ),
             if (count != null) ...[
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.yellowTint,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: const Color(0x40F59E0B)),
                 ),
                 child: Text(
                   '$count',
-                  style: TextStyle(
-                    color: AppColors.primary,
+                  style: GoogleFonts.inter(
+                    color: AppColors.warnText,
                     fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
             ],
           ],
         ),
-        ?action,
+        if (action != null) action!,
       ],
     );
   }
@@ -176,19 +183,10 @@ class AdminTabPills extends StatelessWidget {
           final isSelected = selectedIndex == index;
           return Padding(
             padding: const EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              label: Text(tabs[index]),
+            child: SportXChip(
+              label: tabs[index],
               selected: isSelected,
-              onSelected: (_) => onTabChanged(index),
-              selectedColor: AppColors.primary,
-              backgroundColor: AppColors.surface,
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.white : AppColors.textPrimary,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              ),
-              side: BorderSide(
-                color: isSelected ? AppColors.primary : AppColors.border,
-              ),
+              onTap: () => onTabChanged(index),
             ),
           );
         }),
@@ -221,16 +219,22 @@ class AdminUserCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: SportXShadows.e1,
+      ),
       child: ListTile(
         contentPadding: const EdgeInsets.all(12),
         leading: CircleAvatar(
           radius: 28,
           backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl!) : null,
-          backgroundColor: AppColors.surface,
+          backgroundColor: AppColors.yellowTint,
           child: avatarUrl == null
-              ? Icon(Icons.person, color: AppColors.textTertiary)
+              ? const Icon(LucideIcons.user, color: AppColors.textTertiary)
               : null,
         ),
         title: Row(
@@ -238,23 +242,16 @@ class AdminUserCard extends StatelessWidget {
             Expanded(
               child: Text(
                 name,
-                style: const TextStyle(fontWeight: FontWeight.w600),
+                style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w600, color: AppColors.ink),
               ),
             ),
             if (isVerified)
-              const Icon(Icons.verified, color: AppColors.verifiedBadge, size: 18),
+              const Icon(LucideIcons.badgeCheck, color: AppColors.verifiedBadge, size: 18),
             if (!isActive)
-              Container(
-                margin: const EdgeInsets.only(left: 4),
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: const Text(
-                  'Suspended',
-                  style: TextStyle(color: AppColors.error, fontSize: 10),
-                ),
+              const Padding(
+                padding: EdgeInsets.only(left: 4),
+                child: StatusPill(label: 'Suspended', kind: PillKind.no),
               ),
           ],
         ),
@@ -262,7 +259,7 @@ class AdminUserCard extends StatelessWidget {
           '$role${city != null ? ' · $city' : ''}',
           style: Theme.of(context).textTheme.bodySmall,
         ),
-        trailing: trailing ?? const Icon(Icons.chevron_right, color: AppColors.textTertiary),
+        trailing: trailing ?? const Icon(LucideIcons.chevronRight, color: AppColors.textTertiary),
         onTap: onTap,
       ),
     );
@@ -315,22 +312,9 @@ class AdminReportCard extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: status == 'pending'
-                        ? AppColors.warning.withValues(alpha: 0.1)
-                        : AppColors.success.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    status.toUpperCase(),
-                    style: TextStyle(
-                      color: status == 'pending' ? AppColors.warning : AppColors.success,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                StatusPill(
+                  label: status.toUpperCase(),
+                  kind: status == 'pending' ? PillKind.pending : PillKind.ok,
                 ),
               ],
             ),
@@ -340,11 +324,12 @@ class AdminReportCard extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.borderSoft),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
                   contentPreview!,
-                  style: TextStyle(color: AppColors.textSecondary),
+                  style: GoogleFonts.inter(color: AppColors.textSecondary),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -352,7 +337,7 @@ class AdminReportCard extends StatelessWidget {
             const SizedBox(height: 12),
             Row(
               children: [
-                Icon(Icons.person_outline, size: 16, color: AppColors.textSecondary),
+                Icon(LucideIcons.user, size: 16, color: AppColors.textSecondary),
                 const SizedBox(width: 4),
                 Text(
                   'Reported by $reporter',
@@ -377,10 +362,7 @@ class AdminReportCard extends StatelessWidget {
                 ),
                 const Spacer(),
                 if (status == 'pending' && onReview != null)
-                  ElevatedButton(
-                    onPressed: onReview,
-                    child: const Text('Review'),
-                  ),
+                  PrimaryButton(label: 'Review', small: true, onPressed: onReview),
               ],
             ),
           ],
@@ -392,13 +374,13 @@ class AdminReportCard extends StatelessWidget {
   IconData _getIconForContentType(String type) {
     switch (type) {
       case 'post':
-        return Icons.article_outlined;
+        return LucideIcons.fileText;
       case 'comment':
-        return Icons.comment_outlined;
+        return LucideIcons.messageCircle;
       case 'profile':
-        return Icons.person_outlined;
+        return LucideIcons.user;
       default:
-        return Icons.report_outlined;
+        return LucideIcons.flag;
     }
   }
 }
@@ -446,7 +428,7 @@ class AdminOpportunityCard extends StatelessWidget {
                     backgroundImage: sponsorLogo != null ? NetworkImage(sponsorLogo!) : null,
                     backgroundColor: AppColors.surface,
                     child: sponsorLogo == null
-                        ? Icon(Icons.business, color: AppColors.textTertiary)
+                        ? Icon(LucideIcons.building2, color: AppColors.textTertiary)
                         : null,
                   ),
                   const SizedBox(width: 12),
@@ -465,20 +447,13 @@ class AdminOpportunityCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(status).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      status.toUpperCase(),
-                      style: TextStyle(
-                        color: _getStatusColor(status),
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                  StatusPill(
+                    label: status.toUpperCase(),
+                    kind: status == 'approved'
+                        ? PillKind.ok
+                        : status == 'rejected'
+                            ? PillKind.no
+                            : PillKind.pending,
                   ),
                 ],
               ),
@@ -525,6 +500,10 @@ class AdminOpportunityCard extends StatelessWidget {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: onApprove,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.cta,
+                          foregroundColor: AppColors.ink,
+                        ),
                         child: const Text('Approve'),
                       ),
                     ),
@@ -536,17 +515,5 @@ class AdminOpportunityCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'approved':
-        return AppColors.success;
-      case 'rejected':
-        return AppColors.error;
-      case 'pending':
-      default:
-        return AppColors.warning;
-    }
   }
 }

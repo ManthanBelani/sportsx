@@ -44,9 +44,9 @@ class _AcademyProfileScreenState extends ConsumerState<AcademyProfileScreen> {
     final trialsState = ref.watch(myTrialsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
@@ -191,7 +191,7 @@ class _ProfileBody extends StatelessWidget {
   Widget _buildProfileHeader() {
     return Container(
       width: double.infinity,
-      color: AppColors.surface,
+      color: Colors.white,
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
       child: Column(
         children: [
@@ -200,18 +200,18 @@ class _ProfileBody extends StatelessWidget {
             height: 84,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.primary.withValues(alpha: 0.12),
+              color: AppColors.academy.withValues(alpha: 0.12),
               border: Border.all(color: AppColors.border, width: 2),
             ),
             clipBehavior: Clip.antiAlias,
             child: academy.logoUrl != null
                 ? Image.network(
-                    academy.logoUrl!,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => const Icon(
-                        LucideIcons.building2, size: 36, color: AppColors.primary),
-                  )
-                : const Icon(LucideIcons.building2, size: 36, color: AppColors.primary),
+                      academy.logoUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => const Icon(
+                          LucideIcons.building2, size: 36, color: AppColors.academy),
+                    )
+                : const Icon(LucideIcons.building2, size: 36, color: AppColors.academy),
           ),
           const SizedBox(height: 12),
           Text(
@@ -223,7 +223,7 @@ class _ProfileBody extends StatelessWidget {
           Text(
             _meta,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14, color: AppColors.primary),
+            style: const TextStyle(fontSize: 14, color: AppColors.academy),
           ),
           if (academy.address != null && academy.address!.trim().isNotEmpty) ...[
             const SizedBox(height: 8),
@@ -262,8 +262,8 @@ class _StatsRow extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
       ),
       child: Row(
@@ -294,7 +294,7 @@ class _Stat extends StatelessWidget {
         children: [
           Text('$value',
               style: const TextStyle(
-                  fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                  fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.academy)),
           const SizedBox(height: 2),
           Text(label,
               style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
@@ -319,8 +319,8 @@ class _Section extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
       ),
       child: Column(
@@ -328,7 +328,7 @@ class _Section extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 18, color: AppColors.primary),
+              Icon(icon, size: 18, color: AppColors.academy),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(title,

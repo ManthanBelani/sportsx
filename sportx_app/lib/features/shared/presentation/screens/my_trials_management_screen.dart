@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -13,9 +14,9 @@ class MyTrialsManagementScreen extends ConsumerWidget {
   Color _statusColor(String status) {
     switch (status) {
       case 'published':
-        return const Color(0xFF065f46);
+        return AppColors.success;
       case 'draft':
-        return const Color(0xFF92400e);
+        return AppColors.warnText;
       case 'closed':
       case 'expired':
         return AppColors.textSecondary;
@@ -27,9 +28,9 @@ class MyTrialsManagementScreen extends ConsumerWidget {
   Color _statusBg(String status) {
     switch (status) {
       case 'published':
-        return const Color(0xFFd1fae5);
+        return AppColors.successLight;
       case 'draft':
-        return const Color(0xFFfef3c7);
+        return AppColors.yellowTint;
       default:
         return AppColors.surface;
     }
@@ -42,12 +43,13 @@ class MyTrialsManagementScreen extends ConsumerWidget {
     final state = ref.watch(myTrialsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
-        title: const Text('My Trials',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('My Trials',
+            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
           onPressed: () => context.pop(),

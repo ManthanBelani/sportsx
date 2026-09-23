@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/theme/colors.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,11 +19,12 @@ class _SplashScreenState extends State<SplashScreen> {
         width: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF1677FF), // AppColors.primary
-              Color(0xFF0D47A1),
+              Color(0xFFFFD54A),
+              Color(0xFFFFC107),
+              Color(0xFFF5B400),
             ],
           ),
         ),
@@ -32,36 +36,38 @@ class _SplashScreenState extends State<SplashScreen> {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
+                  color: AppColors.cardBackground,
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: AppColors.border),
+                  boxShadow: const [
                     BoxShadow(
-                      color: const Color(0xFF1677FF).withValues(alpha: 0.3),
-                      blurRadius: 32,
-                      offset: const Offset(0, 8),
+                      color: Color(0x2E785000),
+                      blurRadius: 24,
+                      offset: Offset(0, 8),
                     ),
                   ],
                 ),
                 child: const Center(
-                  child: Icon(Icons.emoji_events, size: 48, color: Color(0xFF1677FF)), // fallback for lucide trophy if not imported
+                  child: Icon(LucideIcons.trophy, size: 40, color: AppColors.ink),
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'SportX',
-                style: TextStyle(
+                style: GoogleFonts.sora(
                   fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.5,
-                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -1.0,
+                  color: AppColors.ink,
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'India\'s Sports Network',
-                style: TextStyle(
+                style: GoogleFonts.inter(
                   fontSize: 14,
-                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.dark,
                 ),
               ),
               const SizedBox(height: 48),
@@ -112,7 +118,7 @@ class _ThreeDotPulseState extends State<_ThreeDotPulse> with SingleTickerProvide
                   width: 8,
                   height: 8,
                   decoration: const BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.ink,
                     shape: BoxShape.circle,
                   ),
                 ),

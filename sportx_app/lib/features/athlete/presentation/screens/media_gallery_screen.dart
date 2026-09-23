@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -7,6 +8,7 @@ import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
@@ -108,7 +110,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: const Text('Delete', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -136,7 +138,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: const Text('Delete', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -188,9 +190,9 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
         elevation: 0,
         leadingWidth: 60,
         leading: Padding(
@@ -210,7 +212,9 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
             ),
           ),
         ),
-        title: Text(_isReorderMode ? 'Drag to Reorder' : 'Media Gallery', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text(_isReorderMode ? 'Drag to Reorder' : 'Media Gallery',
+            style: GoogleFonts.sora(
+                fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         centerTitle: true,
         actions: [
           if (_isReorderMode) ...[
@@ -241,7 +245,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
                       color: AppColors.surface,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child:                   const Icon(Icons.drag_handle, color: AppColors.textPrimary, size: 20),
+                    child:                   const Icon(LucideIcons.gripVertical, color: AppColors.textPrimary, size: 20),
                   ),
                 ),
               ),
@@ -370,10 +374,10 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: const Icon(LucideIcons.trash2, color: Colors.red),
+                    icon: const Icon(LucideIcons.trash2, color: AppColors.error),
                     onPressed: () => _deleteMedia(item['id'] as int),
                   ),
-                  const Icon(Icons.drag_handle, color: AppColors.textSecondary),
+                  const Icon(LucideIcons.gripVertical, color: AppColors.textSecondary),
                 ],
               ),
             ),
@@ -438,7 +442,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
         if (item['media_type'] == 'video')
           const Center(
             child: Icon(
-              Icons.play_arrow,
+              LucideIcons.play,
               size: 32,
               color: Colors.white,
               shadows: [Shadow(blurRadius: 4, color: Colors.black54)],
@@ -465,7 +469,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
           const Positioned(
             bottom: 4,
             right: 4,
-            child: Icon(Icons.drag_handle, color: Colors.white, size: 16, shadows: [Shadow(blurRadius: 4, color: Colors.black54)]),
+            child: Icon(LucideIcons.gripVertical, color: Colors.white, size: 16, shadows: [Shadow(blurRadius: 4, color: Colors.black54)]),
           ),
       ],
     );
@@ -475,8 +479,9 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -514,17 +519,13 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
                 style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 24),
-              ElevatedButton.icon(
+              PrimaryButton(
+                label: 'Add Achievement',
+                icon: LucideIcons.plus,
                 onPressed: () async {
                   await context.push('/add-achievement');
                   await _loadMedia();
                 },
-                icon: const Icon(LucideIcons.plus),
-                label: const Text('Add Achievement'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                ),
               ),
             ],
           ),
@@ -541,7 +542,8 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: Colors.white,
+            border: Border.all(color: AppColors.border),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -586,12 +588,12 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
               ),
               if (_isReorderMode)
                 IconButton(
-                  icon: const Icon(LucideIcons.trash2, color: Colors.red),
+                  icon: const Icon(LucideIcons.trash2, color: AppColors.error),
                   onPressed: () => _deleteAchievement(achievement['id']),
                 )
               else
                 IconButton(
-                  icon: const Icon(LucideIcons.trash2, color: Colors.red, size: 18),
+                  icon: const Icon(LucideIcons.trash2, color: AppColors.error, size: 18),
                   onPressed: () => _deleteAchievement(achievement['id']),
                 ),
             ],

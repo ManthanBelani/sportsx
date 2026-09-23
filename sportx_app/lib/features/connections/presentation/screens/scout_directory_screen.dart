@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -67,12 +68,14 @@ class _ScoutDirectoryScreenState extends ConsumerState<ScoutDirectoryScreen> {
     final state = ref.watch(scoutDirectoryProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
-        title: const Text('Find Scouts', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Find Scouts',
+            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         actions: [
           IconButton(icon: const Icon(LucideIcons.mail, color: AppColors.textPrimary), tooltip: 'Scout requests', onPressed: () => context.push('/scout-requests')),
           IconButton(icon: const Icon(LucideIcons.messageCircle, color: AppColors.textPrimary), tooltip: 'Chats', onPressed: () => context.push('/chat-list')),
@@ -107,7 +110,7 @@ class _ScoutDirectoryScreenState extends ConsumerState<ScoutDirectoryScreen> {
                       const SizedBox(height: 12),
                       Text(state.error!, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                       const SizedBox(height: 12),
-                      FilledButton(onPressed: () => ref.read(scoutDirectoryProvider.notifier).load(), style: FilledButton.styleFrom(backgroundColor: AppColors.primary), child: const Text('Retry')),
+                      FilledButton(onPressed: () => ref.read(scoutDirectoryProvider.notifier).load(), style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink), child: const Text('Retry')),
                     ]))
                   : state.scouts.isEmpty
                       ? const Center(child: Text('No scouts found', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)))
@@ -164,7 +167,7 @@ class _ScoutDirectoryScreenState extends ConsumerState<ScoutDirectoryScreen> {
           else
             Expanded(child: FilledButton(
               onPressed: busy ? null : () => _connect(scout, name),
-              style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+              style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink),
               child: busy ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('Connect'),
             )),
         ]),
@@ -183,16 +186,16 @@ class _ScoutDirectoryScreenState extends ConsumerState<ScoutDirectoryScreen> {
     Color fg;
     switch (status) {
       case 'accepted':
-        bg = const Color(0xFFd1fae5);
-        fg = const Color(0xFF065f46);
+        bg = AppColors.successLight;
+        fg = AppColors.success;
         break;
       case 'rejected':
-        bg = const Color(0xFFfee2e2);
-        fg = const Color(0xFF991b1b);
+        bg = AppColors.errorLight;
+        fg = AppColors.error;
         break;
       default:
-        bg = const Color(0xFFfef3c7);
-        fg = const Color(0xFF92400e);
+        bg = AppColors.yellowTint;
+        fg = AppColors.warnText;
     }
     final label = status[0].toUpperCase() + status.substring(1);
     return Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(4)), child: Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: fg)));

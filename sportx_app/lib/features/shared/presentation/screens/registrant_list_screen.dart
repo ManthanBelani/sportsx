@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -32,11 +33,13 @@ class RegistrantListScreen extends ConsumerWidget {
     final progress = capacity == 0 ? 0.0 : (filled / capacity).clamp(0, 1).toDouble();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
-        title: const Text('Registrants', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Registrants',
+            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
         bottom: PreferredSize(preferredSize: const Size.fromHeight(1), child: Container(height: 1, color: AppColors.border)),
       ),
@@ -145,8 +148,8 @@ class _RegistrantCardWithActions extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final docsColor = isDocsComplete ? const Color(0xFFd1fae5) : const Color(0xFFfef3c7);
-    final docsTextColor = isDocsComplete ? const Color(0xFF065f46) : const Color(0xFF92400E);
+    final docsColor = isDocsComplete ? AppColors.successLight : AppColors.yellowTint;
+    final docsTextColor = isDocsComplete ? AppColors.success : AppColors.warnText;
     final isApproved = approvalStatus == 'approved';
     final isRejected = approvalStatus == 'rejected';
     final isPending = approvalStatus == 'pending';

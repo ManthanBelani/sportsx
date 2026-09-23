@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/onboarding/presentation/providers/onboarding_provider.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class OnboardingSportAgeScreen extends ConsumerStatefulWidget {
@@ -76,22 +78,23 @@ class _OnboardingSportAgeScreenState extends ConsumerState<OnboardingSportAgeScr
         onboarding.selectedAgeGroupId != null;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         backgroundColor: AppColors.background,
+        scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary, size: 24),
+          icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary, size: 22),
           onPressed: () => context.pop(),
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Tell us about you',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+              style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
             ),
-            const Text('Step 1 of 2', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+            Text('Step 1 of 2', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
           ],
         ),
         centerTitle: false,
@@ -101,9 +104,16 @@ class _OnboardingSportAgeScreenState extends ConsumerState<OnboardingSportAgeScr
             child: Container(
               width: 36,
               height: 36,
-              decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFFFFD54A), Color(0xFFFFC107), Color(0xFFF5B400)],
+                ),
+                shape: BoxShape.circle,
+              ),
               alignment: Alignment.center,
-              child: const Text('1', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+              child: Text('1', style: GoogleFonts.inter(color: AppColors.ink, fontSize: 14, fontWeight: FontWeight.w800)),
             ),
           ),
         ],
@@ -117,36 +127,41 @@ class _OnboardingSportAgeScreenState extends ConsumerState<OnboardingSportAgeScr
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Full Name', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                    Text('Full Name', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                     const SizedBox(height: 8),
                     TextField(
                       controller: _nameController,
                       textCapitalization: TextCapitalization.words,
-                      decoration: _inputDecoration('Enter your full name'),
+                      decoration: const InputDecoration(
+                        hintText: 'Enter your full name',
+                        prefixIcon: Icon(LucideIcons.user, size: 18, color: AppColors.textSecondary),
+                      ),
                       onChanged: (v) => ref.read(onboardingProvider.notifier).setFullName(v),
                     ),
                     const SizedBox(height: 20),
 
-                    const Text('Date of Birth', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                    Text('Date of Birth', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                     const SizedBox(height: 8),
                     GestureDetector(
                       onTap: _pickDob,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        height: 50,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         decoration: BoxDecoration(
-                          color: AppColors.background,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.border),
+                          color: AppColors.cardBackground,
+                          borderRadius: BorderRadius.circular(13),
+                          border: Border.all(color: AppColors.border, width: 1.5),
+                          boxShadow: SportXShadows.e1,
                         ),
                         child: Row(
                           children: [
-                            const Icon(LucideIcons.calendar, color: AppColors.textSecondary, size: 18),
+                            const Icon(LucideIcons.calendarDays, color: AppColors.textSecondary, size: 18),
                             const SizedBox(width: 10),
                             Text(
                               onboarding.dateOfBirth.isEmpty ? 'Select date of birth' : onboarding.dateOfBirth,
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: onboarding.dateOfBirth.isEmpty ? AppColors.textSecondary : AppColors.textPrimary,
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                color: onboarding.dateOfBirth.isEmpty ? AppColors.textTertiary : AppColors.textPrimary,
                               ),
                             ),
                           ],
@@ -155,33 +170,23 @@ class _OnboardingSportAgeScreenState extends ConsumerState<OnboardingSportAgeScr
                     ),
                     const SizedBox(height: 20),
 
-                    const Text('Gender', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                    Text('Gender', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: _genders.map((g) {
                         final isSelected = onboarding.gender == g['value'];
-                        return GestureDetector(
+                        return SportXChip(
+                          label: g['label']!,
+                          selected: isSelected,
                           onTap: () => ref.read(onboardingProvider.notifier).setGender(g['value']!),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: isSelected ? AppColors.primary : AppColors.surface,
-                              border: Border.all(color: isSelected ? AppColors.primary : AppColors.border),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              g['label']!,
-                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: isSelected ? Colors.white : AppColors.textPrimary),
-                            ),
-                          ),
                         );
                       }).toList(),
                     ),
                     const SizedBox(height: 24),
 
-                    const Text('Select your sport(s)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                    Text('Select your sport(s)', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                     const SizedBox(height: 12),
                     if (meta.isLoading)
                       const Padding(padding: EdgeInsets.all(32), child: SkeletonBox(width: double.infinity, height: 48, borderRadius: 8))
@@ -211,18 +216,19 @@ class _OnboardingSportAgeScreenState extends ConsumerState<OnboardingSportAgeScr
                             },
                             child: Container(
                               decoration: BoxDecoration(
-                                color: isSelected ? const Color(0xFFE6F0FF) : AppColors.surface,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: isSelected ? AppColors.primary : Colors.transparent, width: 2),
+                                color: isSelected ? AppColors.yellowSoft : AppColors.cardBackground,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: isSelected ? AppColors.yellowDeep : AppColors.border, width: isSelected ? 1.5 : 1),
+                                boxShadow: SportXShadows.e1,
                               ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(_getSportIcon(sport.name), color: isSelected ? AppColors.primary : AppColors.textSecondary, size: 32),
+                                  Icon(_getSportIcon(sport.name), color: isSelected ? AppColors.primaryDarker : AppColors.textSecondary, size: 30),
                                   const SizedBox(height: 8),
                                   Text(
                                     sport.name,
-                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
+                                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
                                     textAlign: TextAlign.center,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -235,27 +241,17 @@ class _OnboardingSportAgeScreenState extends ConsumerState<OnboardingSportAgeScr
                       ),
                     const SizedBox(height: 24),
 
-                    const Text('Age category', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                    Text('Age category', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                     const SizedBox(height: 12),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: meta.ageGroups.map((group) {
                         final isSelected = onboarding.selectedAgeGroupId == group.id;
-                        return GestureDetector(
+                        return SportXChip(
+                          label: group.label,
+                          selected: isSelected,
                           onTap: () => ref.read(onboardingProvider.notifier).setAgeGroup(group.id),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: isSelected ? AppColors.primary : AppColors.surface,
-                              border: Border.all(color: isSelected ? AppColors.primary : AppColors.border),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              group.label,
-                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: isSelected ? Colors.white : AppColors.textPrimary),
-                            ),
-                          ),
                         );
                       }).toList(),
                     ),
@@ -265,38 +261,22 @@ class _OnboardingSportAgeScreenState extends ConsumerState<OnboardingSportAgeScr
             ),
             Container(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-              decoration: const BoxDecoration(color: AppColors.background, border: Border(top: BorderSide(color: AppColors.border))),
+              decoration: const BoxDecoration(color: AppColors.cardBackground, border: Border(top: BorderSide(color: AppColors.border))),
               child: SafeArea(
                 top: false,
-                child: ElevatedButton(
-                  onPressed: canContinue ? () => context.push('/onboarding-2') : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: AppColors.border,
-                    disabledForegroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 52),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                child: Opacity(
+                  opacity: canContinue ? 1.0 : 0.5,
+                  child: PrimaryButton(
+                    label: 'Continue',
+                    icon: LucideIcons.arrowRight,
+                    onPressed: canContinue ? () => context.push('/onboarding-2') : null,
                   ),
-                  child: const Text('Continue', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  InputDecoration _inputDecoration(String hint) {
-    return InputDecoration(
-      hintText: hint,
-      filled: true,
-      fillColor: AppColors.background,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary)),
     );
   }
 }

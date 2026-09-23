@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -28,13 +29,14 @@ class _SponsorshipListScreenState extends ConsumerState<SponsorshipListScreen> {
     final state = ref.watch(sponsorshipsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Sponsorships',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+          style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink),
         ),
       ),
       body: Column(
@@ -75,7 +77,7 @@ class _SponsorshipListScreenState extends ConsumerState<SponsorshipListScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 14),
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: isActive ? AppColors.primary : AppColors.background,
+                            color: isActive ? AppColors.primary : AppColors.surface,
                             border: Border.all(color: isActive ? AppColors.primary : AppColors.border),
                             borderRadius: BorderRadius.circular(20),
                           ),
@@ -210,7 +212,7 @@ class _SponsorshipListScreenState extends ConsumerState<SponsorshipListScreen> {
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFd1fae5),
+                                              color: AppColors.successLight,
                                               borderRadius: BorderRadius.circular(4),
                                             ),
                                             child: Text(
@@ -218,7 +220,7 @@ class _SponsorshipListScreenState extends ConsumerState<SponsorshipListScreen> {
                                               style: const TextStyle(
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w500,
-                                                color: Color(0xFF065f46),
+                                                color: AppColors.success,
                                               ),
                                             ),
                                           ),
@@ -226,7 +228,7 @@ class _SponsorshipListScreenState extends ConsumerState<SponsorshipListScreen> {
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFd1fae5),
+                                              color: AppColors.successLight,
                                               borderRadius: BorderRadius.circular(4),
                                             ),
                                             child: Text(
@@ -234,7 +236,7 @@ class _SponsorshipListScreenState extends ConsumerState<SponsorshipListScreen> {
                                               style: const TextStyle(
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w500,
-                                                color: Color(0xFF065f46),
+                                                color: AppColors.success,
                                               ),
                                             ),
                                           ),
@@ -245,7 +247,7 @@ class _SponsorshipListScreenState extends ConsumerState<SponsorshipListScreen> {
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                         decoration: BoxDecoration(
-                                          color: isSoon ? const Color(0xFFfef3c7) : const Color(0xFFfee2e2),
+                                          color: isSoon ? AppColors.yellowTint : AppColors.errorLight,
                                           borderRadius: BorderRadius.circular(4),
                                         ),
                                         child: Text(
@@ -253,7 +255,7 @@ class _SponsorshipListScreenState extends ConsumerState<SponsorshipListScreen> {
                                           style: TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w600,
-                                            color: isSoon ? const Color(0xFF92400e) : const Color(0xFFdc2626),
+                                            color: isSoon ? AppColors.warnText : AppColors.error,
                                           ),
                                         ),
                                       ),

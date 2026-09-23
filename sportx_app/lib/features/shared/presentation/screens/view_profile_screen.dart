@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
@@ -145,14 +146,14 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
     final btn = _connLoading
         ? const OutlinedButton(onPressed: null, child: SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2)))
         : _connStatus == 'accepted'
-            ? FilledButton.icon(onPressed: () => context.push('/my-connections'), icon: const Icon(Icons.check, size: 18), label: const Text('Connected'))
+            ? FilledButton.icon(onPressed: () => context.push('/my-connections'), icon: const Icon(LucideIcons.check, size: 18), label: const Text('Connected'))
             : _connStatus == 'pending'
-                ? OutlinedButton.icon(onPressed: _connIsInitiator ? null : () => context.push('/connection-requests'), icon: const Icon(Icons.hourglass_empty, size: 18), label: Text(_connIsInitiator ? 'Request Sent' : 'Respond'))
+                ? OutlinedButton.icon(onPressed: _connIsInitiator ? null : () => context.push('/connection-requests'), icon: const Icon(LucideIcons.hourglass, size: 18), label: Text(_connIsInitiator ? 'Request Sent' : 'Respond'))
                 : ElevatedButton.icon(
                     onPressed: _connecting ? null : _handleConnect,
                     icon: _connecting
                         ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Icon(Icons.person_add, size: 18),
+                        : const Icon(LucideIcons.userPlus, size: 18),
                     label: const Text('Connect'),
                   );
     return expanded ? Expanded(child: btn) : btn;
@@ -163,7 +164,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
       onPressed: _openingChat ? null : _handleMessage,
       icon: _openingChat
           ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-          : const Icon(Icons.chat),
+          : const Icon(LucideIcons.messageCircle),
       label: const Text('Message'),
     );
     return expanded ? Expanded(child: btn) : btn;
@@ -177,7 +178,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
           : _profileData == null
               ? Center(
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    const Icon(Icons.error_outline, size: 48, color: AppColors.textSecondary),
+                    const Icon(LucideIcons.alertCircle, size: 48, color: AppColors.textSecondary),
                     const SizedBox(height: 12),
                     const Text('Profile not found or unavailable'),
                     const SizedBox(height: 12),
@@ -237,7 +238,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF1E3A5F), Color(0xFF2E5A8F)],
+                  colors: [AppColors.scout, AppColors.scout],
                 ),
               ),
             ),
@@ -266,7 +267,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
                         : null,
                     backgroundColor: AppColors.surface,
                     child: _profileData!['profile_photo_url'] == null
-                        ? const Icon(Icons.person, size: 40, color: AppColors.textTertiary)
+                        ? const Icon(LucideIcons.user, size: 40, color: AppColors.textTertiary)
                         : null,
                   ),
                   const SizedBox(width: 16),
@@ -287,7 +288,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
                             ),
                             if (_profileData!['is_verified'] == true) ...[
                               const SizedBox(width: 6),
-                              const Icon(Icons.verified, color: AppColors.primary, size: 20),
+                              const Icon(LucideIcons.badgeCheck, color: AppColors.primary, size: 20),
                             ],
                           ],
                         ),
@@ -307,11 +308,11 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.favorite_border, color: Colors.white),
+          icon: const Icon(LucideIcons.heart, color: Colors.white),
           onPressed: () {},
         ),
         IconButton(
-          icon: const Icon(Icons.share, color: Colors.white),
+          icon: const Icon(LucideIcons.share2, color: Colors.white),
           onPressed: () {
             Share.share(
               'Check out this profile on SportX India!\nhttps://sportx.in/profile/${widget.id}',
@@ -336,7 +337,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
         if (widget.type == 'athlete') ...[
           Row(
             children: [
-              Icon(Icons.cake_outlined, size: 16, color: AppColors.textSecondary),
+              Icon(LucideIcons.cake, size: 16, color: AppColors.textSecondary),
               const SizedBox(width: 4),
               Text(
                 _profileData!['age_group'] ?? 'N/A',
@@ -347,7 +348,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
         ] else ...[
           Row(
             children: [
-              Icon(Icons.work_outline, size: 16, color: AppColors.textSecondary),
+              Icon(LucideIcons.briefcase, size: 16, color: AppColors.textSecondary),
               const SizedBox(width: 4),
               Text(
                 '${_profileData!['experience'] ?? 0} years experience',
@@ -388,11 +389,11 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildStatItem('$postsCount', 'Posts', Icons.post_add_outlined),
+          _buildStatItem('$postsCount', 'Posts', LucideIcons.fileText),
           Container(width: 1, height: 32, color: AppColors.border),
-          _buildStatItem('$connectionsCount', 'Connects', Icons.people_outline),
+          _buildStatItem('$connectionsCount', 'Connects', LucideIcons.users),
           Container(width: 1, height: 32, color: AppColors.border),
-          _buildStatItem('$achievementsCount', 'Achievements', Icons.emoji_events_outlined),
+          _buildStatItem('$achievementsCount', 'Achievements', LucideIcons.trophy),
         ],
       ),
     );
@@ -483,7 +484,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.emoji_events_outlined, color: AppColors.cta),
+            const Icon(LucideIcons.trophy, color: AppColors.cta),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -584,7 +585,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
                 color: AppColors.surface,
                 image: url != null ? DecorationImage(image: NetworkImage(url), fit: BoxFit.cover) : null,
               ),
-              child: url == null ? const Icon(Icons.image, color: AppColors.textSecondary) : null,
+              child: url == null ? const Icon(LucideIcons.image, color: AppColors.textSecondary) : null,
             );
           },
         ),
@@ -602,7 +603,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: AppColors.background,
+          color: AppColors.surface,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),

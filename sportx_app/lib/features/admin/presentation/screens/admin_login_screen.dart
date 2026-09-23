@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class AdminLoginScreen extends ConsumerStatefulWidget {
   const AdminLoginScreen({super.key});
@@ -47,24 +51,48 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.surface,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.admin_panel_settings, size: 64, color: Theme.of(context).primaryColor),
-              const SizedBox(height: 16),
-              Text('Admin Portal', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Container(
+                width: 88,
+                height: 88,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFFFFE9A8), Color(0xFFFFC107), Color(0xFFF5B400)],
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: const Icon(LucideIcons.shieldCheck, size: 40, color: AppColors.ink),
+              ),
+              const SizedBox(height: 20),
+              Text('Admin Portal',
+                  style: GoogleFonts.sora(
+                      fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.ink)),
               const SizedBox(height: 8),
-              Text('SportX India Platform Management', style: TextStyle(color: Colors.grey[600])),
-              const SizedBox(height: 48),
+              Text('SportX India Platform Management',
+                  style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 13.5)),
+              const SizedBox(height: 12),
+              const StatusPill(label: 'MODERATION ACCESS', kind: PillKind.no),
+              const SizedBox(height: 36),
               TextField(
                 controller: _emailController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Email',
-                  prefixIcon: Icon(Icons.email_outlined),
-                  border: OutlineInputBorder(),
+                  prefixIcon: const Icon(LucideIcons.mail, color: AppColors.textSecondary),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: AppColors.border)),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
@@ -74,10 +102,16 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                 obscureText: _obscurePassword,
                 decoration: InputDecoration(
                   labelText: 'Password',
-                  prefixIcon: const Icon(Icons.lock_outlined),
-                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(LucideIcons.lock, color: AppColors.textSecondary),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: AppColors.border)),
+                  filled: true,
+                  fillColor: Colors.white,
                   suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                    icon: Icon(_obscurePassword ? LucideIcons.eyeOff : LucideIcons.eye,
+                        color: AppColors.textSecondary),
                     onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                   ),
                 ),
@@ -85,25 +119,31 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
               const SizedBox(height: 16),
               TextField(
                 controller: _tfaController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: '2FA Code',
-                  prefixIcon: Icon(Icons.security),
-                  border: OutlineInputBorder(),
+                  prefixIcon: const Icon(LucideIcons.shieldCheck, color: AppColors.textSecondary),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: AppColors.border)),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
                 keyboardType: TextInputType.number,
                 maxLength: 6,
               ),
               const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: FilledButton(
-                  onPressed: _loading ? null : _login,
-                  child: _loading
-                      ? const SizedBox(height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Text('Log In', style: TextStyle(fontSize: 16)),
+              if (_loading)
+                const SizedBox(
+                    height: 48,
+                    width: 48,
+                    child: CircularProgressIndicator(strokeWidth: 3, color: AppColors.ctaDark))
+              else
+                SizedBox(
+                  width: double.infinity,
+                  child: PrimaryButton(
+                      label: 'Log In', icon: LucideIcons.logIn, onPressed: _login),
                 ),
-              ),
             ],
           ),
         ),

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
@@ -30,7 +33,7 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
       title: 'Moderation Queue',
       actions: [
         IconButton(
-          icon: const Icon(Icons.refresh),
+          icon: const Icon(LucideIcons.refreshCw),
           onPressed: () {
             ref.read(adminProvider.notifier).loadReports();
           },
@@ -50,18 +53,17 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.check_circle_outline, size: 64, color: AppColors.success),
+            Icon(LucideIcons.circleCheck, size: 64, color: AppColors.success),
             const SizedBox(height: 16),
             Text(
               'No items in moderation queue',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: GoogleFonts.sora(
+                  fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink),
             ),
             const SizedBox(height: 8),
             Text(
               'All reports have been reviewed',
-              style: TextStyle(color: AppColors.textTertiary),
+              style: GoogleFonts.inter(color: AppColors.textTertiary),
             ),
           ],
         ),
@@ -96,14 +98,20 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
   }
 
   Widget _buildReportItem(Report report, bool isPending) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: SportXShadows.e1,
+      ),
       child: InkWell(
         onTap: () => context.push(
           '/admin/reports/${report.id}',
           extra: report,
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -119,7 +127,7 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
                       children: [
                         Text(
                           report.contentType.toUpperCase(),
-                          style: TextStyle(
+                          style: GoogleFonts.inter(
                             color: AppColors.textSecondary,
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -127,27 +135,15 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
                         ),
                         Text(
                           report.reason,
-                          style: const TextStyle(fontWeight: FontWeight.w500),
+                          style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w600, color: AppColors.ink),
                         ),
                       ],
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: isPending
-                          ? AppColors.warning.withValues(alpha: 0.1)
-                          : AppColors.success.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      isPending ? 'PENDING' : 'REVIEWED',
-                      style: TextStyle(
-                        color: isPending ? AppColors.warning : AppColors.success,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                  StatusPill(
+                    label: isPending ? 'PENDING' : 'REVIEWED',
+                    kind: isPending ? PillKind.pending : PillKind.ok,
                   ),
                 ],
               ),
@@ -157,11 +153,12 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.borderSoft),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     report.contentPreview!,
-                    style: TextStyle(color: AppColors.textSecondary),
+                    style: GoogleFonts.inter(color: AppColors.textSecondary),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -169,16 +166,18 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Icon(Icons.person_outline, size: 16, color: AppColors.textSecondary),
+                  const Icon(LucideIcons.user, size: 16, color: AppColors.textSecondary),
                   const SizedBox(width: 4),
                   Text(
                     'Reported by ${report.reportedByName}',
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: GoogleFonts.inter(
+                        fontSize: 12, color: AppColors.textSecondary),
                   ),
                   const Spacer(),
                   Text(
                     report.createdAt,
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: GoogleFonts.inter(
+                        fontSize: 12, color: AppColors.textSecondary),
                   ),
                 ],
               ),
@@ -187,22 +186,18 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => _handleDismiss(report.id),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.textSecondary,
-                        ),
-                        child: const Text('Dismiss'),
-                      ),
+                      child: SecondaryButton(
+                          label: 'Dismiss',
+                          onPressed: () => _handleDismiss(report.id)),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: ElevatedButton(
+                      child: PrimaryButton(
+                        label: 'Review',
                         onPressed: () => context.push(
                           '/admin/reports/${report.id}',
                           extra: report,
                         ),
-                        child: const Text('Review'),
                       ),
                     ),
                   ],
@@ -221,27 +216,27 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
 
     switch (contentType) {
       case 'post':
-        icon = Icons.article_outlined;
+        icon = LucideIcons.fileText;
         color = AppColors.primary;
         break;
       case 'comment':
-        icon = Icons.comment_outlined;
+        icon = LucideIcons.messageCircle;
         color = AppColors.cta;
         break;
       case 'profile':
-        icon = Icons.person_outlined;
+        icon = LucideIcons.user;
         color = AppColors.info;
         break;
       default:
-        icon = Icons.report_outlined;
-        color = AppColors.error;
+        icon = LucideIcons.flag;
+        color = AppColors.admin;
     }
 
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(9),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Icon(icon, color: color, size: 20),
     );

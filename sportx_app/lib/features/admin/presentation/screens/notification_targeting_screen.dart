@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_web_layout.dart';
 import 'package:sportx_app/theme/colors.dart';
@@ -49,6 +51,9 @@ class _NotificationTargetingScreenState
 
   Widget _buildRoleFilter() {
     return Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -90,6 +95,9 @@ class _NotificationTargetingScreenState
 
   Widget _buildSportFilter() {
     return Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -134,6 +142,9 @@ class _NotificationTargetingScreenState
 
   Widget _buildCityFilter() {
     return Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -181,27 +192,27 @@ class _NotificationTargetingScreenState
         _selectedSports.contains(value) ||
         _selectedCities.contains(value);
 
-    return FilterChip(
-      label: Text(label),
+    return SportXChip(
+      label: label,
       selected: isSelected,
-      onSelected: (selected) {
+      onTap: () {
         setState(() {
           if (_selectByRole && ['athlete', 'coach', 'sponsor', 'academy'].contains(value)) {
-            if (selected) {
+            if (!isSelected) {
               _selectedRoles.add(value);
             } else {
               _selectedRoles.remove(value);
             }
           }
           if (_selectBySport && ['cricket', 'football', 'basketball', 'tennis', 'badminton', 'hockey', 'volleyball'].contains(value)) {
-            if (selected) {
+            if (!isSelected) {
               _selectedSports.add(value);
             } else {
               _selectedSports.remove(value);
             }
           }
           if (_selectByCity && ['mumbai', 'delhi', 'bangalore', 'chennai', 'kolkata', 'hyderabad', 'pune'].contains(value)) {
-            if (selected) {
+            if (!isSelected) {
               _selectedCities.add(value);
             } else {
               _selectedCities.remove(value);
@@ -209,8 +220,6 @@ class _NotificationTargetingScreenState
           }
         });
       },
-      selectedColor: AppColors.primary.withValues(alpha: 0.1),
-      checkmarkColor: AppColors.primary,
     );
   }
 
@@ -220,6 +229,9 @@ class _NotificationTargetingScreenState
         _selectedCities.isNotEmpty;
 
     return Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -266,16 +278,7 @@ class _NotificationTargetingScreenState
           spacing: 8,
           runSpacing: 8,
           children: items.map((item) {
-            return Chip(
-              label: Text(item.toUpperCase()),
-              backgroundColor: AppColors.primaryLight,
-              labelStyle: TextStyle(
-                color: AppColors.primary,
-                fontSize: 12,
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            );
+            return StatusPill(label: item.toUpperCase(), kind: PillKind.info);
           }).toList(),
         ),
       ],
@@ -283,19 +286,12 @@ class _NotificationTargetingScreenState
   }
 
   Widget _buildApplyButton() {
-    return ElevatedButton(
-      onPressed: _applyTargeting,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-      ),
-      child: const Text(
-        'Apply Targeting Filters',
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+    return SizedBox(
+      width: double.infinity,
+      child: PrimaryButton(
+          label: 'Apply Targeting Filters',
+          icon: LucideIcons.check,
+          onPressed: _applyTargeting),
     );
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -16,13 +17,14 @@ class TalentScoutShortlistScreen extends ConsumerWidget {
     final state = ref.watch(scoutShortlistProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: const Text('My Shortlist',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('My Shortlist',
+            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         bottom: PreferredSize(preferredSize: const Size.fromHeight(1), child: Container(height: 1, color: AppColors.border)),
       ),
       body: state.isLoading && state.items.isEmpty
@@ -34,7 +36,7 @@ class TalentScoutShortlistScreen extends ConsumerWidget {
                     const SizedBox(height: 12),
                     Text(state.error!, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary), textAlign: TextAlign.center),
                     const SizedBox(height: 12),
-                    FilledButton(onPressed: () => ref.read(scoutShortlistProvider.notifier).load(), style: FilledButton.styleFrom(backgroundColor: AppColors.primary), child: const Text('Retry')),
+                    FilledButton(onPressed: () => ref.read(scoutShortlistProvider.notifier).load(), style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink), child: const Text('Retry')),
                   ]),
                 )
               : state.items.isEmpty
@@ -48,7 +50,7 @@ class TalentScoutShortlistScreen extends ConsumerWidget {
                           const SizedBox(height: 8),
                           const Text('Discover athletes and tap ⭐ to save for later', style: TextStyle(fontSize: 12, color: AppColors.textSecondary), textAlign: TextAlign.center),
                           const SizedBox(height: 16),
-                          FilledButton.icon(onPressed: () => context.push('/scout-discovery'), style: FilledButton.styleFrom(backgroundColor: AppColors.primary), icon: const Icon(LucideIcons.search, size: 16), label: const Text('Discover Athletes')),
+                          FilledButton.icon(onPressed: () => context.push('/scout-discovery'), style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink), icon: const Icon(LucideIcons.search, size: 16), label: const Text('Discover Athletes')),
                         ]),
                       ),
                     )
@@ -135,7 +137,7 @@ class TalentScoutShortlistScreen extends ConsumerWidget {
             ]),
             if (item.notes != null && item.notes.toString().isNotEmpty) ...[
               const SizedBox(height: 10),
-              Container(width: double.infinity, padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(8)), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(LucideIcons.stickyNote, size: 14, color: AppColors.textSecondary), const SizedBox(width: 6), Expanded(child: Text(item.notes, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)))])),
+              Container(width: double.infinity, padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(LucideIcons.stickyNote, size: 14, color: AppColors.textSecondary), const SizedBox(width: 6), Expanded(child: Text(item.notes, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)))])),
             ] else ...[
               const SizedBox(height: 8),
               Semantics(
@@ -172,7 +174,7 @@ class TalentScoutShortlistScreen extends ConsumerWidget {
               final ok = await ref.read(scoutShortlistProvider.notifier).updateNotes(item.athlete.id, ctrl.text.trim());
               if (context.mounted) SnackBarUtils.showSuccess(context, ok ? 'Notes updated' : ref.read(scoutShortlistProvider).error ?? 'Failed to update notes');
             },
-            style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink),
             child: const Text('Save'),
           ),
         ],

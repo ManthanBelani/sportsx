@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/academy/presentation/providers/academy_provider.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class OrganizerDashboardScreen extends ConsumerStatefulWidget {
@@ -32,11 +34,12 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         backgroundColor: AppColors.background,
+        scrolledUnderElevation: 0,
         elevation: 0,
-        title: const Text('SportX', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary)),
+        title: Text('SportX', style: GoogleFonts.sora(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.ink)),
         actions: [
           IconButton(
             icon: const Icon(LucideIcons.bell, color: AppColors.textPrimary),
@@ -52,6 +55,8 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
         _ => _buildHomeTab(),
       },
       bottomNavigationBar: NavigationBar(
+        backgroundColor: Colors.white,
+        indicatorColor: AppColors.yellowTint,
         selectedIndex: _currentTabIndex,
         onDestinationSelected: (index) => setState(() => _currentTabIndex = index),
         destinations: const [
@@ -125,7 +130,7 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
             if (analytics != null)
               Row(
                 children: [
-                  Expanded(child: _buildStatCard('$pendingCount', 'Pending', color: Colors.orange)),
+                  Expanded(child: _buildStatCard('$pendingCount', 'Pending', color: AppColors.amberDeep)),
                   const SizedBox(width: 10),
                   Expanded(child: _buildStatCard('$approvedCount', 'Approved', color: AppColors.success)),
                   const SizedBox(width: 10),
@@ -137,26 +142,31 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
             // Capacity utilization bar if available
             if (analytics != null && analytics.totalCapacity > 0)
               Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: SportXShadows.e1,
+                ),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    const Text('Capacity', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                    Text('${analytics.utilizationPercent}% filled', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                    Text('Capacity', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                    Text('${analytics.utilizationPercent}% filled', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primaryDarker)),
                   ]),
                   const SizedBox(height: 6),
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(999),
                     child: LinearProgressIndicator(
                       value: (analytics.totalRegistered / analytics.totalCapacity).clamp(0, 1),
-                      minHeight: 6,
-                      backgroundColor: AppColors.border,
-                      valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+                      minHeight: 8,
+                      backgroundColor: AppColors.borderSoft,
+                      valueColor: const AlwaysStoppedAnimation(AppColors.ctaDark),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text('${analytics.totalRegistered}/${analytics.totalCapacity} spots • ${analytics.spotsLeft} left • ₹${analytics.revenueEstimate.toStringAsFixed(0)} est. revenue',
-                      style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                      style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondary)),
                 ]),
               ),
             if (analytics != null && analytics.totalCapacity > 0) const SizedBox(height: 12),
@@ -171,24 +181,28 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
                     context.push('/my-tournaments');
                   }
                 },
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(16),
                 child: Container(
                   padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(color: const Color(0xFFfef3c7), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFFfde68a))),
+                  decoration: BoxDecoration(
+                    color: AppColors.yellowTint,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.yellowDeep.withValues(alpha: 0.35)),
+                  ),
                   child: Row(children: [
                     Container(
                       padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(6)),
-                      child: const Icon(LucideIcons.clock, size: 18, color: Color(0xFFd97706)),
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+                      child: const Icon(LucideIcons.clock, size: 18, color: AppColors.warnText),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text('$pendingCount pending approval${pendingCount == 1 ? '' : 's'}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF92400e))),
-                        const Text('Tap to review and approve/reject', style: TextStyle(fontSize: 11, color: Color(0xFF92400e))),
+                        Text('$pendingCount pending approval${pendingCount == 1 ? '' : 's'}', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.warnText)),
+                        Text('Tap to review and approve/reject', style: GoogleFonts.inter(fontSize: 11, color: AppColors.warnText)),
                       ]),
                     ),
-                    const Icon(LucideIcons.chevronRight, size: 18, color: Color(0xFF92400e)),
+                    const Icon(LucideIcons.chevronRight, size: 18, color: AppColors.warnText),
                   ]),
                 ),
               ),
@@ -198,18 +212,22 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
             if (analytics?.deadlineAlert != null)
               Container(
                 padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(color: const Color(0xFFfee2e2), borderRadius: BorderRadius.circular(8)),
+                decoration: BoxDecoration(
+                  color: AppColors.errorLight,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                ),
                 child: Row(children: [
-                  const Icon(LucideIcons.clock, size: 20, color: Color(0xFFdc2626)),
+                  const Icon(LucideIcons.triangleAlert, size: 20, color: AppColors.error),
                   const SizedBox(width: 10),
                   Expanded(
                     child: RichText(
                       text: TextSpan(
-                        style: const TextStyle(fontSize: 13, color: Color(0xFFdc2626), fontFamily: 'Inter'),
+                        style: GoogleFonts.inter(fontSize: 13, color: AppColors.error),
                         children: [
-                          const TextSpan(text: 'Deadline approaching: ', style: TextStyle(fontWeight: FontWeight.w600)),
+                          const TextSpan(text: 'Deadline approaching: ', style: TextStyle(fontWeight: FontWeight.w700)),
                           TextSpan(text: '${analytics!.deadlineAlert!['tournament_name']} closes in '),
-                          TextSpan(text: '${analytics.deadlineAlert!['days_left']} days', style: const TextStyle(fontWeight: FontWeight.w600)),
+                          TextSpan(text: '${analytics.deadlineAlert!['days_left']} days', style: const TextStyle(fontWeight: FontWeight.w700)),
                         ],
                       ),
                     ),
@@ -223,9 +241,14 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
             // Quick Actions
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: AppColors.border),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: SportXShadows.e1,
+              ),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const Text('Quick Actions', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                Text('Quick Actions', style: GoogleFonts.sora(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
                 const SizedBox(height: 12),
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                   _buildQuickAction(LucideIcons.clipboardList, 'Post Trial', () => context.push('/post-trial')),
@@ -252,13 +275,18 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
             if (analytics != null && analytics.categoryBreakdown.isNotEmpty)
               Container(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: SportXShadows.e1,
+                ),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    const Text('Capacity by Category', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                    Text('Capacity by Category', style: GoogleFonts.sora(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
                     GestureDetector(
                       onTap: () => context.push('/organizer-analytics'),
-                      child: const Text('View All', style: TextStyle(fontSize: 13, color: AppColors.primary)),
+                      child: Text('View All', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primaryDarker)),
                     ),
                   ]),
                   const SizedBox(height: 10),
@@ -274,12 +302,12 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
                         ]),
                         const SizedBox(height: 4),
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(3),
+                          borderRadius: BorderRadius.circular(999),
                           child: LinearProgressIndicator(
                             value: cap == 0 ? 0 : (reg / cap).clamp(0, 1),
-                            minHeight: 5,
-                            backgroundColor: AppColors.border,
-                            valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+                            minHeight: 6,
+                            backgroundColor: AppColors.borderSoft,
+                            valueColor: const AlwaysStoppedAnimation(AppColors.ctaDark),
                           ),
                         ),
                       ]),
@@ -292,11 +320,16 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
             // My Trials
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: AppColors.border),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: SportXShadows.e1,
+              ),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  const Text('My Trials', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                  GestureDetector(onTap: () => context.push('/my-trials'), child: const Text('View All', style: TextStyle(fontSize: 13, color: AppColors.primary))),
+                  Text('My Trials', style: GoogleFonts.sora(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                  GestureDetector(onTap: () => context.push('/my-trials'), child: Text('View All', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primaryDarker))),
                 ]),
                 const SizedBox(height: 12),
                 if (trials.isEmpty)
@@ -319,11 +352,16 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
             // My Tournaments with management shortcuts
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: AppColors.border),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: SportXShadows.e1,
+              ),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  const Text('My Tournaments', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                  GestureDetector(onTap: () => context.push('/my-tournaments'), child: const Text('View All', style: TextStyle(fontSize: 13, color: AppColors.primary))),
+                  Text('My Tournaments', style: GoogleFonts.sora(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                  GestureDetector(onTap: () => context.push('/my-tournaments'), child: Text('View All', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primaryDarker))),
                 ]),
                 const SizedBox(height: 12),
                 if (tournaments.isEmpty)
@@ -378,17 +416,22 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
         padding: const EdgeInsets.all(20),
         children: [
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            const Text('My Events', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-            FilledButton.icon(onPressed: () => context.push('/post-tournament'), icon: const Icon(LucideIcons.plus, size: 16), label: const Text('New Event')),
+            Text('My Events', style: GoogleFonts.sora(fontSize: 19, fontWeight: FontWeight.w700, color: AppColors.ink)),
+            PrimaryButton(small: true, label: 'New Event', icon: LucideIcons.plus, onPressed: () => context.push('/post-tournament')),
           ]),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: SportXShadows.e1,
+            ),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Text('Tournaments (${tournaments.length})', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                TextButton(onPressed: () => context.push('/my-tournaments'), child: const Text('Manage All')),
+                Text('Tournaments (${tournaments.length})', style: GoogleFonts.sora(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                TextButton(onPressed: () => context.push('/my-tournaments'), child: Text('Manage All', style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: AppColors.primaryDarker))),
               ]),
               if (tournaments.isEmpty)
                 const Text('No tournaments yet.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary))
@@ -429,11 +472,16 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: SportXShadows.e1,
+            ),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Text('Trials (${trials.length})', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                TextButton(onPressed: () => context.push('/my-trials'), child: const Text('Manage All')),
+                Text('Trials (${trials.length})', style: GoogleFonts.sora(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                TextButton(onPressed: () => context.push('/my-trials'), child: Text('Manage All', style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: AppColors.primaryDarker))),
               ]),
               if (trials.isEmpty)
                 const Text('No trials yet.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary))
@@ -462,9 +510,9 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
           const SizedBox(height: 8),
           Text(e.toString(), style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
           const SizedBox(height: 12),
-          ElevatedButton(onPressed: () => ref.invalidate(organizerAnalyticsProvider), child: const Text('Retry')),
+          SecondaryButton(label: 'Retry', onPressed: () => ref.invalidate(organizerAnalyticsProvider)),
           const SizedBox(height: 8),
-          TextButton(onPressed: () => context.push('/organizer-analytics'), child: const Text('Open full analytics')),
+          TextButton(onPressed: () => context.push('/organizer-analytics'), child: Text('Open full analytics', style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: AppColors.primaryDarker))),
         ]),
       ),
       data: (a) => SingleChildScrollView(
@@ -473,7 +521,7 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
           Row(children: [
             Expanded(child: _buildStatCard('${a.totalRegistrations}', 'Total')),
             const SizedBox(width: 8),
-            Expanded(child: _buildStatCard('${a.pendingRegistrations}', 'Pending', color: Colors.orange)),
+            Expanded(child: _buildStatCard('${a.pendingRegistrations}', 'Pending', color: AppColors.amberDeep)),
             const SizedBox(width: 8),
             Expanded(child: _buildStatCard('${a.approvedRegistrations}', 'Approved', color: AppColors.success)),
             const SizedBox(width: 8),
@@ -483,15 +531,20 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: SportXShadows.e1,
+            ),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('Revenue & Capacity', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              Text('Revenue & Capacity', style: GoogleFonts.sora(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
               const SizedBox(height: 8),
-              Text('Estimated revenue: ₹${a.revenueEstimate.toStringAsFixed(0)}', style: const TextStyle(fontSize: 13, color: AppColors.textPrimary)),
+              Text('Estimated revenue: ₹${a.revenueEstimate.toStringAsFixed(0)}', style: GoogleFonts.inter(fontSize: 13, color: AppColors.textPrimary)),
               const SizedBox(height: 4),
-              Text('${a.totalRegistered}/${a.totalCapacity} capacity • ${a.utilizationPercent}% utilized', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              Text('${a.totalRegistered}/${a.totalCapacity} capacity • ${a.utilizationPercent}% utilized', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
               const SizedBox(height: 12),
-              FilledButton(onPressed: () => context.push('/organizer-analytics'), child: const Text('View detailed analytics')),
+              PrimaryButton(label: 'View detailed analytics', onPressed: () => context.push('/organizer-analytics')),
             ]),
           ),
         ]),
@@ -511,17 +564,35 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: AppColors.border),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: SportXShadows.e1,
+          ),
           child: Column(children: [
-            Container(width: 64, height: 64, decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(12)), alignment: Alignment.center, child: const Icon(LucideIcons.building2, color: Colors.white, size: 32)),
+            Container(
+              width: 68,
+              height: 68,
+              decoration: BoxDecoration(
+                color: AppColors.organizer.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.organizer.withValues(alpha: 0.25)),
+              ),
+              alignment: Alignment.center,
+              child: const Icon(LucideIcons.building2, color: AppColors.organizer, size: 32),
+            ),
             const SizedBox(height: 12),
-            Text(orgName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+            Text(orgName, style: GoogleFonts.sora(fontSize: 19, fontWeight: FontWeight.w700, color: AppColors.ink)),
             const SizedBox(height: 4),
-            Text(user?.email ?? '', style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+            Text(user?.email ?? '', style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary)),
             const SizedBox(height: 4),
-            Text(orgType, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            Text(orgType, style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
             const SizedBox(height: 8),
-            Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: user?.isVerified == true ? const Color(0xFFd1fae5) : const Color(0xFFfef3c7), borderRadius: BorderRadius.circular(12)), child: Text(user?.isVerified == true ? 'Verified • Organizer' : 'Pending verification • Organizer', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: user?.isVerified == true ? const Color(0xFF065f46) : const Color(0xFF92400e)))),
+            StatusPill(
+              label: user?.isVerified == true ? 'Verified • Organizer' : 'Pending verification • Organizer',
+              kind: user?.isVerified == true ? PillKind.ok : PillKind.pending,
+            ),
             if (orgAsync.isLoading) const Padding(padding: EdgeInsets.only(top: 8), child: SizedBox(height: 14, width: 14, child: CircularProgressIndicator(strokeWidth: 2))),
             if (orgAsync.hasError) Padding(padding: const EdgeInsets.only(top: 8), child: Text('Failed to load org profile', style: const TextStyle(fontSize: 11, color: AppColors.textSecondary))),
           ]),
@@ -535,11 +606,9 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
         _profileAction('Settings', LucideIcons.settings, () => context.push('/settings')),
         _profileAction('Help & Support', LucideIcons.helpCircle, () => context.push('/help-support')),
         const SizedBox(height: 16),
-        OutlinedButton.icon(
-          onPressed: () async => await ref.read(authProvider.notifier).logout(),
-          style: OutlinedButton.styleFrom(foregroundColor: Colors.red, side: const BorderSide(color: Colors.red), minimumSize: const Size.fromHeight(48), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-          icon: const Icon(LucideIcons.logOut, size: 18),
-          label: const Text('Log out', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+        SizedBox(
+          width: double.infinity,
+          child: SecondaryButton(label: 'Log out', icon: LucideIcons.logOut, onPressed: () async => await ref.read(authProvider.notifier).logout()),
         ),
       ]),
     );
@@ -548,8 +617,13 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
   Widget _profileAction(String title, IconData icon, VoidCallback onTap) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
-      child: ListTile(leading: Icon(icon, size: 18, color: AppColors.textPrimary), title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)), trailing: const Icon(LucideIcons.chevronRight, size: 16, color: AppColors.textSecondary), onTap: onTap),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: SportXShadows.e1,
+      ),
+      child: ListTile(leading: Icon(icon, size: 18, color: AppColors.organizer), title: Text(title, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink)), trailing: const Icon(LucideIcons.chevronRight, size: 16, color: AppColors.textSecondary), onTap: onTap),
     );
   }
 
@@ -580,11 +654,15 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
     if (deadlineTournament == null || nearestDeadline == null) return const SizedBox.shrink();
     return Container(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: const Color(0xFFfee2e2), borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(
+        color: AppColors.errorLight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+      ),
       child: Row(children: [
-        const Icon(LucideIcons.clock, size: 20, color: Color(0xFFdc2626)),
+        const Icon(LucideIcons.triangleAlert, size: 20, color: AppColors.error),
         const SizedBox(width: 10),
-        Expanded(child: RichText(text: TextSpan(style: const TextStyle(fontSize: 13, color: Color(0xFFdc2626), fontFamily: 'Inter'), children: [const TextSpan(text: 'Deadline approaching: ', style: TextStyle(fontWeight: FontWeight.w600)), TextSpan(text: '${deadlineTournament.title} registration closes in '), TextSpan(text: '${nearestDeadline.difference(DateTime.now()).inDays} days', style: const TextStyle(fontWeight: FontWeight.w600))]))),
+        Expanded(child: RichText(text: TextSpan(style: GoogleFonts.inter(fontSize: 13, color: AppColors.error), children: [const TextSpan(text: 'Deadline approaching: ', style: TextStyle(fontWeight: FontWeight.w700)), TextSpan(text: '${deadlineTournament.title} registration closes in '), TextSpan(text: '${nearestDeadline.difference(DateTime.now()).inDays} days', style: const TextStyle(fontWeight: FontWeight.w700))]))),
       ]),
     );
   }
@@ -592,11 +670,16 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
   Widget _buildStatCard(String value, String label, {Color color = AppColors.primary}) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: SportXShadows.e1,
+      ),
       child: Column(children: [
-        Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: color)),
+        Text(value, style: GoogleFonts.sora(fontSize: 22, fontWeight: FontWeight.w800, color: color)),
         const SizedBox(height: 4),
-        Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary), textAlign: TextAlign.center),
+        Text(label, style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondary), textAlign: TextAlign.center),
       ]),
     );
   }
@@ -605,9 +688,19 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
     return GestureDetector(
       onTap: onTap,
       child: Column(children: [
-        Container(width: 48, height: 48, decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.border)), alignment: Alignment.center, child: Icon(icon, size: 20, color: AppColors.textPrimary)),
+        Container(
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            color: AppColors.organizer.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.organizer.withValues(alpha: 0.25)),
+          ),
+          alignment: Alignment.center,
+          child: Icon(icon, size: 22, color: AppColors.organizer),
+        ),
         const SizedBox(height: 6),
-        Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+        Text(label, style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
       ]),
     );
   }
@@ -615,35 +708,36 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
   Widget _smallAction(String label, IconData icon, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: BorderRadius.circular(999),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-        decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(4), border: Border.all(color: AppColors.border)),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, size: 11, color: AppColors.textSecondary), const SizedBox(width: 4), Text(label, style: const TextStyle(fontSize: 10, color: AppColors.textSecondary))]),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(color: AppColors.yellowSoft, borderRadius: BorderRadius.circular(999), border: Border.all(color: AppColors.border)),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, size: 11, color: AppColors.textSecondary), const SizedBox(width: 4), Text(label, style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textSecondary))]),
       ),
     );
   }
 
   Widget _buildEventItem(String title, String meta, String status, IconData icon) {
-    Color badgeColor;
-    Color badgeText;
-    if (status == 'Active' || status == 'Published') {
-      badgeColor = const Color(0xFFd1fae5);
-      badgeText = const Color(0xFF065f46);
-    } else if (status == 'Draft') {
-      badgeColor = const Color(0xFFfef3c7);
-      badgeText = const Color(0xFF92400e);
-    } else {
-      badgeColor = AppColors.surface;
-      badgeText = AppColors.textSecondary;
-    }
+    final PillKind kind = (status == 'Active' || status == 'Published')
+        ? PillKind.ok
+        : (status == 'Draft' ? PillKind.pending : PillKind.draft);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(children: [
-        Container(width: 44, height: 44, decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.border)), alignment: Alignment.center, child: Icon(icon, size: 20, color: AppColors.textPrimary)),
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: AppColors.organizer.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.border),
+          ),
+          alignment: Alignment.center,
+          child: Icon(icon, size: 20, color: AppColors.organizer),
+        ),
         const SizedBox(width: 12),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)), const SizedBox(height: 2), Text(meta, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary))])),
-        Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(color: badgeColor, borderRadius: BorderRadius.circular(4)), child: Text(status, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: badgeText))),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink)), const SizedBox(height: 2), Text(meta, style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary))])),
+        StatusPill(label: status, kind: kind),
       ]),
     );
   }

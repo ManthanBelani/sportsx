@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
@@ -29,7 +30,7 @@ class _ManageUsersScreenState extends ConsumerState<ManageUsersScreen> {
       title: 'Manage Users',
       actions: [
         IconButton(
-          icon: const Icon(Icons.person_add_outlined),
+          icon: const Icon(LucideIcons.userPlus),
           onPressed: () => _showAddUserDialog(context),
         ),
       ],
@@ -37,8 +38,8 @@ class _ManageUsersScreenState extends ConsumerState<ManageUsersScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
+            decoration: const BoxDecoration(
+              color: Colors.white,
               border: Border(
                 bottom: BorderSide(color: AppColors.border),
               ),
@@ -46,15 +47,17 @@ class _ManageUsersScreenState extends ConsumerState<ManageUsersScreen> {
             child: TextField(
               decoration: InputDecoration(
                 hintText: 'Search by name, email, or phone...',
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(LucideIcons.search, color: AppColors.textSecondary),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: AppColors.border),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: AppColors.border),
                 ),
+                filled: true,
+                fillColor: AppColors.surface,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
               onChanged: (value) {

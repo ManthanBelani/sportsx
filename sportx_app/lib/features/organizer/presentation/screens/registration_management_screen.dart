@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -22,17 +24,18 @@ class RegistrationManagementScreen extends ConsumerWidget {
     final tournamentAsync = ref.watch(tournamentDetailProvider(tournamentId));
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         backgroundColor: AppColors.background,
+        scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
-        title: const Text('Registrations', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Registrations', style: GoogleFonts.sora(fontSize: 19, fontWeight: FontWeight.w700, color: AppColors.ink)),
         bottom: const PreferredSize(preferredSize: Size.fromHeight(1), child: Divider(height: 1, color: AppColors.border)),
       ),
       body: tournamentAsync.when(
         loading: () => const GenericDetailSkeleton(),
-        error: (e, _) => Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Text(ApiException.messageFor(e), style: const TextStyle(color: AppColors.textSecondary)), const SizedBox(height: 12), ElevatedButton(onPressed: () => ref.invalidate(tournamentDetailProvider(tournamentId)), child: const Text('Retry'))])),
+        error: (e, _) => Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Text(ApiException.messageFor(e), style: GoogleFonts.inter(color: AppColors.textSecondary)), const SizedBox(height: 12), SecondaryButton(label: 'Retry', onPressed: () => ref.invalidate(tournamentDetailProvider(tournamentId)))])),
         data: (tournament) {
           final capacityList = capacityAsync.valueOrNull ?? [];
           final feeRaw = tournament?.registrationFee ?? 0;
@@ -119,11 +122,14 @@ class _RegistrationsTabViewState extends ConsumerState<_RegistrationsTabView> wi
       children: [
         Container(
           padding: const EdgeInsets.all(16),
-          color: AppColors.surface,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            border: Border(bottom: BorderSide(color: AppColors.border)),
+          ),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(widget.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+            Text(widget.title, style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
             const SizedBox(height: 4),
-            Text(widget.dateStr, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+            Text(widget.dateStr, style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary)),
             const SizedBox(height: 12),
             Row(children: [
               Expanded(child: _summaryItem('${widget.totalRegistered}', 'Registered')),
@@ -150,9 +156,11 @@ class _RegistrationsTabViewState extends ConsumerState<_RegistrationsTabView> wi
           color: AppColors.background,
           child: TabBar(
             controller: _tabController,
-            labelColor: AppColors.primary,
+            labelColor: AppColors.ink,
+            labelStyle: GoogleFonts.inter(fontWeight: FontWeight.w700),
             unselectedLabelColor: AppColors.textSecondary,
-            indicatorColor: AppColors.primary,
+            indicatorColor: AppColors.ctaDark,
+            indicatorWeight: 3,
             tabs: const [
               Tab(text: 'Pending'),
               Tab(text: 'Approved'),
@@ -176,12 +184,16 @@ class _RegistrationsTabViewState extends ConsumerState<_RegistrationsTabView> wi
 
   Widget _summaryItem(String num, String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(8)),
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
       child: Column(children: [
-        Text(num, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.primary)),
+        Text(num, style: GoogleFonts.sora(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.ink)),
         const SizedBox(height: 2),
-        Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+        Text(label, style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondary)),
       ]),
     );
   }
@@ -203,9 +215,9 @@ class _RegistrationListView extends ConsumerWidget {
       loading: () => const GenericListSkeleton(itemCount: 5),
       error: (e, _) => Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Text(ApiException.messageFor(e), style: const TextStyle(color: AppColors.textSecondary)),
+          Text(ApiException.messageFor(e), style: GoogleFonts.inter(color: AppColors.textSecondary)),
           const SizedBox(height: 12),
-          ElevatedButton(onPressed: () => ref.invalidate(tournamentRegistrationsByStatusProvider((tournamentId: tournamentId, status: status))), child: const Text('Retry')),
+          SecondaryButton(label: 'Retry', onPressed: () => ref.invalidate(tournamentRegistrationsByStatusProvider((tournamentId: tournamentId, status: status)))),
         ]),
       ),
       data: (regs) {
@@ -259,8 +271,8 @@ class _RegistrationListView extends ConsumerWidget {
                     decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.border))),
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                        Text(entry.key, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                        Text('${entry.value.length} teams', style: const TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w500)),
+                        Text(entry.key, style: GoogleFonts.sora(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                        Text('${entry.value.length} teams', style: GoogleFonts.inter(fontSize: 13, color: AppColors.primaryDarker, fontWeight: FontWeight.w700)),
                       ]),
                       const SizedBox(height: 10),
                       ...entry.value.map((r) => _RegistrationCard(tournamentId: tournamentId, data: r, status: status, feePerTeam: feePerTeam)),
@@ -296,54 +308,66 @@ class _RegistrationCard extends ConsumerWidget {
     final isPaid = (data['payment_status'] ?? data['status'] ?? '') == 'paid';
     final feeLabel = feePerTeam > 0 ? '₹$feePerTeam' : 'TBD';
 
-    Color chipColor = switch (approvalStatus) {
-      'approved' => Colors.green,
-      'rejected' => Colors.red,
-      _ => Colors.orange,
-    };
-    IconData chipIcon = switch (approvalStatus) {
-      'approved' => Icons.check_circle,
-      'rejected' => Icons.cancel,
-      _ => Icons.hourglass_empty,
-    };
-
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: SportXShadows.e1,
+      ),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            CircleAvatar(radius: 18, backgroundColor: AppColors.surface, backgroundImage: resolvedAvatar != null ? NetworkImage(resolvedAvatar) : null, child: resolvedAvatar == null ? const Icon(LucideIcons.user, size: 16, color: AppColors.textSecondary) : null),
+            CircleAvatar(radius: 18, backgroundColor: AppColors.yellowSoft, backgroundImage: resolvedAvatar != null ? NetworkImage(resolvedAvatar) : null, child: resolvedAvatar == null ? const Icon(LucideIcons.user, size: 16, color: AppColors.textSecondary) : null),
             const SizedBox(width: 10),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
-              Text('${data['participation_type'] ?? ''} • $approvalStatus', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              Text(name, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink)),
+              Text('${data['participation_type'] ?? ''} • $approvalStatus', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
             ])),
-            _ApprovalChip(status: approvalStatus),
+            StatusPill(
+              label: approvalStatus,
+              kind: approvalStatus == 'approved'
+                  ? PillKind.ok
+                  : approvalStatus == 'rejected'
+                      ? PillKind.no
+                      : PillKind.pending,
+            ),
             const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: isPaid ? const Color(0xFFd1fae5) : const Color(0xFFfef3c7), borderRadius: BorderRadius.circular(4)),
-              child: Text(isPaid ? 'Paid $feeLabel' : 'Fee Pending', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isPaid ? const Color(0xFF065f46) : const Color(0xFF92400e))),
+              decoration: BoxDecoration(
+                color: isPaid ? AppColors.successLight : AppColors.yellowTint,
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: isPaid ? AppColors.success.withValues(alpha: 0.35) : AppColors.yellowDeep.withValues(alpha: 0.35)),
+              ),
+              child: Text(isPaid ? 'Paid $feeLabel' : 'Fee Pending', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: isPaid ? AppColors.success : AppColors.warnText)),
             ),
           ]),
           if (rejectionReason != null && rejectionReason.isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text('Reason: $rejectionReason', style: const TextStyle(fontSize: 12, color: Colors.red)),
+            Text('Reason: $rejectionReason', style: GoogleFonts.inter(fontSize: 12, color: AppColors.error)),
           ],
           if (isPending) ...[
             const SizedBox(height: 12),
             Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-              OutlinedButton(
-                onPressed: () => _showRejectDialog(context, ref, data),
-                style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('Reject'),
+              GestureDetector(
+                onTap: () => _showRejectDialog(context, ref, data),
+                child: Container(
+                  height: 36,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(11),
+                    border: Border.all(color: AppColors.error.withValues(alpha: 0.5)),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text('Reject', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.error)),
+                ),
               ),
               const SizedBox(width: 8),
-              ElevatedButton(
-                onPressed: () => _approve(context, ref, data),
-                child: const Text('Approve'),
-              ),
+              PrimaryButton(small: true, label: 'Approve', icon: LucideIcons.check, onPressed: () => _approve(context, ref, data)),
             ]),
           ],
         ]),
@@ -380,8 +404,8 @@ class _RegistrationCard extends ConsumerWidget {
           maxLines: 3,
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Reject')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel', style: GoogleFonts.inter(color: AppColors.textSecondary, fontWeight: FontWeight.w600))),
+          PrimaryButton(small: true, label: 'Reject', onPressed: () => Navigator.pop(context, controller.text)),
         ],
       ),
     );
@@ -403,24 +427,3 @@ class _RegistrationCard extends ConsumerWidget {
   }
 }
 
-class _ApprovalChip extends StatelessWidget {
-  final String status;
-  const _ApprovalChip({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = switch (status) {
-      'approved' => AppColors.success,
-      'rejected' => AppColors.error,
-      _ => AppColors.warning,
-    };
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(status, style: TextStyle(color: color, fontSize: 11)),
-    );
-  }
-}

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -15,11 +16,13 @@ class NotificationsScreen extends ConsumerWidget {
     final state = ref.watch(notificationsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
-        title: const Text('Notifications', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Notifications',
+            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         centerTitle: false,
         actions: [
           if (state.unreadCount > 0)
@@ -229,16 +232,16 @@ class NotificationsScreen extends ConsumerWidget {
     switch (type) {
       case 'trial_reminder': 
       case 'deadline':
-        return _TypeData(icon: LucideIcons.clock, bgColor: const Color(0xFFfef3c7), iconColor: const Color(0xFF92400e));
+        return _TypeData(icon: LucideIcons.clock, bgColor: AppColors.yellowTint, iconColor: AppColors.warnText);
       case 'registration': 
       case 'trial':
-        return _TypeData(icon: LucideIcons.checkCircle, bgColor: const Color(0xFFdbeafe), iconColor: const Color(0xFF1e40af));
+        return _TypeData(icon: LucideIcons.checkCircle, bgColor: AppColors.infoLight, iconColor: AppColors.info);
       case 'enquiry': 
       case 'reply':
-        return _TypeData(icon: LucideIcons.messageCircle, bgColor: const Color(0xFFd1fae5), iconColor: const Color(0xFF065f46));
+        return _TypeData(icon: LucideIcons.messageCircle, bgColor: AppColors.successLight, iconColor: AppColors.success);
       case 'shortlist': 
       case 'application':
-        return _TypeData(icon: LucideIcons.trophy, bgColor: const Color(0xFFede9fe), iconColor: const Color(0xFF5b21b6));
+        return _TypeData(icon: LucideIcons.trophy, bgColor: AppColors.infoLight, iconColor: AppColors.coach);
       default: 
         return _TypeData(icon: LucideIcons.bell, bgColor: AppColors.surface, iconColor: AppColors.textSecondary);
     }

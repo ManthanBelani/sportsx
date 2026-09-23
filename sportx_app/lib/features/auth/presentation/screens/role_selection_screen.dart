@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class RoleSelectionScreen extends StatefulWidget {
   const RoleSelectionScreen({super.key});
@@ -22,25 +24,27 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.surface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
           child: Column(
             children: [
               const SizedBox(height: 60),
-              const Text(
+              Text(
                 'Who are you joining as?',
-                style: TextStyle(
+                style: GoogleFonts.sora(
                   fontSize: 24,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
                   color: AppColors.textPrimary,
+                  letterSpacing: -0.5,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Choose your role to get started',
-                style: TextStyle(
+                style: GoogleFonts.inter(
                   fontSize: 14,
                   color: AppColors.textSecondary,
                 ),
@@ -55,8 +59,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                       title: 'Athlete / Parent',
                       subtitle: 'Find academies, coaches, trials & more',
                       iconData: LucideIcons.user,
-                      iconBgColor: const Color(0xFFFEF3C7),
-                      iconColor: const Color(0xFF92400E),
+                      iconBgColor: AppColors.yellowTint,
+                      iconColor: AppColors.warnText,
                       isSelected: _selectedRole == 'athlete',
                       onTap: () => setState(() => _selectedRole = 'athlete'),
                     ),
@@ -66,8 +70,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                       title: 'Coach',
                       subtitle: 'List your coaching services',
                       iconData: LucideIcons.clipboardList,
-                      iconBgColor: const Color(0xFFDBEAFE),
-                      iconColor: const Color(0xFF1E40AF),
+                      iconBgColor: AppColors.coach.withValues(alpha: 0.12),
+                      iconColor: AppColors.coach,
                       isSelected: _selectedRole == 'coach',
                       onTap: () => setState(() => _selectedRole = 'coach'),
                     ),
@@ -77,8 +81,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                       title: 'Academy',
                       subtitle: 'Manage your academy & trials',
                       iconData: LucideIcons.building2,
-                      iconBgColor: const Color(0xFFD1FAE5),
-                      iconColor: const Color(0xFF065F46),
+                      iconBgColor: AppColors.successLight,
+                      iconColor: AppColors.academy,
                       isSelected: _selectedRole == 'academy',
                       onTap: () => setState(() => _selectedRole = 'academy'),
                     ),
@@ -87,9 +91,9 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                       id: 'organizer',
                       title: 'Organizer',
                       subtitle: 'Post tournaments & manage events',
-                      iconData: LucideIcons.calendar,
-                      iconBgColor: const Color(0xFFEDE9FE),
-                      iconColor: const Color(0xFF5B21B6),
+                      iconData: LucideIcons.calendarDays,
+                      iconBgColor: AppColors.organizer.withValues(alpha: 0.12),
+                      iconColor: AppColors.organizer,
                       isSelected: _selectedRole == 'organizer',
                       onTap: () => setState(() => _selectedRole = 'organizer'),
                     ),
@@ -99,8 +103,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                       title: 'Sponsor / Brand',
                       subtitle: 'Find & sponsor athletes',
                       iconData: LucideIcons.briefcase,
-                      iconBgColor: const Color(0xFFFCE7F3),
-                      iconColor: const Color(0xFF9D174D),
+                      iconBgColor: AppColors.pink.withValues(alpha: 0.12),
+                      iconColor: AppColors.pink,
                       isSelected: _selectedRole == 'sponsor',
                       onTap: () => setState(() => _selectedRole = 'sponsor'),
                     ),
@@ -110,8 +114,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                       title: 'Talent Scout',
                       subtitle: 'Discover & shortlist promising athletes',
                       iconData: LucideIcons.userSearch,
-                      iconBgColor: const Color(0xFFE0E7FF),
-                      iconColor: const Color(0xFF3730A3),
+                      iconBgColor: AppColors.infoLight,
+                      iconColor: AppColors.scout,
                       isSelected: _selectedRole == 'talent_scout',
                       onTap: () => setState(() => _selectedRole = 'talent_scout'),
                     ),
@@ -122,40 +126,30 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     'Already have an account? ',
-                    style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                    style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary),
                   ),
                   GestureDetector(
                     onTap: () => context.go('/login'),
-                    child: const Text(
+                    child: Text(
                       'Log in',
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         fontSize: 14,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w500,
+                        color: AppColors.primaryDarker,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _selectedRole != null ? _handleContinue : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  disabledBackgroundColor: AppColors.border,
-                  foregroundColor: Colors.white,
-                  disabledForegroundColor: Colors.white,
-                  elevation: 0,
-                  minimumSize: const Size(double.infinity, 56),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text(
-                  'Continue',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              Opacity(
+                opacity: _selectedRole != null ? 1.0 : 0.5,
+                child: PrimaryButton(
+                  label: 'Continue',
+                  icon: LucideIcons.arrowRight,
+                  onPressed: _selectedRole != null ? _handleContinue : null,
                 ),
               ),
             ],
@@ -194,11 +188,13 @@ class _RoleCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFE6F0FF) : AppColors.background,
+          color: isSelected ? AppColors.yellowSoft : AppColors.cardBackground,
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
+            color: isSelected ? AppColors.yellowDeep : AppColors.border,
+            width: isSelected ? 1.5 : 1,
           ),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: SportXShadows.e1,
         ),
         child: Row(
           children: [
@@ -218,7 +214,7 @@ class _RoleCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: GoogleFonts.inter(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
@@ -227,7 +223,7 @@ class _RoleCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: const TextStyle(
+                    style: GoogleFonts.inter(
                       fontSize: 12,
                       color: AppColors.textSecondary,
                     ),
@@ -235,7 +231,11 @@ class _RoleCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(LucideIcons.chevronRight, color: AppColors.textSecondary, size: 20),
+            Icon(
+              isSelected ? LucideIcons.circleCheck : LucideIcons.chevronRight,
+              color: isSelected ? AppColors.yellowDeep : AppColors.textTertiary,
+              size: 20,
+            ),
           ],
         ),
       ),

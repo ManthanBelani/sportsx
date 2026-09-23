@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
@@ -65,6 +67,9 @@ class _ComposeNotificationScreenState
 
   Widget _buildNotificationForm() {
     return Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -74,10 +79,15 @@ class _ComposeNotificationScreenState
             const SizedBox(height: 16),
             TextFormField(
               controller: _titleController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Title',
                 hintText: 'Enter notification title',
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: AppColors.border)),
+                filled: true,
+                fillColor: AppColors.surface,
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -92,10 +102,15 @@ class _ComposeNotificationScreenState
             const SizedBox(height: 16),
             TextFormField(
               controller: _bodyController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Body',
                 hintText: 'Enter notification message',
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: AppColors.border)),
+                filled: true,
+                fillColor: AppColors.surface,
               ),
               maxLines: 4,
               validator: (value) {
@@ -126,6 +141,9 @@ class _ComposeNotificationScreenState
 
   Widget _buildTargetingSection() {
     return Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -147,25 +165,25 @@ class _ComposeNotificationScreenState
                     value: 'all',
                     title: 'All Users',
                     description: 'Send to all registered users',
-                    icon: Icons.people_outline,
+                    icon: LucideIcons.users,
                   ),
                   _buildTargetOption(
                     value: 'athletes',
                     title: 'Athletes Only',
                     description: 'Send to athlete accounts',
-                    icon: Icons.sports,
+                    icon: LucideIcons.trophy,
                   ),
                   _buildTargetOption(
                     value: 'coaches',
                     title: 'Coaches Only',
                     description: 'Send to coach accounts',
-                    icon: Icons.fitness_center,
+                    icon: LucideIcons.dumbbell,
                   ),
                   _buildTargetOption(
                     value: 'sponsors',
                     title: 'Sponsors Only',
                     description: 'Send to sponsor accounts',
-                    icon: Icons.business,
+                    icon: LucideIcons.building2,
                   ),
                 ],
               ),
@@ -175,7 +193,7 @@ class _ComposeNotificationScreenState
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: () => context.push('/admin/notifications/targeting'),
-                icon: const Icon(Icons.tune),
+                icon: const Icon(LucideIcons.slidersHorizontal),
                 label: const Text('Advanced Targeting'),
               ),
             ),
@@ -211,6 +229,9 @@ class _ComposeNotificationScreenState
 
   Widget _buildPreviewSection() {
     return Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -238,7 +259,7 @@ class _ComposeNotificationScreenState
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(
-                          Icons.sports,
+                          LucideIcons.trophy,
                           color: Colors.white,
                           size: 24,
                         ),
@@ -294,28 +315,21 @@ class _ComposeNotificationScreenState
   }
 
   Widget _buildSendButton() {
-    return ElevatedButton(
-      onPressed: _isLoading ? null : _sendNotification,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.cta,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-      ),
-      child: _isLoading
-          ? const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-              ),
-            )
-          : const Text(
-              'Send Notification',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+    if (_isLoading) {
+      return const Center(
+        child: SizedBox(
+          width: 28,
+          height: 28,
+          child: CircularProgressIndicator(strokeWidth: 3, color: AppColors.ctaDark),
+        ),
+      );
+    }
+    return SizedBox(
+      width: double.infinity,
+      child: PrimaryButton(
+          label: 'Send Notification',
+          icon: LucideIcons.send,
+          onPressed: _sendNotification),
     );
   }
 

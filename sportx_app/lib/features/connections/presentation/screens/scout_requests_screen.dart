@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -53,12 +54,13 @@ class _ScoutRequestsScreenState extends ConsumerState<ScoutRequestsScreen> {
     final state = ref.watch(scoutRequestsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
-        title: const Text('Scout Requests',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Scout Requests',
+            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         leading: IconButton(
             icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
             onPressed: () => context.pop()),
@@ -80,7 +82,7 @@ class _ScoutRequestsScreenState extends ConsumerState<ScoutRequestsScreen> {
                       const SizedBox(height: 16),
                       FilledButton(
                         onPressed: () => ref.read(scoutRequestsProvider.notifier).load(),
-                        style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+                        style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink),
                         child: const Text('Retry'),
                       ),
                     ],
@@ -173,7 +175,7 @@ class _ScoutRequestsScreenState extends ConsumerState<ScoutRequestsScreen> {
               margin: const EdgeInsets.only(top: 12),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.background,
+                color: AppColors.surface,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text('"$message"',
@@ -195,7 +197,7 @@ class _ScoutRequestsScreenState extends ConsumerState<ScoutRequestsScreen> {
                 Expanded(
                   child: FilledButton(
                     onPressed: busy ? null : () => _respond(id, name, true),
-                    style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+                    style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink),
                     child: busy
                         ? const SizedBox(
                             height: 18,
@@ -241,16 +243,16 @@ class _ScoutRequestsScreenState extends ConsumerState<ScoutRequestsScreen> {
     Color fg;
     switch (status) {
       case 'accepted':
-        bg = const Color(0xFFd1fae5);
-        fg = const Color(0xFF065f46);
+        bg = AppColors.successLight;
+        fg = AppColors.success;
         break;
       case 'rejected':
-        bg = const Color(0xFFfee2e2);
-        fg = const Color(0xFF991b1b);
+        bg = AppColors.errorLight;
+        fg = AppColors.error;
         break;
       default:
-        bg = const Color(0xFFfef3c7);
-        fg = const Color(0xFF92400e);
+        bg = AppColors.yellowTint;
+        fg = AppColors.warnText;
     }
     final label = status[0].toUpperCase() + status.substring(1);
     return Container(

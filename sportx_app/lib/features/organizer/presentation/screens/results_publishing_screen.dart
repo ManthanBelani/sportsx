@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class ResultsPublishingScreen extends ConsumerStatefulWidget {
@@ -150,12 +152,13 @@ class _ResultsPublishingScreenState extends ConsumerState<ResultsPublishingScree
         0;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         backgroundColor: AppColors.background,
+        scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
-        title: const Text('Publish Results', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Publish Results', style: GoogleFonts.sora(fontSize: 19, fontWeight: FontWeight.w700, color: AppColors.ink)),
         bottom: PreferredSize(preferredSize: const Size.fromHeight(1), child: Container(height: 1, color: AppColors.border)),
       ),
       body: SingleChildScrollView(
@@ -163,11 +166,16 @@ class _ResultsPublishingScreenState extends ConsumerState<ResultsPublishingScree
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: SportXShadows.e1,
+            ),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(widget.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+              Text(widget.title, style: GoogleFonts.sora(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
               const SizedBox(height: 4),
-              Text('$approvedCount approved team${approvedCount == 1 ? '' : 's'} • Select category to publish results', style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+              Text('$approvedCount approved team${approvedCount == 1 ? '' : 's'} • Select category to publish results', style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary)),
               if (_categories.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
@@ -187,11 +195,15 @@ class _ResultsPublishingScreenState extends ConsumerState<ResultsPublishingScree
           if (approvedCount == 0)
             Container(
               padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(color: const Color(0xFFfef3c7), borderRadius: BorderRadius.circular(8)),
-              child: const Row(children: [Icon(LucideIcons.alertTriangle, size: 16, color: Color(0xFF92400e)), SizedBox(width: 8), Expanded(child: Text('No approved registrations in this category yet. Approve teams in Registrations first.', style: TextStyle(fontSize: 12, color: Color(0xFF92400e))))]),
+              decoration: BoxDecoration(
+                color: AppColors.yellowTint,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.yellowDeep.withValues(alpha: 0.35)),
+              ),
+              child: Row(children: [Icon(LucideIcons.triangleAlert, size: 16, color: AppColors.warnText), SizedBox(width: 8), Expanded(child: Text('No approved registrations in this category yet. Approve teams in Registrations first.', style: GoogleFonts.inter(fontSize: 12, color: AppColors.warnText)))]),
             )
           else ...[
-            Text('MATCHES (${_matches.length})', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary, letterSpacing: 0.5)),
+            Text('MATCHES (${_matches.length})', style: GoogleFonts.sora(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondary, letterSpacing: 0.5)),
             const SizedBox(height: 12),
             ..._matches.asMap().entries.map((e) => Padding(padding: const EdgeInsets.only(bottom: 12), child: _matchSection('Match ${e.key + 1}', e.value))),
           ],
@@ -200,13 +212,13 @@ class _ResultsPublishingScreenState extends ConsumerState<ResultsPublishingScree
       ),
       bottomNavigationBar: Container(
         padding: EdgeInsets.fromLTRB(20, 16, 20, 16 + MediaQuery.of(context).padding.bottom),
-        decoration: const BoxDecoration(border: Border(top: BorderSide(color: AppColors.border))),
+        decoration: const BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: AppColors.border))),
         child: SizedBox(
           width: double.infinity,
-          child: FilledButton(
+          child: PrimaryButton(
+            label: 'Publish Results',
+            icon: LucideIcons.trophy,
             onPressed: _saving ? null : _publish,
-            style: FilledButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.all(14)),
-            child: _saving ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('Publish Results', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
           ),
         ),
       ),
@@ -216,7 +228,7 @@ class _ResultsPublishingScreenState extends ConsumerState<ResultsPublishingScree
   Widget _matchSection(String round, _MatchEditing m) {
     final isTbd = m.teamA == 'TBD' || m.teamB == 'TBD' || m.teamA == 'Team A';
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(round, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+      Text(round, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
       const SizedBox(height: 8),
       Row(children: [
         Expanded(child: _TeamSlot(text: m.teamA, tbd: isTbd)),
@@ -237,14 +249,19 @@ class _TeamSlot extends StatelessWidget {
   const _TeamSlot({required this.text, this.tbd = false});
   @override
   Widget build(BuildContext context) {
-    Color bg = AppColors.surface;
-    Color fg = AppColors.textPrimary;
+    Color bg = Colors.white;
+    Color fg = AppColors.ink;
     if (tbd) fg = AppColors.textSecondary;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(
+        color: bg,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: SportXShadows.e1,
+      ),
       alignment: Alignment.center,
-      child: Text(text, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: fg), textAlign: TextAlign.center),
+      child: Text(text, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: fg), textAlign: TextAlign.center),
     );
   }
 }

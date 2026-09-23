@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class DiscoverScreen extends ConsumerStatefulWidget {
   const DiscoverScreen({super.key});
@@ -28,12 +31,18 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        title: const Text('Discover'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Text('Discover',
+            style: GoogleFonts.sora(
+                fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () => context.push('/notifications'),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: SportXIconButton(
+                icon: LucideIcons.bell, onTap: () => context.push('/notifications')),
           ),
         ],
       ),
@@ -46,8 +55,14 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: () => context.push('/scout-directory'),
-                icon: const Icon(Icons.person_search_outlined, size: 18),
+                icon: const Icon(LucideIcons.userSearch, size: 18),
                 label: const Text('Find Talent Scouts & Chat'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.ink,
+                  backgroundColor: Colors.white,
+                  side: const BorderSide(color: AppColors.border),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
               ),
             ),
           ),
@@ -57,8 +72,14 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: () => context.push('/athlete-directory'),
-                icon: const Icon(Icons.group_outlined, size: 18),
+                icon: const Icon(LucideIcons.users, size: 18),
                 label: const Text('Find Athletes & Chat'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.ink,
+                  backgroundColor: Colors.white,
+                  side: const BorderSide(color: AppColors.border),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
               ),
             ),
           ),
@@ -77,26 +98,11 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   }
 
   Widget _buildSearchBar() {
-    return GestureDetector(
-      onTap: () => context.push('/universal-search'),
-      child: Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.search, color: AppColors.textTertiary),
-            const SizedBox(width: 12),
-            Text(
-              'Search athletes, coaches...',
-              style: TextStyle(color: AppColors.textTertiary),
-            ),
-          ],
-        ),
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: SportXSearchBar(
+        hint: 'Search athletes, coaches...',
+        onTap: () => context.push('/universal-search'),
       ),
     );
   }
@@ -110,21 +116,12 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           final isSelected = _selectedTab == index;
           return Padding(
             padding: const EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              label: Text(_tabs[index]),
+            child: SportXChip(
+              label: _tabs[index],
               selected: isSelected,
-              onSelected: (_) {
+              onTap: () {
                 setState(() => _selectedTab = index);
               },
-              selectedColor: AppColors.primary,
-              backgroundColor: AppColors.surface,
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.white : AppColors.textPrimary,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              ),
-              side: BorderSide(
-                color: isSelected ? AppColors.primary : AppColors.border,
-              ),
             ),
           );
         }),
@@ -145,7 +142,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
         children: [
           _buildFilterChip(
             label: _selectedSport ?? 'Sport',
-            icon: Icons.sports,
+            icon: LucideIcons.trophy,
             isSelected: _selectedSport != null,
             onTap: () => _showSportFilter(),
             onClear: _selectedSport != null ? () => setState(() => _selectedSport = null) : null,
@@ -153,7 +150,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           const SizedBox(width: 8),
           _buildFilterChip(
             label: _selectedState ?? 'State',
-            icon: Icons.location_on_outlined,
+            icon: LucideIcons.mapPin,
             isSelected: _selectedState != null,
             onTap: () => _showStateFilter(),
             onClear: _selectedState != null ? () => setState(() => _selectedState = null) : null,
@@ -162,7 +159,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
             const SizedBox(width: 8),
             _buildFilterChip(
               label: _selectedAgeGroup ?? 'Age Group',
-              icon: Icons.cake_outlined,
+              icon: LucideIcons.cake,
               isSelected: _selectedAgeGroup != null,
               onTap: () => _showAgeFilter(),
               onClear: _selectedAgeGroup != null ? () => setState(() => _selectedAgeGroup = null) : null,
@@ -185,7 +182,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.infoLight : AppColors.surface,
+          color: isSelected ? AppColors.yellowTint : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? AppColors.primary : AppColors.border,
@@ -212,7 +209,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
               GestureDetector(
                 onTap: onClear,
                 child: Icon(
-                  Icons.close,
+                  LucideIcons.x,
                   size: 14,
                   color: AppColors.primary,
                 ),
@@ -265,11 +262,11 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
         'type': 'athlete',
         'id': athlete.id.toString(),
       }),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.background,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
         ),
         child: Column(
@@ -289,7 +286,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                     : null,
               ),
               child: athlete.profilePhotoUrl == null
-                  ? const Center(child: Icon(Icons.person, size: 40, color: AppColors.textTertiary))
+                  ? const Center(child: Icon(LucideIcons.user, size: 40, color: AppColors.textTertiary))
                   : null,
             ),
             Padding(
@@ -299,7 +296,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                 children: [
                   Text(
                     athlete.fullName,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    style: GoogleFonts.sora(fontWeight: FontWeight.w600, color: AppColors.ink),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -311,7 +308,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.location_on_outlined, size: 14, color: AppColors.textSecondary),
+                      Icon(LucideIcons.mapPin, size: 14, color: AppColors.textSecondary),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
@@ -366,11 +363,11 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   Widget _buildCoachCard(dynamic coach) {
     return InkWell(
       onTap: () => context.push('/coach-profile-detail/${coach.id}'),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.background,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
         ),
         child: Column(
@@ -390,7 +387,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                     : null,
               ),
               child: coach.profilePhotoUrl == null
-                  ? const Center(child: Icon(Icons.sports, size: 40, color: AppColors.textTertiary))
+                  ? const Center(child: Icon(LucideIcons.trophy, size: 40, color: AppColors.textTertiary))
                   : null,
             ),
             Padding(
@@ -400,7 +397,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                 children: [
                   Text(
                     coach.fullName,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    style: GoogleFonts.sora(fontWeight: FontWeight.w600, color: AppColors.ink),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -412,7 +409,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.work_outline, size: 14, color: AppColors.textSecondary),
+                      Icon(LucideIcons.briefcase, size: 14, color: AppColors.textSecondary),
                       const SizedBox(width: 4),
                       Text(
                         '${coach.experience ?? 0} years',
@@ -456,11 +453,11 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   Widget _buildSponsorCard(dynamic sponsor) {
     return InkWell(
       onTap: () => context.push('/sponsor-pitch/${sponsor.id}'),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.background,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
         ),
         child: Column(
@@ -473,7 +470,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                 color: AppColors.surface,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
               ),
-              child: const Center(child: Icon(Icons.business_center, size: 40, color: AppColors.textTertiary)),
+              child: const Center(child: Icon(LucideIcons.briefcase, size: 40, color: AppColors.textTertiary)),
             ),
             Padding(
               padding: const EdgeInsets.all(12),
@@ -482,7 +479,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                 children: [
                   Text(
                     sponsor.title ?? 'Sponsorship',
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    style: GoogleFonts.sora(fontWeight: FontWeight.w600, color: AppColors.ink),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -529,13 +526,13 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Text('Select Sport', style: Theme.of(context).textTheme.titleMedium),
+              child: Text('Select Sport', style: GoogleFonts.sora(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
             ),
             ..._sports.map((sport) {
               return ListTile(
                 title: Text(sport),
                 trailing: _selectedSport == sport
-                    ? const Icon(Icons.check, color: AppColors.primary)
+                    ? const Icon(LucideIcons.check, color: AppColors.primary)
                     : null,
                 onTap: () {
                   setState(() => _selectedSport = sport);
@@ -563,13 +560,13 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Text('Select State', style: Theme.of(context).textTheme.titleMedium),
+              child: Text('Select State', style: GoogleFonts.sora(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
             ),
             ..._states.map((state) {
               return ListTile(
                 title: Text(state),
                 trailing: _selectedState == state
-                    ? const Icon(Icons.check, color: AppColors.primary)
+                    ? const Icon(LucideIcons.check, color: AppColors.primary)
                     : null,
                 onTap: () {
                   setState(() => _selectedState = state);
@@ -597,13 +594,13 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Text('Select Age Group', style: Theme.of(context).textTheme.titleMedium),
+              child: Text('Select Age Group', style: GoogleFonts.sora(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
             ),
             ..._ageGroups.map((age) {
               return ListTile(
                 title: Text(age),
                 trailing: _selectedAgeGroup == age
-                    ? const Icon(Icons.check, color: AppColors.primary)
+                    ? const Icon(LucideIcons.check, color: AppColors.primary)
                     : null,
                 onTap: () {
                   setState(() => _selectedAgeGroup = age);

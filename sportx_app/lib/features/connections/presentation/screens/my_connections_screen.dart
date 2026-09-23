@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -37,12 +38,13 @@ class _MyConnectionsScreenState extends ConsumerState<MyConnectionsScreen> {
         .toList();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
-        title: const Text('My Connections',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('My Connections',
+            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         actions: [
           IconButton(
             icon: const Icon(LucideIcons.userSearch, color: AppColors.textPrimary),
@@ -87,7 +89,7 @@ class _MyConnectionsScreenState extends ConsumerState<MyConnectionsScreen> {
                           const SizedBox(height: 12),
                           FilledButton.icon(
                             onPressed: () => context.push('/athlete-directory'),
-                            style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+                            style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink),
                             icon: const Icon(LucideIcons.userSearch, size: 16),
                             label: const Text('Find Athletes'),
                           ),

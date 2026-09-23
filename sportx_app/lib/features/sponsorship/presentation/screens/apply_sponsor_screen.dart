@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -73,9 +74,10 @@ class _ApplySponsorScreenState extends ConsumerState<ApplySponsorScreen> {
     final user = ref.watch(authProvider).user;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: Container(
@@ -89,9 +91,9 @@ class _ApplySponsorScreenState extends ConsumerState<ApplySponsorScreen> {
           ),
           onPressed: () => context.pop(),
         ),
-        title: const Text(
+        title: Text(
           'Apply to Sponsor',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+          style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink),
         ),
         centerTitle: true,
       ),
@@ -316,7 +318,7 @@ class _ApplySponsorScreenState extends ConsumerState<ApplySponsorScreen> {
         data: (sponsorship) => Container(
           padding: const EdgeInsets.all(20),
           decoration: const BoxDecoration(
-            color: AppColors.background,
+            color: AppColors.surface,
             border: Border(top: BorderSide(color: AppColors.border)),
           ),
           child: SafeArea(

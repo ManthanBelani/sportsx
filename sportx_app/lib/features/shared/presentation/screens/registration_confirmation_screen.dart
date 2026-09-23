@@ -28,7 +28,7 @@ class RegistrationConfirmationScreen extends StatelessWidget {
         : 'Your tournament request has been submitted for approval.';
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
@@ -41,11 +41,11 @@ class RegistrationConfirmationScreen extends StatelessWidget {
                 width: 80,
                 height: 80,
                 decoration: const BoxDecoration(
-                  color: Color(0xFFd1fae5),
+                  color: AppColors.successLight,
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
-                child: const Icon(LucideIcons.checkCircle, size: 40, color: Color(0xFF059669)),
+                child: const Icon(LucideIcons.checkCircle, size: 40, color: AppColors.success),
               ),
               const SizedBox(height: 24),
 
@@ -84,7 +84,7 @@ class RegistrationConfirmationScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFe6f0ff),
+                    color: AppColors.infoLight,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(

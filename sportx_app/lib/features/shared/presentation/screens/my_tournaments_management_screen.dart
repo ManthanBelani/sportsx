@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -18,12 +19,14 @@ class MyTournamentsManagementScreen extends ConsumerWidget {
     final drafts = state.items.where((t)=> t.status=='draft').toList();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: ()=> context.pop()),
-        title: const Text('My Tournaments', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('My Tournaments',
+            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
@@ -78,8 +81,8 @@ class MyTournamentsManagementScreen extends ConsumerWidget {
     final end = t.endDate as DateTime?;
     final venue = t.venue as String?;
     final dateStr = start!=null ? (end!=null ? '${_fmt(start)}-${_fmt(end)}, ${end.year} • ${venue ?? ''}' : '${_fmt(start)} • ${venue ?? ''}') : (venue ?? '');
-    final badgeColor = isPublished ? const Color(0xFFd1fae5) : const Color(0xFFfef3c7);
-    final badgeText = isPublished ? const Color(0xFF065f46) : const Color(0xFF92400e);
+    final badgeColor = isPublished ? AppColors.successLight : AppColors.yellowTint;
+    final badgeText = isPublished ? AppColors.success : AppColors.warnText;
 
     final filled = t.filledSpots as int? ?? 0;
     final fee = t.registrationFee as double?;
@@ -93,7 +96,7 @@ class MyTournamentsManagementScreen extends ConsumerWidget {
         decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Container(width: 48, height: 48, decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(8)), alignment: Alignment.center, child: const Icon(LucideIcons.trophy, size: 22, color: AppColors.textPrimary)),
+            Container(width: 48, height: 48, decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)), alignment: Alignment.center, child: const Icon(LucideIcons.trophy, size: 22, color: AppColors.textPrimary)),
             const SizedBox(width: 12),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[
               Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),

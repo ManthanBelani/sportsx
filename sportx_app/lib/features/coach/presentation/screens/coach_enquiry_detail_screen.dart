@@ -6,6 +6,7 @@ import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/shared/providers/enquiry_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/core/utils/date_format_utils.dart';
 
@@ -90,9 +91,9 @@ class _CoachEnquiryDetailScreenState extends ConsumerState<CoachEnquiryDetailScr
     final async = ref.watch(enquiryDetailProvider(widget.id));
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -100,8 +101,8 @@ class _CoachEnquiryDetailScreenState extends ConsumerState<CoachEnquiryDetailScr
             onTap: () => context.pop(),
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFFF3F4F6),
-                borderRadius: BorderRadius.circular(8),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
               ),
               child: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary, size: 20),
             ),
@@ -155,15 +156,17 @@ class _CoachEnquiryDetailScreenState extends ConsumerState<CoachEnquiryDetailScr
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: SportXShadows.e1,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
             radius: 28,
-            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+            backgroundColor: AppColors.coach.withValues(alpha: 0.12),
             child: enquiry.athletePhotoUrl != null
                 ? ClipOval(
                     child: Image.network(
@@ -171,10 +174,10 @@ class _CoachEnquiryDetailScreenState extends ConsumerState<CoachEnquiryDetailScr
                       width: 56,
                       height: 56,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => const Icon(LucideIcons.user, color: AppColors.primary),
+                      errorBuilder: (_, _, _) => const Icon(LucideIcons.user, color: AppColors.coach),
                     ),
                   )
-                : const Icon(LucideIcons.user, color: AppColors.primary),
+                : const Icon(LucideIcons.user, color: AppColors.coach),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -201,18 +204,7 @@ class _CoachEnquiryDetailScreenState extends ConsumerState<CoachEnquiryDetailScr
               ],
             ),
           ),
-          if (isNew)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFdbeafe),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: const Text(
-                'New',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary),
-              ),
-            ),
+          if (isNew) const StatusPill(label: 'New', kind: PillKind.pending),
         ],
       ),
     );
@@ -274,7 +266,8 @@ class _CoachEnquiryDetailScreenState extends ConsumerState<CoachEnquiryDetailScr
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: isMe ? AppColors.primary : const Color(0xFFF3F4F6),
+            color: isMe ? AppColors.yellow : Colors.white,
+            border: Border.all(color: isMe ? AppColors.yellowDeep : AppColors.border),
             borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(12),
               topRight: const Radius.circular(12),
@@ -289,7 +282,7 @@ class _CoachEnquiryDetailScreenState extends ConsumerState<CoachEnquiryDetailScr
                 message,
                 style: TextStyle(
                   fontSize: 14,
-                  color: isMe ? Colors.white : const Color(0xFF1F2937),
+                  color: isMe ? AppColors.ink : const Color(0xFF1F2937),
                   height: 1.5,
                 ),
               ),
@@ -333,15 +326,15 @@ class _CoachEnquiryDetailScreenState extends ConsumerState<CoachEnquiryDetailScr
                 hintText: 'Type your reply...',
                 hintStyle: const TextStyle(color: AppColors.textSecondary),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(16),
                   borderSide: const BorderSide(color: AppColors.border),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(16),
                   borderSide: const BorderSide(color: AppColors.border),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(16),
                   borderSide: const BorderSide(color: AppColors.primary),
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -358,11 +351,11 @@ class _CoachEnquiryDetailScreenState extends ConsumerState<CoachEnquiryDetailScr
             child: ElevatedButton(
               onPressed: _sending ? null : _send,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.yellow,
+                foregroundColor: AppColors.ink,
                 disabledBackgroundColor: AppColors.border,
                 padding: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               child: _sending
                   ? const SizedBox(

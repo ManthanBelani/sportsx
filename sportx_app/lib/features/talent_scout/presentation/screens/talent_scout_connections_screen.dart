@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -42,12 +43,14 @@ class _TalentScoutConnectionsScreenState extends ConsumerState<TalentScoutConnec
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         appBar: AppBar(
-          backgroundColor: AppColors.background,
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.white,
           elevation: 0,
           automaticallyImplyLeading: false,
-          title: const Text('My Connections', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+          title: Text('My Connections',
+            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(49),
             child: Column(children: [
@@ -73,7 +76,7 @@ class _TalentScoutConnectionsScreenState extends ConsumerState<TalentScoutConnec
                       const SizedBox(height: 12),
                       Padding(padding: const EdgeInsets.symmetric(horizontal: 32), child: Text(state.error!, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary), textAlign: TextAlign.center)),
                       const SizedBox(height: 12),
-                      FilledButton(onPressed: () => ref.read(scoutConnectionProvider.notifier).load(), style: FilledButton.styleFrom(backgroundColor: AppColors.primary), child: const Text('Retry')),
+                      FilledButton(onPressed: () => ref.read(scoutConnectionProvider.notifier).load(), style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink), child: const Text('Retry')),
                     ]),
                   )
                 : TabBarView(children: [
@@ -96,7 +99,7 @@ class _TalentScoutConnectionsScreenState extends ConsumerState<TalentScoutConnec
             const SizedBox(height: 8),
             const Text('Send a request from athlete profiles to start connecting', style: TextStyle(fontSize: 12, color: AppColors.textSecondary), textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            FilledButton.icon(onPressed: () => context.push('/scout-discovery'), style: FilledButton.styleFrom(backgroundColor: AppColors.primary), icon: const Icon(LucideIcons.search, size: 16), label: const Text('Discover Athletes')),
+            FilledButton.icon(onPressed: () => context.push('/scout-discovery'), style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink), icon: const Icon(LucideIcons.search, size: 16), label: const Text('Discover Athletes')),
           ]),
         ),
       );
@@ -147,7 +150,7 @@ class _TalentScoutConnectionsScreenState extends ConsumerState<TalentScoutConnec
                 AthleteAvatar(photoUrl: photoUrl, radius: 24),
                 const SizedBox(width: 14),
                 Expanded(child: Text(name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary))),
-                Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(color: const Color(0xFFfef3c7), borderRadius: BorderRadius.circular(4)), child: const Text('New', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF92400E)))),
+                Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(color: AppColors.yellowTint, borderRadius: BorderRadius.circular(4)), child: const Text('New', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.warnText))),
               ]),
               if (conn['message'] != null && conn['message'].toString().isNotEmpty)
                 Padding(padding: const EdgeInsets.only(top: 8), child: Text('"${conn['message']}"', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontStyle: FontStyle.italic), maxLines: 2, overflow: TextOverflow.ellipsis)),
@@ -161,7 +164,7 @@ class _TalentScoutConnectionsScreenState extends ConsumerState<TalentScoutConnec
                 Expanded(child: FilledButton(onPressed: () async {
                   final ok = await ref.read(scoutConnectionProvider.notifier).acceptIncoming(connId);
                   if (mounted) SnackBarUtils.showSuccess(context, ok ? 'Connected with $name — you can now chat' : ref.read(scoutConnectionProvider).error ?? 'Failed');
-                }, style: FilledButton.styleFrom(backgroundColor: AppColors.primary), child: const Text('Accept'))),
+                }, style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink), child: const Text('Accept'))),
               ]),
             ]),
           );
@@ -181,16 +184,16 @@ class _TalentScoutConnectionsScreenState extends ConsumerState<TalentScoutConnec
     Color badgeText;
     switch (status) {
       case 'accepted':
-        badgeColor = const Color(0xFFd1fae5);
-        badgeText = const Color(0xFF065f46);
+        badgeColor = AppColors.successLight;
+        badgeText = AppColors.success;
         break;
       case 'rejected':
-        badgeColor = const Color(0xFFfee2e2);
-        badgeText = const Color(0xFF991b1b);
+        badgeColor = AppColors.errorLight;
+        badgeText = AppColors.error;
         break;
       default:
-        badgeColor = const Color(0xFFfef3c7);
-        badgeText = const Color(0xFF92400E);
+        badgeColor = AppColors.yellowTint;
+        badgeText = AppColors.warnText;
     }
 
     return Semantics(

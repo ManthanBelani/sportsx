@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -59,17 +60,18 @@ class _EnquiryInboxScreenState extends ConsumerState<EnquiryInboxScreen> {
     final items = _filtered(all);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
           onPressed: () => context.canPop() ? context.pop() : context.go('/academy-dashboard'),
         ),
-        title: const Text('Enquiry Inbox',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Enquiry Inbox',
+            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
       ),
       body: Column(
         children: [
@@ -175,18 +177,18 @@ class _EnquiryCard extends StatelessWidget {
   Color get _badgeBg {
     switch (enquiry.status) {
       case 'replied':
-        return const Color(0xFFd1fae5);
+        return AppColors.successLight;
       default:
-        return const Color(0xFFdbeafe);
+        return AppColors.infoLight;
     }
   }
 
   Color get _badgeFg {
     switch (enquiry.status) {
       case 'replied':
-        return const Color(0xFF065f46);
+        return AppColors.success;
       default:
-        return const Color(0xFF1e40af);
+        return AppColors.info;
     }
   }
 

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:sportx_app/theme/colors.dart';
+
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/features/coach/presentation/providers/coaching_enrollment_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
-import 'package:sportx_app/theme/colors.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class CoachEnrollmentScreen extends ConsumerWidget {
@@ -14,7 +17,9 @@ class CoachEnrollmentScreen extends ConsumerWidget {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
+        backgroundColor: AppColors.surface,
         appBar: AppBar(
+          backgroundColor: AppColors.surface,
           title: const Text('Enrollment Requests'),
           bottom: const TabBar(
             labelColor: AppColors.primary,
@@ -66,26 +71,34 @@ class _EnrollmentCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final athleteName = enrollment.athlete?['user']?['name'] ?? 'Athlete';
     final status = enrollment.approvalStatus;
-    final color = switch (status) { 'approved' => Colors.green, 'rejected' => Colors.red, _ => Colors.orange };
+    final PillKind pillKind =
+        status == 'approved' ? PillKind.ok : status == 'rejected' ? PillKind.no : PillKind.pending;
 
     return Card(
-      margin: const EdgeInsets.all(8),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppColors.border),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            const CircleAvatar(child: Icon(Icons.person)),
+            const CircleAvatar(
+                backgroundColor: AppColors.coach, child: Icon(LucideIcons.user, color: Colors.white, size: 20)),
             const SizedBox(width: 12),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(athleteName, style: const TextStyle(fontWeight: FontWeight.bold)),
-              Text(enrollment.planType.name, style: const TextStyle(color: Colors.grey)),
+              Text(enrollment.planType.name, style: const TextStyle(color: AppColors.textSecondary)),
             ])),
-            Chip(label: Text(status, style: const TextStyle(color: Colors.white, fontSize: 12)), backgroundColor: color),
+            StatusPill(label: status, kind: pillKind),
           ]),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(16)),
             child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
               Column(children: [const Text('Plan', style: TextStyle(fontSize: 12)), Text(enrollment.planType.name.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold))]),
               Column(children: [const Text('Fees', style: TextStyle(fontSize: 12)), Text('₹${enrollment.feesAmount.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold))]),
@@ -97,14 +110,27 @@ class _EnrollmentCard extends ConsumerWidget {
           ],
           if (enrollment.isRejected && enrollment.rejectionReason != null) ...[
             const SizedBox(height: 8),
-            Text('Reason: ${enrollment.rejectionReason}', style: const TextStyle(color: Colors.red)),
+            Text('Reason: ${enrollment.rejectionReason}', style: const TextStyle(color: AppColors.error)),
           ],
           if (filter == 'pending') ...[
             const SizedBox(height: 12),
             Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-              OutlinedButton(onPressed: () => _reject(context, ref), style: OutlinedButton.styleFrom(foregroundColor: Colors.red), child: const Text('Reject')),
+              OutlinedButton(
+                  onPressed: () => _reject(context, ref),
+                  style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.error,
+                      side: const BorderSide(color: AppColors.error),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                  child: const Text('Reject')),
               const SizedBox(width: 8),
-              ElevatedButton(onPressed: () => _approve(context, ref), child: const Text('Approve')),
+              ElevatedButton(
+                  onPressed: () => _approve(context, ref),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.yellow,
+                      foregroundColor: AppColors.ink,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                  child: const Text('Approve')),
             ]),
           ],
         ]),

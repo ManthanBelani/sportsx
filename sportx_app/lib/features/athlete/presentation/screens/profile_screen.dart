@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
@@ -10,6 +11,7 @@ import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/models/social_links.dart';
 import 'package:sportx_app/shared/presentation/widgets/social_links.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -130,11 +132,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text('My Profile', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('My Profile',
+            style: GoogleFonts.sora(
+                fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         centerTitle: false,
         actions: [
           IconButton(
@@ -201,7 +205,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
-                colors: [AppColors.primary, Color(0xFF0d47a1)],
+                colors: [AppColors.yellow, AppColors.ctaDark],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -214,9 +218,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       height: 96,
                       fit: BoxFit.cover,
                       errorBuilder: (_, _, _) =>
-                          const Icon(LucideIcons.user, size: 48, color: Colors.white),
+                          const Icon(LucideIcons.user, size: 48, color: AppColors.ink),
                     )
-                  : const Icon(LucideIcons.user, size: 48, color: Colors.white),
+                  : const Icon(LucideIcons.user, size: 48, color: AppColors.ink),
             ),
           ),
           const SizedBox(height: 16),
@@ -225,7 +229,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             children: [
               Text(
                 _name,
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                style: GoogleFonts.sora(
+                    fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.ink),
               ),
               if (_isVerified) ...[
                 const SizedBox(width: 4),
@@ -574,21 +579,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       padding: const EdgeInsets.all(20),
       child: SizedBox(
         width: double.infinity,
-        height: 48,
-        child: OutlinedButton.icon(
+        child: SecondaryButton(
+          label: 'Share Profile',
+          icon: LucideIcons.share2,
           onPressed: () {
             final shareUrl = '${ApiConfig.webBaseUrl}/profile/$_userId';
             Share.share(
               'Check out my profile on SportX India!\n$shareUrl',
             );
           },
-          icon: const Icon(LucideIcons.share2, size: 20),
-          label: const Text('Share Profile', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.primary,
-            side: const BorderSide(color: AppColors.primary),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          ),
         ),
       ),
     );
@@ -612,7 +611,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onTap: () => context.push(l.route),
             child: Container(
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: Colors.white,
+                border: Border.all(color: AppColors.border),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -662,8 +662,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 await ref.read(authProvider.notifier).logout();
               },
               style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.red,
-                side: const BorderSide(color: Colors.red),
+                foregroundColor: AppColors.error,
+                side: const BorderSide(color: AppColors.error),
                 minimumSize: const Size.fromHeight(48),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
@@ -749,7 +749,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+              Text(title,
+                  style: GoogleFonts.sora(
+                      fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
               ?action,
             ],
           ),

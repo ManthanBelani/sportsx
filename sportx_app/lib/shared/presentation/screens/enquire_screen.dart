@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
@@ -122,17 +124,18 @@ class _EnquireScreenState extends ConsumerState<EnquireScreen> {
     final user = ref.watch(authProvider).user;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
           onPressed: () => context.pop(),
         ),
         title: Text(
           'Enquire with ${widget.title}',
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+          style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink),
         ),
         centerTitle: true,
       ),
@@ -162,7 +165,7 @@ class _EnquireScreenState extends ConsumerState<EnquireScreen> {
                               borderRadius: BorderRadius.circular(28),
                               child: Image.network(widget.coachAvatarUrl!, fit: BoxFit.cover),
                             )
-                          : const Icon(Icons.person, color: AppColors.primary),
+                          : const Icon(LucideIcons.user, color: AppColors.primary),
                     ),
                     const SizedBox(width: 12),
                     Expanded(

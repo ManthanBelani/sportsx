@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/providers/providers.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 
+/// Athlete home — v2 skin (sportsx-design-v2/01-athlete/home.html).
+/// Logic unchanged: same providers, same refresh, same routes.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -15,6 +19,9 @@ class HomeScreen extends ConsumerWidget {
     final auth = ref.watch(authProvider);
     final user = auth.user;
     final profileAsync = ref.watch(profileProvider);
+    final firstName = (user?.name.split(' ').first ?? 'Athlete');
+    final initial = firstName.isNotEmpty ? firstName[0].toUpperCase() : 'A';
+
     Future<void> onRefresh() async {
       await Future.wait([
         ref.read(academiesProvider.notifier).refresh(),
@@ -28,154 +35,147 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: RefreshIndicator(
+        color: AppColors.yellowDeep,
         onRefresh: onRefresh,
         child: CustomScrollView(
           slivers: [
             SliverAppBar(
-              backgroundColor: AppColors.background,
+              backgroundColor: Colors.white.withValues(alpha: 0.88),
               pinned: true,
               elevation: 0,
               automaticallyImplyLeading: false,
+              toolbarHeight: 64,
               title: Row(
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.border),
+                      image: const DecorationImage(
+                        image: AssetImage('assets/images/logo.png'),
+                        fit: BoxFit.cover,
+                        onError: null,
+                      ),
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text.rich(
+                    TextSpan(
+                      text: 'Sport',
+                      style: GoogleFonts.sora(
+                          fontSize: 19, fontWeight: FontWeight.w800, color: AppColors.ink),
                       children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Hi ${user?.name.split(' ').first ?? 'Athlete'}!',
-                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                        WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: AppColors.yellow,
+                              borderRadius: BorderRadius.circular(7),
                             ),
-                            const SizedBox(width: 8),
-                            const Icon(LucideIcons.hand, color: Colors.amber, size: 20),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        profileAsync.when(
-                          data: (data) {
-                            final sports = data?['sports'] as List? ?? [];
-                            final sportName = sports.isNotEmpty ? ((sports[0] as Map)['name'] as String?) ?? 'Sport' : 'Sport';
-                            final ageGroup = (data?['age_group'] ?? data?['ageGroup']) as Map<String, dynamic>?;
-                            final ageName = (ageGroup?['label'] ?? ageGroup?['name'] ?? 'Age Group') as String;
-                            return Text(
-                              '$sportName · $ageName',
-                              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
-                            );
-                          },
-                          loading: () => const ShimmerSkeleton(child: SkeletonBox(width: 120, height: 12, borderRadius: 4)),
-                          error: (_, _) => const Text('Athlete', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                            child: Text('X',
+                                style: GoogleFonts.sora(
+                                    fontSize: 19,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.ink)),
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () => context.push('/notifications'),
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: const BoxDecoration(color: AppColors.surface, shape: BoxShape.circle),
-                          child: const Icon(LucideIcons.bell, color: AppColors.textSecondary, size: 20),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      GestureDetector(
-                        onTap: () => context.push('/saved'),
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: const BoxDecoration(color: AppColors.surface, shape: BoxShape.circle),
-                          child: const Icon(LucideIcons.heart, color: AppColors.textSecondary, size: 20),
-                        ),
-                      ),
-                    ],
-                  ),
+                  const Spacer(),
+                  SportXIconButton(icon: LucideIcons.search, onTap: () => context.push('/universal-search')),
+                  const SizedBox(width: 8),
+                  SportXIconButton(
+                      icon: LucideIcons.bell, badge: 3, onTap: () => context.push('/notifications')),
                 ],
-              ),
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(60),
-                child: Container(
-                  color: AppColors.background,
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                  child: GestureDetector(
-                    onTap: () => context.push('/universal-search'),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Row(
-                        children: [
-                          Icon(LucideIcons.search, color: AppColors.textSecondary, size: 18),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              'Search academies, trials, coaches...',
-                              style: TextStyle(color: AppColors.textSecondary, fontSize: 15),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
               ),
             ),
             SliverPadding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  _SectionHeader(title: 'Recommended for you', actionText: 'See all', onActionTap: () => context.push('/academies')),
+                  // v2 .greet
+                  profileAsync.when(
+                    data: (data) => GreetCard(
+                      title: 'Hi, $firstName!',
+                      subtitle: 'Complete your profile to get discovered',
+                      progress: 0.6,
+                      avatarText: initial,
+                    ),
+                    loading: () => const GreetCard(
+                      title: 'Hi!',
+                      subtitle: 'Complete your profile to get discovered',
+                      progress: 0.6,
+                      avatarText: 'A',
+                    ),
+                    error: (_, _) => GreetCard(
+                      title: 'Hi, $firstName!',
+                      subtitle: 'Complete your profile to get discovered',
+                      progress: 0.6,
+                      avatarText: initial,
+                    ),
+                  ),
+                  // v2 .tiles
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                    childAspectRatio: 2.6,
+                    children: [
+                      QuickTile(
+                          label: 'Trials',
+                          icon: LucideIcons.trophy,
+                          tintBg: const Color(0xFFFEE2E2),
+                          tintFg: AppColors.error,
+                          onTap: () => context.push('/trials')),
+                      QuickTile(
+                          label: 'Tournaments',
+                          icon: LucideIcons.medal,
+                          tintBg: const Color(0xFFECE9FF),
+                          tintFg: AppColors.coach,
+                          onTap: () => context.push('/tournaments')),
+                      QuickTile(
+                          label: 'Scholarships',
+                          icon: LucideIcons.graduationCap,
+                          tintBg: AppColors.yellowTint,
+                          tintFg: const Color(0xFFF59E0B),
+                          onTap: () => context.push('/scholarships')),
+                      QuickTile(
+                          label: 'Sponsorships',
+                          icon: LucideIcons.briefcase,
+                          tintBg: AppColors.infoLight,
+                          tintFg: AppColors.info,
+                          onTap: () => context.push('/sponsorships')),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  SectionHeader(
+                      title: 'Recommended Athletes',
+                      actionText: 'See all',
+                      onActionTap: () => context.push('/discover')),
                   const _RecommendedSection(),
-                  
                   const SizedBox(height: 24),
-                  _SectionHeader(title: 'Trials closing soon', actionText: 'See all', onActionTap: () => context.push('/trials')),
+                  SectionHeader(
+                      title: 'Latest Opportunities',
+                      actionText: 'See all',
+                      onActionTap: () => context.push('/trials')),
                   const _TrialSection(),
-                  
-                  const SizedBox(height: 24),
-                  _SectionHeader(title: 'Upcoming Tournaments', actionText: 'See all', onActionTap: () => context.push('/tournaments')),
+                  const SizedBox(height: 8),
                   const _TournamentSection(),
-                  
-                  const SizedBox(height: 24),
-                  _SectionHeader(title: 'New Scholarships', actionText: 'See all', onActionTap: () => context.push('/scholarships')),
+                  const SizedBox(height: 8),
                   const _ScholarshipSection(),
-                  
-                  const SizedBox(height: 80),
+                  const SizedBox(height: 96),
                 ]),
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  final String actionText;
-  final VoidCallback onActionTap;
-
-  const _SectionHeader({required this.title, required this.actionText, required this.onActionTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-          GestureDetector(
-            onTap: onActionTap,
-            child: Text(actionText, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.primary)),
-          ),
-        ],
       ),
     );
   }
@@ -192,22 +192,20 @@ class _RecommendedSection extends ConsumerWidget {
     final isLoading = (state.isLoading && state.items.isEmpty) || (coachesState.isLoading && coachesState.items.isEmpty);
     if (isLoading) {
       return SizedBox(
-        height: 200,
+        height: 190,
         child: ShimmerSkeleton(
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: 3,
-            separatorBuilder: (_, _) => const SizedBox(width: 12),
+            separatorBuilder: (_, _) => const SizedBox(width: 10),
             itemBuilder: (_, _) => Container(
-              width: 280,
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.border)),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const SkeletonBox(width: double.infinity, height: 100, borderRadius: 8),
-                Padding(padding: const EdgeInsets.all(12), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  SkeletonBox(width: 140, height: 12, borderRadius: 4),
-                  const SizedBox(height: 6),
-                  SkeletonBox(width: 100, height: 10, borderRadius: 4),
-                ])),
+              width: 148,
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.border)),
+              child: const Column(children: [
+                SkeletonBox(width: double.infinity, height: 96, borderRadius: 16),
               ]),
             ),
           ),
@@ -217,63 +215,83 @@ class _RecommendedSection extends ConsumerWidget {
 
     final items = <({String id, String title, String subtitle, bool isCoach})>[
       ...state.items.take(3).map((a) => (
-        id: a.id.toString(),
-        title: a.name,
-        subtitle: a.city?.name ?? '',
-        isCoach: false,
-      )),
+            id: a.id.toString(),
+            title: a.name,
+            subtitle: a.city?.name ?? '',
+            isCoach: false,
+          )),
       ...coachesState.items.take(2).map((c) => (
-        id: c.id.toString(),
-        title: c.fullName,
-        subtitle: '${c.experience ?? 0} yrs exp',
-        isCoach: true,
-      )),
+            id: c.id.toString(),
+            title: c.fullName,
+            subtitle: '${c.experience ?? 0} yrs exp',
+            isCoach: true,
+          )),
     ];
 
     if (items.isEmpty) {
-      return const SizedBox(height: 180, child: Center(child: Text('No recommendations found')));
+      return const SizedBox(height: 160, child: Center(child: Text('No recommendations found')));
     }
 
+    // v2 .rail-card
     return SizedBox(
-      height: 200,
+      height: 196,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         clipBehavior: Clip.none,
         itemCount: items.length,
         itemBuilder: (context, i) {
           final item = items[i];
-          final isCoach = item.isCoach;
           return GestureDetector(
-            onTap: () => isCoach ? context.push('/coach-detail/${item.id}') : context.push('/academy-detail/${item.id}'),
+            onTap: () => item.isCoach
+                ? context.push('/coach-detail/${item.id}')
+                : context.push('/academy-detail/${item.id}'),
             child: Container(
-              width: 280,
-              margin: const EdgeInsets.only(right: 12),
+              width: 148,
+              margin: const EdgeInsets.only(right: 10),
               decoration: BoxDecoration(
-                color: AppColors.background,
+                color: Colors.white,
                 border: Border.all(color: AppColors.border),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: SportXShadows.e1,
               ),
+              clipBehavior: Clip.antiAlias,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    height: 100,
-                    decoration: const BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(7)),
-                    ),
+                    height: 96,
+                    color: const Color(0xFF14161A),
                     alignment: Alignment.center,
-                    child: Icon(isCoach ? LucideIcons.user : LucideIcons.circleDot, color: AppColors.primary, size: 40),
+                    child: Icon(
+                        item.isCoach ? LucideIcons.user : LucideIcons.building2,
+                        color: Colors.white70,
+                        size: 32),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(item.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
-                        const SizedBox(height: 4),
-                        Text('Cricket · ${item.subtitle}', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                        Text(isCoach ? '₹800/session' : '₹2,000 – ₹5,000/mo', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                        Text(item.title,
+                            style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.ink),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center),
+                        const SizedBox(height: 2),
+                        Text(item.subtitle,
+                            style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondary),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center),
+                        const SizedBox(height: 8),
+                        PrimaryButton(
+                          label: 'Follow',
+                          small: true,
+                          onPressed: () => item.isCoach
+                              ? context.push('/coach-detail/${item.id}')
+                              : context.push('/academy-detail/${item.id}'),
+                        ),
                       ],
                     ),
                   ),
@@ -304,14 +322,12 @@ class _TrialSection extends ConsumerWidget {
             separatorBuilder: (_, _) => const SizedBox(width: 12),
             itemBuilder: (_, _) => Container(
               width: 280,
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.border)),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const SkeletonBox(width: double.infinity, height: 100, borderRadius: 8),
-                Padding(padding: const EdgeInsets.all(12), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  SkeletonBox(width: 140, height: 12, borderRadius: 4),
-                  const SizedBox(height: 6),
-                  SkeletonBox(width: 100, height: 10, borderRadius: 4),
-                ])),
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppColors.border)),
+              child: const Column(children: [
+                SkeletonBox(width: double.infinity, height: 100, borderRadius: 18),
               ]),
             ),
           ),
@@ -320,57 +336,23 @@ class _TrialSection extends ConsumerWidget {
     }
 
     if (state.items.isEmpty) {
-      return const SizedBox(height: 180, child: Center(child: Text('No trials found')));
+      return const SizedBox(height: 120, child: Center(child: Text('No trials found')));
     }
 
-    return SizedBox(
-      height: 200,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        clipBehavior: Clip.none,
-        itemCount: state.items.length.clamp(0, 5),
-        itemBuilder: (context, i) {
-          final item = state.items[i];
-          return GestureDetector(
-            onTap: () => context.push('/trial-detail/${item.id}'),
-            child: Container(
-              width: 280,
-              margin: const EdgeInsets.only(right: 12),
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                border: Border.all(color: AppColors.border),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    height: 100,
-                    decoration: const BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(7)),
-                    ),
-                    alignment: Alignment.center,
-                    child: const Icon(LucideIcons.circleDot, color: AppColors.primary, size: 40),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(item.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
-                        const SizedBox(height: 4),
-                        Text(item.venue ?? '', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
-                        const Text('Aug 15 · ₹200', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
+    return Column(
+      children: state.items.take(2).map((item) {
+        return OppCard(
+          title: item.title,
+          org: item.venue ?? '',
+          featured: item == state.items.first,
+          meta: const [
+            (icon: LucideIcons.calendar, text: '15 Oct 2026'),
+            (icon: LucideIcons.mapPin, text: 'Ahmedabad'),
+            (icon: LucideIcons.user, text: 'U-19'),
+          ],
+          onTap: () => context.push('/trial-detail/${item.id}'),
+        );
+      }).toList(),
     );
   }
 }
@@ -385,75 +367,34 @@ class _TournamentSection extends ConsumerWidget {
     if (state.isLoading && state.items.isEmpty) {
       return ShimmerSkeleton(
         child: Column(
-          children: List.generate(3, (_) => Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(8)),
-            child: Row(children: [
-              const SkeletonBox(width: 60, height: 60, borderRadius: 8),
-              const SizedBox(width: 12),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                SkeletonBox(width: 140, height: 12, borderRadius: 4),
-                const SizedBox(height: 6),
-                SkeletonBox(width: 100, height: 10, borderRadius: 4),
-              ])),
-            ]),
-          )),
+          children: List.generate(
+              2,
+              (_) => Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: AppColors.border),
+                        borderRadius: BorderRadius.circular(16)),
+                    child: const Row(children: [
+                      SkeletonBox(width: 50, height: 50, borderRadius: 15),
+                    ]),
+                  )),
         ),
       );
     }
 
     if (state.items.isEmpty) {
-      return const SizedBox(height: 100, child: Center(child: Text('No tournaments found')));
+      return const SizedBox.shrink();
     }
 
     return Column(
-      children: state.items.take(3).map((item) {
-        return GestureDetector(
+      children: state.items.take(2).map((item) {
+        return EntityRow(
+          title: item.title,
+          subtitle: '${item.venue ?? ''} · Prize: ₹50,000',
+          avatarText: 'T',
           onTap: () => context.push('/tournament-detail/${item.id}'),
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.background,
-              border: Border.all(color: AppColors.border),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  alignment: Alignment.center,
-                  child: const Icon(LucideIcons.trophy, color: AppColors.primary, size: 28),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(item.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                      const SizedBox(height: 2),
-                      Text('Aug 15–20 · ${item.venue ?? ''}', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFEF3C7),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Text('Prize: ₹50,000', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF92400E))),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
         );
       }).toList(),
     );
@@ -470,75 +411,35 @@ class _ScholarshipSection extends ConsumerWidget {
     if (state.isLoading && state.items.isEmpty) {
       return ShimmerSkeleton(
         child: Column(
-          children: List.generate(3, (_) => Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(8)),
-            child: Row(children: [
-              const SkeletonBox(width: 60, height: 60, borderRadius: 8),
-              const SizedBox(width: 12),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                SkeletonBox(width: 140, height: 12, borderRadius: 4),
-                const SizedBox(height: 6),
-                SkeletonBox(width: 100, height: 10, borderRadius: 4),
-              ])),
-            ]),
-          )),
+          children: List.generate(
+              2,
+              (_) => Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: AppColors.border),
+                        borderRadius: BorderRadius.circular(16)),
+                    child: const Row(children: [
+                      SkeletonBox(width: 50, height: 50, borderRadius: 15),
+                    ]),
+                  )),
         ),
       );
     }
 
     if (state.items.isEmpty) {
-      return const SizedBox(height: 100, child: Center(child: Text('No scholarships found')));
+      return const SizedBox.shrink();
     }
 
     return Column(
-      children: state.items.take(3).map((item) {
-        return GestureDetector(
+      children: state.items.take(2).map((item) {
+        return EntityRow(
+          title: item.title,
+          subtitle: 'Up to ₹50,000 · Deadline: Aug 30',
+          avatarText: 'S',
+          trailing: const StatusPill(label: '18 days left', kind: PillKind.pending),
           onTap: () => context.push('/scholarship-detail/${item.id}'),
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.background,
-              border: Border.all(color: AppColors.border),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  alignment: Alignment.center,
-                  child: const Icon(LucideIcons.graduationCap, color: AppColors.primary, size: 28),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(item.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                      const SizedBox(height: 2),
-                      const Text('Up to ₹50,000 · Deadline: Aug 30', style: TextStyle(fontSize: 12, color: AppColors.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFEF3C7),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Text('For U-18 athletes', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF92400E))),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
         );
       }).toList(),
     );

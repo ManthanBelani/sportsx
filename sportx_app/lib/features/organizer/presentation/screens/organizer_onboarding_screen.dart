@@ -2,10 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
@@ -82,34 +84,34 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       body: SafeArea(
         child: Column(children:[
           // progress bar
           Padding(
             padding: const EdgeInsets.fromLTRB(20,16,20,0),
             child: Row(children:[
-              Expanded(child: Container(height:4, decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(2)))),
+              Expanded(child: Container(height: 6, decoration: BoxDecoration(color: AppColors.cta, borderRadius: BorderRadius.circular(999)))),
               const SizedBox(width:8),
-              Expanded(child: Container(height:4, decoration: BoxDecoration(color: AppColors.primary.withValues(alpha:0.5), borderRadius: BorderRadius.circular(2)))),
+              Expanded(child: Container(height: 6, decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(999)))),
             ]),
           ),
           // header
           Padding(
             padding: const EdgeInsets.fromLTRB(20,16,20,0),
             child: Row(children:[
-              InkWell(onTap: ()=> context.pop(), borderRadius: BorderRadius.circular(8), child: Container(width:40,height:40, decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)), alignment: Alignment.center, child: const Icon(LucideIcons.arrowLeft, size:18, color: AppColors.textPrimary))),
+              InkWell(onTap: ()=> context.pop(), borderRadius: BorderRadius.circular(12), child: Container(width:40,height:40, decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(12), boxShadow: SportXShadows.e1), alignment: Alignment.center, child: const Icon(LucideIcons.arrowLeft, size:18, color: AppColors.textPrimary))),
               const SizedBox(width:12),
-              const Text('Organizer Setup', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+              Text('Organizer Setup', style: GoogleFonts.sora(fontSize: 19, fontWeight: FontWeight.w700, color: AppColors.ink)),
             ]),
           ),
           Container(margin: const EdgeInsets.only(top:12), height:1, color: AppColors.border),
           Expanded(child: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[
-              const Text('Organization Details', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+              Text('Organization Details', style: GoogleFonts.sora(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.ink)),
               const SizedBox(height:6),
-              const Text('Tell us about your organization', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+              Text('Tell us about your organization', style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary)),
               const SizedBox(height:24),
               _label('Organization Name'),
               TextField(controller: _name, decoration: const InputDecoration(hintText: 'e.g. Karnataka State Football Association')),
@@ -135,19 +137,24 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(border: Border.all(color: _docMediaId!=null? AppColors.primary: AppColors.border, style: BorderStyle.solid, width: _docMediaId!=null?1.5:1), borderRadius: BorderRadius.circular(8)),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: _docMediaId!=null ? AppColors.ctaDark : AppColors.border, width: _docMediaId!=null?1.5:1.2),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: SportXShadows.e1,
+                  ),
                   child: Column(children:[
-                    Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)), child: Icon(_docMediaId!=null ? LucideIcons.checkCircle : LucideIcons.fileText, color: AppColors.primary, size: 32)),
+                    Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: _docMediaId!=null ? AppColors.successLight : AppColors.yellowTint, borderRadius: BorderRadius.circular(14)), child: Icon(_docMediaId!=null ? LucideIcons.checkCircle : LucideIcons.fileText, color: _docMediaId!=null ? AppColors.success : AppColors.ink, size: 30)),
                     const SizedBox(height:12),
-                    const Text('Upload registration certificate or\nany government ID for verification', textAlign: TextAlign.center, style: TextStyle(fontSize:14, color: AppColors.textSecondary)),
+                    Text('Upload registration certificate or\nany government ID for verification', textAlign: TextAlign.center, style: GoogleFonts.inter(fontSize:14, color: AppColors.textSecondary)),
                     const SizedBox(height:8),
-                    RichText(text: const TextSpan(style: TextStyle(fontSize:14), children:[
-                      TextSpan(text: 'Click to upload', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+                    RichText(text: TextSpan(style: GoogleFonts.inter(fontSize:14), children:[
+                      TextSpan(text: 'Click to upload', style: TextStyle(color: AppColors.primaryDarker, fontWeight: FontWeight.w700)),
                       TextSpan(text: ' or drag and drop', style: TextStyle(color: AppColors.textSecondary)),
                     ])),
                     const SizedBox(height:4),
-                    const Text('PDF, JPG up to 10MB', style: TextStyle(fontSize:12, color: AppColors.textSecondary)),
-                    if (_docMediaId!=null) Padding(padding: const EdgeInsets.only(top:8), child: Text('✓ ${_docName ?? 'document.pdf'} uploaded', style: const TextStyle(fontSize:12, color: AppColors.success, fontWeight: FontWeight.w600))),
+                    Text('PDF, JPG up to 10MB', style: GoogleFonts.inter(fontSize:12, color: AppColors.textSecondary)),
+                    if (_docMediaId!=null) Padding(padding: const EdgeInsets.only(top:8), child: Text('✓ ${_docName ?? 'document.pdf'} uploaded', style: GoogleFonts.inter(fontSize:12, color: AppColors.success, fontWeight: FontWeight.w700))),
                   ]),
                 ),
               ),
@@ -155,11 +162,11 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
                 const SizedBox(height:16),
                 Center(child: Container(
                   padding: const EdgeInsets.symmetric(horizontal:12, vertical:6),
-                  decoration: BoxDecoration(color: const Color(0xFFd1fae5), borderRadius: BorderRadius.circular(20)),
-                  child: const Row(mainAxisSize: MainAxisSize.min, children:[
-                    Icon(LucideIcons.checkCircle, size:14, color: Color(0xFF065f46)),
+                  decoration: BoxDecoration(color: AppColors.successLight, borderRadius: BorderRadius.circular(999), border: Border.all(color: AppColors.success.withValues(alpha: 0.35))),
+                  child: Row(mainAxisSize: MainAxisSize.min, children:[
+                    Icon(LucideIcons.checkCircle, size:14, color: AppColors.success),
                     SizedBox(width:6),
-                    Text('Documents submitted for verification', style: TextStyle(fontSize:13, fontWeight: FontWeight.w500, color: Color(0xFF065f46))),
+                    Text('Documents submitted for verification', style: GoogleFonts.inter(fontSize:13, fontWeight: FontWeight.w600, color: AppColors.success)),
                   ]),
                 )),
               ],
@@ -168,11 +175,29 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
           )),
           Container(
             padding: EdgeInsets.fromLTRB(20,16,20,16+MediaQuery.of(context).padding.bottom),
-            decoration: const BoxDecoration(border: Border(top: BorderSide(color: AppColors.border))),
+            decoration: const BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: AppColors.border))),
             child: Row(children:[
-              Expanded(child: OutlinedButton(onPressed: ()=> context.pop(), style: OutlinedButton.styleFrom(padding: const EdgeInsets.all(14), side: const BorderSide(color: AppColors.border)), child: const Text('Back', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600, fontSize:15)))),
+              Expanded(child: SecondaryButton(label: 'Back', onPressed: ()=> context.pop())),
               const SizedBox(width:12),
-              Expanded(child: FilledButton(onPressed: _saving? null: _submit, style: FilledButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.all(14)), child: _saving? const SizedBox(height:20,width:20, child: CircularProgressIndicator(strokeWidth:2,color:Colors.white)): const Text('Continue', style: TextStyle(fontWeight: FontWeight.w600, fontSize:15)))),
+              Expanded(
+                child: _saving
+                    ? Container(
+                        height: 46,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [AppColors.primaryLight, AppColors.cta, AppColors.ctaDark],
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppColors.border),
+                          boxShadow: SportXShadows.btnShadow,
+                        ),
+                        alignment: Alignment.center,
+                        child: const SizedBox(height:20,width:20, child: CircularProgressIndicator(strokeWidth:2,color:AppColors.ink)),
+                      )
+                    : PrimaryButton(label: 'Continue', icon: LucideIcons.arrowRight, onPressed: _submit),
+              ),
             ]),
           ),
         ]),
@@ -180,5 +205,5 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
     );
   }
 
-  Widget _label(String t)=> Padding(padding: const EdgeInsets.only(bottom:6), child: Text(t, style: const TextStyle(fontSize:14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)));
+  Widget _label(String t)=> Padding(padding: const EdgeInsets.only(bottom:6), child: Text(t, style: GoogleFonts.inter(fontSize:14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)));
 }

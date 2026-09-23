@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -23,15 +26,17 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final stats = ref.watch(adminProvider).stats;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        foregroundColor: AppColors.ink,
         elevation: 0,
-        title: const Text('Admin Dashboard',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Admin Dashboard',
+            style: GoogleFonts.sora(
+                fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(LucideIcons.logOut, color: AppColors.ink),
             onPressed: () {
               ref.read(adminProvider.notifier).logout();
               context.go('/admin/login');
@@ -44,43 +49,42 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         children: [
           Row(
             children: [
-              Expanded(child: _buildStatCard(context, 'Active Listings', '${stats?.activeListings ?? '—'}', Icons.list_alt, Colors.blue)),
+              Expanded(child: _buildStatCard(context, 'Active Listings', '${stats?.activeListings ?? '—'}', LucideIcons.list, AppColors.info)),
               const SizedBox(width: 12),
-              Expanded(child: _buildStatCard(context, 'Flagged Items', '${stats?.flaggedItems ?? '—'}', Icons.flag, Colors.red)),
+              Expanded(child: _buildStatCard(context, 'Flagged Items', '${stats?.flaggedItems ?? '—'}', LucideIcons.flag, AppColors.admin)),
             ],
           ),
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: _buildStatCard(context, 'Pending Expirations', '${stats?.pendingExpirations ?? '—'}', Icons.timer, Colors.orange)),
+              Expanded(child: _buildStatCard(context, 'Pending Expirations', '${stats?.pendingExpirations ?? '—'}', LucideIcons.timer, AppColors.organizer)),
               const SizedBox(width: 12),
-              Expanded(child: _buildStatCard(context, 'New Signups', '${stats?.newSignups30d ?? '—'}', Icons.person_add, Colors.green)),
+              Expanded(child: _buildStatCard(context, 'New Signups', '${stats?.newSignups30d ?? '—'}', LucideIcons.userPlus, AppColors.academy)),
             ],
           ),
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: _buildStatCard(context, 'Total Users', '${stats?.totalUsers ?? '—'}', Icons.group, AppColors.primary)),
+              Expanded(child: _buildStatCard(context, 'Total Users', '${stats?.totalUsers ?? '—'}', LucideIcons.users, AppColors.primary)),
               const SizedBox(width: 12),
-              Expanded(child: _buildStatCard(context, 'Pending Approvals', '${stats?.pendingApprovals ?? '—'}', Icons.pending_actions, AppColors.warning)),
+              Expanded(child: _buildStatCard(context, 'Pending Approvals', '${stats?.pendingApprovals ?? '—'}', LucideIcons.clock, AppColors.warning)),
             ],
           ),
-          const SizedBox(height: 32),
-          Text('Quick Actions', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 16),
+          const SizedBox(height: 28),
+          const SectionHeader(title: 'Quick Actions'),
           Row(
             children: [
-              Expanded(child: _buildActionCard(context, 'Reports', Icons.bar_chart, () => context.push('/admin/reports'))),
+              Expanded(child: _buildActionCard(context, 'Reports', LucideIcons.chartColumn, AppColors.errorLight, AppColors.admin, () => context.push('/admin/reports'))),
               const SizedBox(width: 12),
-              Expanded(child: _buildActionCard(context, 'Users', Icons.people, () => context.push('/admin/users'))),
+              Expanded(child: _buildActionCard(context, 'Users', LucideIcons.users, AppColors.yellowTint, AppColors.primaryDark, () => context.push('/admin/users'))),
             ],
           ),
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: _buildActionCard(context, 'Moderation', Icons.shield, () => context.push('/admin/moderation'))),
+              Expanded(child: _buildActionCard(context, 'Moderation', LucideIcons.shield, AppColors.errorLight, AppColors.admin, () => context.push('/admin/moderation'))),
               const SizedBox(width: 12),
-              Expanded(child: _buildActionCard(context, 'Approvals', Icons.verified, () => context.push('/admin/approvals'))),
+              Expanded(child: _buildActionCard(context, 'Approvals', LucideIcons.badgeCheck, AppColors.successLight, AppColors.academy, () => context.push('/admin/approvals'))),
             ],
           ),
         ],
@@ -92,41 +96,36 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: SportXShadows.e1,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color, size: 28),
+          Container(
+            padding: const EdgeInsets.all(9),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: color, size: 22),
+          ),
           const SizedBox(height: 12),
-          Text(value, style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: color)),
+          Text(value,
+              style: GoogleFonts.sora(
+                  fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.ink)),
           const SizedBox(height: 4),
-          Text(title, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+          Text(title,
+              style: GoogleFonts.inter(fontSize: 12.5, color: AppColors.textSecondary)),
         ],
       ),
     );
   }
 
-  Widget _buildActionCard(BuildContext context, String title, IconData icon, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, size: 32, color: AppColors.primary),
-            const SizedBox(height: 8),
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-          ],
-        ),
-      ),
-    );
+  Widget _buildActionCard(BuildContext context, String title, IconData icon,
+      Color tintBg, Color tintFg, VoidCallback onTap) {
+    return QuickTile(label: title, icon: icon, tintBg: tintBg, tintFg: tintFg, onTap: onTap);
   }
 }

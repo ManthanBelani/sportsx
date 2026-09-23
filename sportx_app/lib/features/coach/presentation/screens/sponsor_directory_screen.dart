@@ -38,9 +38,9 @@ class _SponsorDirectoryCoachScreenState extends ConsumerState<SponsorDirectoryCo
     }).toList();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         elevation: 0,
         title: const Text('Find Sponsorships',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
@@ -68,8 +68,8 @@ class _SponsorDirectoryCoachScreenState extends ConsumerState<SponsorDirectoryCo
                       )
                     : null,
                 filled: true,
-                fillColor: AppColors.surface,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
               ),
             ),
           ),
@@ -87,10 +87,10 @@ class _SponsorDirectoryCoachScreenState extends ConsumerState<SponsorDirectoryCo
                   label: Text(industry),
                   selected: isSelected,
                   onSelected: (_) => setState(() => _selectedIndustry = industry),
-                  selectedColor: AppColors.primary,
-                  backgroundColor: AppColors.surface,
-                  labelStyle: TextStyle(color: isSelected ? Colors.white : AppColors.textPrimary),
-                  side: BorderSide(color: isSelected ? AppColors.primary : AppColors.border),
+                  selectedColor: AppColors.yellow,
+                  backgroundColor: Colors.white,
+                  labelStyle: TextStyle(color: isSelected ? AppColors.ink : AppColors.textPrimary),
+                  side: BorderSide(color: isSelected ? AppColors.yellowDeep : AppColors.border),
                 );
               },
             ),
@@ -127,13 +127,13 @@ class _SponsorDirectoryCoachScreenState extends ConsumerState<SponsorDirectoryCo
   Widget _buildSponsorCard(dynamic s) {
     return InkWell(
       onTap: () => context.push('/sponsor-pitch/${s.id}'),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
         ),
         child: Row(
@@ -141,7 +141,7 @@ class _SponsorDirectoryCoachScreenState extends ConsumerState<SponsorDirectoryCo
             Container(
               width: 56,
               height: 56,
-              decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(8)),
+              decoration: BoxDecoration(color: AppColors.coach, borderRadius: BorderRadius.circular(16)),
               alignment: Alignment.center,
               child: const Icon(LucideIcons.award, color: Colors.white),
             ),
@@ -157,7 +157,7 @@ class _SponsorDirectoryCoachScreenState extends ConsumerState<SponsorDirectoryCo
                   if (s.amountLabel != null)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(color: AppColors.ctaLight, borderRadius: BorderRadius.circular(4)),
+                      decoration: BoxDecoration(color: AppColors.ctaLight, borderRadius: BorderRadius.circular(999)),
                       child: Text(s.amountLabel!,
                           style: const TextStyle(color: AppColors.ctaDark, fontSize: 11, fontWeight: FontWeight.w600)),
                     ),

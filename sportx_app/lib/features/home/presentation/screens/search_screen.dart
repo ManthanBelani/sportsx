@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/search/presentation/providers/search_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
@@ -36,9 +38,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final recent = state.recentSearches;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
@@ -68,7 +70,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('Recent Searches',
-                      style: Theme.of(context).textTheme.titleMedium),
+                      style: GoogleFonts.sora(
+                          fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
                   TextButton(
                     onPressed: () => ref.read(searchProvider.notifier).clearRecentSearches(),
                     child: const Text('Clear'),
@@ -88,17 +91,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   )),
               const SizedBox(height: 16),
             ],
-            Text('Trending', style: Theme.of(context).textTheme.titleMedium),
+            Text('Trending',
+                style: GoogleFonts.sora(
+                    fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: trending
-                  .map((label) => ActionChip(
-                        label: Text(label),
-                        backgroundColor: AppColors.surface,
-                        side: const BorderSide(color: AppColors.border),
-                        onPressed: () {
+                  .map((label) => SportXChip(
+                        label: label,
+                        onTap: () {
                           _controller.text = label;
                           _runSearch(label);
                         },

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sportx_app/features/coach/presentation/providers/coach_provider.dart';
@@ -100,13 +102,16 @@ class _ShowcaseAthletesScreenState extends ConsumerState<ShowcaseAthletesScreen>
     final coachState = ref.watch(coachProvider);
     if (coachState.isLoading && _selectedAthletes.isEmpty && _searchResults.isEmpty && _searchController.text.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Showcase Athletes')),
+        backgroundColor: AppColors.surface,
+        appBar: AppBar(title: const Text('Showcase Athletes'), backgroundColor: AppColors.surface),
         body: const ShowcaseSkeleton(),
       );
     }
     return Scaffold(
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         title: const Text('Showcase Athletes'),
+        backgroundColor: AppColors.surface,
         actions: [
           TextButton(
             onPressed: _isSaving ? null : _saveShowcase,
@@ -129,10 +134,10 @@ class _ShowcaseAthletesScreenState extends ConsumerState<ShowcaseAthletesScreen>
               onChanged: _searchAthletes,
               decoration: InputDecoration(
                 hintText: 'Search athletes to showcase...',
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(LucideIcons.search),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear, size: 20),
+                        icon: const Icon(LucideIcons.x, size: 20),
                         onPressed: () {
                           _searchController.clear();
                           _searchAthletes('');
@@ -140,10 +145,14 @@ class _ShowcaseAthletesScreenState extends ConsumerState<ShowcaseAthletesScreen>
                       )
                     : null,
                 filled: true,
-                fillColor: AppColors.surface,
+                fillColor: Colors.white,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: const BorderSide(color: AppColors.border),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: const BorderSide(color: AppColors.border),
                 ),
               ),
             ),
@@ -196,7 +205,7 @@ class _ShowcaseAthletesScreenState extends ConsumerState<ShowcaseAthletesScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.search_off, size: 64, color: AppColors.textTertiary),
+                    Icon(LucideIcons.searchX, size: 64, color: AppColors.textTertiary),
                     const SizedBox(height: 16),
                     Text(
                       'No athletes found',
@@ -212,7 +221,7 @@ class _ShowcaseAthletesScreenState extends ConsumerState<ShowcaseAthletesScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.people_outline, size: 64, color: AppColors.textTertiary),
+                    Icon(LucideIcons.users, size: 64, color: AppColors.textTertiary),
                     const SizedBox(height: 16),
                     Text(
                       'Search for athletes to showcase',
@@ -247,9 +256,9 @@ class _ShowcaseAthletesScreenState extends ConsumerState<ShowcaseAthletesScreen>
                   backgroundImage: athlete['profile_photo_url'] != null
                       ? NetworkImage(athlete['profile_photo_url'])
                       : null,
-                  backgroundColor: AppColors.surface,
+                  backgroundColor: Colors.white,
                   child: athlete['profile_photo_url'] == null
-                      ? const Icon(Icons.person, color: AppColors.textTertiary)
+                      ? const Icon(LucideIcons.user, color: AppColors.textTertiary)
                       : null,
                 ),
                 Positioned(
@@ -261,7 +270,7 @@ class _ShowcaseAthletesScreenState extends ConsumerState<ShowcaseAthletesScreen>
                       color: AppColors.success,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.check, color: Colors.white, size: 14),
+                    child: const Icon(LucideIcons.check, color: Colors.white, size: 14),
                   ),
                 ),
               ],
@@ -285,7 +294,7 @@ class _ShowcaseAthletesScreenState extends ConsumerState<ShowcaseAthletesScreen>
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: isSelected ? AppColors.successLight : AppColors.background,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isSelected ? AppColors.success : AppColors.border,
           width: isSelected ? 2 : 1,
@@ -296,9 +305,9 @@ class _ShowcaseAthletesScreenState extends ConsumerState<ShowcaseAthletesScreen>
           backgroundImage: athlete['profile_photo_url'] != null
               ? NetworkImage(athlete['profile_photo_url'])
               : null,
-          backgroundColor: AppColors.surface,
+          backgroundColor: Colors.white,
           child: athlete['profile_photo_url'] == null
-              ? const Icon(Icons.person, color: AppColors.textTertiary)
+              ? const Icon(LucideIcons.user, color: AppColors.textTertiary)
               : null,
         ),
         title: Text(
@@ -312,7 +321,7 @@ class _ShowcaseAthletesScreenState extends ConsumerState<ShowcaseAthletesScreen>
           style: Theme.of(context).textTheme.bodySmall,
         ),
         trailing: Icon(
-          isSelected ? Icons.check_circle : Icons.add_circle_outline,
+          isSelected ? LucideIcons.circleCheck : LucideIcons.circlePlus,
           color: isSelected ? AppColors.success : AppColors.textTertiary,
         ),
         onTap: () => _toggleAthleteSelection(athlete),

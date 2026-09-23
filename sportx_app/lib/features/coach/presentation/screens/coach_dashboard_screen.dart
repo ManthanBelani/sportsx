@@ -11,6 +11,8 @@ import 'package:sportx_app/shared/providers/enquiry_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class CoachDashboardScreen extends ConsumerStatefulWidget {
   const CoachDashboardScreen({super.key});
@@ -41,11 +43,12 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
     final profile = coachState.coachProfile;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         elevation: 0,
-        title: const Text('SportX', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary)),
+        title: Text('SportX',
+            style: GoogleFonts.sora(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.ink)),
         actions: [
           IconButton(
             icon: const Icon(LucideIcons.settings, color: AppColors.textPrimary),
@@ -116,14 +119,15 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.border),
-            ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: SportXShadows.e1,
+      ),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
-                Container(width: 40, height: 40, decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)), child: const Icon(LucideIcons.calendar, color: AppColors.primary, size: 20)),
+                Container(width: 40, height: 40, decoration: BoxDecoration(color: AppColors.coach.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(16)), child: const Icon(LucideIcons.calendar, color: AppColors.coach, size: 20)),
                 const SizedBox(width: 12),
                 const Expanded(child: Text('Weekly Availability', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary))),
                 TextButton(onPressed: () => context.push('/coach-profile-edit'), child: const Text('Edit')),
@@ -142,8 +146,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
             ]),
           ),
           const SizedBox(height: 24),
-          const Text('Quick Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-          const SizedBox(height: 12),
+          const SectionHeader(title: 'Quick Actions'),
           GestureDetector(onTap: () => context.push('/coach-profile-edit'), child: _buildScheduleAction(LucideIcons.clock, 'Set Availability', hasAvailability ? 'Update your time slots' : 'Define your weekly time slots')),
           GestureDetector(onTap: () => context.push('/coach-enquiry-inbox'), child: _buildScheduleAction(LucideIcons.messageCircle, 'Enquiries', 'View and reply to athlete enquiries')),
           _buildScheduleAction(LucideIcons.mapPin, 'Training Location', coachState.coachProfile?.city?.name ?? 'Set in profile'),
@@ -158,8 +161,10 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: SportXShadows.e1,
       ),
       child: Row(
         children: [
@@ -167,10 +172,10 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+              color: AppColors.coach.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(icon, color: AppColors.primary, size: 22),
+            child: Icon(icon, color: AppColors.coach, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -214,18 +219,20 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(8),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+              boxShadow: SportXShadows.e1,
             ),
             child: Row(
               children: [
                 CircleAvatar(
                   key: ValueKey(photoUrl ?? 'no-photo'),
                   radius: 28,
-                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                  backgroundColor: AppColors.coach.withValues(alpha: 0.12),
                   backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
                   onBackgroundImageError: photoUrl != null ? (_, _) {} : null,
-                  child: photoUrl == null ? const Icon(LucideIcons.user, color: AppColors.primary, size: 28) : null,
+                  child: photoUrl == null ? const Icon(LucideIcons.user, color: AppColors.coach, size: 28) : null,
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -271,8 +278,10 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(8),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+              boxShadow: SportXShadows.e1,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,7 +295,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
                 ),
                 const SizedBox(height: 12),
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(999),
                   child: LinearProgressIndicator(
                     value: completeness,
                     backgroundColor: AppColors.border,
@@ -305,14 +314,15 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(8),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+              boxShadow: SportXShadows.e1,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Quick Actions', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                const SizedBox(height: 12),
+                const SectionHeader(title: 'Quick Actions'),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -331,23 +341,15 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(8),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+              boxShadow: SportXShadows.e1,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Recent Enquiries', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                    GestureDetector(
-                      onTap: () => _switchTab(2),
-                      child: const Text('View All', style: TextStyle(fontSize: 13, color: AppColors.primary)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
+                SectionHeader(title: 'Recent Enquiries', actionText: 'View All', onActionTap: () => _switchTab(2)),
                 if (recentEnquiries.isEmpty)
                   const Center(
                     child: Padding(
@@ -391,8 +393,8 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         children: [
@@ -436,11 +438,11 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
             height: 48,
             decoration: BoxDecoration(
               color: AppColors.background,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(color: AppColors.border),
             ),
             alignment: Alignment.center,
-            child: Icon(icon, size: 22, color: AppColors.textPrimary),
+            child: Icon(icon, size: 22, color: AppColors.coach),
           ),
           const SizedBox(height: 6),
           Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
@@ -458,7 +460,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
           children: [
             const CircleAvatar(
               radius: 22,
-              backgroundColor: AppColors.primary,
+              backgroundColor: AppColors.coach,
               child: Icon(LucideIcons.user, color: Colors.white, size: 20),
             ),
             const SizedBox(width: 12),
@@ -471,17 +473,9 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
                       Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                       const SizedBox(width: 6),
                       if (isNew)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(color: const Color(0xFFdbeafe), borderRadius: BorderRadius.circular(4)),
-                          child: const Text('New', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary)),
-                        )
+                        const StatusPill(label: 'New', kind: PillKind.pending)
                       else
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(color: const Color(0xFFd1fae5), borderRadius: BorderRadius.circular(4)),
-                          child: const Text('Replied', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF065f46))),
-                        )
+                        const StatusPill(label: 'Replied', kind: PillKind.ok)
                     ],
                   ),
                   const SizedBox(height: 2),

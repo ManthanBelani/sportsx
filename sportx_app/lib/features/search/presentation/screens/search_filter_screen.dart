@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/search/presentation/providers/search_provider.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class SearchFilterScreen extends ConsumerStatefulWidget {
   const SearchFilterScreen({super.key});
@@ -71,7 +73,7 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
     final filtered = _selectedState == null ? cities : cities.where((c) => c.state == _selectedState).toList();
     final selected = await showModalBottomSheet<Map<String, dynamic>>(
       context: context,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -100,7 +102,7 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
     if (states.isEmpty) return;
     final selected = await showModalBottomSheet<String>(
       context: context,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (context) => SafeArea(
         child: ListView.builder(
@@ -129,12 +131,14 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
     final cityName = _currentFilters.cityId != null ? _cityNameById(meta, _currentFilters.cityId!) : null;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: const Text('Filters', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Filters',
+            style: GoogleFonts.sora(
+                fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         actions: [
           IconButton(
             icon: const Icon(LucideIcons.x, color: AppColors.textPrimary),
@@ -355,32 +359,26 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
                 color: AppColors.background,
                 border: Border(top: BorderSide(color: AppColors.border)),
               ),
-              child: Column(
-                children: [
-                  OutlinedButton(
+            child: Column(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: SecondaryButton(
+                    label: 'Clear All Filters',
                     onPressed: _clearAllFilters,
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 48),
-                      side: const BorderSide(color: AppColors.border),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      foregroundColor: AppColors.textPrimary,
-                    ),
-                    child: const Text('Clear All Filters', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
                   ),
-                  const SizedBox(height: 12),
-                  ElevatedButton(
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: PrimaryButton(
+                    label: 'Apply Filters',
+                    icon: LucideIcons.check,
                     onPressed: _applyFilters,
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child: const Text('Apply Filters', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                   ),
-                ],
-              ),
+                ),
+              ],
+            ),
             ),
           ],
         ),
@@ -411,7 +409,9 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        Text(title,
+            style: GoogleFonts.sora(
+                fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink)),
         const SizedBox(height: 12),
         child,
       ],
@@ -438,7 +438,7 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: isSelected ? Colors.white : AppColors.textPrimary,
+                color: isSelected ? AppColors.ink : AppColors.textPrimary,
               ),
             ),
           ),
@@ -474,7 +474,7 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
-                  color: isSelected ? Colors.white : AppColors.textPrimary,
+                  color: isSelected ? AppColors.ink : AppColors.textPrimary,
                 ),
               ),
             ),
@@ -500,7 +500,7 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(
-          color: AppColors.background,
+          color: Colors.white,
           border: Border.all(color: AppColors.border),
           borderRadius: BorderRadius.circular(8),
         ),

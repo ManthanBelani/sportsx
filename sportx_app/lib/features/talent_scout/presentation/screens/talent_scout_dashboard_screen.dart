@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -53,9 +54,10 @@ class _TalentScoutDashboardScreenState extends ConsumerState<TalentScoutDashboar
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
         title: const Text('SportX',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary)),
@@ -93,7 +95,7 @@ class _TalentScoutDashboardScreenState extends ConsumerState<TalentScoutDashboar
           Text(profileState.error ?? shortlistState.error ?? connectionState.error ?? 'Failed to load',
               style: const TextStyle(fontSize: 13, color: AppColors.textSecondary), textAlign: TextAlign.center),
           const SizedBox(height: 12),
-          FilledButton(onPressed: _refreshAll, style: FilledButton.styleFrom(backgroundColor: AppColors.primary), child: const Text('Retry')),
+          FilledButton(onPressed: _refreshAll, style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink), child: const Text('Retry')),
         ]),
       );
     }
@@ -110,13 +112,13 @@ class _TalentScoutDashboardScreenState extends ConsumerState<TalentScoutDashboar
           // Welcome Banner
           Container(
             width: double.infinity,
-            color: AppColors.background,
+            color: AppColors.surface,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
             child: Row(children: [
               Container(width: 56, height: 56, decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(8)), alignment: Alignment.center, child: const Icon(LucideIcons.userSearch, color: Colors.white, size: 28)),
               const SizedBox(width: 14),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Welcome, ${user?.name ?? profile?.organization ?? 'Scout'}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                Text('Welcome, ${user?.name ?? profile?.organization ?? 'Scout'}', style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
                 const SizedBox(height: 2),
                 const Text('Discover and connect with athletes', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
               ])),
@@ -126,7 +128,7 @@ class _TalentScoutDashboardScreenState extends ConsumerState<TalentScoutDashboar
           // Completeness
           Container(
             width: double.infinity,
-            color: AppColors.background,
+            color: AppColors.surface,
             padding: const EdgeInsets.all(20),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
@@ -145,7 +147,7 @@ class _TalentScoutDashboardScreenState extends ConsumerState<TalentScoutDashboar
           // Stats Row
           Container(
             width: double.infinity,
-            color: AppColors.background,
+            color: AppColors.surface,
             padding: const EdgeInsets.all(20),
             child: Row(children: [
               Expanded(child: _buildStatCard('${shortlist.length}', 'Shortlisted')),
@@ -159,7 +161,7 @@ class _TalentScoutDashboardScreenState extends ConsumerState<TalentScoutDashboar
           // Quick Actions
           Container(
             width: double.infinity,
-            color: AppColors.background,
+            color: AppColors.surface,
             padding: const EdgeInsets.all(20),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Text('Quick Actions', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
@@ -176,7 +178,7 @@ class _TalentScoutDashboardScreenState extends ConsumerState<TalentScoutDashboar
           // Recent Shortlist
           Container(
             width: double.infinity,
-            color: AppColors.background,
+            color: AppColors.surface,
             padding: const EdgeInsets.all(20),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
@@ -204,7 +206,7 @@ class _TalentScoutDashboardScreenState extends ConsumerState<TalentScoutDashboar
           _divider(),
           Container(
             width: double.infinity,
-            color: AppColors.background,
+            color: AppColors.surface,
             padding: const EdgeInsets.all(20),
             child: OutlinedButton.icon(
               onPressed: () async => await ref.read(authProvider.notifier).logout(),

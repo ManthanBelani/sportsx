@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class AdminContentListScreen extends ConsumerStatefulWidget {
   final String category;
@@ -36,13 +38,15 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
     final items = state.contentList;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        foregroundColor: AppColors.ink,
         elevation: 0,
         title: Text(displayName,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-        leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
+            style: GoogleFonts.sora(
+                fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
+        leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.ink), onPressed: () => context.pop()),
       ),
       body: Column(
         children: [
@@ -54,9 +58,10 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
               decoration: InputDecoration(
                 hintText: 'Search $displayName...',
                 prefixIcon: const Icon(LucideIcons.search, color: AppColors.textSecondary),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border)),
                 filled: true,
-                fillColor: AppColors.surface,
+                fillColor: Colors.white,
               ),
             ),
           ),
@@ -73,20 +78,24 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
                           final title = (item['title'] ?? item['name'] ?? item['full_name'] ?? 'Item #$i').toString();
                           final status = (item['status'] ?? 'draft').toString();
                           return Container(
-                            margin: const EdgeInsets.only(bottom: 8),
+                            margin: const EdgeInsets.only(bottom: 10),
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: AppColors.surface,
+                              color: Colors.white,
                               border: Border.all(color: AppColors.border),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: SportXShadows.e1,
                             ),
                             child: Row(
                               children: [
-                                Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary))),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-                                  child: Text(status, style: const TextStyle(fontSize: 11, color: AppColors.primary)),
+                                Expanded(child: Text(title, style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: AppColors.ink))),
+                                StatusPill(
+                                  label: status,
+                                  kind: status == 'published' || status == 'approved'
+                                      ? PillKind.ok
+                                      : status == 'pending'
+                                          ? PillKind.pending
+                                          : PillKind.draft,
                                 ),
                               ],
                             ),

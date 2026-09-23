@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -21,9 +22,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final state = ref.watch(settingsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
         leadingWidth: 60,
         leading: Padding(
@@ -43,7 +45,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
         ),
-        title: const Text('Settings', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Settings',
+            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         centerTitle: false,
       ),
       body: state.isLoading && state.notificationPrefs.isEmpty
@@ -265,7 +268,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: AppColors.background,
+                color: AppColors.surface,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, size: 18, color: isDanger ? AppColors.error : AppColors.textPrimary),
@@ -316,7 +319,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: AppColors.background,
+              color: AppColors.surface,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, size: 18, color: AppColors.textPrimary),

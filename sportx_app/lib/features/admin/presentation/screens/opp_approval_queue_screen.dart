@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_web_layout.dart';
 import 'package:sportx_app/theme/colors.dart';
@@ -40,7 +42,7 @@ class _OppApprovalQueueScreenState extends ConsumerState<OppApprovalQueueScreen>
       title: 'Opportunity Approval Queue',
       actions: [
         IconButton(
-          icon: const Icon(Icons.refresh),
+          icon: const Icon(LucideIcons.refreshCw),
           onPressed: () {
             ref.read(adminProvider.notifier).loadOpportunities();
           },
@@ -88,19 +90,20 @@ class _OppApprovalQueueScreenState extends ConsumerState<OppApprovalQueueScreen>
           children: [
             Icon(
               status == 'pending'
-                  ? Icons.pending_actions
+                  ? LucideIcons.clock
                   : status == 'approved'
-                      ? Icons.check_circle_outline
-                      : Icons.cancel_outlined,
+                      ? LucideIcons.circleCheck
+                      : LucideIcons.circleX,
               size: 64,
               color: AppColors.textTertiary,
             ),
             const SizedBox(height: 16),
             Text(
               'No $status opportunities',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: GoogleFonts.sora(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.ink),
             ),
           ],
         ),

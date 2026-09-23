@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
@@ -60,9 +63,10 @@ class _OppReviewDetailScreenState extends ConsumerState<OppReviewDetailScreen> {
   }
 
   Widget _buildStatusHeader(Opportunity opportunity) {
-    final statusColor = _getStatusColor(opportunity.status);
-
     return Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -70,19 +74,13 @@ class _OppReviewDetailScreenState extends ConsumerState<OppReviewDetailScreen> {
           children: [
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    opportunity.status.toUpperCase(),
-                    style: TextStyle(
-                      color: statusColor,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                StatusPill(
+                  label: opportunity.status.toUpperCase(),
+                  kind: opportunity.status == 'approved'
+                      ? PillKind.ok
+                      : opportunity.status == 'rejected'
+                          ? PillKind.no
+                          : PillKind.pending,
                 ),
                 const Spacer(),
                 Text(
@@ -94,9 +92,7 @@ class _OppReviewDetailScreenState extends ConsumerState<OppReviewDetailScreen> {
             const SizedBox(height: 16),
             Text(
               opportunity.title,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: GoogleFonts.sora(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.ink),
             ),
           ],
         ),
@@ -106,6 +102,9 @@ class _OppReviewDetailScreenState extends ConsumerState<OppReviewDetailScreen> {
 
   Widget _buildOpportunityDetails(Opportunity opportunity) {
     return Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -140,6 +139,9 @@ class _OppReviewDetailScreenState extends ConsumerState<OppReviewDetailScreen> {
 
   Widget _buildSponsorInfo(Opportunity opportunity) {
     return Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -151,7 +153,7 @@ class _OppReviewDetailScreenState extends ConsumerState<OppReviewDetailScreen> {
               contentPadding: EdgeInsets.zero,
               leading: CircleAvatar(
                 radius: 30,
-                backgroundColor: AppColors.primaryLight,
+                backgroundColor: AppColors.yellowTint,
                 child: opportunity.sponsorLogo != null
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(30),
@@ -162,7 +164,7 @@ class _OppReviewDetailScreenState extends ConsumerState<OppReviewDetailScreen> {
                           fit: BoxFit.cover,
                         ),
                       )
-                    : Icon(Icons.business, color: AppColors.primary),
+                    : const Icon(LucideIcons.building2, color: AppColors.ink),
               ),
               title: Text(
                 opportunity.sponsorName,
@@ -177,6 +179,9 @@ class _OppReviewDetailScreenState extends ConsumerState<OppReviewDetailScreen> {
 
   Widget _buildBudgetInfo(Opportunity opportunity) {
     return Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -193,7 +198,7 @@ class _OppReviewDetailScreenState extends ConsumerState<OppReviewDetailScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.currency_rupee, color: AppColors.ctaDark),
+                    Icon(LucideIcons.indianRupee, color: AppColors.ctaDark),
                     const SizedBox(width: 8),
                     Text(
                       opportunity.budget!,
@@ -219,6 +224,9 @@ class _OppReviewDetailScreenState extends ConsumerState<OppReviewDetailScreen> {
 
   Widget _buildActionButtons(Opportunity opportunity) {
     return Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -229,28 +237,15 @@ class _OppReviewDetailScreenState extends ConsumerState<OppReviewDetailScreen> {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _handleApproval('reject'),
-                    icon: const Icon(Icons.close),
-                    label: const Text('Reject'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.error,
-                      side: BorderSide(color: AppColors.error),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                  ),
+                  child: SecondaryButton(
+                      label: 'Reject', onPressed: () => _handleApproval('reject')),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () => _handleApproval('approve'),
-                    icon: const Icon(Icons.check),
-                    label: const Text('Approve'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.success,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                  ),
+                  child: PrimaryButton(
+                      label: 'Approve',
+                      icon: LucideIcons.check,
+                      onPressed: () => _handleApproval('approve')),
                 ),
               ],
             ),
@@ -258,18 +253,6 @@ class _OppReviewDetailScreenState extends ConsumerState<OppReviewDetailScreen> {
         ),
       ),
     );
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'approved':
-        return AppColors.success;
-      case 'rejected':
-        return AppColors.error;
-      case 'pending':
-      default:
-        return AppColors.warning;
-    }
   }
 
   Future<void> _handleApproval(String action) async {

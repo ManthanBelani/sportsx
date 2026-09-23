@@ -1,11 +1,14 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class CreatePostScreen extends ConsumerStatefulWidget {
@@ -110,8 +113,13 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        title: const Text('Create Post'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Text('Create Post',
+            style: GoogleFonts.sora(
+                fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         actions: [
           TextButton(
             onPressed: _isPosting ? null : _submitPost,
@@ -180,7 +188,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                                 color: Colors.black54,
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.close, size: 16, color: Colors.white),
+                              child: const Icon(LucideIcons.x, size: 16, color: Colors.white),
                             ),
                           ),
                         ),
@@ -196,19 +204,10 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               runSpacing: 8,
               children: _availableHashtags.map((hashtag) {
                 final isSelected = _selectedHashtags.contains(hashtag);
-                return FilterChip(
-                  label: Text('#$hashtag'),
+                return SportXChip(
+                  label: '#$hashtag',
                   selected: isSelected,
-                  onSelected: (_) => _toggleHashtag(hashtag),
-                  selectedColor: AppColors.infoLight,
-                  backgroundColor: AppColors.surface,
-                  side: BorderSide(
-                    color: isSelected ? AppColors.primary : AppColors.border,
-                  ),
-                  labelStyle: TextStyle(
-                    color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  ),
+                  onTap: () => _toggleHashtag(hashtag),
                 );
               }).toList(),
             ),
@@ -218,23 +217,24 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(16),
         decoration: const BoxDecoration(
+          color: Colors.white,
           border: Border(top: BorderSide(color: AppColors.border)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildMediaButton(
-              icon: Icons.photo_library_outlined,
+              icon: LucideIcons.image,
               label: 'Gallery',
               onTap: () => _pickMedia(ImageSource.gallery),
             ),
             _buildMediaButton(
-              icon: Icons.camera_alt_outlined,
+              icon: LucideIcons.camera,
               label: 'Camera',
               onTap: () => _pickMedia(ImageSource.camera),
             ),
             _buildMediaButton(
-              icon: Icons.tag,
+              icon: LucideIcons.hash,
               label: 'Hashtags',
               onTap: () {
                 _focusNode.unfocus();

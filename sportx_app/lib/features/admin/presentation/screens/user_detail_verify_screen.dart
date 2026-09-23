@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
@@ -27,7 +30,7 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
         if (!user.isVerified)
           TextButton.icon(
             onPressed: () => _verifyUser(user.id),
-            icon: const Icon(Icons.check_circle, color: Colors.white),
+            icon: const Icon(LucideIcons.circleCheck, color: Colors.white),
             label: const Text(
               'Verify User',
               style: TextStyle(color: Colors.white),
@@ -54,6 +57,9 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
 
   Widget _buildProfileHeader(AdminUser user) {
     return Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -63,9 +69,9 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
               backgroundImage: user.profilePhotoUrl != null
                   ? NetworkImage(user.profilePhotoUrl!)
                   : null,
-              backgroundColor: AppColors.surface,
+              backgroundColor: AppColors.yellowTint,
               child: user.profilePhotoUrl == null
-                  ? Icon(Icons.person, size: 50, color: AppColors.textTertiary)
+                  ? const Icon(LucideIcons.user, size: 50, color: AppColors.primaryDark)
                   : null,
             ),
             const SizedBox(height: 16),
@@ -74,13 +80,11 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
               children: [
                 Text(
                   user.name,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: GoogleFonts.sora(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.ink),
                 ),
                 if (user.isVerified) ...[
                   const SizedBox(width: 8),
-                  const Icon(Icons.verified, color: AppColors.verifiedBadge, size: 24),
+                  const Icon(LucideIcons.badgeCheck, color: AppColors.verifiedBadge, size: 24),
                 ],
               ],
             ),
@@ -93,11 +97,11 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
               ),
             ),
             const SizedBox(height: 16),
-            _buildInfoRow(Icons.email_outlined, user.email),
+            _buildInfoRow(LucideIcons.mail, user.email),
             if (user.phone != null)
-              _buildInfoRow(Icons.phone_outlined, user.phone!),
+              _buildInfoRow(LucideIcons.phone, user.phone!),
             if (user.city != null)
-              _buildInfoRow(Icons.location_on_outlined, user.city!),
+              _buildInfoRow(LucideIcons.mapPin, user.city!),
           ],
         ),
       ),
@@ -120,6 +124,9 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
 
   Widget _buildVerificationDocuments(AdminUser user) {
     return Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -163,7 +170,7 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.broken_image, size: 48, color: AppColors.textTertiary),
+                    Icon(LucideIcons.imageOff, size: 48, color: AppColors.textTertiary),
                     const SizedBox(height: 8),
                     Text('Failed to load image', style: TextStyle(color: AppColors.textTertiary)),
                   ],
@@ -186,7 +193,7 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
       ),
       child: Row(
         children: [
-          Icon(Icons.warning_amber_rounded, color: AppColors.warning),
+          Icon(LucideIcons.triangleAlert, color: AppColors.warning),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
@@ -221,6 +228,9 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
     ];
 
     return Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -234,8 +244,8 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
                 children: [
                   Icon(
                     check.isComplete
-                        ? Icons.check_circle
-                        : Icons.radio_button_unchecked,
+                        ? LucideIcons.circleCheck
+                        : LucideIcons.circle,
                     color: check.isComplete ? AppColors.success : AppColors.textTertiary,
                     size: 24,
                   ),
@@ -269,6 +279,9 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
 
   Widget _buildActionButtons(AdminUser user) {
     return Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -279,29 +292,17 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
             if (!user.isVerified)
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => _verifyUser(user.id),
-                  icon: const Icon(Icons.check),
-                  label: const Text('Approve Verification'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.success,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                ),
+                child: PrimaryButton(
+                    label: 'Approve Verification',
+                    icon: LucideIcons.check,
+                    onPressed: () => _verifyUser(user.id)),
               ),
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () => _rejectVerification(user.id),
-                icon: const Icon(Icons.close),
-                label: const Text('Reject Verification'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.error,
-                  side: BorderSide(color: AppColors.error),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-              ),
+              child: SecondaryButton(
+                  label: 'Reject Verification',
+                  onPressed: () => _rejectVerification(user.id)),
             ),
           ],
         ),

@@ -5,6 +5,8 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/academy/presentation/providers/academy_provider.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class AcademyDashboardScreen extends ConsumerStatefulWidget {
@@ -29,11 +31,12 @@ class _AcademyDashboardScreenState extends ConsumerState<AcademyDashboardScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         elevation: 0,
-        title: const Text('SportX', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary)),
+        title: Text('SportX',
+            style: GoogleFonts.sora(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.ink)),
         actions: [
           IconButton(
             icon: const Icon(LucideIcons.bell, color: AppColors.textPrimary),
@@ -101,8 +104,10 @@ class _AcademyDashboardScreenState extends ConsumerState<AcademyDashboardScreen>
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(8),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+              boxShadow: SportXShadows.e1,
             ),
             child: Row(
               children: [
@@ -110,8 +115,8 @@ class _AcademyDashboardScreenState extends ConsumerState<AcademyDashboardScreen>
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppColors.academy,
+                    borderRadius: BorderRadius.circular(16),
                     image: academy?.logoUrl != null
                         ? DecorationImage(
                             image: NetworkImage(academy!.logoUrl!),
@@ -160,14 +165,15 @@ class _AcademyDashboardScreenState extends ConsumerState<AcademyDashboardScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(8),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+              boxShadow: SportXShadows.e1,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Quick Actions', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                const SizedBox(height: 12),
+                const SectionHeader(title: 'Quick Actions'),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -186,23 +192,16 @@ class _AcademyDashboardScreenState extends ConsumerState<AcademyDashboardScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(8),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+              boxShadow: SportXShadows.e1,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('My Trials', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                    GestureDetector(
-                      onTap: () => context.push('/my-trials'),
-                      child: const Text('View All', style: TextStyle(fontSize: 13, color: AppColors.primary)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
+                SectionHeader(
+                    title: 'My Trials', actionText: 'View All', onActionTap: () => context.push('/my-trials')),
                 if (trials.isEmpty)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 12),
@@ -229,7 +228,7 @@ class _AcademyDashboardScreenState extends ConsumerState<AcademyDashboardScreen>
               foregroundColor: Colors.red,
               side: const BorderSide(color: Colors.red),
               minimumSize: const Size.fromHeight(48),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
             icon: const Icon(LucideIcons.logOut, size: 18),
             label: const Text('Log out', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
@@ -243,8 +242,10 @@ class _AcademyDashboardScreenState extends ConsumerState<AcademyDashboardScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: SportXShadows.e1,
       ),
       child: Column(
         children: [
@@ -266,11 +267,11 @@ class _AcademyDashboardScreenState extends ConsumerState<AcademyDashboardScreen>
             height: 48,
             decoration: BoxDecoration(
               color: AppColors.background,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(color: AppColors.border),
             ),
             alignment: Alignment.center,
-            child: Icon(icon, size: 22, color: AppColors.textPrimary),
+            child: Icon(icon, size: 22, color: AppColors.academy),
           ),
           const SizedBox(height: 6),
           Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
@@ -280,18 +281,8 @@ class _AcademyDashboardScreenState extends ConsumerState<AcademyDashboardScreen>
   }
 
   Widget _buildTrialItem(String title, String meta, String status, IconData icon) {
-    Color badgeColor;
-    Color badgeText;
-    if (status == 'Published') {
-      badgeColor = const Color(0xFFd1fae5);
-      badgeText = const Color(0xFF065f46);
-    } else if (status == 'Draft') {
-      badgeColor = const Color(0xFFfef3c7);
-      badgeText = const Color(0xFF92400e);
-    } else {
-      badgeColor = AppColors.surface;
-      badgeText = AppColors.textSecondary;
-    }
+    final PillKind pillKind =
+        status == 'Published' ? PillKind.ok : status == 'Draft' ? PillKind.pending : PillKind.draft;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -302,11 +293,11 @@ class _AcademyDashboardScreenState extends ConsumerState<AcademyDashboardScreen>
             height: 44,
             decoration: BoxDecoration(
               color: AppColors.background,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(color: AppColors.border),
             ),
             alignment: Alignment.center,
-            child: Icon(icon, size: 20, color: AppColors.textPrimary),
+            child: Icon(icon, size: 20, color: AppColors.academy),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -319,11 +310,7 @@ class _AcademyDashboardScreenState extends ConsumerState<AcademyDashboardScreen>
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(color: badgeColor, borderRadius: BorderRadius.circular(4)),
-            child: Text(status, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: badgeText)),
-          ),
+          StatusPill(label: status, kind: pillKind),
         ],
       ),
     );

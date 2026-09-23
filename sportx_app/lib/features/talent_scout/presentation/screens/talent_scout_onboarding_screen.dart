@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -88,12 +89,13 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
   Widget build(BuildContext context) {
     final meta = ref.watch(metaProvider);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
-        title: const Text('Set up your scout profile',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Set up your scout profile',
+            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         leading: IconButton(
             icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
             onPressed: () => context.pop()),
@@ -105,7 +107,7 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
           // Header
           Container(
             width: double.infinity,
-            color: AppColors.background,
+            color: AppColors.surface,
             padding: const EdgeInsets.all(20),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Container(
@@ -121,7 +123,7 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
           // Photo
           Container(
             width: double.infinity,
-            color: AppColors.background,
+            color: AppColors.surface,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             child: Column(children: [
               Semantics(
@@ -134,7 +136,7 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
                     Container(
                       width: 96,
                       height: 96,
-                      decoration: const BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(colors: [AppColors.primary, Color(0xFF0d47a1)], begin: Alignment.topLeft, end: Alignment.bottomRight)),
+                      decoration: const BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(colors: [AppColors.primary, AppColors.scout], begin: Alignment.topLeft, end: Alignment.bottomRight)),
                       child: ClipOval(
                         child: _photoUrl != null
                             ? Image.network(MediaUtils.resolveUrl(_photoUrl), width: 96, height: 96, fit: BoxFit.cover, errorBuilder: (_, _, _) => const Icon(LucideIcons.user, size: 48, color: Colors.white))
@@ -157,7 +159,7 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
           // Form
           Container(
             width: double.infinity,
-            color: AppColors.background,
+            color: AppColors.surface,
             padding: const EdgeInsets.all(20),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               TextField(controller: _organization, decoration: const InputDecoration(labelText: 'Organization', hintText: 'Elite Talent Agency (optional)')),

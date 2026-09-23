@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sportx_app/features/coach/presentation/providers/coach_provider.dart';
@@ -84,11 +86,16 @@ class _EditFacilitiesScreenState extends ConsumerState<EditFacilitiesScreen> {
   Widget build(BuildContext context) {
     final coachState = ref.watch(coachProvider);
     if (coachState.isLoading && _facilities.isEmpty) {
-      return Scaffold(appBar: AppBar(title: const Text('Edit Facilities & Programs')), body: const FacilitiesSkeleton());
+      return Scaffold(
+          backgroundColor: AppColors.surface,
+          appBar: AppBar(title: const Text('Edit Facilities & Programs'), backgroundColor: AppColors.surface),
+          body: const FacilitiesSkeleton());
     }
     return Scaffold(
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         title: const Text('Edit Facilities & Programs'),
+        backgroundColor: AppColors.surface,
       ),
       body: Column(
         children: [
@@ -107,7 +114,7 @@ class _EditFacilitiesScreenState extends ConsumerState<EditFacilitiesScreen> {
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: _addNewFacility,
-                icon: const Icon(Icons.add),
+                icon: const Icon(LucideIcons.plus),
                 label: const Text('Add Another'),
               ),
             ),
@@ -119,6 +126,13 @@ class _EditFacilitiesScreenState extends ConsumerState<EditFacilitiesScreen> {
               height: 50,
               child: ElevatedButton(
                 onPressed: _isSaving ? null : _saveFacilities,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.yellow,
+                  foregroundColor: AppColors.ink,
+                  disabledBackgroundColor: AppColors.border,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
                 child: _isSaving
                     ? const SizedBox(
                         width: 20,
@@ -138,6 +152,12 @@ class _EditFacilitiesScreenState extends ConsumerState<EditFacilitiesScreen> {
     final facility = _facilities[index];
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppColors.border),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -152,7 +172,7 @@ class _EditFacilitiesScreenState extends ConsumerState<EditFacilitiesScreen> {
                 ),
                 if (_facilities.length > 1)
                   IconButton(
-                    icon: const Icon(Icons.delete_outline, color: AppColors.error),
+                    icon: const Icon(LucideIcons.trash2, color: AppColors.error),
                     onPressed: () => _removeFacility(index),
                   ),
               ],

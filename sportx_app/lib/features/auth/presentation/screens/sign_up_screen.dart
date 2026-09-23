@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
@@ -47,13 +49,15 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = ref.watch(authProvider);
+    final isLoading = auth.status == AuthStatus.loading;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         backgroundColor: AppColors.background,
+        scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary, size: 24),
+          icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary, size: 22),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -62,11 +66,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             }
           },
         ),
-        title: const Text(
+        title: Text(
           'Create Account',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+          style: GoogleFonts.sora(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
           ),
         ),
@@ -81,27 +85,28 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'SportX India',
-                  style: TextStyle(
+                  style: GoogleFonts.sora(
                     fontSize: 28,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                    letterSpacing: -1.0,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Join India\'s sports discovery platform',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 14,
                     color: AppColors.textSecondary,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
-                
-                const Text('Email Address', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+
+                Text('Email Address', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _emailController,
@@ -109,28 +114,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   decoration: InputDecoration(
                     hintText: 'you@example.com',
                     errorText: auth.fieldErrors['email'],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.border),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.border),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.primary),
-                    ),
-                    filled: true,
-                    fillColor: AppColors.background,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    prefixIcon: const Icon(LucideIcons.mail, size: 18, color: AppColors.textSecondary),
                   ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (v) => v == null || v.isEmpty ? 'Email is required' : null,
                 ),
                 const SizedBox(height: 16),
-                
-                const Text('Password', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+
+                Text('Password', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _passwordController,
@@ -138,23 +129,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   decoration: InputDecoration(
                     hintText: 'Create a strong password',
                     errorText: auth.fieldErrors['password'],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.border),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.border),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: AppColors.primary),
-                    ),
-                    filled: true,
-                    fillColor: AppColors.background,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    prefixIcon: const Icon(LucideIcons.lock, size: 18, color: AppColors.textSecondary),
                     suffixIcon: IconButton(
-                      icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: AppColors.textSecondary),
+                      icon: Icon(_obscurePassword ? LucideIcons.eyeOff : LucideIcons.eye, color: AppColors.textSecondary, size: 20),
                       onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                     ),
                   ),
@@ -162,7 +139,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   validator: (v) => v == null || v.length < 8 ? 'Minimum 8 characters' : null,
                 ),
                 const SizedBox(height: 20),
-                
+
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -171,7 +148,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       height: 24,
                       child: Checkbox(
                         value: _agreed,
-                        activeColor: AppColors.primary,
+                        activeColor: AppColors.yellowDeep,
+                        checkColor: AppColors.ink,
+                        side: const BorderSide(color: AppColors.border, width: 1.5),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                         onChanged: (v) => setState(() => _agreed = v ?? false),
                       ),
                     ),
@@ -180,11 +160,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       child: Text.rich(
                         TextSpan(
                           text: 'I agree to the ',
-                          style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.5),
+                          style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary, height: 1.5),
                           children: [
-                            const TextSpan(text: 'Terms of Service', style: TextStyle(color: AppColors.primary)),
+                            TextSpan(text: 'Terms of Service', style: GoogleFonts.inter(color: AppColors.primaryDarker, fontWeight: FontWeight.w700)),
                             const TextSpan(text: ' and '),
-                            const TextSpan(text: 'Privacy Policy', style: TextStyle(color: AppColors.primary)),
+                            TextSpan(text: 'Privacy Policy', style: GoogleFonts.inter(color: AppColors.primaryDarker, fontWeight: FontWeight.w700)),
                             const TextSpan(text: '. I am 18 years or older.'),
                           ],
                         ),
@@ -193,31 +173,41 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   ],
                 ),
                 const SizedBox(height: 24),
-                
-                ElevatedButton(
-                  onPressed: _agreed ? _submit : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: AppColors.border,
-                    disabledForegroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 52),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+
+                if (isLoading)
+                  Container(
+                    height: 50,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0xFFFFD54A), Color(0xFFFFC107), Color(0xFFF5B400)],
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0x2E785000)),
+                      boxShadow: SportXShadows.btnShadow,
+                    ),
+                    alignment: Alignment.center,
+                    child: const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: AppColors.ink, strokeWidth: 2)),
+                  )
+                else
+                  Opacity(
+                    opacity: _agreed ? 1.0 : 0.5,
+                    child: PrimaryButton(
+                      label: 'Create Account',
+                      icon: LucideIcons.arrowRight,
+                      onPressed: _agreed ? _submit : null,
+                    ),
                   ),
-                  child: auth.status == AuthStatus.loading
-                      ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('Create Account', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                ),
                 const SizedBox(height: 24),
 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Already have an account? ', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                    Text('Already have an account? ', style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary)),
                     GestureDetector(
                       onTap: () => context.go('/login'),
-                      child: const Text('Log in', style: TextStyle(fontSize: 14, color: AppColors.primary, fontWeight: FontWeight.w500)),
+                      child: Text('Log in', style: GoogleFonts.inter(fontSize: 14, color: AppColors.primaryDarker, fontWeight: FontWeight.w700)),
                     ),
                   ],
                 ),

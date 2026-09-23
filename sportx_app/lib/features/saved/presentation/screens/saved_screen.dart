@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/saved/presentation/providers/saved_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class SavedScreen extends ConsumerStatefulWidget {
   const SavedScreen({super.key});
@@ -85,12 +87,13 @@ class _SavedScreenState extends ConsumerState<SavedScreen> with SingleTickerProv
     final state = ref.watch(savedProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text('Saved',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Saved',
+            style: GoogleFonts.sora(
+                fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
@@ -121,9 +124,9 @@ class _SavedScreenState extends ConsumerState<SavedScreen> with SingleTickerProv
                           children: [
                             Text(state.error!, style: TextStyle(color: AppColors.textSecondary)),
                             SizedBox(height: 12),
-                            ElevatedButton(
+                            PrimaryButton(
+                              label: 'Retry',
                               onPressed: () => ref.read(savedProvider.notifier).load(),
-                              child: Text('Retry'),
                             ),
                           ],
                         ),
@@ -175,24 +178,24 @@ class _SavedScreenState extends ConsumerState<SavedScreen> with SingleTickerProv
     }
     return RefreshIndicator(
       onRefresh: () => ref.read(savedProvider.notifier).load(),
-      child: ListView.separated(
+      child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
         itemCount: items.length,
-        separatorBuilder: (_, _) => const Divider(height: 1),
         itemBuilder: (context, i) {
           final item = items[i];
-          return ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(LucideIcons.heart, color: Colors.red),
-            title: Text(item.title,
-                style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-            subtitle: Text(item.subtitle, style: const TextStyle(color: AppColors.textSecondary)),
+          final initial =
+              item.title.isNotEmpty ? item.title[0].toUpperCase() : 'S';
+          return EntityRow(
+            title: item.title,
+            subtitle: item.subtitle,
+            avatarText: initial,
+            onTap: () => context.push(_routeFor(item)),
             trailing: IconButton(
-              icon: const Icon(LucideIcons.trash2, color: AppColors.textSecondary, size: 20),
+              icon: const Icon(LucideIcons.trash2,
+                  color: AppColors.textSecondary, size: 20),
               onPressed: () => ref.read(savedProvider.notifier).remove(item),
             ),
-            onTap: () => context.push(_routeFor(item)),
           );
         },
       ),
