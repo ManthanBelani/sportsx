@@ -70,6 +70,9 @@ class ResultsController extends Controller
     private function authorizeTournamentOwner(Request $request, Tournament $tournament): void
     {
         $user = $request->user();
-        abort_unless($tournament->organizer_id === $user->id || $user->isAdmin(), 403);
+        if ($user->isAdmin()) return;
+        // Canonical: organizer_id = organizer_profiles.id; legacy: user_id.
+        if ($user->organizerProfile && (int) $tournament->organizer_id === (int) $user->organizerProfile->id) return;
+        abort_unless((int) $tournament->organizer_id === (int) $user->id, 403);
     }
 }

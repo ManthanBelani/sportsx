@@ -21,4 +21,9 @@ class TournamentCategory extends Model
     {
         return $this->belongsTo(AgeGroup::class);
     }
+
+    public function registrations(): HasMany
+    {
+        return $this->hasMany(TournamentRegistration::class, 'category_id');
+    }
 }

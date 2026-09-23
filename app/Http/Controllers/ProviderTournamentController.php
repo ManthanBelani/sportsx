@@ -16,10 +16,21 @@ class ProviderTournamentController extends Controller
     {
         $user = $request->user();
 
-        $tournaments = Tournament::where('organizer_id', $user->id)
-            ->with(['sport', 'city', 'categories'])
-            ->orderBy('start_date', 'desc')
-            ->paginate(20);
+        // Canonical: organizer_id FKs organizer_profiles.id (see migration).
+        // Legacy rows created via store() used user_id — match both for back-compat
+        // (same dual-lookup as OrganizerAnalyticsController).
+        $query = Tournament::with(['sport', 'city', 'categories'])
+            ->orderBy('start_date', 'desc');
+        $profileId = $user->organizerProfile?->id;
+        if ($profileId) {
+            $query->where(function ($q) use ($user, $profileId) {
+                $q->where('organizer_id', $user->id)
+                  ->orWhere('organizer_id', $profileId);
+            });
+        } else {
+            $query->where('organizer_id', $user->id);
+        }
+        $tournaments = $query->paginate(20);
 
         return response()->json([
             'data' => $tournaments->items(),
@@ -80,7 +91,10 @@ class ProviderTournamentController extends Controller
             }
             $tournamentData = array_merge(
                 collect($validated)->except('categories')->toArray(),
-                ['organizer_id' => $user->id]
+                // Canonical FK: organizer_profiles.id (migration constrains
+                // organizer_id -> organizer_profiles). Fall back to user_id
+                // only when the user has no organizer profile yet.
+                ['organizer_id' => $user->organizerProfile?->id ?? $user->id]
             );
             // Remove alias leftover
             unset($tournamentData['categories']);
@@ -188,7 +202,10 @@ class ProviderTournamentController extends Controller
     private function authorizeOwner(Request $request, Tournament $tournament): void
     {
         $user = $request->user();
-        abort_unless($tournament->organizer_id === $user->id || $user->isAdmin(), 403);
+        if ($user->isAdmin()) return;
+        // Canonical: organizer_id = organizer_profiles.id; legacy: user_id.
+        if ($user->organizerProfile && (int) $tournament->organizer_id === (int) $user->organizerProfile->id) return;
+        abort_unless((int) $tournament->organizer_id === (int) $user->id, 403);
     }
 
     private function platformSettings(): array
