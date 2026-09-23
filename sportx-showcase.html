@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SportX — Full App Design Showcase (21 Screens)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+*{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-tap-highlight-color:transparent}
+body{background:#EDEEF1;color:#111}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(900px 400px at 12% 0%,rgba(255,196,0,.10),transparent 60%),radial-gradient(800px 420px at 95% 8%,rgba(59,130,246,.08),transparent 60%);pointer-events:none}
+/* premium board header */
+header{backdrop-filter:saturate(140%) blur(10px)}
+/* ---- production device ---- */
+.phone{width:302px;height:652px;background:#fff;border-radius:44px;border:1px solid #0b0b0c;outline:7px solid #0e0f12;outline-offset:0;overflow:hidden;display:flex;flex-direction:column;flex-shrink:0;box-shadow:0 0 0 1px rgba(0,0,0,.6),0 30px 60px -24px rgba(0,0,0,.35);position:relative;transition:transform .25s ease,box-shadow .25s ease}
+.phone:hover{transform:translateY(-4px);box-shadow:0 0 0 1px rgba(0,0,0,.6),0 40px 70px -24px rgba(0,0,0,.42)}
+.screen{flex:1;overflow:hidden;position:relative;display:flex;flex-direction:column;background:#fff}
+/* dynamic island */
+.screen::before{content:'';position:absolute;top:11px;left:50%;transform:translateX(-50%);width:88px;height:24px;background:#0b0b0c;border-radius:999px;z-index:50;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.screen::after{content:'';position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:110px;height:4px;background:rgba(17,17,17,.85);border-radius:999px;z-index:50}
+.nav5 ~ .screen::after,.screen:has(+ .nav5)::after{display:none}
+/* realistic statusbar: time left, island center, icons right */
+.statusbar{display:flex;align-items:center;justify-content:space-between;padding:14px 26px 4px;font-size:12.5px;font-weight:600;letter-spacing:-.01em;flex-shrink:0;background:inherit;position:relative;z-index:40}
+.statusbar>span:last-child{display:flex;align-items:center;gap:5px}
+.statusbar svg{width:15px;height:15px;stroke-width:2.2}
+/* production buttons/inputs */
+.btn-y{background:linear-gradient(180deg,#FFD54A,#FFC400 60%,#F0AD00);color:#171300;font-weight:800;border-radius:13px;font-size:13px;letter-spacing:-.01em;box-shadow:0 6px 16px -6px rgba(255,196,0,.6),inset 0 1px 0 rgba(255,255,255,.6);border:1px solid rgba(120,80,0,.22);min-height:46px;display:flex;align-items:center;justify-content:center}
+.card-sh{box-shadow:0 1px 2px rgba(16,18,21,.05),0 4px 14px -6px rgba(16,18,21,.12)}
+.lucide{stroke-width:2}
+.rowscroll{display:flex;gap:30px;overflow-x:auto;padding:14px 6px 28px;scrollbar-width:thin}
+@media(min-width:1100px){.rowscroll{flex-wrap:wrap;overflow:visible}}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cap{font-size:12px;color:#6B7280;margin-top:12px;text-align:center;font-weight:600}
+.cap::before{content:'';display:block;width:24px;height:3px;background:#FFC400;border-radius:99px;margin:0 auto 6px}
+.utab{font-size:11px;padding:8px 2px;white-space:nowrap}
+.utab.on{color:#111;font-weight:800;border-bottom:2.5px solid #FFC400}
+.ptab{font-size:10.5px;font-weight:600;padding:6px 12px;border-radius:999px;background:#fff;border:1px solid #E8EAED;white-space:nowrap;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.ptab.on{background:#FFC400;border-color:rgba(120,80,0,.2);color:#111;font-weight:800;box-shadow:0 4px 10px -4px rgba(255,196,0,.6)}
+.nav5{display:flex;align-items:flex-end;justify-content:space-around;padding:10px 4px 18px;border-top:1px solid #EFF1F4;background:rgba(255,255,255,.96);backdrop-filter:blur(14px);flex-shrink:0;position:relative;z-index:20}
+.navi{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9px;font-weight:600;color:#9CA3AF;min-width:52px}
+.navi svg{width:21px;height:21px}
+.navi.on{color:#8a6d00;font-weight:800}.navi.on svg{color:#D9A400;fill:rgba(255,196,0,.22)}
+.fab{width:52px;height:52px;border-radius:50%;background:linear-gradient(180deg,#FFD54A,#FFC400 60%,#F0AD00);display:flex;align-items:center;justify-content:center;margin-top:-30px;border:3px solid #fff;box-shadow:0 10px 22px -6px rgba(255,196,0,.6),0 3px 8px rgba(0,0,0,.18)}
+.fab svg{width:24px;height:24px;color:#171300}
+.inp{border:1.5px solid #E8EAED;border-radius:13px;height:44px;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:12px;color:#374151;background:#fff;box-shadow:inset 0 1px 2px rgba(0,0,0,.04)}
+.inp:focus-within{border-color:#D9A400;box-shadow:0 0 0 4px rgba(255,196,0,.18)}
+.searchbar{display:flex;align-items:center;gap:8px;background:#F4F5F7;border:1px solid #ECEEF1;border-radius:13px;padding:0 12px;height:40px;font-size:11.5px;color:#6B7280;box-shadow:inset 0 1px 2px rgba(0,0,0,.04)}
+.searchbar svg{width:15px;height:15px;flex-shrink:0}
+.otpbox{width:34px;height:42px;border:1.5px solid #E5E7EB;border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;background:#fff;box-shadow:inset 0 1px 2px rgba(0,0,0,.04)}
+.dot{width:6px;height:6px;border-radius:99px;background:#D1D5DB}.dot.on{width:22px;background:#FFC400}
+img{background:#E8EAED}
+::-webkit-scrollbar{height:6px;width:6px}::-webkit-scrollbar-thumb{background:#d4d6db;border-radius:99px}
+h2{font-size:12px !important;letter-spacing:.12em !important;background:#111;color:#fff !important;display:inline-flex;align-items:center;gap:8px;padding:7px 14px !important;border-radius:999px;margin-top:26px !important}
+h2 span{color:#FFC400 !important}
+</style>
+</head>
+<body class="min-h-screen">
+<!-- HEADER -->
+<header class="w-full bg-white border-b border-gray-100">
+<div class="max-w-[1400px] mx-auto px-6 py-5 flex items-center justify-between flex-wrap gap-3">
+<div>
+<div class="text-[26px] font-extrabold tracking-tight text-[#111]">Sport<span style="color:#FFC400">X</span></div>
+<div class="text-[10px] font-semibold tracking-[0.28em] text-gray-500 mt-1">PLAY • CONNECT • GROW</div>
+</div>
+<div class="text-right text-[13px] text-gray-500 font-medium">Your Sports Identity. Your Network. Your Opportunities.</div>
+</div>
+</header>
+
+<main class="max-w-[1400px] mx-auto px-6 pb-20">
+
+<!-- ROW 1 -->
+<h2 class="mt-8 mb-1 text-[13px] font-bold tracking-wide text-[#111] uppercase">Onboarding <span class="text-gray-400 font-medium normal-case">— screens 1–7</span></h2>
+<div class="rowscroll">
+
+<!-- 1 Splash -->
+<div><div class="phone"><div class="screen bg-[#111]">
+<div class="statusbar text-white"><span>9:41</span><span class="flex gap-1 items-center"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+<img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=600&q=60" class="absolute inset-0 w-full h-full object-cover opacity-40" alt="">
+<div class="absolute inset-0" style="background:linear-gradient(180deg,rgba(0,0,0,.2),rgba(0,0,0,.85))"></div>
+<div class="relative mt-auto pb-14 text-center px-6">
+<div class="text-[34px] font-extrabold text-white tracking-tight">Sport<span style="color:#FFC400">X</span></div>
+<div class="text-[9px] tracking-[0.35em] text-gray-300 font-semibold mt-2">PLAY • CONNECT • GROW</div>
+</div></div></div><div class="cap">1. Splash</div></div>
+
+<!-- 2 Master Onboarding -->
+<div><div class="phone"><div class="screen bg-[#111]">
+<div class="statusbar text-white"><span>9:41</span><span class="flex gap-1 items-center"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+<div class="relative">
+<img src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=600&q=60" class="h-[300px] w-full object-cover" alt="">
+<div class="absolute inset-0" style="background:linear-gradient(180deg,transparent 20%,rgba(0,0,0,.85))"></div>
+<span class="absolute top-2 right-3 text-[11px] font-semibold text-white/90 bg-white/15 border border-white/25 rounded-full px-3 py-1">Skip</span>
+<div class="absolute bottom-2.5 left-4 right-4 flex gap-1.5">
+<span class="text-[10px] font-bold px-3 py-1.5 rounded-full" style="background:#FFC400;color:#111">PLAY</span>
+<span class="text-[10px] font-semibold px-3 py-1.5 rounded-full bg-white/15 text-white border border-white/25">CONNECT</span>
+<span class="text-[10px] font-semibold px-3 py-1.5 rounded-full bg-white/15 text-white border border-white/25">GROW</span>
+</div>
+</div>
+<div class="px-5 pt-3 flex-1 flex flex-col">
+<div class="text-white font-extrabold text-[19px] leading-tight">Welcome to SportX</div>
+<div class="text-gray-400 text-[11.5px] mt-1 leading-snug">Your sports identity, network & opportunities — in one app. <b class="text-gray-200">Play</b> trials, <b class="text-gray-200">connect</b> with coaches, <b class="text-gray-200">grow</b> your career.</div>
+<div class="grid grid-cols-3 gap-2 mt-3 text-center">
+<div class="rounded-xl bg-white/5 border border-[#FFC400]/60 py-2"><i data-lucide="trophy" class="w-4 h-4 mx-auto" style="color:#FFC400"></i><div class="text-[9px] font-bold text-white mt-1">Play</div></div>
+<div class="rounded-xl bg-white/5 border border-white/15 py-2"><i data-lucide="users" class="w-4 h-4 mx-auto text-gray-300"></i><div class="text-[9px] font-semibold text-gray-300 mt-1">Connect</div></div>
+<div class="rounded-xl bg-white/5 border border-white/15 py-2"><i data-lucide="trending-up" class="w-4 h-4 mx-auto text-gray-300"></i><div class="text-[9px] font-semibold text-gray-300 mt-1">Grow</div></div>
+</div>
+<div class="btn-y text-center py-3 mt-3">Continue</div>
+<div class="text-center text-[11px] text-gray-400 mt-2">Already have an account? <b class="text-white">Login</b> <span class="mx-1">•</span> <b style="color:#FFC400">Sign Up</b></div>
+<div class="flex gap-1.5 justify-center mt-auto py-3"><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+</div></div></div><div class="cap">2. Master Onboarding</div></div>
+
+<!-- 3 User Type -->
+<div><div class="phone"><div class="screen">
+<div class="statusbar"><span>9:41</span><span class="flex gap-1 items-center"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+<div class="px-4 pt-1 flex-1 flex flex-col">
+<i data-lucide="arrow-left" class="w-5 h-5"></i>
+<div class="font-extrabold text-[19px] mt-2 text-[#111]">What are you?</div>
+<div class="text-[11.5px] text-[#6B7280]">Choose your role to get started</div>
+<div class="grid grid-cols-2 gap-2.5 mt-4">
+<div class="rounded-xl p-3 text-center" style="background:#FFC400"><i data-lucide="trophy" class="w-6 h-6 mx-auto"></i><div class="text-[12px] font-bold mt-1">Athlete</div></div>
+<div class="rounded-xl p-3 text-center border border-gray-200"><i data-lucide="whistle" class="w-6 h-6 mx-auto text-gray-700"></i><div class="text-[12px] font-semibold mt-1">Coach</div></div>
+<div class="rounded-xl p-3 text-center border border-gray-200"><i data-lucide="building-2" class="w-6 h-6 mx-auto text-gray-700"></i><div class="text-[12px] font-semibold mt-1">Academy</div></div>
+<div class="rounded-xl p-3 text-center border border-gray-200"><i data-lucide="briefcase" class="w-6 h-6 mx-auto text-gray-700"></i><div class="text-[12px] font-semibold mt-1">Brand</div></div>
+<div class="rounded-xl p-3 text-center border border-gray-200"><i data-lucide="eye" class="w-6 h-6 mx-auto text-gray-700"></i><div class="text-[12px] font-semibold mt-1">Scout</div></div>
+<div class="rounded-xl p-3 text-center border border-gray-200"><i data-lucide="landmark" class="w-6 h-6 mx-auto text-gray-700"></i><div class="text-[12px] font-semibold mt-1">Organization</div></div>
+</div>
+<div class="btn-y text-center py-3 mt-auto mb-4">Continue</div>
+</div></div></div><div class="cap">3. User Type Selection</div></div>
+
+<!-- 4 Signup (all roles) -->
+<div><div class="phone"><div class="screen">
+<div class="statusbar"><span>9:41</span><span class="flex gap-1 items-center"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+<div class="px-4 flex-1 flex flex-col overflow-hidden">
+<div class="flex items-center gap-2"><i data-lucide="arrow-left" class="w-5 h-5"></i><span class="font-extrabold text-[15px]">Create account</span></div>
+<div class="grid grid-cols-2 bg-[#F5F5F5] rounded-xl p-1 mt-2.5 text-center text-[12px] font-bold"><span class="py-2 rounded-lg bg-white shadow-sm border border-gray-100">Sign Up</span><span class="py-2 text-gray-400 font-semibold">Login</span></div>
+<div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-3">I am a</div>
+<div class="flex gap-1.5 mt-1.5 overflow-hidden">
+<span class="text-[9.5px] font-bold px-2.5 py-1.5 rounded-full whitespace-nowrap" style="background:#FFC400">Athlete</span>
+<span class="text-[9.5px] font-semibold px-2.5 py-1.5 rounded-full bg-[#F5F5F5] border border-gray-200 whitespace-nowrap">Coach</span>
+<span class="text-[9.5px] font-semibold px-2.5 py-1.5 rounded-full bg-[#F5F5F5] border border-gray-200 whitespace-nowrap">Academy</span>
+<span class="text-[9.5px] font-semibold px-2.5 py-1.5 rounded-full bg-[#F5F5F5] border border-gray-200 whitespace-nowrap">Brand+</span>
+</div>
+<div class="text-[10px] text-gray-400 mt-1">Scout • Organization in role step (screen 3)</div>
+<div class="space-y-2 mt-2.5">
+<div class="inp !h-[40px]"><i data-lucide="user" class="w-4 h-4"></i> Full Name</div>
+<div class="inp !h-[40px]"><i data-lucide="mail" class="w-4 h-4"></i> Email or Mobile</div>
+<div class="inp !h-[40px]"><i data-lucide="lock" class="w-4 h-4"></i> Password <i data-lucide="eye-off" class="w-4 h-4 ml-auto"></i></div>
+<div class="inp !h-[40px] !bg-[#FFFBEB] !border-[#FFC400]/60"><i data-lucide="trophy" class="w-4 h-4"></i> Sport & Position <i data-lucide="chevron-down" class="w-4 h-4 ml-auto"></i></div>
+</div>
+<div class="text-[9.5px] text-gray-400 mt-1.5 leading-snug">Coach → experience • Academy → academy name • Brand → company • Scout/Org → org name</div>
+<div class="btn-y text-center py-2.5 mt-2.5">Continue</div>
+<div class="flex items-center gap-2 my-2"><span class="h-px flex-1 bg-gray-200"></span><span class="text-[10px] text-gray-400">or</span><span class="h-px flex-1 bg-gray-200"></span></div>
+<div class="flex gap-2"><div class="flex-1 border border-gray-200 rounded-xl py-2 flex justify-center font-bold text-[14px]">G</div><div class="flex-1 border border-gray-200 rounded-xl py-2 flex justify-center"><i data-lucide="apple" class="w-4 h-4"></i></div></div>
+<div class="text-center text-[10.5px] text-gray-500 mt-auto pb-3">Have an account? <b style="color:#B89000">Login</b></div>
+</div></div></div><div class="cap">4. Signup (all roles)</div></div>
+
+<!-- 5 OTP -->
+<div><div class="phone"><div class="screen">
+<div class="statusbar"><span>9:41</span><span class="flex gap-1 items-center"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+<div class="px-4 flex-1 flex flex-col">
+<i data-lucide="arrow-left" class="w-5 h-5"></i>
+<div class="font-extrabold text-[18px] text-center mt-6">Verify OTP</div>
+<div class="text-[11.5px] text-[#6B7280] text-center mt-1 px-4">We have sent a 6-digit code to<br>+91 98765 43210</div>
+<div class="flex gap-1.5 justify-center mt-5"><div class="otpbox">4</div><div class="otpbox">8</div><div class="otpbox border-[#FFC400]">2</div><div class="otpbox"></div><div class="otpbox"></div><div class="otpbox"></div></div>
+<div class="text-center text-[11px] text-gray-400 mt-4">Resend in 00:30</div>
+<div class="btn-y text-center py-3 mt-auto mb-4">Verify</div>
+</div></div></div><div class="cap">5. OTP Verification</div></div>
+
+<!-- 6 Select Sport -->
+<div><div class="phone"><div class="screen">
+<div class="statusbar"><span>9:41</span><span class="flex gap-1 items-center"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+<div class="px-4 flex-1 flex flex-col">
+<i data-lucide="arrow-left" class="w-5 h-5"></i>
+<div class="searchbar mt-3"><i data-lucide="search"></i> Search sports...</div>
+<div class="font-extrabold text-[17px] mt-3">Select Your Sport</div>
+<div class="grid3 mt-3">
+<div class="border border-gray-200 rounded-xl py-2.5 text-center"><i data-lucide="target" class="w-5 h-5 mx-auto"></i><div class="text-[10px] font-semibold mt-1">Cricket</div></div>
+<div class="rounded-xl py-2.5 text-center" style="background:#FFC400"><i data-lucide="volleyball" class="w-5 h-5 mx-auto"></i><div class="text-[10px] font-bold mt-1">Football</div></div>
+<div class="border border-gray-200 rounded-xl py-2.5 text-center"><i data-lucide="medal" class="w-5 h-5 mx-auto text-gray-600"></i><div class="text-[10px] font-semibold mt-1">Hockey</div></div>
+<div class="border border-gray-200 rounded-xl py-2.5 text-center"><i data-lucide="circle-dot" class="w-5 h-5 mx-auto text-gray-600"></i><div class="text-[10px] font-semibold mt-1">Basketball</div></div>
+<div class="border border-gray-200 rounded-xl py-2.5 text-center"><i data-lucide="zap" class="w-5 h-5 mx-auto text-gray-600"></i><div class="text-[10px] font-semibold mt-1">Badminton</div></div>
+<div class="border border-gray-200 rounded-xl py-2.5 text-center"><i data-lucide="circle" class="w-5 h-5 mx-auto text-gray-600"></i><div class="text-[10px] font-semibold mt-1">Tennis</div></div>
+<div class="border border-gray-200 rounded-xl py-2.5 text-center"><i data-lucide="activity" class="w-5 h-5 mx-auto text-gray-600"></i><div class="text-[10px] font-semibold mt-1">Athletics</div></div>
+<div class="border border-gray-200 rounded-xl py-2.5 text-center"><i data-lucide="hexagon" class="w-5 h-5 mx-auto text-gray-600"></i><div class="text-[10px] font-semibold mt-1">Volleyball</div></div>
+<div class="border border-gray-200 rounded-xl py-2.5 text-center"><i data-lucide="flame" class="w-5 h-5 mx-auto text-gray-600"></i><div class="text-[10px] font-semibold mt-1">Kabaddi</div></div>
+</div>
+<div class="btn-y text-center py-3 mt-auto mb-4">Continue</div>
+</div></div></div><div class="cap">6. Select Your Sport</div></div>
+
+<!-- 7 Complete Profile -->
+<div><div class="phone"><div class="screen">
+<div class="statusbar"><span>9:41</span><span class="flex gap-1 items-center"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+<div class="px-4 flex-1 flex flex-col">
+<i data-lucide="arrow-left" class="w-5 h-5"></i>
+<div class="font-extrabold text-[16px] mt-2">Complete Your Profile</div>
+<div class="flex justify-center my-4"><div class="relative w-[110px] h-[110px]"><svg viewBox="0 0 100 100" class="w-full h-full -rotate-90"><circle cx="50" cy="50" r="42" fill="none" stroke="#EDEFF2" stroke-width="10"/><circle cx="50" cy="50" r="42" fill="none" stroke="#FFC400" stroke-width="10" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="106"/></svg><div class="absolute inset-0 flex items-center justify-center font-extrabold text-[18px]">60%</div></div></div>
+<div class="space-y-2 text-[12.5px] font-medium">
+<div class="flex items-center gap-2.5"><span class="w-6 h-6 rounded-full bg-[#16A34A] text-white flex items-center justify-center"><i data-lucide="check" class="w-3.5 h-3.5"></i></span> Basic Information</div>
+<div class="flex items-center gap-2.5"><span class="w-6 h-6 rounded-full bg-[#16A34A] text-white flex items-center justify-center"><i data-lucide="check" class="w-3.5 h-3.5"></i></span> Sport & Position</div>
+<div class="flex items-center gap-2.5"><span class="w-6 h-6 rounded-full bg-[#16A34A] text-white flex items-center justify-center"><i data-lucide="check" class="w-3.5 h-3.5"></i></span> Achievements</div>
+<div class="flex items-center gap-2.5"><span class="w-6 h-6 rounded-full bg-[#16A34A] text-white flex items-center justify-center"><i data-lucide="check" class="w-3.5 h-3.5"></i></span> Certificates</div>
+<div class="flex items-center gap-2.5"><span class="w-6 h-6 rounded-full bg-[#FFF3C4] text-[#B45309] border border-[#FFC400] flex items-center justify-center"><i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i></span> Photos & Videos <i data-lucide="x" class="w-4 h-4 ml-auto text-gray-300"></i></div>
+</div>
+<div class="btn-y text-center py-3 mt-auto mb-4">Continue</div>
+</div></div></div><div class="cap">7. Complete Your Profile</div></div>
+</div>
+
+<!-- ROW 2 -->
+<h2 class="mt-4 mb-1 text-[13px] font-bold tracking-wide uppercase">Core App <span class="text-gray-400 font-medium normal-case">— screens 8–14</span></h2>
+<div class="rowscroll">
+
+<!-- 8 Home -->
+<div><div class="phone"><div class="screen bg-[#FAFAFA]">
+<div class="statusbar bg-white"><span>9:41</span><span class="flex gap-1 items-center"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+<div class="px-4 pt-1 flex items-center justify-between bg-white pb-2"><span class="font-extrabold text-[15px]">Sport<span style="color:#FFC400">X</span></span><span class="flex gap-2"><i data-lucide="search" class="w-[18px] h-[18px]"></i><span class="relative"><i data-lucide="bell" class="w-[18px] h-[18px]"></i><span class="absolute -top-1 -right-1 w-2 h-2 bg-[#DC2626] rounded-full"></span></span></span></div>
+<div class="px-4 flex-1 overflow-hidden">
+<div class="font-extrabold text-[16px] mt-2">Good morning, Akshay!</div>
+<div class="text-[11px] text-[#6B7280]">Keep pushing, keep growing.</div>
+<div class="searchbar mt-2.5 !bg-white"><i data-lucide="search"></i> Search opportunities, people...</div>
+<div class="grid grid-cols-4 gap-2 mt-3 text-center">
+<div class="bg-white rounded-xl py-2 border border-gray-100"><i data-lucide="trophy" class="w-4 h-4 mx-auto text-[#B89000]"></i><div class="text-[9px] font-semibold mt-1">Trials</div></div>
+<div class="bg-white rounded-xl py-2 border border-gray-100"><i data-lucide="medal" class="w-4 h-4 mx-auto text-[#B89000]"></i><div class="text-[9px] font-semibold mt-1">Tournaments</div></div>
+<div class="bg-white rounded-xl py-2 border border-gray-100"><i data-lucide="graduation-cap" class="w-4 h-4 mx-auto text-[#B89000]"></i><div class="text-[9px] font-semibold mt-1">Scholarships</div></div>
+<div class="bg-white rounded-xl py-2 border border-gray-100"><i data-lucide="briefcase" class="w-4 h-4 mx-auto text-[#B89000]"></i><div class="text-[9px] font-semibold mt-1">Sponsorships</div></div>
+</div>
+<div class="font-bold text-[13px] mt-3">Recommended for you</div>
+<div class="bg-white rounded-2xl border border-gray-100 card-sh p-2.5 mt-2 flex gap-2.5">
+<img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=200&q=60" class="w-[64px] h-[76px] rounded-xl object-cover" alt="">
+<div class="flex-1 min-w-0"><div class="font-bold text-[12px]">Football Trial</div><div class="text-[10.5px] text-gray-500">Gujarat State Selection</div><div class="text-[10px] text-gray-400">Ahmedabad • U21</div><span class="text-[9px] font-bold text-[#DC2626] bg-red-50 px-2 py-0.5 rounded-full">18 days left</span></div>
+<div class="btn-y text-[11px] px-3 self-center py-1.5">Apply</div>
+</div>
+</div>
+<div class="nav5"><span class="navi on"><i data-lucide="home"></i>Home</span><span class="navi"><i data-lucide="compass"></i>Discover</span><span class="fab"><i data-lucide="plus"></i></span><span class="navi"><i data-lucide="users"></i>Network</span><span class="navi"><i data-lucide="user"></i>Me</span></div>
+</div></div><div class="cap">8. Home</div></div>
+
+<!-- 9 Discover -->
+<div><div class="phone"><div class="screen">
+<div class="statusbar"><span>9:41</span><span class="flex gap-1 items-center"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+<div class="px-4 flex-1 overflow-hidden flex flex-col">
+<div class="flex items-center justify-between"><span class="font-extrabold text-[17px]">Discover</span><i data-lucide="bell" class="w-5 h-5"></i></div>
+<div class="flex gap-4 border-b border-gray-100 mt-1"><span class="utab on">People</span><span class="utab text-gray-400">Academies</span><span class="utab text-gray-400">Coaches</span><span class="utab text-gray-400">Opportunities</span></div>
+<div class="searchbar mt-2.5"><i data-lucide="search"></i> Search athletes, coaches...</div>
+<div class="flex gap-1.5 mt-2"><span class="ptab">Sport <i data-lucide="chevron-down" class="w-3 h-3 inline"></i></span><span class="ptab">Location <i data-lucide="chevron-down" class="w-3 h-3 inline"></i></span><span class="ptab">Age</span><span class="ptab">Verified</span></div>
+<div class="space-y-2 mt-2.5">
+<div class="flex items-center gap-2"><img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=60" class="w-10 h-10 rounded-full object-cover" alt=""><div class="flex-1"><div class="font-bold text-[11.5px]">Rahul Verma</div><div class="text-[10px] text-gray-500">Football • Mumbai</div><span class="text-[9px] bg-gray-100 px-1.5 py-0.5 rounded">Intermediate</span></div><span class="btn-y text-[10px] px-2.5 py-1.5">Connect</span></div>
+<div class="flex items-center gap-2"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=60" class="w-10 h-10 rounded-full object-cover" alt=""><div class="flex-1"><div class="font-bold text-[11.5px]">Priya Sharma</div><div class="text-[10px] text-gray-500">Badminton • Delhi</div><span class="text-[9px] bg-gray-100 px-1.5 py-0.5 rounded">Advanced</span></div><span class="btn-y text-[10px] px-2.5 py-1.5">Connect</span></div>
+<div class="flex items-center gap-2"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=60" class="w-10 h-10 rounded-full object-cover" alt=""><div class="flex-1"><div class="font-bold text-[11.5px]">Arjun Mehta</div><div class="text-[10px] text-gray-500">Cricket • Ahmedabad</div><span class="text-[9px] bg-gray-100 px-1.5 py-0.5 rounded">Pro</span></div><span class="btn-y text-[10px] px-2.5 py-1.5">Connect</span></div>
+<div class="flex items-center gap-2"><img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=60" class="w-10 h-10 rounded-full object-cover" alt=""><div class="flex-1"><div class="font-bold text-[11.5px]">Sneha Iyer</div><div class="text-[10px] text-gray-500">Athletics • Chennai</div><span class="text-[9px] bg-gray-100 px-1.5 py-0.5 rounded">U-17</span></div><span class="btn-y text-[10px] px-2.5 py-1.5">Connect</span></div>
+</div>
+</div>
+<div class="nav5"><span class="navi"><i data-lucide="home"></i>Home</span><span class="navi on"><i data-lucide="compass"></i>Discover</span><span class="fab"><i data-lucide="plus"></i></span><span class="navi"><i data-lucide="users"></i>Network</span><span class="navi"><i data-lucide="user"></i>Me</span></div>
+</div></div><div class="cap">9. Discover</div></div>
+
+<!-- 10 Opportunities -->
+<div><div class="phone"><div class="screen">
+<div class="statusbar"><span>9:41</span><span class="flex gap-1 items-center"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+<div class="px-4 flex-1 overflow-hidden">
+<div class="flex items-center justify-between"><span class="font-extrabold text-[17px]">Opportunities</span><i data-lucide="sliders-horizontal" class="w-5 h-5"></i></div>
+<div class="flex gap-1.5 mt-2"><span class="ptab on">All</span><span class="ptab">Trials</span><span class="ptab">Tournaments</span><span class="ptab">Scholarships</span></div>
+<div class="rounded-2xl border border-gray-100 overflow-hidden card-sh mt-2.5">
+<img src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=600&q=60" class="h-[110px] w-full object-cover" alt="">
+<div class="p-2.5"><div class="font-bold text-[12.5px]">Gujarat Football Trials</div><div class="text-[10.5px] text-gray-500">State Team Selection</div>
+<div class="flex gap-1 mt-1.5"><span class="text-[9px] bg-gray-100 px-2 py-0.5 rounded-full">Ahmedabad</span><span class="text-[9px] bg-gray-100 px-2 py-0.5 rounded-full">U17 • U19 • U21</span></div>
+<div class="flex items-center justify-between mt-1.5"><span class="text-[10px] text-gray-500">14 Oct 2025 • 127 applicants</span><span class="btn-y text-[10px] px-3 py-1.5">Apply Now</span></div></div>
+</div>
+<div class="rounded-2xl border border-gray-100 p-2.5 mt-2 flex gap-2 items-center card-sh">
+<img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=200&q=60" class="w-12 h-12 rounded-xl object-cover" alt="">
+<div class="flex-1"><div class="font-bold text-[11px] leading-tight">Reliance Foundation Scholarship</div><div class="text-[10px] text-gray-500">For Young Athletes</div></div>
+<span class="text-[10px] font-bold border border-gray-200 rounded-lg px-3 py-1.5">View</span>
+</div>
+</div>
+<div class="nav5"><span class="navi"><i data-lucide="home"></i>Home</span><span class="navi"><i data-lucide="compass"></i>Discover</span><span class="fab"><i data-lucide="plus"></i></span><span class="navi"><i data-lucide="users"></i>Network</span><span class="navi"><i data-lucide="user"></i>Me</span></div>
+</div></div><div class="cap">10. Opportunities</div></div>
+
+<!-- 11 Create -->
+<div><div class="phone"><div class="screen bg-[#F5F5F5]">
+<div class="statusbar bg-white"><span>9:41</span><span class="flex gap-1 items-center"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+<div class="bg-white rounded-t-3xl mt-6 flex-1 px-4 pt-2 pb-2 flex flex-col">
+<div class="w-10 h-1 bg-gray-200 rounded-full mx-auto"></div>
+<div class="font-extrabold text-[15px] text-center mt-1.5">Create</div>
+<div class="space-y-2 mt-3">
+<div class="flex items-center gap-2.5"><span class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center"><i data-lucide="pen-line" class="w-5 h-5"></i></span><div><div class="font-bold text-[12px]">Create Post</div><div class="text-[10.5px] text-gray-500">Share your journey</div></div></div>
+<div class="flex items-center gap-2.5"><span class="w-10 h-10 rounded-xl bg-yellow-100 text-yellow-700 flex items-center justify-center"><i data-lucide="trophy" class="w-5 h-5"></i></span><div><div class="font-bold text-[12px]">Add Achievement</div><div class="text-[10.5px] text-gray-500">Showcase your success</div></div></div>
+<div class="flex items-center gap-2.5"><span class="w-10 h-10 rounded-xl bg-green-100 text-green-600 flex items-center justify-center"><i data-lucide="image" class="w-5 h-5"></i></span><div><div class="font-bold text-[12px]">Upload Photo/Video</div><div class="text-[10.5px] text-gray-500">Share your highlights</div></div></div>
+<div class="flex items-center gap-2.5"><span class="w-10 h-10 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center"><i data-lucide="briefcase" class="w-5 h-5"></i></span><div><div class="font-bold text-[12px]">Create Opportunity</div><div class="text-[10.5px] text-gray-500">Post a trial, event or scholarship</div></div></div>
+<div class="flex items-center gap-2.5"><span class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center"><i data-lucide="calendar-plus" class="w-5 h-5"></i></span><div><div class="font-bold text-[12px]">Add Event</div><div class="text-[10.5px] text-gray-500">Create or promote an event</div></div></div>
+</div>
+<div class="flex justify-center mt-auto py-2"><span class="w-11 h-11 rounded-full flex items-center justify-center" style="background:#FFC400"><i data-lucide="x" class="w-5 h-5"></i></span></div>
+</div>
+<div class="nav5"><span class="navi"><i data-lucide="home"></i>Home</span><span class="navi"><i data-lucide="compass"></i>Discover</span><span class="fab"><i data-lucide="plus"></i></span><span class="navi"><i data-lucide="users"></i>Network</span><span class="navi"><i data-lucide="user"></i>Me</span></div>
+</div></div><div class="cap">11. Create (+ modal)</div></div>
+
+<!-- 12 Network -->
+<div><div class="phone"><div class="screen">
+<div class="statusbar"><span>9:41</span><span class="flex gap-1 items-center"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+<div class="px-4 flex-1 overflow-hidden flex flex-col">
+<div class="flex items-center justify-between"><span class="font-extrabold text-[17px]">Network</span><i data-lucide="bell" class="w-5 h-5"></i></div>
+<div class="flex gap-5 border-b border-gray-100 mt-1"><span class="utab on">Connections</span><span class="utab text-gray-400">Followers</span><span class="utab text-gray-400">Messages</span></div>
+<div class="font-bold text-[12.5px] mt-2.5">People you may know</div>
+<div class="space-y-2 mt-2">
+<div class="flex items-center gap-2"><img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=100&q=60" class="w-10 h-10 rounded-full object-cover" alt=""><div class="flex-1"><div class="font-bold text-[11.5px]">Coach Vikram Singh</div><div class="text-[10px] text-gray-500">Coach • Ahmedabad</div></div><span class="btn-y text-[10px] px-2.5 py-1.5">Connect</span></div>
+<div class="flex items-center gap-2"><img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=100&q=60" class="w-10 h-10 rounded-full object-cover" alt=""><div class="flex-1"><div class="font-bold text-[11.5px]">Elite Academy</div><div class="text-[10px] text-gray-500">Academy • Baroda</div></div><span class="btn-y text-[10px] px-2.5 py-1.5">Connect</span></div>
+<div class="flex items-center gap-2"><img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=100&q=60" class="w-10 h-10 rounded-full object-cover" alt=""><div class="flex-1"><div class="font-bold text-[11.5px]">Nike Scout Ravi</div><div class="text-[10px] text-gray-500">Scout • Mumbai</div></div><span class="btn-y text-[10px] px-2.5 py-1.5">Connect</span></div>
+<div class="flex items-center gap-2"><img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=100&q=60" class="w-10 h-10 rounded-full object-cover" alt=""><div class="flex-1"><div class="font-bold text-[11.5px]">FitBrand India</div><div class="text-[10px] text-gray-500">Brand • Delhi</div></div><span class="btn-y text-[10px] px-2.5 py-1.5">Connect</span></div>
+</div>
+</div>
+<div class="nav5"><span class="navi"><i data-lucide="home"></i>Home</span><span class="navi"><i data-lucide="compass"></i>Discover</span><span class="fab"><i data-lucide="plus"></i></span><span class="navi on"><i data-lucide="users"></i>Network</span><span class="navi"><i data-lucide="user"></i>Me</span></div>
+</div></div><div class="cap">12. Network</div></div>
+
+<!-- 13 Messages -->
+<div><div class="phone"><div class="screen">
+<div class="statusbar"><span>9:41</span><span class="flex gap-1 items-center"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+<div class="px-4 flex-1 overflow-hidden">
+<div class="flex items-center justify-between"><span class="font-extrabold text-[17px]">Messages</span><i data-lucide="search" class="w-5 h-5"></i></div>
+<div class="searchbar mt-2.5"><i data-lucide="search"></i> Search messages...</div>
+<div class="divide-y divide-gray-50 mt-1">
+<div class="flex items-center gap-2.5 py-2.5"><img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=100&q=60" class="w-11 h-11 rounded-full object-cover" alt=""><div class="flex-1 min-w-0"><div class="font-bold text-[12px]">Coach Vikram</div><div class="text-[11px] text-gray-500 truncate">Great game yesterday! Ready...</div></div><div class="text-right"><div class="text-[9px] text-gray-400">10:30 AM</div><span class="w-2 h-2 rounded-full inline-block mt-1" style="background:#FFC400"></span></div></div>
+<div class="flex items-center gap-2.5 py-2.5"><img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=100&q=60" class="w-11 h-11 rounded-full object-cover" alt=""><div class="flex-1 min-w-0"><div class="font-bold text-[12px]">Elite Academy</div><div class="text-[11px] text-gray-500 truncate">Trial slots confirmed for...</div></div><div class="text-right"><div class="text-[9px] text-gray-400">Yesterday</div><span class="w-2 h-2 rounded-full inline-block mt-1" style="background:#FFC400"></span></div></div>
+<div class="flex items-center gap-2.5 py-2.5"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=60" class="w-11 h-11 rounded-full object-cover" alt=""><div class="flex-1 min-w-0"><div class="font-bold text-[12px]">Priya Sharma</div><div class="text-[11px] text-gray-500 truncate">Thanks for connecting!</div></div><div class="text-right"><div class="text-[9px] text-gray-400">Monday</div></div></div>
+<div class="flex items-center gap-2.5 py-2.5"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=60" class="w-11 h-11 rounded-full object-cover" alt=""><div class="flex-1 min-w-0"><div class="font-bold text-[12px]">Arjun Mehta</div><div class="text-[11px] text-gray-500 truncate">See you at the stadium</div></div><div class="text-right"><div class="text-[9px] text-gray-400">Sunday</div></div></div>
+</div>
+</div>
+<div class="nav5"><span class="navi"><i data-lucide="home"></i>Home</span><span class="navi"><i data-lucide="compass"></i>Discover</span><span class="fab"><i data-lucide="plus"></i></span><span class="navi on"><i data-lucide="users"></i>Network</span><span class="navi"><i data-lucide="user"></i>Me</span></div>
+</div></div><div class="cap">13. Messages</div></div>
+
+<!-- 14 Notifications -->
+<div><div class="phone"><div class="screen">
+<div class="statusbar"><span>9:41</span><span class="flex gap-1 items-center"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+<div class="px-4 flex-1 overflow-hidden">
+<div class="font-extrabold text-[17px]">Notifications</div>
+<div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-2">Today</div>
+<div class="space-y-2.5 mt-1.5">
+<div class="flex gap-2.5"><span class="w-9 h-9 rounded-full bg-yellow-100 flex items-center justify-center flex-shrink-0"><i data-lucide="bell" class="w-4 h-4 text-yellow-700"></i></span><div><div class="text-[11px] leading-snug">Your application for <b>Gujarat Football Trials</b> is under review.</div><div class="text-[10px] text-gray-400">2m ago</div></div></div>
+<div class="flex gap-2.5"><span class="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0"><i data-lucide="check" class="w-4 h-4 text-green-700"></i></span><div><div class="text-[11px] leading-snug"><b>Coach Vikram</b> accepted your connection request.</div><div class="text-[10px] text-gray-400">1h ago</div></div></div>
+<div class="flex gap-2.5"><span class="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0"><i data-lucide="badge-check" class="w-4 h-4 text-green-700"></i></span><div><div class="text-[11px] leading-snug">Your certificate has been <b>verified</b>.</div><div class="text-[10px] text-gray-400">3h ago</div></div></div>
+</div>
+<div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-3">Earlier</div>
+<div class="space-y-2.5 mt-1.5">
+<div class="flex gap-2.5"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=60" class="w-9 h-9 rounded-full object-cover" alt=""><div><div class="text-[11px]"><b>Priya Sharma</b> liked your post.</div><div class="text-[10px] text-gray-400">Yesterday</div></div></div>
+<div class="flex gap-2.5"><img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=100&q=60" class="w-9 h-9 rounded-full object-cover" alt=""><div><div class="text-[11px]"><b>Elite Academy</b> started following you.</div><div class="text-[10px] text-gray-400">2d ago</div></div></div>
+</div>
+</div>
+<div class="nav5"><span class="navi"><i data-lucide="home"></i>Home</span><span class="navi"><i data-lucide="compass"></i>Discover</span><span class="fab"><i data-lucide="plus"></i></span><span class="navi"><i data-lucide="users"></i>Network</span><span class="navi on"><i data-lucide="user"></i>Me</span></div>
+</div></div><div class="cap">14. Notifications</div></div>
+</div>
+
+<!-- ROW 3 -->
+<h2 class="mt-4 mb-1 text-[13px] font-bold tracking-wide uppercase">Profile & Details <span class="text-gray-400 font-medium normal-case">— screens 15–21</span></h2>
+<div class="rowscroll">
+
+<!-- 15 Profile -->
+<div><div class="phone"><div class="screen">
+<div class="statusbar"><span>9:41</span><span class="flex gap-1 items-center"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+<div class="flex-1 overflow-hidden">
+<img src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=600&q=60" class="h-[110px] w-full object-cover" alt="">
+<div class="px-4">
+<img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=60" class="w-16 h-16 rounded-full object-cover border-[3px] border-white -mt-8 relative" alt="">
+<div class="flex items-center gap-1 mt-1"><span class="font-extrabold text-[15px]">Akshay Pandya</span><i data-lucide="badge-check" class="w-4 h-4 text-[#16A34A]"></i></div>
+<div class="text-[11px] text-gray-500">Throwball Athlete</div>
+<div class="text-[10.5px] text-gray-500 flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> Ahmedabad, Gujarat</div>
+<div class="grid grid-cols-3 text-center py-2.5 border-y border-gray-100 mt-2.5"><div><div class="font-extrabold text-[15px]">42</div><div class="text-[10px] text-gray-500">Matches</div></div><div class="border-x border-gray-100"><div class="font-extrabold text-[15px]">186</div><div class="text-[10px] text-gray-500">Points</div></div><div><div class="font-extrabold text-[15px]">8</div><div class="text-[10px] text-gray-500">Awards</div></div></div>
+<div class="flex gap-2 mt-2.5"><span class="flex-1 text-center text-[11px] font-bold border border-gray-200 rounded-xl py-2">Edit Profile</span><span class="flex-1 text-center text-[11px] font-bold border border-gray-200 rounded-xl py-2 flex items-center justify-center gap-1"><i data-lucide="share-2" class="w-3.5 h-3.5"></i> Share</span></div>
+<div class="flex gap-4 border-b border-gray-100 mt-2"><span class="utab on">About</span><span class="utab text-gray-400">Achievements</span><span class="utab text-gray-400">Media</span><span class="utab text-gray-400">Stats</span></div>
+<div class="text-[11px] mt-2 space-y-1.5 pb-2"><div class="flex justify-between"><span class="text-gray-400">Sport</span><b>Throwball</b></div><div class="flex justify-between"><span class="text-gray-400">Category</span><b>U21 • State</b></div><div class="flex justify-between"><span class="text-gray-400">Location</span><b>Ahmedabad</b></div></div>
+</div>
+</div>
+<div class="nav5"><span class="navi"><i data-lucide="home"></i>Home</span><span class="navi"><i data-lucide="compass"></i>Discover</span><span class="fab"><i data-lucide="plus"></i></span><span class="navi"><i data-lucide="users"></i>Network</span><span class="navi on"><i data-lucide="user"></i>Me</span></div>
+</div></div><div class="cap">15. Athlete Profile</div></div>
+
+<!-- 16 Achievements -->
+<div><div class="phone"><div class="screen">
+<div class="statusbar"><span>9:41</span><span class="flex gap-1 items-center"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+<div class="px-4 flex-1 flex flex-col">
+<div class="flex items-center gap-2"><i data-lucide="arrow-left" class="w-5 h-5"></i><span class="font-extrabold text-[16px]">Achievements</span></div>
+<div class="space-y-2 mt-3">
+<div class="border border-gray-100 rounded-2xl p-2.5 flex gap-2.5 items-center card-sh"><span class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center"><i data-lucide="medal" class="w-5 h-5 text-yellow-600"></i></span><div><div class="font-bold text-[12px]">State Championship</div><div class="text-[10.5px] text-gray-500">Gold Medal • 2025 • Gujarat</div></div></div>
+<div class="border border-gray-100 rounded-2xl p-2.5 flex gap-2.5 items-center card-sh"><span class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center"><i data-lucide="medal" class="w-5 h-5 text-gray-500"></i></span><div><div class="font-bold text-[12px]">District Championship</div><div class="text-[10.5px] text-gray-500">Silver Medal • 2024 • Ahmedabad</div></div></div>
+<div class="border border-gray-100 rounded-2xl p-2.5 flex gap-2.5 items-center card-sh"><span class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center"><i data-lucide="medal" class="w-5 h-5 text-orange-700"></i></span><div><div class="font-bold text-[12px]">University Tournament</div><div class="text-[10.5px] text-gray-500">Bronze • 2024 • GTU</div></div></div>
+<div class="border border-gray-100 rounded-2xl p-2.5 flex gap-2.5 items-center card-sh"><span class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center"><i data-lucide="trophy" class="w-5 h-5 text-purple-600"></i></span><div><div class="font-bold text-[12px]">Inter-School Championship</div><div class="text-[10.5px] text-gray-500">Winners • 2023</div></div></div>
+</div>
+<div class="btn-y text-center py-3 mt-auto mb-4">Add Achievement</div>
+</div></div></div><div class="cap">16. Achievements</div></div>
+
+<!-- 17 Certificates -->
+<div><div class="phone"><div class="screen">
+<div class="statusbar"><span>9:41</span><span class="flex gap-1 items-center"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+<div class="px-4 flex-1 flex flex-col">
+<div class="flex items-center gap-2"><i data-lucide="arrow-left" class="w-5 h-5"></i><span class="font-extrabold text-[16px]">Certificates</span></div>
+<div class="space-y-2 mt-3">
+<div class="border border-gray-100 rounded-2xl p-2.5 flex gap-2.5 items-center card-sh"><span class="w-10 h-10 rounded-xl bg-yellow-50 border border-yellow-200 flex items-center justify-center"><i data-lucide="award" class="w-5 h-5 text-yellow-600"></i></span><div class="flex-1"><div class="font-bold text-[11.5px]">State Championship Certificate</div><div class="text-[10.5px] text-gray-500">2025</div></div><span class="text-[9px] font-bold text-[#16A34A] bg-green-50 px-2 py-1 rounded-full flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> Verified</span></div>
+<div class="border border-gray-100 rounded-2xl p-2.5 flex gap-2.5 items-center card-sh"><span class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center"><i data-lucide="award" class="w-5 h-5 text-blue-600"></i></span><div class="flex-1"><div class="font-bold text-[11.5px]">District Championship Certificate</div><div class="text-[10.5px] text-gray-500">2024</div></div><span class="text-[9px] font-bold text-[#16A34A] bg-green-50 px-2 py-1 rounded-full flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> Verified</span></div>
+<div class="border border-gray-100 rounded-2xl p-2.5 flex gap-2.5 items-center card-sh"><span class="w-10 h-10 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center"><i data-lucide="file-text" class="w-5 h-5 text-gray-500"></i></span><div class="flex-1"><div class="font-bold text-[11.5px]">University Participation Certificate</div><div class="text-[10.5px] text-gray-500">2024</div></div><span class="text-[9px] font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">Pending</span></div>
+</div>
+<div class="btn-y text-center py-3 mt-auto mb-4">Add Certificate</div>
+</div></div></div><div class="cap">17. Certificates</div></div>
+
+<!-- 18 Media -->
+<div><div class="phone"><div class="screen">
+<div class="statusbar"><span>9:41</span><span class="flex gap-1 items-center"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+<div class="px-4 flex-1 flex flex-col">
+<div class="flex items-center gap-2"><i data-lucide="arrow-left" class="w-5 h-5"></i><span class="font-extrabold text-[16px]">Media</span></div>
+<div class="flex gap-4 border-b border-gray-100 mt-1"><span class="utab on">Photos</span><span class="utab text-gray-400">Videos</span><span class="utab text-gray-400">Highlights</span></div>
+<div class="grid grid-cols-3 gap-1.5 mt-3">
+<img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=200&q=60" class="aspect-square object-cover rounded-xl" alt="">
+<img src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=200&q=60" class="aspect-square object-cover rounded-xl" alt="">
+<img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=200&q=60" class="aspect-square object-cover rounded-xl" alt="">
+<img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=200&q=60" class="aspect-square object-cover rounded-xl" alt="">
+<img src="https://images.unsplash.com/photo-1553778263-73a83bab9b0c?auto=format&fit=crop&w=200&q=60" class="aspect-square object-cover rounded-xl" alt="">
+<img src="https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=200&q=60" class="aspect-square object-cover rounded-xl" alt="">
+<img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=200&q=60" class="aspect-square object-cover rounded-xl" alt="">
+<img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=200&q=60" class="aspect-square object-cover rounded-xl" alt="">
+<img src="https://images.unsplash.com/photo-1560272564-c83b66b1ad12?auto=format&fit=crop&w=200&q=60" class="aspect-square object-cover rounded-xl" alt="">
+</div>
+<div class="btn-y text-center py-3 mt-auto mb-4">Upload Media</div>
+</div></div></div><div class="cap">18. Media</div></div>
+
+<!-- 19 Opp Details -->
+<div><div class="phone"><div class="screen">
+<div class="statusbar absolute top-0 left-0 right-0 z-10 text-white"><span>9:41</span><span class="flex gap-1 items-center"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+<div class="flex-1 overflow-hidden flex flex-col">
+<div class="relative"><img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=60" class="h-[160px] w-full object-cover" alt=""><span class="absolute top-10 left-3 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center"><i data-lucide="arrow-left" class="w-4 h-4"></i></span></div>
+<div class="px-4 pt-2">
+<div class="font-extrabold text-[15px]">Gujarat Football Trials</div>
+<div class="text-[11px] text-gray-500">State Team Selection</div>
+<div class="grid grid-cols-2 gap-x-3 gap-y-1.5 mt-2.5 text-[10.5px]">
+<div class="flex items-center gap-1.5"><i data-lucide="tag" class="w-3.5 h-3.5 text-gray-400"></i> Type: <b>Trial</b></div>
+<div class="flex items-center gap-1.5"><i data-lucide="users" class="w-3.5 h-3.5 text-gray-400"></i> <b>U17 • U19 • U21</b></div>
+<div class="flex items-center gap-1.5"><i data-lucide="calendar" class="w-3.5 h-3.5 text-gray-400"></i> <b>14 Oct 2025</b></div>
+<div class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-gray-400"></i> <b>Ahmedabad</b></div>
+<div class="flex items-center gap-1.5"><i data-lucide="building-2" class="w-3.5 h-3.5 text-gray-400"></i> <b>GSA</b></div>
+<div class="flex items-center gap-1.5"><i data-lucide="user-check" class="w-3.5 h-3.5 text-gray-400"></i> <b>127 applicants</b></div>
+</div>
+<div class="font-bold text-[12px] mt-2.5">Description</div>
+<p class="text-[10.5px] text-gray-500 leading-relaxed">Open state trials for U17/U19/U21 footballers. Bring kit, ID and certificates. Top performers enter the state camp...</p>
+</div>
+<div class="px-4 mt-auto pb-4"><div class="btn-y text-center py-3">Apply Now</div></div>
+</div></div></div><div class="cap">19. Opportunity Details</div></div>
+
+<!-- 20 App Status -->
+<div><div class="phone"><div class="screen">
+<div class="statusbar"><span>9:41</span><span class="flex gap-1 items-center"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+<div class="px-4 flex-1 flex flex-col">
+<div class="flex items-center gap-2"><i data-lucide="arrow-left" class="w-5 h-5"></i><span class="font-extrabold text-[15px]">Application Status</span></div>
+<div class="mt-4 ml-1">
+<div class="flex gap-3"><div class="flex flex-col items-center"><span class="w-7 h-7 rounded-full bg-[#16A34A] text-white flex items-center justify-center"><i data-lucide="check" class="w-4 h-4"></i></span><span class="w-0.5 flex-1 bg-green-500 min-h-[18px]"></span></div><div class="pb-4"><div class="font-bold text-[12.5px]">Applied</div><div class="text-[10px] text-gray-400">12 Oct 2025</div></div></div>
+<div class="flex gap-3"><div class="flex flex-col items-center"><span class="w-7 h-7 rounded-full flex items-center justify-center" style="background:#FFC400"><i data-lucide="clock" class="w-4 h-4"></i></span><span class="w-0.5 flex-1 bg-gray-200 min-h-[18px]"></span></div><div class="pb-4"><div class="font-bold text-[12.5px]">Under Review</div><div class="text-[10px] text-gray-500">Your application is being reviewed.</div></div></div>
+<div class="flex gap-3"><div class="flex flex-col items-center"><span class="w-7 h-7 rounded-full border-2 border-gray-200 bg-white"></span><span class="w-0.5 flex-1 bg-gray-200 min-h-[18px]"></span></div><div class="pb-4"><div class="font-bold text-[12.5px] text-gray-400">Shortlisted</div><div class="text-[10px] text-gray-400">Upcoming</div></div></div>
+<div class="flex gap-3"><div class="flex flex-col items-center"><span class="w-7 h-7 rounded-full border-2 border-gray-200 bg-white"></span><span class="w-0.5 flex-1 bg-gray-200 min-h-[18px]"></span></div><div class="pb-4"><div class="font-bold text-[12.5px] text-gray-400">Final Selection</div><div class="text-[10px] text-gray-400">Upcoming</div></div></div>
+<div class="flex gap-3"><div class="flex flex-col items-center"><span class="w-7 h-7 rounded-full border-2 border-gray-200 bg-white"></span></div><div><div class="font-bold text-[12.5px] text-gray-400">Result</div><div class="text-[10px] text-gray-400">Upcoming</div></div></div>
+</div>
+<div class="bg-[#F5F5F5] rounded-xl text-[11px] text-gray-500 text-center py-3 px-3 mt-auto mb-4">We'll notify you once there's an update.</div>
+</div></div></div><div class="cap">20. Application Status</div></div>
+
+<!-- 21 Settings -->
+<div><div class="phone"><div class="screen">
+<div class="statusbar"><span>9:41</span><span class="flex gap-1 items-center"><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></span></div>
+<div class="px-4 flex-1 flex flex-col">
+<div class="font-extrabold text-[17px]">Settings</div>
+<div class="mt-2 divide-y divide-gray-100 text-[13px] font-medium">
+<div class="flex items-center gap-2.5 py-3"><i data-lucide="user-cog" class="w-[18px] h-[18px] text-gray-500"></i> Account <i data-lucide="chevron-right" class="w-4 h-4 ml-auto text-gray-300"></i></div>
+<div class="flex items-center gap-2.5 py-3"><i data-lucide="shield" class="w-[18px] h-[18px] text-gray-500"></i> Privacy <i data-lucide="chevron-right" class="w-4 h-4 ml-auto text-gray-300"></i></div>
+<div class="flex items-center gap-2.5 py-3"><i data-lucide="bell" class="w-[18px] h-[18px] text-gray-500"></i> Notifications <i data-lucide="chevron-right" class="w-4 h-4 ml-auto text-gray-300"></i></div>
+<div class="flex items-center gap-2.5 py-3"><i data-lucide="lock" class="w-[18px] h-[18px] text-gray-500"></i> Security <i data-lucide="chevron-right" class="w-4 h-4 ml-auto text-gray-300"></i></div>
+<div class="flex items-center gap-2.5 py-3"><i data-lucide="life-buoy" class="w-[18px] h-[18px] text-gray-500"></i> Help & Support <i data-lucide="chevron-right" class="w-4 h-4 ml-auto text-gray-300"></i></div>
+<div class="flex items-center gap-2.5 py-3"><i data-lucide="file-text" class="w-[18px] h-[18px] text-gray-500"></i> Terms & Policies <i data-lucide="chevron-right" class="w-4 h-4 ml-auto text-gray-300"></i></div>
+</div>
+<div class="text-center font-bold text-[13px] text-[#DC2626] bg-red-50 border border-red-200 rounded-xl py-3 mt-6 flex items-center justify-center gap-2"><i data-lucide="log-out" class="w-4 h-4"></i> Logout</div>
+</div>
+<div class="nav5"><span class="navi"><i data-lucide="home"></i>Home</span><span class="navi"><i data-lucide="compass"></i>Discover</span><span class="fab"><i data-lucide="plus"></i></span><span class="navi"><i data-lucide="users"></i>Network</span><span class="navi on"><i data-lucide="user"></i>Me</span></div>
+</div></div><div class="cap">21. Settings</div></div>
+
+</div>
+</main>
+<script>lucide.createIcons();</script>
+</body>
+</html>

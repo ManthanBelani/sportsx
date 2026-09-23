@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="assets/images/logo.png" type="image/png"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SportX v2 — Role-wise Design Showcase · 125 screens</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -190,12 +190,12 @@
       .hero h1{font-size:32px;letter-spacing:-1.2px}
       .roles-overview{grid-template-columns:1fr 1fr;gap:10px}
     }
-  </style>
+  .brand img{width:32px;height:32px;border-radius:50%;object-fit:cover;background:#fff;border:1px solid var(--border);flex-shrink:0}.brand:has(img)::before{display:none}.brand-mark img{width:100%;height:100%;object-fit:cover;border-radius:inherit}.auth-logo{width:88px;height:88px;border-radius:50%;object-fit:cover;background:#fff;border:3px solid #fff;box-shadow:0 12px 28px -8px rgba(16,18,21,.35);display:block}.splash-logo{width:140px;height:140px;border-radius:50%;object-fit:cover;background:#fff;box-shadow:0 0 0 6px rgba(255,193,7,.35),0 20px 60px -10px rgba(255,193,7,.5)}</style>
 </head>
 <body>
   <nav class="top-nav">
     <div class="top-nav-inner">
-      <a href="#top" class="brand"><span class="brand-mark">S</span> Sport<em style="font-style:normal;background:var(--accent);padding:0 6px;border-radius:6px;color:#111">X</em> v2</a>
+      <a href="#top" class="brand"><span class="brand-mark"><img src="assets/images/logo.png" alt="SportX logo" style="width:100%;height:100%;object-fit:cover;border-radius:8px;display:block"></span> Sport<em style="font-style:normal;background:var(--accent);padding:0 6px;border-radius:6px;color:#111">X</em> v2</a>
       <div class="nav-groups">
         <div class="nav-group" data-dropdown="sections">
           <button class="nav-trigger" type="button"><i data-lucide="list"></i> Sections <i class="chev" data-lucide="chevron-down"></i></button>
@@ -238,7 +238,7 @@
 
   <div class="nav-mobile" id="mobileMenu">
     <div class="nav-mobile-head">
-      <a href="#top" class="brand"><span class="brand-mark">S</span> SportX v2</a>
+      <a href="#top" class="brand"><span class="brand-mark"><img src="assets/images/logo.png" alt="SportX logo" style="width:100%;height:100%;object-fit:cover;border-radius:8px;display:block"></span> SportX v2</a>
       <button class="nav-mobile-close" id="mobileMenuClose" aria-label="Close"><i data-lucide="x"></i></button>
     </div>
     <div class="nav-mobile-section"><div class="nav-mobile-label">Showcase</div><a class="nav-mobile-link active" href="index.html"><i data-lucide="layout-grid" style="width:18px;height:18px"></i> Showcase</a><a class="nav-mobile-link" href="home.html"><i data-lucide="smartphone" style="width:18px;height:18px"></i> App Preview (Home)</a><a class="nav-mobile-link" href="index.original.html"><i data-lucide="layers" style="width:18px;height:18px"></i> Flat index</a></div>
@@ -360,7 +360,7 @@
   <footer>
     <div class="footer-inner">
       <div class="footer-grid">
-        <div><div class="footer-brand"><span class="brand-mark" style="background:var(--accent);color:#111">S</span> SportX v2</div><p class="footer-desc">India's sports network — v2 refined. Yellow CTA, Sora + Inter, 430px phone frame, 125 screens across 9 workspaces. Role-wise, mobile-first, production-ready.</p></div>
+        <div><div class="footer-brand"><span class="brand-mark" style="background:#fff;padding:2px"><img src="assets/images/logo.png" alt="SportX logo" style="width:28px;height:28px;object-fit:cover;border-radius:50%;display:block"></span> SportX v2</div><p class="footer-desc">India's sports network — v2 refined. Yellow CTA, Sora + Inter, 430px phone frame, 125 screens across 9 workspaces. Role-wise, mobile-first, production-ready.</p></div>
         <div class="footer-col"><h5>Explore</h5><ul><li><a href="#overview">Overview</a></li><li><a href="#design-system">Design system</a></li><li><a href="#flows">Flows</a></li><li><a href="#screens">All screens</a></li></ul></div>
         <div class="footer-col"><h5>Roles A–O</h5><ul><li><a href="#role-auth">Auth</a></li><li><a href="#role-athlete">Athlete</a></li><li><a href="#role-coach">Coach</a></li><li><a href="#role-academy">Academy</a></li><li><a href="#role-organizer">Organizer</a></li></ul></div>
         <div class="footer-col"><h5>Roles S–Shared</h5><ul><li><a href="#role-scout">Scout</a></li><li><a href="#role-sponsor">Sponsor</a></li><li><a href="#role-admin">Admin</a></li><li><a href="#role-shared">Shared</a></li><li><a href="index.original.html">Flat index</a></li></ul></div>

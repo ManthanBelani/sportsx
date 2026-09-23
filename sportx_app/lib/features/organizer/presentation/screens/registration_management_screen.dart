@@ -324,7 +324,7 @@ class _RegistrationCard extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(color: isPaid ? const Color(0xFFd1fae5) : const Color(0xFFfef3c7), borderRadius: BorderRadius.circular(4)),
-              child: Text(isPaid ? 'Paid $feeLabel' : 'Pending', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isPaid ? const Color(0xFF065f46) : const Color(0xFF92400e))),
+              child: Text(isPaid ? 'Paid $feeLabel' : 'Fee Pending', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isPaid ? const Color(0xFF065f46) : const Color(0xFF92400e))),
             ),
           ]),
           if (rejectionReason != null && rejectionReason.isNotEmpty) ...[
