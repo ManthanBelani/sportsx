@@ -9,6 +9,7 @@ import 'package:sportx_app/features/settings/presentation/providers/settings_pro
 import 'package:sportx_app/features/talent_scout/presentation/providers/talent_scout_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/presentation/widgets/social_links.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
@@ -152,15 +153,9 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
     final meta = ref.watch(metaProvider);
     final user = ref.watch(authProvider).user;
     if (_loading) {
-      return Scaffold(
+      return const Scaffold(
         backgroundColor: AppColors.surface,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.white,
-          elevation: 0,
-          automaticallyImplyLeading: false,
-        ),
-        body: const SingleChildScrollView(
+        body: SingleChildScrollView(
           physics: AlwaysScrollableScrollPhysics(),
           child: CoachProfileViewSkeleton(),
         ),
@@ -169,28 +164,14 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
     if (_loadError != null) {
       return Scaffold(
         backgroundColor: AppColors.surface,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.white,
-          elevation: 0,
-          automaticallyImplyLeading: false,
-          title: Text('Scout Profile',
-            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
-          bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(1),
-              child: Container(height: 1, color: AppColors.border)),
-        ),
+        appBar: const SportXTopBar(title: 'Scout Profile'),
         body: Center(
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
             const Icon(LucideIcons.alertCircle, size: 48, color: AppColors.border),
             const SizedBox(height: 16),
             Text(_loadError!, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary), textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            FilledButton(
-              onPressed: _load,
-              style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink),
-              child: Text('Retry'),
-            ),
+            PrimaryButton(label: 'Retry', icon: LucideIcons.refreshCw, onPressed: _load),
           ]),
         ),
       );
@@ -212,37 +193,44 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: Text('Scout Profile',
-            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
-        centerTitle: false,
-        bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(1),
-            child: Container(height: 1, color: AppColors.border)),
+      appBar: SportXTopBar(
+        titleWidget: Row(
+          children: [
+            Text('Scout Profile',
+                style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.scout.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: const Text('Scout',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.scout)),
+            ),
+          ],
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: _load,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildProfileHeader(user, cityName),
-              _buildSectionDivider(),
+              const SizedBox(height: 12),
               _buildCompletenessSection(completeness),
-              _buildSectionDivider(),
+              const SizedBox(height: 12),
               _buildAtAGlanceSection(sportNames, hasAtAGlance),
-              _buildSectionDivider(),
+              const SizedBox(height: 12),
               _buildListingStatusSection(),
-              _buildSectionDivider(),
+              const SizedBox(height: 12),
               _buildSocialLinksSection(),
-              _buildSectionDivider(),
+              const SizedBox(height: 12),
               _buildEditFormSection(meta),
-              _buildSectionDivider(),
+              const SizedBox(height: 12),
               _buildAccountActions(),
             ],
           ),
@@ -253,13 +241,16 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
 
   // ── sections ──
 
-  Widget _buildSectionDivider() => Container(height: 8, color: AppColors.surface);
-
   Widget _buildProfileHeader(dynamic user, String? cityName) {
     return Container(
       width: double.infinity,
-      color: AppColors.surface,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: SportXShadows.e1,
+      ),
       child: Column(
         children: [
           GestureDetector(

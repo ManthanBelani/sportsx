@@ -6,6 +6,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/shared/providers/enquiry_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class EnquiryInboxScreen extends ConsumerStatefulWidget {
   const EnquiryInboxScreen({super.key});
@@ -61,18 +62,12 @@ class _EnquiryInboxScreenState extends ConsumerState<EnquiryInboxScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
-          onPressed: () => context.canPop() ? context.pop() : context.go('/academy-dashboard'),
-        ),
-        title: Text('Enquiry Inbox',
-            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
-      ),
+      appBar: SportXTopBar(
+        title: 'Enquiry Inbox',
+        showBack: true,
+        onBack: () =>
+            context.canPop() ? context.pop() : context.go('/academy-dashboard'),
+      ) as PreferredSizeWidget,
       body: Column(
         children: [
           Padding(
