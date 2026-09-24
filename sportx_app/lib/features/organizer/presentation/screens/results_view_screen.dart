@@ -35,7 +35,7 @@ class ResultsViewScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         scrolledUnderElevation: 0,
         elevation: 0,
         title: Text('$title — Results',

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
@@ -135,8 +136,8 @@ class _TrialPostingScreenState extends ConsumerState<TrialPostingScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.surface,
         elevation: 0,
-        title: const Text('Post a New Trial',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Post a New Trial',
+            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
           onPressed: () => context.pop(),
@@ -292,9 +293,10 @@ class _TrialPostingScreenState extends ConsumerState<TrialPostingScreen> {
                         foregroundColor: AppColors.primary,
                         side: const BorderSide(color: AppColors.primary),
                         minimumSize: const Size.fromHeight(48),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       ),
-                      child: const Text('Save as Draft',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                      child: Text('Save as Draft',
+                          style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -305,14 +307,15 @@ class _TrialPostingScreenState extends ConsumerState<TrialPostingScreen> {
                         backgroundColor: AppColors.yellow,
                         foregroundColor: AppColors.ink,
                         minimumSize: const Size.fromHeight(48),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       ),
                       child: _saving
                           ? const SizedBox(
                               height: 20,
                               width: 20,
                               child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : const Text('Publish Trial',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                          : Text('Publish Trial',
+                              style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700)),
                     ),
                   ),
                 ],

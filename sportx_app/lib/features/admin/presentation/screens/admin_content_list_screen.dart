@@ -69,7 +69,7 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
             child: state.isLoading && items.isEmpty
                 ? const GenericListSkeleton()
                 : items.isEmpty
-                    ? const Center(child: Text('No items', style: TextStyle(color: AppColors.textSecondary)))
+                    ? Center(child: Text('No items', style: GoogleFonts.inter(color: AppColors.textSecondary)))
                     : ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         itemCount: items.length,

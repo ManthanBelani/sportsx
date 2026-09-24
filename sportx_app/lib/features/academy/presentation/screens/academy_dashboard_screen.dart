@@ -203,10 +203,9 @@ class _AcademyDashboardScreenState extends ConsumerState<AcademyDashboardScreen>
                 SectionHeader(
                     title: 'My Trials', actionText: 'View All', onActionTap: () => context.push('/my-trials')),
                 if (trials.isEmpty)
-                  const Padding(
+                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text('No trials yet. Tap “Post Trial” to create one.',
-                        style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                    child: Text('No trials yet. Tap “Post Trial” to create one.', style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary)),
                   )
                 else
                   ...trials.take(3).map((t) {

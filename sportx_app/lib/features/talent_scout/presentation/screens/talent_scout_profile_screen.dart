@@ -261,7 +261,7 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
                 height: 96,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: LinearGradient(colors: [AppColors.primary, AppColors.scout], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                  gradient: LinearGradient(colors: [AppColors.scout, AppColors.scout], begin: Alignment.topLeft, end: Alignment.bottomRight),
                 ),
                 child: ClipOval(
                     child: _photoUrl != null
@@ -277,7 +277,7 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
               ),
               Container(
                 padding: const EdgeInsets.all(6),
-                decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                decoration: const BoxDecoration(color: AppColors.scout, shape: BoxShape.circle),
                 child: const Icon(LucideIcons.camera, size: 14, color: Colors.white),
               ),
             ]),
@@ -314,23 +314,29 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
   Widget _buildCompletenessSection(double completeness) {
     return Container(
       width: double.infinity,
-      color: AppColors.surface,
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: SportXShadows.e1,
+      ),
       padding: const EdgeInsets.all(20),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           const Text('Profile completeness',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
           Text('${(completeness * 100).toInt()}%',
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary)),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.scout)),
         ]),
         const SizedBox(height: 12),
         ClipRRect(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(999),
           child: LinearProgressIndicator(
               value: completeness,
               minHeight: 6,
               backgroundColor: AppColors.border,
-              valueColor: const AlwaysStoppedAnimation(AppColors.primary)),
+              valueColor: const AlwaysStoppedAnimation(AppColors.scout)),
         ),
         if (completeness < 1) ...[
           const SizedBox(height: 10),
@@ -346,7 +352,13 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
   Widget _buildAtAGlanceSection(List<String> sportNames, bool hasAtAGlance) {
     return Container(
       width: double.infinity,
-      color: AppColors.surface,
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: SportXShadows.e1,
+      ),
       padding: const EdgeInsets.all(20),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const Text('At a glance',
@@ -356,7 +368,7 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(16), boxShadow: SportXShadows.e1),
             child: const Row(children: [
               Icon(LucideIcons.info, size: 18, color: AppColors.textSecondary),
               SizedBox(width: 10),
@@ -375,11 +387,11 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
                   .map((s) => Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.08),
+                            color: AppColors.scout.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: AppColors.primary.withValues(alpha: 0.15))),
+                            border: Border.all(color: AppColors.scout.withValues(alpha: 0.15))),
                         child: Text(s,
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.scout)),
                       ))
                   .toList(),
             ),
@@ -396,14 +408,20 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
   Widget _buildListingStatusSection() {
     return Container(
       width: double.infinity,
-      color: AppColors.surface,
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: SportXShadows.e1,
+      ),
       padding: const EdgeInsets.all(20),
       child: Row(children: [
         Container(
           width: 36,
           height: 36,
-          decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
-          child: Icon(_listingStatus ? LucideIcons.eye : LucideIcons.eyeOff, size: 18, color: AppColors.primary),
+          decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(16), boxShadow: SportXShadows.e1),
+          child: Icon(_listingStatus ? LucideIcons.eye : LucideIcons.eyeOff, size: 18, color: AppColors.scout),
         ),
         const SizedBox(width: 12),
         const Expanded(
@@ -414,7 +432,7 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
           ]),
         ),
         Switch(value: _listingStatus,
-          activeThumbColor: AppColors.primary,
+          activeThumbColor: AppColors.scout,
           onChanged: (v) => setState(() => _listingStatus = v),
         ),
       ]),
@@ -425,7 +443,13 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
     final links = ref.watch(talentScoutProvider).profile?.socialLinks ?? const <String, String>{};
     return Container(
       width: double.infinity,
-      color: AppColors.surface,
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: SportXShadows.e1,
+      ),
       padding: const EdgeInsets.all(20),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
@@ -437,7 +461,7 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
               _load();
             },
             child: Text(links.isEmpty ? 'Add' : 'Edit',
-                style: const TextStyle(fontSize: 13, color: AppColors.primary)),
+                style: const TextStyle(fontSize: 13, color: AppColors.scout)),
           ),
         ]),
         const SizedBox(height: 12),
@@ -453,7 +477,13 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
   Widget _buildEditFormSection(dynamic meta) {
     return Container(
       width: double.infinity,
-      color: AppColors.surface,
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: SportXShadows.e1,
+      ),
       padding: const EdgeInsets.all(20),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const Text('Edit details',
@@ -505,10 +535,10 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
                     _sports.remove(s.id);
                   }
                 }),
-                selectedColor: AppColors.primary.withValues(alpha: 0.15),
-                checkmarkColor: AppColors.primary,
+                selectedColor: AppColors.scout.withValues(alpha: 0.15),
+                checkmarkColor: AppColors.scout,
                 labelStyle: TextStyle(
-                    color: sel ? AppColors.primary : AppColors.textSecondary,
+                    color: sel ? AppColors.scout : AppColors.textSecondary,
                     fontWeight: sel ? FontWeight.w600 : FontWeight.normal),
               );
             }).toList(),
@@ -542,7 +572,13 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
   Widget _buildAccountActions() {
     return Container(
       width: double.infinity,
-      color: AppColors.surface,
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: SportXShadows.e1,
+      ),
       padding: const EdgeInsets.all(20),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         const Text('Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
@@ -557,7 +593,7 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
             foregroundColor: Colors.red,
             side: const BorderSide(color: Colors.red),
             minimumSize: const Size.fromHeight(48),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           ),
           icon: const Icon(LucideIcons.logOut, size: 18),
           label: const Text('Log out', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
@@ -569,7 +605,7 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
             foregroundColor: Colors.red,
             side: const BorderSide(color: Colors.red),
             minimumSize: const Size.fromHeight(48),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           ),
           icon: const Icon(LucideIcons.trash2, size: 18),
           label: const Text('Delete Account', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
@@ -581,15 +617,15 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
   Widget _accountTile(IconData icon, String title, String subtitle, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
         padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+        decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(16), boxShadow: SportXShadows.e1),
         child: Row(children: [
           Container(
             width: 36,
             height: 36,
-            decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(16), boxShadow: SportXShadows.e1),
             child: Icon(icon, size: 18, color: AppColors.textPrimary),
           ),
           const SizedBox(width: 12),
@@ -635,7 +671,7 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-          color: AppColors.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
+          color: AppColors.surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border)),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         Icon(icon, size: 11, color: AppColors.textSecondary),
         const SizedBox(width: 4),
@@ -648,7 +684,7 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Icon(icon, size: 15, color: AppColors.primary),
+        Icon(icon, size: 15, color: AppColors.scout),
         const SizedBox(width: 10),
         SizedBox(width: 100, child: Text(label, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary))),
         Expanded(child: Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary))),

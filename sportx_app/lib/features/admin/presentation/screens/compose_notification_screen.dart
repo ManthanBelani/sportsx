@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -126,7 +127,7 @@ class _ComposeNotificationScreenState
             const SizedBox(height: 12),
             Text(
               '${_titleController.text.length}/100 characters',
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 color: _titleController.text.length > 100
                     ? AppColors.error
                     : AppColors.textSecondary,
@@ -191,10 +192,10 @@ class _ComposeNotificationScreenState
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
-              child: OutlinedButton.icon(
+              child: SecondaryButton(
+                label: 'Advanced Targeting',
+                icon: LucideIcons.slidersHorizontal,
                 onPressed: () => context.push('/admin/notifications/targeting'),
-                icon: const Icon(LucideIcons.slidersHorizontal),
-                label: const Text('Advanced Targeting'),
               ),
             ),
           ],
@@ -215,7 +216,7 @@ class _ComposeNotificationScreenState
       value: value,
       title: Row(
         children: [
-          Icon(icon, color: isSelected ? AppColors.primary : AppColors.textSecondary),
+          Icon(icon, color: isSelected ? AppColors.yellowDeep : AppColors.textSecondary),
           const SizedBox(width: 12),
           Text(title),
         ],
@@ -243,7 +244,7 @@ class _ComposeNotificationScreenState
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.border),
               ),
               child: Column(
@@ -255,8 +256,8 @@ class _ComposeNotificationScreenState
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(8),
+                          color: AppColors.yellowDeep,
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(
                           LucideIcons.trophy,
@@ -273,11 +274,11 @@ class _ComposeNotificationScreenState
                               _titleController.text.isEmpty
                                   ? 'Notification Title'
                                   : _titleController.text,
-                              style: const TextStyle(fontWeight: FontWeight.w600),
+                              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                             ),
                             Text(
                               'SportX India',
-                              style: TextStyle(
+                              style: GoogleFonts.inter(
                                 color: AppColors.textSecondary,
                                 fontSize: 12,
                               ),
@@ -287,7 +288,7 @@ class _ComposeNotificationScreenState
                       ),
                       Text(
                         'now',
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           color: AppColors.textSecondary,
                           fontSize: 12,
                         ),
@@ -299,7 +300,7 @@ class _ComposeNotificationScreenState
                     _bodyController.text.isEmpty
                         ? 'Notification body text will appear here...'
                         : _bodyController.text,
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       color: _bodyController.text.isEmpty
                           ? AppColors.textTertiary
                           : AppColors.textPrimary,

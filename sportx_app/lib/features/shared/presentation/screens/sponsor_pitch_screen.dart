@@ -74,7 +74,7 @@ class _SponsorPitchScreenState extends ConsumerState<SponsorPitchScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
                 children: [
@@ -87,7 +87,7 @@ class _SponsorPitchScreenState extends ConsumerState<SponsorPitchScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            Text('Why are you a good fit?', style: Theme.of(context).textTheme.titleMedium),
+            Text('Why are you a good fit?', style: GoogleFonts.sora(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
             const SizedBox(height: 12),
             TextField(
               controller: _pitchController,

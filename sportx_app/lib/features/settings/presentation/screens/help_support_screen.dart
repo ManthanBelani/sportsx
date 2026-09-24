@@ -46,7 +46,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withValues(alpha: 0.88),
         surfaceTintColor: Colors.white,
         elevation: 0,
         leadingWidth: 60,
@@ -68,7 +68,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
           ),
         ),
         title: Text('Help & Support',
-            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
+            style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
         centerTitle: false,
       ),
       body: SingleChildScrollView(

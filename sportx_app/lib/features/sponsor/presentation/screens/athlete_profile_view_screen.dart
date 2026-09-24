@@ -6,6 +6,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/sponsor/presentation/providers/sponsor_provider.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
@@ -48,9 +49,10 @@ class AthleteProfileViewScreen extends ConsumerWidget {
             children: [
               Text(ApiException.messageFor(e), style: const TextStyle(color: AppColors.textSecondary)),
               const SizedBox(height: 12),
-              ElevatedButton(
+              PrimaryButton(
+                label: 'Retry',
+                icon: LucideIcons.refreshCw,
                 onPressed: () => ref.invalidate(athleteDetailProvider(athleteId)),
-                child: const Text('Retry'),
               ),
             ],
           ),
@@ -63,7 +65,23 @@ class AthleteProfileViewScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                const CircleAvatar(radius: 50, backgroundColor: AppColors.primary, child: Icon(LucideIcons.user, size: 50, color: Colors.white)),
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFFFFE9A8), Color(0xFFFFC107), Color(0xFFF5B400)],
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: const CircleAvatar(
+                      radius: 46,
+                      backgroundColor: AppColors.yellowTint,
+                      child: Icon(LucideIcons.user, size: 46, color: AppColors.ink)),
+                ),
                 const SizedBox(height: 12),
                 Text(name, style: Theme.of(context).textTheme.headlineSmall),
                 const SizedBox(height: 4),
@@ -100,7 +118,7 @@ class AthleteProfileViewScreen extends ConsumerWidget {
                             margin: const EdgeInsets.only(right: 8),
                             decoration: BoxDecoration(
                               color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               border: Border.all(color: AppColors.border),
                             ),
                             child: const Icon(LucideIcons.image, color: AppColors.textSecondary),
@@ -111,7 +129,9 @@ class AthleteProfileViewScreen extends ConsumerWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: FilledButton.icon(
+                      child: PrimaryButton(
+                        label: 'Shortlist',
+                        icon: LucideIcons.star,
                         onPressed: () async {
                           final ok = await ref.read(shortlistProvider.notifier).add(athleteId);
                           if (context.mounted) {
@@ -122,9 +142,6 @@ class AthleteProfileViewScreen extends ConsumerWidget {
 }
                           }
                         },
-                        style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink),
-                        icon: const Icon(LucideIcons.star),
-                        label: const Text('Shortlist'),
                       ),
                     ),
                   ],

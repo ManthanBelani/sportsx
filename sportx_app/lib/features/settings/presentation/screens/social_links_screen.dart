@@ -8,6 +8,7 @@ import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/social_links.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 /// Universal Social Links editor — available to every role
@@ -98,7 +99,7 @@ class _SocialLinksScreenState extends ConsumerState<SocialLinksScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withValues(alpha: 0.88),
         surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(
@@ -106,7 +107,7 @@ class _SocialLinksScreenState extends ConsumerState<SocialLinksScreen> {
           onPressed: () => context.pop(),
         ),
         title: Text('Social Links',
-            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
+            style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
         bottom: PreferredSize(
             preferredSize: const Size.fromHeight(1),
             child: Container(height: 1, color: AppColors.border)),
@@ -122,10 +123,7 @@ class _SocialLinksScreenState extends ConsumerState<SocialLinksScreen> {
                       const SizedBox(height: 12),
                       Text(_error!, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary), textAlign: TextAlign.center),
                       const SizedBox(height: 12),
-                      FilledButton(
-                          onPressed: _load,
-                          style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink),
-                          child: const Text('Retry')),
+                      PrimaryButton(label: 'Retry', onPressed: _load),
                     ]),
                   ),
                 )

@@ -66,7 +66,7 @@ class AdminStatCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -75,32 +75,41 @@ class AdminStatCard extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(9),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(icon, color: color, size: 20),
+                  child: Icon(icon, color: color, size: 18),
                 ),
                 const Spacer(),
                 if (onTap != null)
                   const Icon(LucideIcons.chevronRight, color: AppColors.textTertiary),
               ],
             ),
-            const SizedBox(height: 12),
-            Text(
-              value,
-              style: GoogleFonts.sora(
-                  fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.ink),
+            const SizedBox(height: 10),
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  value,
+                  style: GoogleFonts.sora(
+                      fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.ink),
+                ),
+              ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
             Text(
               title,
-              style: GoogleFonts.inter(fontSize: 12.5, color: AppColors.textSecondary),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -305,7 +314,7 @@ class AdminReportCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   contentType.toUpperCase(),
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     color: AppColors.textSecondary,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -355,7 +364,7 @@ class AdminReportCard extends StatelessWidget {
               children: [
                 Text(
                   'Reason: $reason',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     color: AppColors.textSecondary,
                     fontSize: 12,
                   ),
@@ -415,7 +424,7 @@ class AdminOpportunityCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -438,7 +447,7 @@ class AdminOpportunityCard extends StatelessWidget {
                       children: [
                         Text(
                           sponsorName,
-                          style: const TextStyle(fontWeight: FontWeight.w600),
+                          style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                         ),
                         Text(
                           time,
@@ -460,7 +469,7 @@ class AdminOpportunityCard extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 title,
-                style: const TextStyle(
+                style: GoogleFonts.inter(
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
                 ),
@@ -471,11 +480,11 @@ class AdminOpportunityCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.ctaLight,
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     budget!,
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       color: AppColors.ctaDark,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -492,20 +501,16 @@ class AdminOpportunityCard extends StatelessWidget {
                         onPressed: onReject,
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.error,
+                          side: const BorderSide(color: Color(0x40EF4444)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
                         ),
                         child: const Text('Reject'),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: ElevatedButton(
-                        onPressed: onApprove,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.cta,
-                          foregroundColor: AppColors.ink,
-                        ),
-                        child: const Text('Approve'),
-                      ),
+                      child: PrimaryButton(label: 'Approve', onPressed: onApprove),
                     ),
                   ],
                 ),

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/features/coach/presentation/providers/coach_provider.dart';
 import 'package:sportx_app/shared/models/coach.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/presentation/widgets/social_links.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class CoachProfileViewScreen extends ConsumerWidget {
@@ -28,7 +30,7 @@ class CoachProfileViewScreen extends ConsumerWidget {
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           const Icon(LucideIcons.userX, size: 48, color: AppColors.textSecondary),
           const SizedBox(height: 12),
-          const Text('Profile not found', style: TextStyle(color: AppColors.textSecondary)),
+          Text('Profile not found', style: GoogleFonts.inter(color: AppColors.textSecondary)),
           const SizedBox(height: 12),
           FilledButton(
             onPressed: () => ref.read(coachProvider.notifier).loadCoachProfile(),
@@ -88,7 +90,7 @@ class CoachProfileViewScreen extends ConsumerWidget {
           icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
           onPressed: () => context.pop(),
         ),
-        title: const Text('My Profile', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('My Profile', style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         centerTitle: false,
         actions: [
           IconButton(
@@ -103,22 +105,22 @@ class CoachProfileViewScreen extends ConsumerWidget {
 
   Widget _buildTabAppBar(BuildContext context) {
     return Container(
-      color: AppColors.background,
+      color: AppColors.surface,
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text('My Profile', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+          Text('My Profile', style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
           FilledButton.icon(
             onPressed: () => context.push('/coach-profile-edit'),
             icon: const Icon(LucideIcons.edit2, size: 16),
-            label: const Text('Edit Profile'),
+            label: Text('Edit Profile', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700)),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.yellow,
               foregroundColor: AppColors.ink,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              textStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
           ),
         ],
@@ -135,6 +137,7 @@ class CoachProfileViewScreen extends ConsumerWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
+        boxShadow: SportXShadows.e1,
       ),
       child: Row(
         children: [
@@ -151,10 +154,10 @@ class CoachProfileViewScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(profile.fullName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                Text(profile.fullName, style: GoogleFonts.sora(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.ink)),
                 if (profile.headline?.trim().isNotEmpty == true) ...[
                   const SizedBox(height: 4),
-                  Text(profile.headline!, style: const TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w500)),
+                  Text(profile.headline!, style: GoogleFonts.inter(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w500)),
                 ],
                 const SizedBox(height: 6),
                 Row(
@@ -230,7 +233,7 @@ class CoachProfileViewScreen extends ConsumerWidget {
             style: const TextStyle(fontSize: 13, color: AppColors.primary)),
       ),
       child: profile.socialLinks.isEmpty
-          ? const Text('No social links yet.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary))
+          ? Text('No social links yet.', style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary))
           : SocialLinksRow(links: profile.socialLinks),
     );
   }
@@ -240,7 +243,7 @@ class CoachProfileViewScreen extends ConsumerWidget {
     return _buildSectionCard(
       title: 'Certifications & Achievements',
       child: (certs.isEmpty && (achievements == null || achievements.trim().isEmpty))
-          ? const Text('No certifications added yet.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary))
+          ? Text('No certifications added yet.', style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary))
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -301,7 +304,7 @@ class CoachProfileViewScreen extends ConsumerWidget {
     return _buildSectionCard(
       title: 'Fee Structure',
       child: !hasAny
-          ? const Text('No fee structure set.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary))
+          ? Text('No fee structure set.', style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary))
           : Column(
               children: [
                 _buildFeeRow('Per Session (90 min)', profile.feePerSession),
@@ -321,7 +324,7 @@ class CoachProfileViewScreen extends ConsumerWidget {
     return _buildSectionCard(
       title: 'Weekly Availability',
       child: !hasAvailability
-          ? const Text('No availability set.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary))
+          ? Text('No availability set.', style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary))
           : Column(
               children: days.where((d) => (availability[d]?.isNotEmpty ?? false)).map((day) {
                 final slots = availability[day]!;

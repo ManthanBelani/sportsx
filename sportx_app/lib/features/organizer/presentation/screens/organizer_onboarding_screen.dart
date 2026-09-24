@@ -100,7 +100,7 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
           Padding(
             padding: const EdgeInsets.fromLTRB(20,16,20,0),
             child: Row(children:[
-              InkWell(onTap: ()=> context.pop(), borderRadius: BorderRadius.circular(12), child: Container(width:40,height:40, decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(12), boxShadow: SportXShadows.e1), alignment: Alignment.center, child: const Icon(LucideIcons.arrowLeft, size:18, color: AppColors.textPrimary))),
+              InkWell(onTap: ()=> context.pop(), borderRadius: BorderRadius.circular(16), child: Container(width:40,height:40, decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(16), boxShadow: SportXShadows.e1), alignment: Alignment.center, child: const Icon(LucideIcons.arrowLeft, size:18, color: AppColors.textPrimary))),
               const SizedBox(width:12),
               Text('Organizer Setup', style: GoogleFonts.sora(fontSize: 19, fontWeight: FontWeight.w700, color: AppColors.ink)),
             ]),
@@ -119,7 +119,7 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
               _label('Organization Type'),
               DropdownButtonFormField<String>(
                 initialValue: _type,
-                items: _types.map((t)=> DropdownMenuItem(value:t, child: Text(t, style: const TextStyle(fontSize:14)))).toList(),
+                items: _types.map((t)=> DropdownMenuItem(value:t, child: Text(t, style: GoogleFonts.inter(fontSize:14, color: AppColors.textPrimary)))).toList(),
                 onChanged: (v)=> setState(()=> _type=v??_type),
                 decoration: const InputDecoration(),
               ),
@@ -133,7 +133,7 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
               _label('Verification Documents'),
               InkWell(
                 onTap: _pickDoc,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(10),
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(24),
@@ -149,8 +149,8 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
                     Text('Upload registration certificate or\nany government ID for verification', textAlign: TextAlign.center, style: GoogleFonts.inter(fontSize:14, color: AppColors.textSecondary)),
                     const SizedBox(height:8),
                     RichText(text: TextSpan(style: GoogleFonts.inter(fontSize:14), children:[
-                      TextSpan(text: 'Click to upload', style: TextStyle(color: AppColors.primaryDarker, fontWeight: FontWeight.w700)),
-                      TextSpan(text: ' or drag and drop', style: TextStyle(color: AppColors.textSecondary)),
+                      TextSpan(text: 'Click to upload', style: GoogleFonts.inter(color: AppColors.primaryDarker, fontWeight: FontWeight.w700)),
+                      TextSpan(text: ' or drag and drop', style: GoogleFonts.inter(color: AppColors.textSecondary)),
                     ])),
                     const SizedBox(height:4),
                     Text('PDF, JPG up to 10MB', style: GoogleFonts.inter(fontSize:12, color: AppColors.textSecondary)),

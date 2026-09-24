@@ -5,22 +5,11 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/sponsor/presentation/providers/sponsor_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class MySponsorshipsManagementScreen extends ConsumerWidget {
   const MySponsorshipsManagementScreen({super.key});
-
-  Color _statusColor(String status) {
-    switch (status) {
-      case 'published':
-      case 'active':
-        return AppColors.success;
-      case 'draft':
-        return AppColors.warning;
-      default:
-        return AppColors.textSecondary;
-    }
-  }
 
   String _capitalize(String s) => s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1)}';
 
@@ -61,8 +50,8 @@ class MySponsorshipsManagementScreen extends ConsumerWidget {
                   ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.yellow,
+        foregroundColor: AppColors.ink,
         onPressed: () => context.push('/sponsor-posting'),
         icon: const Icon(LucideIcons.plus),
         label: const Text('New Sponsorship'),
@@ -71,13 +60,25 @@ class MySponsorshipsManagementScreen extends ConsumerWidget {
   }
 
   Widget _buildSponsorshipCard(BuildContext context, WidgetRef ref, String id, String title, String status) {
-    final color = _statusColor(status);
+    final PillKind kind;
+    switch (status) {
+      case 'published':
+      case 'active':
+        kind = PillKind.ok;
+        break;
+      case 'draft':
+        kind = PillKind.draft;
+        break;
+      default:
+        kind = PillKind.pending;
+    }
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Colors.white,
         border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: SportXShadows.e1,
       ),
       child: Row(
         children: [
@@ -87,11 +88,7 @@ class MySponsorshipsManagementScreen extends ConsumerWidget {
               children: [
                 Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary)),
                 const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
-                  child: Text(_capitalize(status), style: TextStyle(color: color, fontSize: 12)),
-                ),
+                StatusPill(label: _capitalize(status), kind: kind),
               ],
             ),
           ),

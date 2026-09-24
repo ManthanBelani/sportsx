@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -242,7 +243,7 @@ class _NotificationTargetingScreenState
             if (!hasFilters)
               Text(
                 'No filters selected. Notification will be sent to all users.',
-                style: TextStyle(color: AppColors.textSecondary),
+                style: GoogleFonts.inter(color: AppColors.textSecondary),
               )
             else ...[
               if (_selectedRoles.isNotEmpty) ...[
@@ -268,7 +269,7 @@ class _NotificationTargetingScreenState
       children: [
         Text(
           '$title:',
-          style: TextStyle(
+          style: GoogleFonts.inter(
             color: AppColors.textSecondary,
             fontWeight: FontWeight.w500,
           ),

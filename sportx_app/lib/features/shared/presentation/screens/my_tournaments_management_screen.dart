@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
@@ -21,19 +22,19 @@ class MyTournamentsManagementScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withValues(alpha: 0.88),
         surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: ()=> context.pop()),
         title: Text('My Tournaments',
-            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
+            style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: FilledButton(
               onPressed: ()=> context.push('/post-tournament'),
-              style: FilledButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8)),
-              child: const Text('+ New', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+              style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink, padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8)),
+              child: const Text('+ New', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
             ),
           ),
         ],
@@ -81,8 +82,6 @@ class MyTournamentsManagementScreen extends ConsumerWidget {
     final end = t.endDate as DateTime?;
     final venue = t.venue as String?;
     final dateStr = start!=null ? (end!=null ? '${_fmt(start)}-${_fmt(end)}, ${end.year} • ${venue ?? ''}' : '${_fmt(start)} • ${venue ?? ''}') : (venue ?? '');
-    final badgeColor = isPublished ? AppColors.successLight : AppColors.yellowTint;
-    final badgeText = isPublished ? AppColors.success : AppColors.warnText;
 
     final filled = t.filledSpots as int? ?? 0;
     final fee = t.registrationFee as double?;
@@ -90,20 +89,20 @@ class MyTournamentsManagementScreen extends ConsumerWidget {
 
     return InkWell(
       onTap: ()=> context.push('/registration-management', extra: {'id': id, 'title': title}),
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border), boxShadow: SportXShadows.e1),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Container(width: 48, height: 48, decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)), alignment: Alignment.center, child: const Icon(LucideIcons.trophy, size: 22, color: AppColors.textPrimary)),
+            Container(width: 48, height: 48, decoration: BoxDecoration(color: AppColors.yellowTint, borderRadius: BorderRadius.circular(12)), alignment: Alignment.center, child: const Icon(LucideIcons.trophy, size: 22, color: AppColors.warnText)),
             const SizedBox(width: 12),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[
               Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
               const SizedBox(height: 2),
               Text(dateStr.trim(), style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
             ])),
-            Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: badgeColor, borderRadius: BorderRadius.circular(4)), child: Text(_capitalize(status), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: badgeText))),
+            StatusPill(label: _capitalize(status), kind: isPublished ? PillKind.ok : PillKind.pending),
             PopupMenuButton<String>(
               icon: const Icon(LucideIcons.moreVertical, size: 16, color: AppColors.textSecondary),
               onSelected: (v) async {

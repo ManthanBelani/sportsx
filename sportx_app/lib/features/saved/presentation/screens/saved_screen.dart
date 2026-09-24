@@ -89,7 +89,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> with SingleTickerProv
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withValues(alpha: 0.88),
         elevation: 0,
         title: Text('Saved',
             style: GoogleFonts.sora(

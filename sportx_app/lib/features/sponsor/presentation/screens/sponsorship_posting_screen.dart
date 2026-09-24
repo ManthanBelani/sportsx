@@ -6,6 +6,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/sponsor/presentation/providers/sponsor_provider.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class SponsorshipPostingScreen extends ConsumerStatefulWidget {
@@ -117,22 +118,16 @@ class _SponsorshipPostingScreenState extends ConsumerState<SponsorshipPostingScr
                 runSpacing: 8,
                 children: meta.sports.map((s) {
                   final selected = _selectedSportIds.contains(s.id);
-                  return FilterChip(
-                    label: Text(s.name),
+                  return SportXChip(
+                    label: s.name,
                     selected: selected,
-                    onSelected: (v) => setState(() {
-                      if (v) {
-                        _selectedSportIds.add(s.id);
-                      } else {
+                    onTap: () => setState(() {
+                      if (selected) {
                         _selectedSportIds.remove(s.id);
+                      } else {
+                        _selectedSportIds.add(s.id);
                       }
                     }),
-                    selectedColor: AppColors.primary.withValues(alpha: 0.15),
-                    checkmarkColor: AppColors.primary,
-                    labelStyle: TextStyle(
-                      color: selected ? AppColors.primary : AppColors.textSecondary,
-                      fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-                    ),
                   );
                 }).toList(),
               ),
@@ -201,13 +196,24 @@ class _SponsorshipPostingScreenState extends ConsumerState<SponsorshipPostingScr
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
-              child: FilledButton(
-                onPressed: _saving ? null : _save,
-                style: FilledButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.symmetric(vertical: 14)),
-                child: _saving
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('Save & Publish', style: TextStyle(fontWeight: FontWeight.w600)),
-              ),
+              child: _saving
+                  ? Container(
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: AppColors.yellow.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      alignment: Alignment.center,
+                      child: const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.ink)),
+                    )
+                  : PrimaryButton(
+                      label: 'Save & Publish',
+                      icon: LucideIcons.check,
+                      onPressed: _save,
+                    ),
             ),
           ],
         ),

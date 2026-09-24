@@ -13,6 +13,8 @@ import 'package:sportx_app/shared/models/coach.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 class CoachProfileEditScreen extends ConsumerStatefulWidget {
   final bool isTabContent;
 
@@ -438,7 +440,7 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
                       children: [
                         const Text('Personal Coaching', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
                         const SizedBox(height: 4),
-                        Text('I offer one-on-one coaching', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                        Text('I offer one-on-one coaching', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
                       ],
                     ),
                   ),
@@ -461,8 +463,7 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
+                borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border), boxShadow: SportXShadows.e1),
               child: Column(
                 children: [
                   _buildFeeRow('Per Session (90 min)', _feePerSessionController),

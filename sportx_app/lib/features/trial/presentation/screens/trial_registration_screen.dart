@@ -9,6 +9,7 @@ import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
 import 'package:sportx_app/shared/providers/activity_provider.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class TrialRegistrationScreen extends ConsumerStatefulWidget {
@@ -104,19 +105,11 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
     final trial = trialAsync.valueOrNull;
     final entryFee = trial?.registrationFee ?? 0;
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
-        ),
-        title: const Text('Register', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(color: AppColors.border, height: 1),
-        ),
+      backgroundColor: AppColors.surface,
+      appBar: SportXTopBar(
+        title: 'Register',
+        showBack: true,
+        onBack: () => context.pop(),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -127,8 +120,10 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(8),
+                color: Colors.white,
+                border: Border.all(color: AppColors.border),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: SportXShadows.e1,
               ),
               child: Row(
                 children: [
@@ -182,7 +177,7 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
                   decoration: BoxDecoration(
                     color: AppColors.surface,
                     border: Border.all(color: AppColors.border),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: TextField(
                     controller: _dobController,
@@ -215,7 +210,7 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   border: Border.all(color: AppColors.border, style: BorderStyle.solid),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -255,7 +250,7 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: AppColors.border),
               ),
               child: Row(
@@ -275,20 +270,27 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
             ),
 
             const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: (_parentalConsent && !_submitting) ? _submit : null,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                disabledBackgroundColor: AppColors.border,
-              ),
-              child: _submitting
-                  ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text('Request to Participate', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-            ),
+            _submitting
+                ? Container(
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: AppColors.yellow.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    alignment: Alignment.center,
+                    child: const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(color: AppColors.ink, strokeWidth: 2)),
+                  )
+                : Opacity(
+                    opacity: _parentalConsent ? 1.0 : 0.5,
+                    child: PrimaryButton(
+                      label: 'Request to Participate',
+                      icon: LucideIcons.circleDot,
+                      onPressed: (_parentalConsent && !_submitting) ? _submit : null,
+                    ),
+                  ),
           ],
         ),
       ),
@@ -308,7 +310,7 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
       decoration: BoxDecoration(
         color: AppColors.surface,
         border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: TextField(
         controller: controller,

@@ -30,10 +30,11 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
         if (!user.isVerified)
           TextButton.icon(
             onPressed: () => _verifyUser(user.id),
-            icon: const Icon(LucideIcons.circleCheck, color: Colors.white),
-            label: const Text(
+            icon: const Icon(LucideIcons.circleCheck, color: AppColors.primaryDarker),
+            label: Text(
               'Verify User',
-              style: TextStyle(color: Colors.white),
+              style: GoogleFonts.inter(
+                  color: AppColors.primaryDarker, fontWeight: FontWeight.w700),
             ),
           ),
       ],
@@ -91,7 +92,7 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
             const SizedBox(height: 4),
             Text(
               user.role.toUpperCase(),
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.w500,
               ),
@@ -116,7 +117,7 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
         children: [
           Icon(icon, size: 16, color: AppColors.textSecondary),
           const SizedBox(width: 8),
-          Text(text, style: TextStyle(color: AppColors.textSecondary)),
+          Text(text, style: GoogleFonts.inter(color: AppColors.textSecondary)),
         ],
       ),
     );
@@ -151,18 +152,18 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
+        Text(title, style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
         const SizedBox(height: 8),
         Container(
           height: 200,
           width: double.infinity,
           decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(10),
             border: Border.all(color: AppColors.border),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(10),
             child: Image.network(
               url,
               fit: BoxFit.contain,
@@ -172,7 +173,7 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
                   children: [
                     Icon(LucideIcons.imageOff, size: 48, color: AppColors.textTertiary),
                     const SizedBox(height: 8),
-                    Text('Failed to load image', style: TextStyle(color: AppColors.textTertiary)),
+                    Text('Failed to load image', style: GoogleFonts.inter(color: AppColors.textTertiary)),
                   ],
                 ),
               ),
@@ -188,7 +189,7 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.warning.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
       ),
       child: Row(
@@ -198,7 +199,7 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
           Expanded(
             child: Text(
               '$title not uploaded',
-              style: TextStyle(color: AppColors.textSecondary),
+              style: GoogleFonts.inter(color: AppColors.textSecondary),
             ),
           ),
         ],
@@ -256,11 +257,11 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
                       children: [
                         Text(
                           check.title,
-                          style: const TextStyle(fontWeight: FontWeight.w500),
+                          style: GoogleFonts.inter(fontWeight: FontWeight.w500),
                         ),
                         Text(
                           check.description,
-                          style: TextStyle(
+                          style: GoogleFonts.inter(
                             color: AppColors.textSecondary,
                             fontSize: 12,
                           ),

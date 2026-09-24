@@ -7,6 +7,7 @@ import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/date_format_utils.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CoachEnquiryInboxScreen extends ConsumerStatefulWidget {
   final bool isTabContent;
@@ -91,7 +92,7 @@ class _CoachEnquiryInboxScreenState extends ConsumerState<CoachEnquiryInboxScree
           children: [
             Text(_tabLabels[index], style: const TextStyle(fontSize: 14)),
             const SizedBox(height: 2),
-            Text('($count)', style: const TextStyle(fontSize: 12)),
+            Text('($count)', style: GoogleFonts.inter(fontSize: 12)),
           ],
         ),
       );

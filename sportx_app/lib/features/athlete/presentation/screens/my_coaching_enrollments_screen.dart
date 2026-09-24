@@ -17,7 +17,7 @@ class MyCoachingEnrollmentsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withValues(alpha: 0.88),
         elevation: 0,
         title: Text('My Coaching Enrollments',
             style: GoogleFonts.sora(

@@ -70,13 +70,13 @@ class _PlatformReportsScreenState extends ConsumerState<PlatformReportsScreen> {
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: 1.5,
+          childAspectRatio: 1.3,
           children: [
             AdminStatCard(
               title: 'Total Users',
               value: '${stats?.totalUsers ?? 0}',
               icon: LucideIcons.users,
-              color: AppColors.primary,
+              color: AppColors.yellowDeep,
             ),
             AdminStatCard(
               title: 'Pending Approvals',
@@ -109,7 +109,7 @@ class _PlatformReportsScreenState extends ConsumerState<PlatformReportsScreen> {
 
     final total = stats.usersByRole.values.fold(0, (sum, count) => sum + count);
     final colors = [
-      AppColors.primary,
+      AppColors.yellowDeep,
       AppColors.cta,
       AppColors.success,
       AppColors.warning,
@@ -144,10 +144,10 @@ class _PlatformReportsScreenState extends ConsumerState<PlatformReportsScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(role, style: const TextStyle(fontWeight: FontWeight.w500)),
+                          Text(role, style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
                           Text(
                             '$count (${percentage.toStringAsFixed(1)}%)',
-                            style: TextStyle(color: AppColors.textSecondary),
+                            style: GoogleFonts.inter(color: AppColors.textSecondary),
                           ),
                         ],
                       ),
@@ -157,7 +157,7 @@ class _PlatformReportsScreenState extends ConsumerState<PlatformReportsScreen> {
                         backgroundColor: AppColors.border,
                         valueColor: AlwaysStoppedAnimation<Color>(color),
                         minHeight: 8,
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ],
                   ),
@@ -197,13 +197,13 @@ class _PlatformReportsScreenState extends ConsumerState<PlatformReportsScreen> {
                   height: 40,
                   decoration: BoxDecoration(
                     color: AppColors.infoLight,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Center(
                     child: Text(
                       '${index + 1}',
-                      style: TextStyle(
-                        color: AppColors.primary,
+                      style: GoogleFonts.inter(
+                        color: AppColors.yellowDeep,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -212,7 +212,7 @@ class _PlatformReportsScreenState extends ConsumerState<PlatformReportsScreen> {
                 title: Text(entry.key),
                 trailing: Text(
                   '${entry.value}',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                 ),
               );
             },
@@ -246,12 +246,12 @@ class _PlatformReportsScreenState extends ConsumerState<PlatformReportsScreen> {
               return ListTile(
                 leading: Icon(
                   LucideIcons.trophy,
-                  color: AppColors.primary,
+                  color: AppColors.yellowDeep,
                 ),
                 title: Text(entry.key),
                 trailing: Text(
                   '${entry.value}',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                 ),
               );
             },

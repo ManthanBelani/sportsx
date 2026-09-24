@@ -115,7 +115,7 @@ class _CapacityManagementScreenState extends ConsumerState<CapacityManagementScr
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: ()=> context.pop()),
@@ -140,7 +140,7 @@ class _CapacityManagementScreenState extends ConsumerState<CapacityManagementScr
                 // Tournament header card per design
                 Container(
                   padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+                  decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(16)),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[
                     Text(_tournamentName ?? 'Tournament', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.textPrimary)),
                     const SizedBox(height: 4),
@@ -149,15 +149,15 @@ class _CapacityManagementScreenState extends ConsumerState<CapacityManagementScr
                 ),
                 const SizedBox(height: 16),
                 if (_cats.isEmpty)
-                  const Padding(padding: EdgeInsets.symmetric(vertical: 40), child: Center(child: Text('No categories found', style: TextStyle(color: AppColors.textSecondary))))
+                   Padding(padding: EdgeInsets.symmetric(vertical: 40), child: Center(child: Text('No categories found', style: GoogleFonts.inter(color: AppColors.textSecondary))))
                 else
                   ..._cats.map((cat)=> Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: Container(
                       padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+                      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(16)),
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children:[
-                        Text('${cat.name} Category', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                        Text('${cat.name} Category', style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                         const SizedBox(height: 12),
                         Row(children: [
                           const Text('Spots', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
@@ -169,7 +169,7 @@ class _CapacityManagementScreenState extends ConsumerState<CapacityManagementScr
                             ),
                           ),
                           const SizedBox(width: 12),
-                          Text('${cat.registered}/${cat.maxTeams}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                          Text('${cat.registered}/${cat.maxTeams}', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                         ]),
                         const SizedBox(height: 10),
                         Container(height: 1, color: AppColors.border),
@@ -180,10 +180,10 @@ class _CapacityManagementScreenState extends ConsumerState<CapacityManagementScr
                             onTap: ()=> setState(()=> cat.waitlistEnabled=!cat.waitlistEnabled),
                             child: Container(
                               width: 44, height: 24,
-                              decoration: BoxDecoration(color: cat.waitlistEnabled? AppColors.primary: AppColors.border, borderRadius: BorderRadius.circular(12)),
+                              decoration: BoxDecoration(color: cat.waitlistEnabled? AppColors.primary: AppColors.border, borderRadius: BorderRadius.circular(16)),
                               alignment: cat.waitlistEnabled? Alignment.centerRight: Alignment.centerLeft,
                               padding: const EdgeInsets.all(2),
-                              child: Container(width:20,height:20, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                              child: Container(width:20,height:20, decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, border: Border.all(color: AppColors.border), boxShadow: SportXShadows.e1)),
                             ),
                           ),
                         ]),
@@ -193,7 +193,7 @@ class _CapacityManagementScreenState extends ConsumerState<CapacityManagementScr
                 const SizedBox(height: 16),
                 Container(
                   padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(color: const Color(0xFFdbeafe), borderRadius: BorderRadius.circular(8)),
+                  decoration: BoxDecoration(color: AppColors.infoLight, borderRadius: BorderRadius.circular(16)),
                   child: const Text('Changes will be reflected immediately. Teams on waitlist will be notified automatically when spots open up.', style: TextStyle(fontSize: 13, color: AppColors.primary)),
                 ),
               ],

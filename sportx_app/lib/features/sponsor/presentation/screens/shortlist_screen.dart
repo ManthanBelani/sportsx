@@ -6,6 +6,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/sponsor/presentation/providers/sponsor_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class ShortlistScreen extends ConsumerWidget {
   const ShortlistScreen({super.key});
@@ -50,39 +51,14 @@ class ShortlistScreen extends ConsumerWidget {
   }
 
   Widget _buildShortlistCard(BuildContext context, WidgetRef ref, ShortlistEntry entry) {
-    return InkWell(
+    return EntityRow(
+      title: '${entry.name} · ${entry.sport ?? ''}',
+      subtitle: entry.note != null && entry.note!.isNotEmpty ? 'Note: "${entry.note}"' : 'Shortlisted athlete',
+      avatarText: entry.name.isNotEmpty ? entry.name[0].toUpperCase() : 'A',
       onTap: () => context.push('/athlete-profile-view', extra: {'id': entry.athleteId}),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.amber.withValues(alpha: 0.5)),
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.amber.withValues(alpha: 0.05),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(LucideIcons.star, color: Colors.amber, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text('${entry.name} · ${entry.sport ?? ''}',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary)),
-                ),
-                IconButton(
-                  icon: const Icon(LucideIcons.trash2, color: AppColors.textSecondary, size: 18),
-                  onPressed: () => ref.read(shortlistProvider.notifier).remove(entry.id),
-                ),
-              ],
-            ),
-            if (entry.note != null && entry.note!.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text('Note: "${entry.note}"',
-                  style: TextStyle(color: AppColors.textSecondary, fontStyle: FontStyle.italic)),
-            ],
-          ],
-        ),
+      trailing: IconButton(
+        icon: const Icon(LucideIcons.trash2, color: AppColors.textSecondary, size: 18),
+        onPressed: () => ref.read(shortlistProvider.notifier).remove(entry.id),
       ),
     );
   }

@@ -18,7 +18,7 @@ class OrganizerAnalyticsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
@@ -190,7 +190,7 @@ class OrganizerAnalyticsScreen extends ConsumerWidget {
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                             Expanded(child: Text('${cat['tournament_name']} • ${cat['category_name']}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary), overflow: TextOverflow.ellipsis)),
-                            Text('$reg/$cap', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                            Text('$reg/$cap', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
                           ]),
                           const SizedBox(height: 4),
                           ClipRRect(

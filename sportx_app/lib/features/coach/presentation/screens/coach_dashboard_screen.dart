@@ -129,7 +129,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
               Row(children: [
                 Container(width: 40, height: 40, decoration: BoxDecoration(color: AppColors.coach.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(16)), child: const Icon(LucideIcons.calendar, color: AppColors.coach, size: 20)),
                 const SizedBox(width: 12),
-                const Expanded(child: Text('Weekly Availability', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary))),
+                 Expanded(child: Text('Weekly Availability', style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary))),
                 TextButton(onPressed: () => context.push('/coach-profile-edit'), child: const Text('Edit')),
               ]),
               const SizedBox(height: 12),
@@ -239,7 +239,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Welcome, $name!', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                      Text('Welcome, $name!', style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                       const SizedBox(height: 2),
                       Text(
                         profile != null
@@ -290,7 +290,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Profile Completeness', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                    Text('${(completeness * 100).toInt()}%', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                    Text('${(completeness * 100).toInt()}%', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary)),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -351,16 +351,12 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
               children: [
                 SectionHeader(title: 'Recent Enquiries', actionText: 'View All', onActionTap: () => _switchTab(2)),
                 if (recentEnquiries.isEmpty)
-                  const Center(
+                   Center(
                     child: Padding(
                       padding: EdgeInsets.all(16),
                       child: Column(
                         children: [
-                          Text('No enquiries yet',
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary)),
+                          Text('No enquiries yet', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                           SizedBox(height: 4),
                           Text('When athletes enquire about\nyour coaching, they will appear here',
                               textAlign: TextAlign.center,
@@ -394,8 +390,7 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
+        borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border), boxShadow: SportXShadows.e1),
       child: Column(
         children: [
           Row(

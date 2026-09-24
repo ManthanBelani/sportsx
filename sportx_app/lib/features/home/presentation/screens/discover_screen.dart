@@ -33,7 +33,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withValues(alpha: 0.88),
         elevation: 0,
         title: Text('Discover',
             style: GoogleFonts.sora(
@@ -59,7 +59,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                 label: const Text('Find Talent Scouts & Chat'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.ink,
-                  backgroundColor: Colors.white,
+                  backgroundColor: Colors.white.withValues(alpha: 0.88),
                   side: const BorderSide(color: AppColors.border),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -76,7 +76,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                 label: const Text('Find Athletes & Chat'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.ink,
-                  backgroundColor: Colors.white,
+                  backgroundColor: Colors.white.withValues(alpha: 0.88),
                   side: const BorderSide(color: AppColors.border),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -493,7 +493,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppColors.ctaLight,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
                       sponsor.budget ?? 'Contact for details',

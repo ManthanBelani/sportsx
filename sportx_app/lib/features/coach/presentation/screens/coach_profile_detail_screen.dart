@@ -14,6 +14,7 @@ import 'package:sportx_app/shared/presentation/widgets/social_links.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class CoachProfileDetailScreen extends ConsumerStatefulWidget {
   final String coachId;
@@ -332,8 +333,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
+        borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border), boxShadow: SportXShadows.e1),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
@@ -388,8 +388,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
+                borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border), boxShadow: SportXShadows.e1),
               child: Row(
                 children: [
                   const Icon(LucideIcons.badgeCheck, color: AppColors.success, size: 20),
@@ -554,7 +553,7 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: AppColors.infoLight,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Icon(icon, color: AppColors.primary, size: 22),
       ),

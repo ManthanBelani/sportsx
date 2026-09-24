@@ -11,6 +11,7 @@ import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/coach/presentation/providers/coach_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AddCredentialScreen extends ConsumerStatefulWidget {
   const AddCredentialScreen({super.key});
@@ -155,7 +156,7 @@ class _AddCredentialScreenState extends ConsumerState<AddCredentialScreen> {
                 },
               ),
               const SizedBox(height: 24),
-              Text('Certificate / Document', style: Theme.of(context).textTheme.titleMedium),
+              Text('Certificate / Document', style: GoogleFonts.sora(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
               const SizedBox(height: 8),
               Text(
                 'Upload a photo of your certificate (optional)',

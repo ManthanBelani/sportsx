@@ -44,11 +44,11 @@ class ActivityHubScreen extends ConsumerWidget {
       child: Scaffold(
         backgroundColor: AppColors.surface,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.white.withValues(alpha: 0.88),
           surfaceTintColor: Colors.white,
           elevation: 0,
           title: Text('My Activity',
-            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
+            style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
           leading: IconButton(
             icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
             onPressed: () {
@@ -59,6 +59,14 @@ class ActivityHubScreen extends ConsumerWidget {
               }
             },
           ),
+          actions: [
+            IconButton(
+              icon: const Icon(LucideIcons.receiptText,
+                  color: AppColors.textPrimary),
+              tooltip: 'My Applications',
+              onPressed: () => context.push('/my-applications'),
+            ),
+          ],
           bottom: const TabBar(
             labelColor: AppColors.primary,
             unselectedLabelColor: AppColors.textSecondary,

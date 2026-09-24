@@ -6,6 +6,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/features/notifications/presentation/providers/notifications_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class NotificationsScreen extends ConsumerWidget {
@@ -18,11 +19,11 @@ class NotificationsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withValues(alpha: 0.88),
         surfaceTintColor: Colors.white,
         elevation: 0,
         title: Text('Notifications',
-            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
+            style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
         centerTitle: false,
         actions: [
           if (state.unreadCount > 0)
@@ -68,6 +69,7 @@ class NotificationsScreen extends ConsumerWidget {
     final sortedItems = List.of(state.items)..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(0, 6, 0, 16),
       itemCount: sortedItems.length + (state.hasMore ? 1 : 0),
       itemBuilder: (context, i) {
         if (i == sortedItems.length) {
@@ -119,9 +121,13 @@ class NotificationsScreen extends ConsumerWidget {
         }
       },
       child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: AppColors.border)),
+        margin: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border),
+          boxShadow: SportXShadows.e1,
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,7 +137,7 @@ class NotificationsScreen extends ConsumerWidget {
               height: 44,
               decoration: BoxDecoration(
                 color: typeData.bgColor,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12),
               ),
               alignment: Alignment.center,
               child: Icon(typeData.icon, color: typeData.iconColor, size: 20),
@@ -143,7 +149,7 @@ class NotificationsScreen extends ConsumerWidget {
                 children: [
                   Text(
                     item.title,
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: item.isRead ? AppColors.textSecondary : AppColors.textPrimary,
@@ -168,7 +174,7 @@ class NotificationsScreen extends ConsumerWidget {
                 width: 8,
                 height: 8,
                 decoration: const BoxDecoration(
-                  color: AppColors.primary,
+                  color: AppColors.yellow,
                   shape: BoxShape.circle,
                 ),
               ),

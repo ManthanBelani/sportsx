@@ -178,7 +178,7 @@ class _AddAchievementScreenState extends ConsumerState<AddAchievementScreen> {
       return Scaffold(
         backgroundColor: AppColors.surface,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.white.withValues(alpha: 0.88),
           elevation: 0,
           title: Text('Add Achievement',
               style: GoogleFonts.sora(
@@ -190,7 +190,7 @@ class _AddAchievementScreenState extends ConsumerState<AddAchievementScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withValues(alpha: 0.88),
         elevation: 0,
         title: Text('Add Achievement',
             style: GoogleFonts.sora(

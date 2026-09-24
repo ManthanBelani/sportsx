@@ -8,6 +8,7 @@ import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/features/sponsor/presentation/providers/sponsor_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class ApplicationsInboxScreen extends ConsumerWidget {
   const ApplicationsInboxScreen({super.key});
@@ -39,9 +40,10 @@ class ApplicationsInboxScreen extends ConsumerWidget {
               children: [
                 Text(ApiException.messageFor(e), style: const TextStyle(color: AppColors.textSecondary)),
                 const SizedBox(height: 12),
-                ElevatedButton(
+                PrimaryButton(
+                  label: 'Retry',
+                  icon: LucideIcons.refreshCw,
                   onPressed: () => ref.invalidate(sponsorApplicationsProvider),
-                  child: const Text('Retry'),
                 ),
               ],
             ),
@@ -86,7 +88,7 @@ class ApplicationsInboxScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           color: isNew ? AppColors.primary.withValues(alpha: 0.05) : AppColors.surface,
         ),
         child: Column(
@@ -101,11 +103,7 @@ class ApplicationsInboxScreen extends ConsumerWidget {
                       style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
                 ),
                 if (isNew)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(12)),
-                    child: const Text('New', style: TextStyle(color: Colors.white, fontSize: 10)),
-                  ),
+                  const StatusPill(label: 'New', kind: PillKind.info),
               ],
             ),
             const SizedBox(height: 8),

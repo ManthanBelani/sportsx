@@ -154,7 +154,7 @@ class _ResultsPublishingScreenState extends ConsumerState<ResultsPublishingScree
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
@@ -188,7 +188,7 @@ class _ResultsPublishingScreenState extends ConsumerState<ResultsPublishingScree
                   },
                 ),
               ],
-              if (_categories.isEmpty) const Padding(padding: EdgeInsets.only(top: 8), child: Text('No categories found. Create tournament categories first.', style: TextStyle(fontSize: 12, color: AppColors.textSecondary))),
+              if (_categories.isEmpty)  Padding(padding: EdgeInsets.only(top: 8), child: Text('No categories found. Create tournament categories first.', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary))),
             ]),
           ),
           const SizedBox(height: 24),
@@ -234,7 +234,7 @@ class _ResultsPublishingScreenState extends ConsumerState<ResultsPublishingScree
         Expanded(child: _TeamSlot(text: m.teamA, tbd: isTbd)),
         const SizedBox(width: 8),
         SizedBox(width: 60, child: TextField(controller: m.scoreA, keyboardType: TextInputType.number, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w600), decoration: InputDecoration(hintText: '-', isDense: true, contentPadding: const EdgeInsets.symmetric(vertical: 10), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border))))),
-        const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Text('-', style: TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w600))),
+         Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Text('-', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w600))),
         SizedBox(width: 60, child: TextField(controller: m.scoreB, keyboardType: TextInputType.number, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w600), decoration: InputDecoration(hintText: '-', isDense: true, contentPadding: const EdgeInsets.symmetric(vertical: 10), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border))))),
         const SizedBox(width: 8),
         Expanded(child: _TeamSlot(text: m.teamB, tbd: isTbd)),

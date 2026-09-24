@@ -7,6 +7,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class AthleteDiscoveryScreen extends ConsumerWidget {
   const AthleteDiscoveryScreen({super.key});
@@ -55,9 +56,10 @@ class AthleteDiscoveryScreen extends ConsumerWidget {
                     children: [
                       Text(ApiException.messageFor(e), style: const TextStyle(color: AppColors.textSecondary)),
                       const SizedBox(height: 12),
-                      ElevatedButton(
+                      PrimaryButton(
+                        label: 'Retry',
+                        icon: LucideIcons.refreshCw,
                         onPressed: () => ref.invalidate(athletesProvider),
-                        child: const Text('Retry'),
                       ),
                     ],
                   ),
@@ -97,47 +99,15 @@ class AthleteDiscoveryScreen extends ConsumerWidget {
   }
 
   Widget _buildFilterChip(String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textPrimary)),
-    );
+    return SportXChip(label: label);
   }
 
   Widget _buildAthleteCard(BuildContext context, String id, String name, String subtitle) {
-    return InkWell(
+    return EntityRow(
+      title: name,
+      subtitle: subtitle,
+      avatarText: name.isNotEmpty ? name[0].toUpperCase() : 'A',
       onTap: () => context.push('/athlete-profile-view', extra: {'id': id}),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            const CircleAvatar(backgroundColor: AppColors.primary, child: Icon(LucideIcons.user, color: Colors.white)),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary)),
-                  const SizedBox(height: 4),
-                  Text(subtitle, style: const TextStyle(color: AppColors.textSecondary)),
-                ],
-              ),
-            ),
-            TextButton(
-              onPressed: () => context.push('/athlete-profile-view', extra: {'id': id}),
-              child: const Text('View →'),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

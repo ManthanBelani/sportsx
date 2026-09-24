@@ -6,6 +6,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/talent_scout/presentation/providers/scout_shortlist_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/widgets/athlete_avatar.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
@@ -36,7 +37,7 @@ class TalentScoutShortlistScreen extends ConsumerWidget {
                     const SizedBox(height: 12),
                     Text(state.error!, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary), textAlign: TextAlign.center),
                     const SizedBox(height: 12),
-                    FilledButton(onPressed: () => ref.read(scoutShortlistProvider.notifier).load(), style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink), child: const Text('Retry')),
+                    PrimaryButton(label: 'Retry', onPressed: () => ref.read(scoutShortlistProvider.notifier).load()),
                   ]),
                 )
               : state.items.isEmpty
@@ -50,7 +51,7 @@ class TalentScoutShortlistScreen extends ConsumerWidget {
                           const SizedBox(height: 8),
                           const Text('Discover athletes and tap ⭐ to save for later', style: TextStyle(fontSize: 12, color: AppColors.textSecondary), textAlign: TextAlign.center),
                           const SizedBox(height: 16),
-                          FilledButton.icon(onPressed: () => context.push('/scout-discovery'), style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink), icon: const Icon(LucideIcons.search, size: 16), label: const Text('Discover Athletes')),
+                          PrimaryButton(label: 'Discover Athletes', icon: LucideIcons.search, onPressed: () => context.push('/scout-discovery')),
                         ]),
                       ),
                     )
@@ -73,7 +74,7 @@ class TalentScoutShortlistScreen extends ConsumerWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(16)),
         child: const Icon(LucideIcons.trash2, color: Colors.white),
       ),
       confirmDismiss: (_) async => await showDialog<bool>(
@@ -100,12 +101,12 @@ class TalentScoutShortlistScreen extends ConsumerWidget {
       child: InkWell(
         onTap: () => context.push('/scout-athlete/${item.athlete.id}'),
         onLongPress: () => _showNotesDialog(context, ref, item),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Container(
           width: double.infinity,
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
+          decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(16), boxShadow: SportXShadows.e1),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
               AthleteAvatar(photoUrl: item.athlete.photoUrl, radius: 24),
@@ -115,7 +116,7 @@ class TalentScoutShortlistScreen extends ConsumerWidget {
                 const SizedBox(height: 2),
                 Row(children: [
                   if (item.athlete.sports.isNotEmpty)
-                    Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(12)), child: Text(item.athlete.sports.first, style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w600))),
+                    Container(padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5), decoration: BoxDecoration(color: AppColors.infoLight, border: Border.all(color: AppColors.scout.withValues(alpha: 0.25)), borderRadius: BorderRadius.circular(999)), child: Text(item.athlete.sports.first, style: const TextStyle(fontSize: 11, color: AppColors.scout, fontWeight: FontWeight.w700))),
                   if (item.athlete.cityName != null) ...[const SizedBox(width: 6), Text(item.athlete.cityName!, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary))],
                 ]),
               ])),
@@ -137,7 +138,7 @@ class TalentScoutShortlistScreen extends ConsumerWidget {
             ]),
             if (item.notes != null && item.notes.toString().isNotEmpty) ...[
               const SizedBox(height: 10),
-              Container(width: double.infinity, padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(LucideIcons.stickyNote, size: 14, color: AppColors.textSecondary), const SizedBox(width: 6), Expanded(child: Text(item.notes, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)))])),
+              Container(width: double.infinity, padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(16), boxShadow: SportXShadows.e1), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(LucideIcons.stickyNote, size: 14, color: AppColors.textSecondary), const SizedBox(width: 6), Expanded(child: Text(item.notes, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)))])),
             ] else ...[
               const SizedBox(height: 8),
               Semantics(
@@ -145,10 +146,10 @@ class TalentScoutShortlistScreen extends ConsumerWidget {
                 label: 'Add note',
                 child: InkWell(
                   onTap: () => _showNotesDialog(context, ref, item),
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(999),
                   child: const Padding(
                     padding: EdgeInsets.symmetric(vertical: 4),
-                    child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(LucideIcons.plus, size: 12, color: AppColors.primary), SizedBox(width: 4), Text('Add note', style: TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w500))]),
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(LucideIcons.plus, size: 12, color: AppColors.scout), SizedBox(width: 4), Text('Add note', style: TextStyle(fontSize: 11, color: AppColors.scout, fontWeight: FontWeight.w500))]),
                   ),
                 ),
               ),
@@ -168,14 +169,14 @@ class TalentScoutShortlistScreen extends ConsumerWidget {
         content: TextField(controller: ctrl, maxLines: 4, decoration: const InputDecoration(hintText: 'e.g. Strong left-footed striker, observed at Junior Nationals...', border: OutlineInputBorder()), autofocus: true, maxLength: 1000),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          FilledButton(
+          PrimaryButton(
+            label: 'Save',
+            small: true,
             onPressed: () async {
               Navigator.pop(ctx);
               final ok = await ref.read(scoutShortlistProvider.notifier).updateNotes(item.athlete.id, ctrl.text.trim());
               if (context.mounted) SnackBarUtils.showSuccess(context, ok ? 'Notes updated' : ref.read(scoutShortlistProvider).error ?? 'Failed to update notes');
             },
-            style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink),
-            child: const Text('Save'),
           ),
         ],
       ),

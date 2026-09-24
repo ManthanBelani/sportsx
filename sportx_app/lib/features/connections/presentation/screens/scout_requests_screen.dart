@@ -8,6 +8,7 @@ import 'package:sportx_app/features/chat/presentation/providers/chat_provider.da
 import 'package:sportx_app/features/connections/presentation/providers/scout_requests_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/widgets/athlete_avatar.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 /// Athlete inbox for incoming talent-scout connection requests.
@@ -56,11 +57,11 @@ class _ScoutRequestsScreenState extends ConsumerState<ScoutRequestsScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withValues(alpha: 0.88),
         surfaceTintColor: Colors.white,
         elevation: 0,
         title: Text('Scout Requests',
-            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
+            style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
         leading: IconButton(
             icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
             onPressed: () => context.pop()),
@@ -78,12 +79,11 @@ class _ScoutRequestsScreenState extends ConsumerState<ScoutRequestsScreen> {
                       const Icon(LucideIcons.alertCircle, size: 48, color: AppColors.border),
                       const SizedBox(height: 16),
                       Text(state.error!,
-                          style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                          style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
                       const SizedBox(height: 16),
-                      FilledButton(
+                      PrimaryButton(
+                        label: 'Retry',
                         onPressed: () => ref.read(scoutRequestsProvider.notifier).load(),
-                        style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink),
-                        child: const Text('Retry'),
                       ),
                     ],
                   ),
@@ -139,9 +139,7 @@ class _ScoutRequestsScreenState extends ConsumerState<ScoutRequestsScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border), boxShadow: SportXShadows.e1,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,17 +151,17 @@ class _ScoutRequestsScreenState extends ConsumerState<ScoutRequestsScreen> {
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(name,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                   if (subtitle.isNotEmpty) ...[
                     const SizedBox(height: 2),
                     Text(subtitle,
-                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                        style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                   ],
                   if (affiliation != null && affiliation.isNotEmpty) ...[
                     const SizedBox(height: 2),
                     Text(affiliation,
-                        style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                        style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
                   ],
                 ]),
               ),
@@ -179,7 +177,7 @@ class _ScoutRequestsScreenState extends ConsumerState<ScoutRequestsScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text('"$message"',
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 13, color: AppColors.textSecondary, fontStyle: FontStyle.italic)),
             ),
           if (status == 'pending') ...[
@@ -239,26 +237,18 @@ class _ScoutRequestsScreenState extends ConsumerState<ScoutRequestsScreen> {
   }
 
   Widget _statusBadge(String status) {
-    Color bg;
-    Color fg;
+    final PillKind kind;
     switch (status) {
       case 'accepted':
-        bg = AppColors.successLight;
-        fg = AppColors.success;
+        kind = PillKind.ok;
         break;
       case 'rejected':
-        bg = AppColors.errorLight;
-        fg = AppColors.error;
+        kind = PillKind.no;
         break;
       default:
-        bg = AppColors.yellowTint;
-        fg = AppColors.warnText;
+        kind = PillKind.pending;
     }
     final label = status[0].toUpperCase() + status.substring(1);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(4)),
-      child: Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: fg)),
-    );
+    return StatusPill(label: label, kind: kind);
   }
 }

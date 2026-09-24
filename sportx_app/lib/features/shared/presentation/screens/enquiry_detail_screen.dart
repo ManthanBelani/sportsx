@@ -9,6 +9,7 @@ import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class EnquiryDetailScreen extends ConsumerStatefulWidget {
   final String id;
@@ -67,11 +68,11 @@ class _EnquiryDetailScreenState extends ConsumerState<EnquiryDetailScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(ApiException.messageFor(e), style: const TextStyle(color: AppColors.textSecondary)),
+              Text(ApiException.messageFor(e), style: GoogleFonts.inter(color: AppColors.textSecondary)),
               const SizedBox(height: 12),
-              ElevatedButton(
+              SecondaryButton(
+                label: 'Retry',
                 onPressed: () => ref.invalidate(enquiryDetailProvider(widget.id)),
-                child: const Text('Retry'),
               ),
             ],
           ),

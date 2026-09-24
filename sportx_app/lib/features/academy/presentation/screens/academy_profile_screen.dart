@@ -9,6 +9,7 @@ import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/presentation/widgets/social_links.dart';
 import 'package:sportx_app/shared/models/trial.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// Read-only academy profile view (design: profile-view.html).
 /// Editing happens on /edit-academy-profile, reached via the pencil button.
@@ -292,9 +293,7 @@ class _Stat extends StatelessWidget {
     return Expanded(
       child: Column(
         children: [
-          Text('$value',
-              style: const TextStyle(
-                  fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.academy)),
+          Text('$value', style: GoogleFonts.sora(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.academy)),
           const SizedBox(height: 2),
           Text(label,
               style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),

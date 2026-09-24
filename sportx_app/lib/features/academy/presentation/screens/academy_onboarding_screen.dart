@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -9,6 +10,7 @@ import 'package:sportx_app/features/auth/presentation/providers/auth_provider.da
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class AcademyOnboardingScreen extends ConsumerStatefulWidget {
@@ -78,13 +80,18 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary, size: 24),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Academy Setup', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text('Academy Setup',
+            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
+        bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(1),
+            child: Container(height: 1, color: AppColors.border)),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -142,12 +149,11 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
                   runSpacing: 8,
                   children: meta.sports.map((s) {
                     final selected = _sportIds.contains(s.id);
-                    return ChoiceChip(
-                      label: Text(s.name),
+                    return SportXChip(
+                      label: s.name,
                       selected: selected,
-                      selectedColor: AppColors.yellow,
-                      labelStyle: TextStyle(color: selected ? AppColors.ink : AppColors.textPrimary, fontWeight: FontWeight.w500),
-                      onSelected: (sel) => setState(() => sel ? _sportIds.add(s.id) : _sportIds.remove(s.id)),
+                      onTap: () => setState(() =>
+                          selected ? _sportIds.remove(s.id) : _sportIds.add(s.id)),
                     );
                   }).toList(),
                 ),
@@ -155,21 +161,30 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
                 _label('Fee Range (optional)'),
                 TextFormField(controller: _fee, decoration: _dec('e.g. ₹2,000 – ₹5,000/mo')),
                 const SizedBox(height: 28),
-                ElevatedButton(
-                  onPressed: _saving ? null : _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.yellow,
-                    foregroundColor: AppColors.ink,
-                    disabledBackgroundColor: AppColors.border,
-                    disabledForegroundColor: Colors.white,
-                    minimumSize: const Size.fromHeight(52),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                if (_saving)
+                  Container(
+                    height: 50,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0xFFFFD54A), Color(0xFFFFC107), Color(0xFFF5B400)],
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0x2E785000)),
+                      boxShadow: SportXShadows.btnShadow,
+                    ),
+                    alignment: Alignment.center,
+                    child: const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(color: AppColors.ink, strokeWidth: 2)),
+                  )
+                else
+                  SizedBox(
+                    width: double.infinity,
+                    child: PrimaryButton(label: 'Save & Continue', onPressed: _submit),
                   ),
-                  child: _saving
-                      ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('Save & Continue', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                ),
               ],
             ),
           ),
@@ -180,17 +195,14 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
 
   Widget _label(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 8),
-        child: Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
+        child: Text(text,
+            style: GoogleFonts.inter(
+                fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
       );
 
-  InputDecoration _dec(String hint) => InputDecoration(
-        hintText: hint,
-        filled: true,
-        fillColor: AppColors.background,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.primary)),
-      );
+  // v2 inputs — default InputDecoration from app_theme.dart
+  // (h50 white, 1.5px border, radius 13, yellow focus ring).
+  InputDecoration _dec(String hint) => InputDecoration(hintText: hint);
 
   String? _req(String? v) => (v == null || v.trim().isEmpty) ? 'Required' : null;
 
@@ -203,6 +215,7 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
+          boxShadow: SportXShadows.e1,
           image: url != null ? DecorationImage(image: NetworkImage(MediaUtils.resolveUrl(url)), fit: BoxFit.cover) : null,
         ),
         alignment: Alignment.center,
@@ -212,7 +225,7 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
                 children: [
                   Icon(icon, size: 32, color: AppColors.textSecondary),
                   const SizedBox(height: 8),
-                  Text(label, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                  Text(label, style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary)),
                 ],
               )
             : Container(
@@ -235,14 +248,23 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
     required ValueChanged<int?> onChanged,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border)),
-      child:       DropdownButtonFormField<int>(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(13),
+          border: Border.all(color: AppColors.border, width: 1.5),
+          boxShadow: SportXShadows.e1),
+      child: DropdownButtonFormField<int>(
         initialValue: value,
         decoration: const InputDecoration(border: InputBorder.none),
-        hint: Text(hint, style: const TextStyle(color: AppColors.textSecondary, fontSize: 15)),
+        hint: Text(hint, style: GoogleFonts.inter(color: AppColors.textTertiary, fontSize: 14)),
         isExpanded: true,
-        items: items.map((i) => DropdownMenuItem<int>(value: i.value, child: Text(i.label))).toList(),
+        items: items
+            .map((i) => DropdownMenuItem<int>(
+                value: i.value,
+                child: Text(i.label,
+                    style: GoogleFonts.inter(fontSize: 14, color: AppColors.textPrimary))))
+            .toList(),
         onChanged: onChanged,
       ),
     );

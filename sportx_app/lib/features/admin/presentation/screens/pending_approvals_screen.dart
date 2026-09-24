@@ -154,9 +154,9 @@ class _PendingApprovalsScreenState extends ConsumerState<PendingApprovalsScreen>
               const SizedBox(height: 16),
               const Divider(),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 'Documents:',
-                style: TextStyle(
+                style: GoogleFonts.inter(
                   fontWeight: FontWeight.w600,
                   color: AppColors.textSecondary,
                 ),
@@ -166,11 +166,7 @@ class _PendingApprovalsScreenState extends ConsumerState<PendingApprovalsScreen>
                 spacing: 8,
                 runSpacing: 8,
                 children: documents.map((doc) {
-                  return Chip(
-                    label: Text(doc),
-                    backgroundColor: AppColors.surface,
-                    side: BorderSide(color: AppColors.border),
-                  );
+                  return StatusPill(label: doc, kind: PillKind.draft);
                 }).toList(),
               ),
             ],

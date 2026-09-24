@@ -19,7 +19,7 @@ class MyRegistrationsScreen extends ConsumerWidget {
       child: Scaffold(
         backgroundColor: AppColors.surface,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.white.withValues(alpha: 0.88),
           surfaceTintColor: Colors.white,
           elevation: 0,
           leading: IconButton(
@@ -27,7 +27,7 @@ class MyRegistrationsScreen extends ConsumerWidget {
             onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
           ),
           title: Text('My Registrations',
-            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
+            style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
           bottom: const TabBar(
             labelColor: AppColors.primary,
             unselectedLabelColor: AppColors.textSecondary,

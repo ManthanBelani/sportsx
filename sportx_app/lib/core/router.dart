@@ -123,6 +123,15 @@ import 'package:sportx_app/features/talent_scout/presentation/screens/talent_sco
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_connections_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_profile_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/widgets/scout_shell.dart';
+import 'package:sportx_app/features/social/presentation/screens/create_sheet.dart';
+import 'package:sportx_app/features/home/presentation/screens/opportunities_screen.dart';
+import 'package:sportx_app/features/shared/presentation/screens/my_applications_screen.dart';
+import 'package:sportx_app/features/shared/presentation/screens/application_status_screen.dart';
+import 'package:sportx_app/features/connections/presentation/screens/network_screen.dart';
+import 'package:sportx_app/features/shared/presentation/screens/report_screen.dart';
+import 'package:sportx_app/features/sponsor/presentation/screens/sponsor_directory_screen.dart';
+import 'package:sportx_app/features/admin/presentation/screens/admin_analytics_screen.dart';
+import 'package:sportx_app/features/admin/presentation/screens/admin_settings_screen.dart';
 
 /// Maps a user role to the first onboarding screen they must complete.
 /// Returns null for roles with no onboarding (e.g. admin).
@@ -405,6 +414,29 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/scout-directory', builder: (context, state) => const ScoutDirectoryScreen()),
       GoRoute(path: '/athlete-directory', builder: (context, state) => const AthleteDirectoryScreen()),
       GoRoute(path: '/discover', builder: (context, state) => const DiscoverScreen()),
+      GoRoute(path: '/opportunities', builder: (context, state) => const OpportunitiesScreen()),
+      GoRoute(path: '/my-applications', builder: (context, state) => const MyApplicationsScreen()),
+      GoRoute(path: '/application-status', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return ApplicationStatusScreen(
+          kind: extra?['kind'] as String? ?? 'trial',
+          title: extra?['title'] as String? ?? 'Application',
+          refCode: extra?['ref'] as String? ?? '',
+          status: extra?['status'] as String? ?? 'pending',
+        );
+      }),
+      GoRoute(path: '/network', builder: (context, state) => const NetworkScreen()),
+      GoRoute(path: '/report', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return ReportScreen(
+          type: extra?['type'] as String? ?? '',
+          itemId: extra?['id'] as String? ?? '',
+          title: extra?['title'] as String? ?? '',
+        );
+      }),
+      GoRoute(path: '/sponsors', builder: (context, state) => const SponsorDirectoryScreen()),
+      GoRoute(path: '/admin/analytics', builder: (context, state) => const AdminAnalyticsScreen()),
+      GoRoute(path: '/admin/settings', builder: (context, state) => const AdminSettingsScreen()),
       GoRoute(path: '/view-profile', builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
         return ViewProfileScreen(
@@ -494,7 +526,7 @@ class MainShell extends ConsumerWidget {
 
   Widget _buildFab(BuildContext context, String? role, bool selected) {
     return GestureDetector(
-      onTap: () => _onItemTapped(2, context, role),
+      onTap: () => showCreateSheet(context),
       child: Container(
         width: 58,
         height: 58,
@@ -553,7 +585,7 @@ class MainShell extends ConsumerWidget {
     if (location.startsWith('/home')) return 0;
     if (location.startsWith('/search') || location.startsWith('/universal-search')) return 1;
     if (location.startsWith('/saved')) return 2;
-    if (location.startsWith('/activity-hub')) return 3;
+    if (location.startsWith('/network') || location.startsWith('/activity-hub')) return 3;
     if (location.startsWith('/profile')) return 4;
     return 0;
   }
@@ -563,7 +595,7 @@ class MainShell extends ConsumerWidget {
       case 0: context.go('/home'); break;
       case 1: context.go('/universal-search'); break;
       case 2: context.go('/saved'); break;
-      case 3: context.go('/activity-hub'); break;
+      case 3: context.go('/network'); break;
       case 4:
         if (role == 'athlete') {
           context.go('/profile');

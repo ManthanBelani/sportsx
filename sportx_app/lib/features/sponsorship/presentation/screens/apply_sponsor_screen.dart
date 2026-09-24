@@ -9,6 +9,7 @@ import 'package:sportx_app/features/auth/presentation/providers/auth_provider.da
 import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
@@ -75,27 +76,13 @@ class _ApplySponsorScreenState extends ConsumerState<ApplySponsorScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(LucideIcons.arrowLeft, size: 20, color: AppColors.textPrimary),
-          ),
-          onPressed: () => context.pop(),
-        ),
-        title: Text(
+      appBar: SportXTopBar(
+        titleWidget: Text(
           'Apply to Sponsor',
           style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink),
         ),
-        centerTitle: true,
+        showBack: true,
+        onBack: () => context.pop(),
       ),
       body: async.when(
         data: (sponsorship) => SingleChildScrollView(
@@ -106,8 +93,10 @@ class _ApplySponsorScreenState extends ConsumerState<ApplySponsorScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.white,
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: SportXShadows.e1,
                 ),
                 child: Row(
                   children: [
@@ -116,11 +105,11 @@ class _ApplySponsorScreenState extends ConsumerState<ApplySponsorScreen> {
                       height: 56,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                       child: sponsorship.sponsorLogoUrl != null
                           ? ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               child: Image.network(
                                 sponsorship.sponsorLogoUrl!,
                                 width: 56,
@@ -175,7 +164,7 @@ class _ApplySponsorScreenState extends ConsumerState<ApplySponsorScreen> {
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: AppColors.border),
                 ),
                 child: Row(
@@ -258,15 +247,15 @@ class _ApplySponsorScreenState extends ConsumerState<ApplySponsorScreen> {
                     fontSize: 14,
                   ),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(14),
                     borderSide: const BorderSide(color: AppColors.border),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(14),
                     borderSide: const BorderSide(color: AppColors.border),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(14),
                     borderSide: const BorderSide(color: AppColors.primary, width: 2),
                   ),
                 ),
@@ -286,7 +275,7 @@ class _ApplySponsorScreenState extends ConsumerState<ApplySponsorScreen> {
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   border: Border.all(color: AppColors.border, width: 2),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(14),
                   color: AppColors.surface,
                 ),
                 child: Column(
@@ -318,34 +307,28 @@ class _ApplySponsorScreenState extends ConsumerState<ApplySponsorScreen> {
         data: (sponsorship) => Container(
           padding: const EdgeInsets.all(20),
           decoration: const BoxDecoration(
-            color: AppColors.surface,
+            color: Colors.white,
             border: Border(top: BorderSide(color: AppColors.border)),
           ),
           child: SafeArea(
-            child: ElevatedButton(
-              onPressed: _submitting ? null : () => _submit(sponsorship),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 48),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: _submitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                  : const Text(
-                      'Submit Application',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            child: _submitting
+                ? Container(
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: AppColors.yellow.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(14),
                     ),
-            ),
+                    alignment: Alignment.center,
+                    child: const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.ink)),
+                  )
+                : PrimaryButton(
+                    label: 'Submit Application',
+                    icon: LucideIcons.send,
+                    onPressed: () => _submit(sponsorship),
+                  ),
           ),
         ),
         orElse: () => const SizedBox.shrink(),

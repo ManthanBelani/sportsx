@@ -65,7 +65,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: _buildStatCard(context, 'Total Users', '${stats?.totalUsers ?? '—'}', LucideIcons.users, AppColors.primary)),
+              Expanded(child: _buildStatCard(context, 'Total Users', '${stats?.totalUsers ?? '—'}', LucideIcons.users, AppColors.yellowDeep)),
               const SizedBox(width: 12),
               Expanded(child: _buildStatCard(context, 'Pending Approvals', '${stats?.pendingApprovals ?? '—'}', LucideIcons.clock, AppColors.warning)),
             ],
@@ -85,6 +85,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               Expanded(child: _buildActionCard(context, 'Moderation', LucideIcons.shield, AppColors.errorLight, AppColors.admin, () => context.push('/admin/moderation'))),
               const SizedBox(width: 12),
               Expanded(child: _buildActionCard(context, 'Approvals', LucideIcons.badgeCheck, AppColors.successLight, AppColors.academy, () => context.push('/admin/approvals'))),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: _buildActionCard(context, 'Analytics', LucideIcons.chartLine, AppColors.infoLight, AppColors.info, () => context.push('/admin/analytics'))),
+              const SizedBox(width: 12),
+              Expanded(child: _buildActionCard(context, 'Settings', LucideIcons.settings, AppColors.surface, AppColors.dark, () => context.push('/admin/settings'))),
             ],
           ),
         ],

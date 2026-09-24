@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -7,6 +8,7 @@ import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class CoachOnboardingScreen extends ConsumerStatefulWidget {
@@ -117,7 +119,8 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary, size: 24),
@@ -126,17 +129,20 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Coach Setup',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+              style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink),
             ),
             Text(
               'Tell us about your coaching',
-              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary),
             ),
           ],
         ),
         centerTitle: false,
+        bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(1),
+            child: Container(height: 1, color: AppColors.border)),
       ),
       body: SafeArea(
         child: Form(
@@ -211,9 +217,10 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
                           const SizedBox(width: 8),
                           IconButton(
                             onPressed: _addCertification,
-                            icon: const Icon(LucideIcons.plus, color: AppColors.primary),
+                            icon: const Icon(LucideIcons.plus, color: AppColors.ink),
                             style: IconButton.styleFrom(
-                              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                              backgroundColor: AppColors.yellowTint,
+                              side: const BorderSide(color: Color(0x33785000)),
                             ),
                           ),
                         ],
@@ -225,11 +232,15 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
                           runSpacing: 8,
                           children: _certifications.map((cert) {
                             return Chip(
-                              label: Text(cert, style: const TextStyle(fontSize: 12)),
-                              deleteIcon: const Icon(LucideIcons.x, size: 14),
+                              label: Text(cert,
+                                  style: GoogleFonts.inter(
+                                      fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.ink)),
+                              deleteIcon: const Icon(LucideIcons.x, size: 14, color: AppColors.ink),
                               onDeleted: () => _removeCertification(cert),
-                              backgroundColor: Colors.white,
-                              side: const BorderSide(color: AppColors.border),
+                              backgroundColor: AppColors.yellowTint,
+                              side: const BorderSide(color: Color(0x33785000)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(11)),
                             );
                           }).toList(),
                         ),
@@ -247,9 +258,10 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
                           const SizedBox(width: 8),
                           IconButton(
                             onPressed: _addLanguage,
-                            icon: const Icon(LucideIcons.plus, color: AppColors.primary),
+                            icon: const Icon(LucideIcons.plus, color: AppColors.ink),
                             style: IconButton.styleFrom(
-                              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                              backgroundColor: AppColors.yellowTint,
+                              side: const BorderSide(color: Color(0x33785000)),
                             ),
                           ),
                         ],
@@ -261,11 +273,15 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
                           runSpacing: 8,
                           children: _languages.map((lang) {
                             return Chip(
-                              label: Text(lang, style: const TextStyle(fontSize: 12)),
-                              deleteIcon: const Icon(LucideIcons.x, size: 14),
+                              label: Text(lang,
+                                  style: GoogleFonts.inter(
+                                      fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.ink)),
+                              deleteIcon: const Icon(LucideIcons.x, size: 14, color: AppColors.ink),
                               onDeleted: () => _removeLanguage(lang),
-                              backgroundColor: Colors.white,
-                              side: const BorderSide(color: AppColors.border),
+                              backgroundColor: AppColors.yellowTint,
+                              side: const BorderSide(color: Color(0x33785000)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(11)),
                             );
                           }).toList(),
                         ),
@@ -290,6 +306,7 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: AppColors.border),
+                          boxShadow: SportXShadows.e1,
                         ),
                         child: Row(
                           children: [
@@ -297,18 +314,18 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Personal Coaching',
-                                    style: TextStyle(
+                                    style: GoogleFonts.inter(
                                       fontSize: 14,
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w600,
                                       color: AppColors.textPrimary,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     'I offer one-on-one coaching sessions',
-                                    style: TextStyle(
+                                    style: GoogleFonts.inter(
                                       fontSize: 12,
                                       color: AppColors.textSecondary,
                                     ),
@@ -319,7 +336,8 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
                             Switch(
                               value: _personalCoaching,
                               onChanged: (v) => setState(() => _personalCoaching = v),
-                              activeThumbColor: AppColors.primary,
+                              activeThumbColor: AppColors.yellowDeep,
+                              activeTrackColor: AppColors.yellowTint,
                             ),
                           ],
                         ),
@@ -330,37 +348,36 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
               ),
               Container(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-                decoration: BoxDecoration(
-                  color: AppColors.background,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
                   border: Border(top: BorderSide(color: AppColors.border)),
                 ),
                 child: SafeArea(
                   top: false,
-                  child: ElevatedButton(
-                    onPressed: _saving ? null : _submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.yellow,
-                      foregroundColor: AppColors.ink,
-                      disabledBackgroundColor: AppColors.border,
-                      disabledForegroundColor: Colors.white,
-                      minimumSize: const Size(double.infinity, 52),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: _saving
-                        ? const SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
+                  child: _saving
+                      ? Container(
+                          height: 50,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Color(0xFFFFD54A), Color(0xFFFFC107), Color(0xFFF5B400)],
                             ),
-                          )
-                        : const Text(
-                            'Complete Setup',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: const Color(0x2E785000)),
+                            boxShadow: SportXShadows.btnShadow,
                           ),
-                  ),
+                          alignment: Alignment.center,
+                          child: const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                  color: AppColors.ink, strokeWidth: 2)),
+                        )
+                      : SizedBox(
+                          width: double.infinity,
+                          child: PrimaryButton(label: 'Complete Setup', onPressed: _submit),
+                        ),
                 ),
               ),
             ],
@@ -374,32 +391,17 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
         padding: const EdgeInsets.only(bottom: 8),
         child: Text(
           text,
-          style: const TextStyle(
+          style: GoogleFonts.inter(
             fontSize: 14,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
           ),
         ),
       );
 
-  InputDecoration _inputDecoration(String hint) => InputDecoration(
-        hintText: hint,
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.border),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.primary),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.red),
-        ),
-      );
+  // v2 inputs — default InputDecoration from app_theme.dart
+  // (h50 white, 1.5px border, radius 13, yellow focus ring).
+  InputDecoration _inputDecoration(String hint) => InputDecoration(hintText: hint);
 
   String? _required(String? v) =>
       (v == null || v.trim().isEmpty) ? 'This field is required' : null;
@@ -415,7 +417,7 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
           Expanded(
             child: Container(
               height: 4,
-              decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(2)),
+              decoration: BoxDecoration(color: AppColors.yellowDeep, borderRadius: BorderRadius.circular(2)),
             ),
           ),
           const SizedBox(width: 8),
@@ -452,35 +454,11 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
       runSpacing: 8,
       children: sports.map((s) {
         final isSelected = _sportId == s.id;
-        return GestureDetector(
+        return SportXChip(
+          label: s.name as String,
+          icon: _getSportIcon(s.name as String),
+          selected: isSelected,
           onTap: () => setState(() => _sportId = s.id as int?),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: isSelected ? AppColors.yellow : AppColors.background,
-              border: Border.all(color: isSelected ? AppColors.yellowDeep : AppColors.border),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  _getSportIcon(s.name as String),
-                  size: 16,
-                  color: isSelected ? AppColors.ink : AppColors.textPrimary,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  s.name as String,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: isSelected ? AppColors.ink : AppColors.textPrimary,
-                  ),
-                ),
-              ],
-            ),
-          ),
         );
       }).toList(),
     );
@@ -520,21 +498,23 @@ class _DropdownField extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(13),
                 border: Border.all(
-                  color: state.hasError ? Colors.red : AppColors.border,
+                  color: state.hasError ? AppColors.error : AppColors.border,
+                  width: 1.5,
                 ),
+                boxShadow: SportXShadows.e1,
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<int>(
                   value: value,
-                  hint: Text(hint, style: const TextStyle(color: AppColors.textSecondary, fontSize: 15)),
+                  hint: Text(hint, style: GoogleFonts.inter(color: AppColors.textTertiary, fontSize: 14)),
                   isExpanded: true,
                   icon: const Icon(LucideIcons.chevronDown, size: 20, color: AppColors.textSecondary),
                   items: items
                       .map((i) => DropdownMenuItem<int>(
                             value: i.value,
-                            child: Text(i.label, style: const TextStyle(fontSize: 15, color: AppColors.textPrimary)),
+                            child: Text(i.label, style: GoogleFonts.inter(fontSize: 14, color: AppColors.textPrimary)),
                           ))
                       .toList(),
                   onChanged: (v) {
@@ -549,7 +529,7 @@ class _DropdownField extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 4, left: 4),
                 child: Text(
                   state.errorText!,
-                  style: const TextStyle(fontSize: 12, color: Colors.red),
+                  style: GoogleFonts.inter(fontSize: 12, color: AppColors.error),
                 ),
               ),
           ],

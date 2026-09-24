@@ -44,7 +44,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withValues(alpha: 0.88),
         elevation: 0,
         title: Text('Post',
             style: GoogleFonts.sora(
@@ -121,7 +121,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       child: Row(children: [
         Icon(icon, color: color, size: 22),
         const SizedBox(width: 4),
-        Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w500)),
+        Text(label, style: GoogleFonts.inter(color: color, fontWeight: FontWeight.w500)),
       ]),
     );
   }
@@ -140,9 +140,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 decoration: InputDecoration(
                   hintText: 'Write a comment...',
                   hintStyle: const TextStyle(color: AppColors.textTertiary),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
                   filled: true,
-                  fillColor: AppColors.surface,
+                  fillColor: Colors.white,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 ),
                 onSubmitted: (_) => _submitComment(),

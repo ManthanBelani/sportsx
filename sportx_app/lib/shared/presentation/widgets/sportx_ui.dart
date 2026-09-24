@@ -105,6 +105,57 @@ class SecondaryButton extends StatelessWidget {
   }
 }
 
+/// v2 top bar — white/translucent, Sora title, 1px border divider.
+class SportXTopBar extends StatelessWidget implements PreferredSizeWidget {
+  final String? title;
+  final Widget? titleWidget;
+  final bool showBack;
+  final VoidCallback? onBack;
+  final List<Widget>? actions;
+  final PreferredSizeWidget? bottom;
+  const SportXTopBar({
+    super.key,
+    this.title,
+    this.titleWidget,
+    this.showBack = false,
+    this.onBack,
+    this.actions,
+    this.bottom,
+  });
+
+  @override
+  Size get preferredSize =>
+      Size.fromHeight(kToolbarHeight + (bottom?.preferredSize.height ?? 0));
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      backgroundColor: Colors.white.withValues(alpha: 0.88),
+      surfaceTintColor: Colors.white,
+      elevation: 0,
+      automaticallyImplyLeading: false,
+      leading: showBack
+          ? IconButton(
+              icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
+              onPressed: onBack ?? () => Navigator.of(context).maybePop(),
+            )
+          : null,
+      title: titleWidget ??
+          (title != null
+              ? Text(title!,
+                  style: GoogleFonts.sora(
+                      fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.textPrimary))
+              : null),
+      centerTitle: false,
+      actions: actions,
+      bottom: bottom ??
+          PreferredSize(
+              preferredSize: const Size.fromHeight(1),
+              child: Container(height: 1, color: AppColors.border)),
+    );
+  }
+}
+
 /// v2 .sect-h + .seeall
 class SectionHeader extends StatelessWidget {
   final String title;
@@ -521,7 +572,7 @@ class QuickTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(13),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border.all(color: AppColors.border),
@@ -531,11 +582,11 @@ class QuickTile extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 42,
-              height: 42,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(shape: BoxShape.circle, color: tintBg),
               alignment: Alignment.center,
-              child: Icon(icon, size: 20, color: tintFg),
+              child: Icon(icon, size: 19, color: tintFg),
             ),
             const SizedBox(width: 11),
             Expanded(

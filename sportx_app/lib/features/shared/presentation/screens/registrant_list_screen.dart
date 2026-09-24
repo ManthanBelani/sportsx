@@ -59,7 +59,7 @@ class RegistrantListScreen extends ConsumerWidget {
                 const SizedBox(width: 8),
                 const Text('• 8:00 AM - 12:00 PM', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                 const Spacer(),
-                Text('$filled/$capacity registered', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                Text('$filled/$capacity registered', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary)),
               ]),
               const SizedBox(height: 10),
               ClipRRect(
@@ -81,7 +81,7 @@ class RegistrantListScreen extends ConsumerWidget {
                   ]),
                 ),
                 data: (items) => items.isEmpty
-                    ? ListView(children: const [SizedBox(height: 200), Center(child: Text('No registrants yet', style: TextStyle(color: AppColors.textSecondary)))])
+                    ? ListView(children:  [SizedBox(height: 200), Center(child: Text('No registrants yet', style: GoogleFonts.inter(color: AppColors.textSecondary)))])
                     : ListView.builder(
                         padding: const EdgeInsets.all(16),
                         itemCount: items.length,
@@ -160,7 +160,7 @@ class _RegistrantCardWithActions extends ConsumerWidget {
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(color: AppColors.surface, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(color: AppColors.surface, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(16)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             CircleAvatar(
@@ -175,7 +175,7 @@ class _RegistrantCardWithActions extends ConsumerWidget {
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.textPrimary)),
                 const SizedBox(height: 2),
-                Text('Age $age • $gender', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                Text('Age $age • $gender', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
                 const SizedBox(height: 2),
                 Row(children: [
                   const Icon(LucideIcons.phone, size: 12, color: AppColors.textSecondary),

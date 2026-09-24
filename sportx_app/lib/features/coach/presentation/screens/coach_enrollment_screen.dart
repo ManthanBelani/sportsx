@@ -8,6 +8,7 @@ import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CoachEnrollmentScreen extends ConsumerWidget {
   const CoachEnrollmentScreen({super.key});
@@ -101,16 +102,16 @@ class _EnrollmentCard extends ConsumerWidget {
             decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(16)),
             child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
               Column(children: [const Text('Plan', style: TextStyle(fontSize: 12)), Text(enrollment.planType.name.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold))]),
-              Column(children: [const Text('Fees', style: TextStyle(fontSize: 12)), Text('₹${enrollment.feesAmount.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold))]),
+              Column(children: [const Text('Fees', style: TextStyle(fontSize: 12)), Text('₹${enrollment.feesAmount.toStringAsFixed(0)}', style: GoogleFonts.inter(fontWeight: FontWeight.bold))]),
             ]),
           ),
           if (enrollment.notes != null && enrollment.notes!.isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text('Note: ${enrollment.notes}', style: const TextStyle(fontStyle: FontStyle.italic)),
+            Text('Note: ${enrollment.notes}', style: GoogleFonts.inter(fontStyle: FontStyle.italic)),
           ],
           if (enrollment.isRejected && enrollment.rejectionReason != null) ...[
             const SizedBox(height: 8),
-            Text('Reason: ${enrollment.rejectionReason}', style: const TextStyle(color: AppColors.error)),
+            Text('Reason: ${enrollment.rejectionReason}', style: GoogleFonts.inter(color: AppColors.error)),
           ],
           if (filter == 'pending') ...[
             const SizedBox(height: 12),

@@ -120,17 +120,13 @@ class _EnquiryInboxScreenState extends ConsumerState<EnquiryInboxScreen> {
                           ),
                         ])
                       : items.isEmpty
-                          ? ListView(children: const [
+                          ? ListView(children:  [
                               Padding(
                                 padding: EdgeInsets.all(32),
                                 child: Center(
                                   child: Column(
                                     children: [
-                                      Text('No enquiries yet',
-                                          style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                              color: AppColors.textPrimary)),
+                                      Text('No enquiries yet', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                                       SizedBox(height: 4),
                                       Text(
                                           'When athletes enquire about\nyour coaching, they will appear here',
@@ -149,8 +145,7 @@ class _EnquiryInboxScreenState extends ConsumerState<EnquiryInboxScreen> {
                               itemCount: items.length,
                               itemBuilder: (context, i) => Padding(
                                 padding: const EdgeInsets.only(bottom: 12),
-                                child: _EnquiryCard(
-                                  enquiry: items[i],
+                                child: _EnquiryCard(enquiry: items[i],
                                   timeLabel: _relativeTime(items[i].createdAt),
                                 ),
                               ),
@@ -200,7 +195,7 @@ class _EnquiryCard extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           border: Border.all(color: isNew ? AppColors.primary.withValues(alpha: 0.4) : AppColors.border),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           color: AppColors.surface,
         ),
         child: Row(
@@ -237,7 +232,7 @@ class _EnquiryCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: _badgeBg,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                         child: Text(_badgeLabel,
                             style: TextStyle(

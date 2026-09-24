@@ -96,8 +96,7 @@ class RegistrantDetailScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Registration #$registrationId',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+            Text('Registration #$registrationId', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
             const SizedBox(height: 16),
             Row(children: [
               Expanded(child: OutlinedButton.icon(onPressed: () => _toggleReminder(context, ref), icon: const Icon(LucideIcons.bell, size: 16), label: const Text('Toggle Reminder'))),

@@ -5,6 +5,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class TournamentCalendarScreen extends ConsumerStatefulWidget {
@@ -83,33 +84,19 @@ class _TournamentCalendarScreenState extends ConsumerState<TournamentCalendarScr
     final tournaments = state.items;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        leading: IconButton(
-          icon: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(LucideIcons.arrowLeft, size: 20, color: AppColors.textPrimary),
-          ),
-          onPressed: () => context.pop(),
-        ),
-        title: const Text(
-          'Tournaments',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
-        ),
-        centerTitle: true,
+      backgroundColor: AppColors.surface,
+      appBar: SportXTopBar(
+        title: 'Tournaments',
+        showBack: true,
+        onBack: () => context.pop(),
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 16),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(8),
+              color: Colors.white,
+              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: SportXShadows.e1,
             ),
             child: Row(
               children: [
@@ -137,8 +124,10 @@ class _TournamentCalendarScreenState extends ConsumerState<TournamentCalendarScr
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.white,
+                        border: Border.all(color: AppColors.border),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: SportXShadows.e1,
                       ),
                       child: const Icon(LucideIcons.chevronLeft, size: 18, color: AppColors.textPrimary),
                     ),
@@ -153,8 +142,10 @@ class _TournamentCalendarScreenState extends ConsumerState<TournamentCalendarScr
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.white,
+                        border: Border.all(color: AppColors.border),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: SportXShadows.e1,
                       ),
                       child: const Icon(LucideIcons.chevronRight, size: 18, color: AppColors.textPrimary),
                     ),
@@ -206,7 +197,7 @@ class _TournamentCalendarScreenState extends ConsumerState<TournamentCalendarScr
                       color: isSelected
                           ? AppColors.primary.withValues(alpha: 0.1)
                           : hasEvent
-                              ? const Color(0xFFe6f0ff)
+                              ? AppColors.infoLight
                               : Colors.transparent,
                       shape: BoxShape.circle,
                     ),
@@ -352,7 +343,7 @@ class _TournamentCalendarScreenState extends ConsumerState<TournamentCalendarScr
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppColors.background,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(color: AppColors.border),
         ),
         child: Column(
@@ -364,8 +355,10 @@ class _TournamentCalendarScreenState extends ConsumerState<TournamentCalendarScr
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white,
+                    border: Border.all(color: AppColors.border),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: SportXShadows.e1,
                   ),
                   child: const Icon(LucideIcons.trophy, color: AppColors.primary, size: 22),
                 ),
@@ -427,15 +420,15 @@ class _TournamentCalendarScreenState extends ConsumerState<TournamentCalendarScr
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFd1fae5),
-                      borderRadius: BorderRadius.circular(12),
+                      color: AppColors.successLight,
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
                       tournament.status == 'open' ? 'Registration Open' : 'Coming Soon',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF065f46),
+                        color: Color(0xFF15803D),
                       ),
                     ),
                   ),

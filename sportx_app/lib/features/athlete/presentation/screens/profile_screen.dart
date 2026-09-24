@@ -134,7 +134,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withValues(alpha: 0.88),
         elevation: 0,
         title: Text('My Profile',
             style: GoogleFonts.sora(
@@ -335,7 +335,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   height: 40,
                   decoration: BoxDecoration(
                     color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   alignment: Alignment.center,
                   child: Text(achievement['icon'], style: const TextStyle(fontSize: 20)),
@@ -405,7 +405,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   height: 40,
                   decoration: BoxDecoration(
                     color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   alignment: Alignment.center,
                   child: Text(tournament['icon'] ?? '🏆', style: const TextStyle(fontSize: 20)),
@@ -477,7 +477,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: AppColors.surface,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -548,7 +548,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               itemCount: images.length,
               itemBuilder: (context, index) {
                 return ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(14),
                   child: Image.network(
                     images[index],
                     fit: BoxFit.cover,
@@ -651,7 +651,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 foregroundColor: AppColors.textPrimary,
                 side: const BorderSide(color: AppColors.border),
                 minimumSize: const Size.fromHeight(48),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
               icon: const Icon(LucideIcons.settings, size: 18),
               label: const Text('Settings', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
@@ -665,7 +665,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 foregroundColor: AppColors.error,
                 side: const BorderSide(color: AppColors.error),
                 minimumSize: const Size.fromHeight(48),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
               icon: const Icon(LucideIcons.logOut, size: 18),
               label: const Text('Log out', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),

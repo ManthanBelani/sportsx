@@ -26,7 +26,7 @@ class RegistrationManagementScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
@@ -232,10 +232,10 @@ class _RegistrationListView extends ConsumerWidget {
           }).toList();
         }
         if (filtered.isEmpty && query.isNotEmpty) {
-          return Center(child: Text('No results for "$query"', style: const TextStyle(color: AppColors.textSecondary)));
+          return Center(child: Text('No results for "$query"', style: GoogleFonts.inter(color: AppColors.textSecondary)));
         }
         if (filtered.isEmpty) {
-          return Center(child: Text('No $status registrations', style: const TextStyle(color: AppColors.textSecondary)));
+          return Center(child: Text('No $status registrations', style: GoogleFonts.inter(color: AppColors.textSecondary)));
         }
         final grouped = <String, List<Map<String, dynamic>>>{};
         for (final r in filtered) {
@@ -250,7 +250,7 @@ class _RegistrationListView extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
                 child: Row(children: [
-                  Text('${filtered.length} $status', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                  Text('${filtered.length} $status', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
                   const Spacer(),
                   InkWell(
                     onTap: () {
@@ -262,7 +262,7 @@ class _RegistrationListView extends ConsumerWidget {
                       }
                       SnackBarUtils.showSuccess(context, 'CSV ready: ${filtered.length} rows (${csv.length} chars)');
                     },
-                    child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), decoration: BoxDecoration(border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(6)), child: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(LucideIcons.download, size: 12, color: AppColors.textSecondary), SizedBox(width: 4), Text('Export CSV', style: TextStyle(fontSize: 11, color: AppColors.textSecondary))])),
+                    child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), decoration: BoxDecoration(border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(6)), child:  Row(mainAxisSize: MainAxisSize.min, children: [Icon(LucideIcons.download, size: 12, color: AppColors.textSecondary), SizedBox(width: 4), Text('Export CSV', style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondary))])),
                   ),
                 ]),
               ),

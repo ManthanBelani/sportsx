@@ -85,7 +85,7 @@ class _OppReviewDetailScreenState extends ConsumerState<OppReviewDetailScreen> {
                 const Spacer(),
                 Text(
                   'Posted: ${opportunity.createdAt}',
-                  style: TextStyle(color: AppColors.textSecondary),
+                  style: GoogleFonts.inter(color: AppColors.textSecondary),
                 ),
               ],
             ),
@@ -115,7 +115,7 @@ class _OppReviewDetailScreenState extends ConsumerState<OppReviewDetailScreen> {
             if (opportunity.description != null) ...[
               Text(
                 'Description:',
-                style: TextStyle(
+                style: GoogleFonts.inter(
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
                 ),
@@ -126,7 +126,7 @@ class _OppReviewDetailScreenState extends ConsumerState<OppReviewDetailScreen> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(opportunity.description!),
               ),
@@ -168,7 +168,7 @@ class _OppReviewDetailScreenState extends ConsumerState<OppReviewDetailScreen> {
               ),
               title: Text(
                 opportunity.sponsorName,
-                style: const TextStyle(fontWeight: FontWeight.w600),
+                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -194,7 +194,7 @@ class _OppReviewDetailScreenState extends ConsumerState<OppReviewDetailScreen> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: AppColors.ctaLight,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
                   children: [
@@ -202,7 +202,7 @@ class _OppReviewDetailScreenState extends ConsumerState<OppReviewDetailScreen> {
                     const SizedBox(width: 8),
                     Text(
                       opportunity.budget!,
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         color: AppColors.ctaDark,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -214,7 +214,7 @@ class _OppReviewDetailScreenState extends ConsumerState<OppReviewDetailScreen> {
             else
               Text(
                 'Budget not specified',
-                style: TextStyle(color: AppColors.textSecondary),
+                style: GoogleFonts.inter(color: AppColors.textSecondary),
               ),
           ],
         ),

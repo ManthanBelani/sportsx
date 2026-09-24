@@ -9,6 +9,7 @@ import 'package:sportx_app/features/connections/presentation/providers/connectio
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/chat/presentation/providers/chat_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class MyConnectionsScreen extends ConsumerStatefulWidget {
@@ -40,11 +41,11 @@ class _MyConnectionsScreenState extends ConsumerState<MyConnectionsScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withValues(alpha: 0.88),
         surfaceTintColor: Colors.white,
         elevation: 0,
         title: Text('My Connections',
-            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
+            style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
         actions: [
           IconButton(
             icon: const Icon(LucideIcons.userSearch, color: AppColors.textPrimary),
@@ -68,8 +69,9 @@ class _MyConnectionsScreenState extends ConsumerState<MyConnectionsScreen> {
                 hintText: 'Search connections...',
                 prefixIcon: const Icon(LucideIcons.search, color: AppColors.textSecondary),
                 filled: true,
-                fillColor: AppColors.surface,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
               ),
             ),
           ),
@@ -85,20 +87,19 @@ class _MyConnectionsScreenState extends ConsumerState<MyConnectionsScreen> {
                         Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
                           const Icon(LucideIcons.users, size: 64, color: AppColors.textTertiary),
                           const SizedBox(height: 16),
-                          Text('No connections yet', style: TextStyle(color: AppColors.textSecondary)),
+                          Text('No connections yet', style: GoogleFonts.inter(color: AppColors.textSecondary)),
                           const SizedBox(height: 12),
-                          FilledButton.icon(
+                          PrimaryButton(
+                            label: 'Find Athletes',
+                            icon: LucideIcons.userSearch,
                             onPressed: () => context.push('/athlete-directory'),
-                            style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink),
-                            icon: const Icon(LucideIcons.userSearch, size: 16),
-                            label: const Text('Find Athletes'),
                           ),
                         ])),
                       ])
                     : ListView.separated(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                         itemCount: connections.length,
-                        separatorBuilder: (_, _) => const Divider(height: 1),
+                        separatorBuilder: (_, _) => const SizedBox(height: 10),
                         itemBuilder: (context, index) => _buildConnectionTile(connections[index], currentUserId),
                       ),
               ),
@@ -110,13 +111,31 @@ class _MyConnectionsScreenState extends ConsumerState<MyConnectionsScreen> {
   }
 
   Widget _buildConnectionTile(ConnectionRecord connection, String currentUserId) {
+    final initial = connection.other.name.isNotEmpty ? connection.other.name[0].toUpperCase() : 'A';
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(vertical: 8),
-      leading: const CircleAvatar(radius: 28, backgroundColor: AppColors.primary, child: Icon(LucideIcons.user, color: Colors.white)),
-      title: Text(connection.other.name, style: const TextStyle(fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
-      subtitle: Text(connection.other.role ?? '', style: const TextStyle(color: AppColors.textSecondary)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      tileColor: Colors.white,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
+      leading: Container(
+        width: 52,
+        height: 52,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFFFE9A8), Color(0xFFFFC107), Color(0xFFF5B400)],
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Text(initial,
+            style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink)),
+      ),
+      title: Text(connection.other.name, style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14.5, color: AppColors.ink)),
+      subtitle: Text(connection.other.role ?? '', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
       trailing: IconButton(
-        icon: const Icon(LucideIcons.messageCircle, color: AppColors.primary),
+        icon: const Icon(LucideIcons.messageCircle, color: AppColors.primaryDarker),
         tooltip: 'Message',
         onPressed: () async {
           final uid = int.tryParse(connection.other.id);

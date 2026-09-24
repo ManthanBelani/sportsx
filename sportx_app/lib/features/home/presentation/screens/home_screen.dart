@@ -126,7 +126,7 @@ class HomeScreen extends ConsumerWidget {
                     physics: const NeverScrollableScrollPhysics(),
                     mainAxisSpacing: 10,
                     crossAxisSpacing: 10,
-                    childAspectRatio: 2.6,
+                    childAspectRatio: 2.3,
                     children: [
                       QuickTile(
                           label: 'Trials',

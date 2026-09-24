@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class ScholarshipListScreen extends ConsumerStatefulWidget {
@@ -28,12 +29,8 @@ class _ScholarshipListScreenState extends ConsumerState<ScholarshipListScreen> {
     final state = ref.watch(scholarshipsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        title: const Text('Scholarships', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-      ),
+      backgroundColor: AppColors.surface,
+      appBar: const SportXTopBar(title: 'Scholarships'),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -46,8 +43,10 @@ class _ScholarshipListScreenState extends ConsumerState<ScholarshipListScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white,
+                    border: Border.all(color: AppColors.border),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: SportXShadows.e1,
                   ),
                   child: const TextField(
                     decoration: InputDecoration(
@@ -68,26 +67,10 @@ class _ScholarshipListScreenState extends ConsumerState<ScholarshipListScreen> {
                     separatorBuilder: (context, index) => const SizedBox(width: 8),
                     itemBuilder: (context, index) {
                       final filter = _filters[index];
-                      final isActive = filter == _selectedFilter;
-                      return GestureDetector(
+                      return SportXChip(
+                        label: filter,
+                        selected: filter == _selectedFilter,
                         onTap: () => setState(() => _selectedFilter = filter),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: isActive ? AppColors.primary : AppColors.background,
-                            border: Border.all(color: isActive ? AppColors.primary : AppColors.border),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            filter,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: isActive ? Colors.white : AppColors.textPrimary,
-                            ),
-                          ),
-                        ),
                       );
                     },
                   ),
@@ -97,8 +80,8 @@ class _ScholarshipListScreenState extends ConsumerState<ScholarshipListScreen> {
           ),
           
           const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            child: Text('Available Scholarships', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+            padding: EdgeInsets.fromLTRB(20, 8, 20, 0),
+            child: SectionHeader(title: 'Available Scholarships'),
           ),
           
           Expanded(
@@ -126,8 +109,10 @@ class _ScholarshipListScreenState extends ConsumerState<ScholarshipListScreen> {
                                 margin: const EdgeInsets.only(bottom: 12),
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: AppColors.surface,
-                                  borderRadius: BorderRadius.circular(8),
+                                  color: Colors.white,
+                                  border: Border.all(color: AppColors.border),
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: SportXShadows.e1,
                                 ),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,12 +121,12 @@ class _ScholarshipListScreenState extends ConsumerState<ScholarshipListScreen> {
                                       width: 80,
                                       height: 80,
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFFE3F2FD),
-                                        borderRadius: BorderRadius.circular(8),
+                                        color: AppColors.infoLight,
+                                        borderRadius: BorderRadius.circular(14),
                                       ),
                                       child: item.sponsorLogoUrl != null
                                           ? ClipRRect(
-                                              borderRadius: BorderRadius.circular(8),
+                                              borderRadius: BorderRadius.circular(14),
                                               child: Image.network(
                                                 item.sponsorLogoUrl!,
                                                 width: 80,
@@ -183,12 +168,12 @@ class _ScholarshipListScreenState extends ConsumerState<ScholarshipListScreen> {
                                                 Container(
                                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                                   decoration: BoxDecoration(
-                                                    color: const Color(0xFFd1fae5),
-                                                    borderRadius: BorderRadius.circular(4),
+                                                    color: AppColors.successLight,
+                                                    borderRadius: BorderRadius.circular(999),
                                                   ),
                                                   child: Text(
                                                     '₹${item.amount!.toStringAsFixed(0)}',
-                                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF065f46)),
+                                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF15803D)),
                                                   ),
                                                 ),
                                               if (item.amount != null && deadlineLabel != null) const SizedBox(width: 8),
@@ -196,15 +181,15 @@ class _ScholarshipListScreenState extends ConsumerState<ScholarshipListScreen> {
                                                 Container(
                                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                   decoration: BoxDecoration(
-                                                    color: isSoon ? const Color(0xFFfef3c7) : const Color(0xFFe0e7ff),
-                                                    borderRadius: BorderRadius.circular(4),
+                                                    color: isSoon ? AppColors.ctaLight : AppColors.infoLight,
+                                                    borderRadius: BorderRadius.circular(999),
                                                   ),
                                                   child: Text(
                                                     deadlineLabel,
                                                     style: TextStyle(
                                                       fontSize: 11,
                                                       fontWeight: FontWeight.w600,
-                                                      color: isSoon ? const Color(0xFF92400e) : const Color(0xFF3730a3),
+                                                      color: isSoon ? AppColors.warnText : AppColors.info,
                                                     ),
                                                   ),
                                                 ),

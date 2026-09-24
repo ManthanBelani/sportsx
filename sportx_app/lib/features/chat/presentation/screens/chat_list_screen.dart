@@ -41,11 +41,11 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withValues(alpha: 0.88),
         surfaceTintColor: Colors.white,
         elevation: 0,
         title: Text('Messages',
-            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
+            style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
       ),
       body: Column(
         children: [
@@ -67,8 +67,9 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                       )
                     : null,
                 filled: true,
-                fillColor: AppColors.surface,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
                 contentPadding: const EdgeInsets.symmetric(vertical: 12),
               ),
             ),
@@ -91,12 +92,13 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                         Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
                           const Icon(LucideIcons.messageCircle, size: 64, color: AppColors.textTertiary),
                           const SizedBox(height: 16),
-                          Text('No conversations found', style: TextStyle(color: AppColors.textSecondary)),
+                          Text('No conversations found', style: GoogleFonts.inter(color: AppColors.textSecondary)),
                         ])),
                       ])
                     : ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                         itemCount: chats.length,
-                        separatorBuilder: (_, _) => const Divider(height: 1, indent: 76),
+                        separatorBuilder: (_, _) => const SizedBox(height: 10),
                         itemBuilder: (context, index) => _buildChatTile(chats[index]),
                       ),
               ),
@@ -108,26 +110,40 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   }
 
   Widget _buildChatTile(ConversationItem chat) {
+    final initial = chat.title.isNotEmpty ? chat.title[0].toUpperCase() : 'C';
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: const CircleAvatar(
-        radius: 24,
-        backgroundColor: AppColors.primary,
-        child: Icon(LucideIcons.user, color: Colors.white),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      tileColor: Colors.white,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.border)),
+      leading: Container(
+        width: 48,
+        height: 48,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFFFE9A8), Color(0xFFFFC107), Color(0xFFF5B400)],
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Text(initial,
+            style: GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.ink)),
       ),
       title: Row(
         children: [
           Expanded(
             child: Text(chat.title,
-                style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+                style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14.5, color: AppColors.ink),
                 overflow: TextOverflow.ellipsis),
           ),
           Text(chat.lastMessageAt ?? '',
-              style: const TextStyle(fontSize: 12, color: AppColors.textTertiary)),
+              style: GoogleFonts.inter(fontSize: 11, color: AppColors.textTertiary)),
         ],
       ),
       subtitle: Text(chat.lastMessage ?? 'No messages yet',
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 13),
           maxLines: 1, overflow: TextOverflow.ellipsis),
       onTap: () => context.push('/chat-screen', extra: {'id': chat.id, 'name': chat.title, 'avatar': ''}),
     );

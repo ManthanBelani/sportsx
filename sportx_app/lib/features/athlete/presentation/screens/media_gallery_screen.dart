@@ -192,7 +192,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withValues(alpha: 0.88),
         elevation: 0,
         leadingWidth: 60,
         leading: Padding(
@@ -205,7 +205,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
                 height: 40,
                 decoration: BoxDecoration(
                   color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary, size: 20),
               ),
@@ -348,14 +348,16 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
           return Container(
             key: ValueKey(item['id']),
             height: 80,
-            margin: const EdgeInsets.only(bottom: 8),
+            margin: const EdgeInsets.only(bottom: 10),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              color: Colors.white,
+              border: Border.all(color: AppColors.border),
+              boxShadow: SportXShadows.e1,
             ),
             child: ListTile(
               leading: ClipRRect(
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(8),
                 child: Image.network(
                   _absoluteUrl((item['url'] ?? '') as String),
                   width: 60,

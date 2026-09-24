@@ -7,6 +7,7 @@ import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/talent_scout/presentation/providers/scout_connection_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/widgets/athlete_avatar.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class TalentScoutConnectionScreen extends ConsumerStatefulWidget {
@@ -107,13 +108,13 @@ class _TalentScoutConnectionScreenState extends ConsumerState<TalentScoutConnect
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.border),
               ),
               child: Row(
                 children: [
                   _loadingAthlete
-                      ? const SizedBox(width: 48, height: 48, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))
+                      ? const SizedBox(width: 48, height: 48, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.scout))
                       : AthleteAvatar(photoUrl: photoUrl, radius: 24),
                   const SizedBox(width: 14),
                   Expanded(
@@ -145,9 +146,9 @@ class _TalentScoutConnectionScreenState extends ConsumerState<TalentScoutConnect
               decoration: InputDecoration(
                 hintText: 'Hi! I\'m a talent scout with ${_athlete?['city']?['name'] ?? 'your region'}... I noticed your performance in... Would love to connect.',
                 hintStyle: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.scout)),
                 contentPadding: const EdgeInsets.all(14),
                 filled: true,
                 fillColor: AppColors.surface,
@@ -156,14 +157,24 @@ class _TalentScoutConnectionScreenState extends ConsumerState<TalentScoutConnect
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
-              child: FilledButton(
-                onPressed: _sending ? null : _sendRequest,
-                style: FilledButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.symmetric(vertical: 14)),
-                child: _sending
-                    ? const SizedBox(
-                        height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('Send Request', style: TextStyle(fontWeight: FontWeight.w600)),
-              ),
+              child: _sending
+                  ? Container(
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: AppColors.yellow.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      alignment: Alignment.center,
+                      child: const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.ink)),
+                    )
+                  : PrimaryButton(
+                      label: 'Send Request',
+                      icon: LucideIcons.send,
+                      onPressed: _sendRequest,
+                    ),
             ),
             const SizedBox(height: 12),
             Center(

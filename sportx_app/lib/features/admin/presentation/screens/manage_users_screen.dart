@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -98,16 +99,16 @@ class _ManageUsersScreenState extends ConsumerState<ManageUsersScreen> {
                                   value: user.isActive ? 'suspend' : 'activate',
                                   child: Text(
                                     user.isActive ? 'Suspend' : 'Activate',
-                                    style: TextStyle(
+                                    style: GoogleFonts.inter(
                                       color: user.isActive ? AppColors.error : AppColors.success,
                                     ),
                                   ),
                                 ),
-                                const PopupMenuItem(
+                                PopupMenuItem(
                                   value: 'delete',
                                   child: Text(
                                     'Delete',
-                                    style: TextStyle(color: AppColors.error),
+                                    style: GoogleFonts.inter(color: AppColors.error),
                                   ),
                                 ),
                               ],

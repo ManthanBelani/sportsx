@@ -8,6 +8,7 @@ import 'package:sportx_app/features/talent_scout/presentation/widgets/athlete_av
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class TalentScoutAthleteDiscoveryScreen extends ConsumerStatefulWidget {
@@ -121,7 +122,13 @@ class _TalentScoutAthleteDiscoveryScreenState
           // Search Bar
           Container(
             width: double.infinity,
-            color: AppColors.surface,
+            margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: SportXShadows.e1,
+            ),
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
             child: Row(
               children: [
@@ -141,17 +148,17 @@ class _TalentScoutAthleteDiscoveryScreenState
                               ? LucideIcons.x
                               : LucideIcons.slidersHorizontal,
                           size: 18,
-                          color: AppColors.primary,
+                          color: AppColors.scout,
                         ),
                         onPressed: () =>
                             setState(() => _showFilters = !_showFilters),
                       ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(14),
                         borderSide: const BorderSide(color: AppColors.border),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(14),
                         borderSide: const BorderSide(color: AppColors.border),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
@@ -165,20 +172,9 @@ class _TalentScoutAthleteDiscoveryScreenState
                   ),
                 ),
                 const SizedBox(width: 8),
-                FilledButton(
-                  onPressed: _applyFilters,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                  ),
-                  child: const Icon(
-                    LucideIcons.search,
-                    size: 18,
-                    color: Colors.white,
-                  ),
+                SportXIconButton(
+                  icon: LucideIcons.search,
+                  onTap: _applyFilters,
                 ),
               ],
             ),
@@ -189,7 +185,13 @@ class _TalentScoutAthleteDiscoveryScreenState
               (meta.sports.isNotEmpty || meta.cities.isNotEmpty))
             Container(
               width: double.infinity,
-              color: AppColors.surface,
+              margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: AppColors.border),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: SportXShadows.e1,
+              ),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
@@ -228,7 +230,7 @@ class _TalentScoutAthleteDiscoveryScreenState
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.border),
               ),
               child: Column(
@@ -251,7 +253,7 @@ class _TalentScoutAthleteDiscoveryScreenState
                           'Clear all',
                           style: TextStyle(
                             fontSize: 13,
-                            color: AppColors.primary,
+                            color: AppColors.scout,
                           ),
                         ),
                       ),
@@ -410,12 +412,12 @@ class _TalentScoutAthleteDiscoveryScreenState
                         label: 'Has achievements',
                         child: InkWell(
                           onTap: () => setState(() => _hasAchievements = !_hasAchievements),
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(999),
                           child: Row(mainAxisSize: MainAxisSize.min, children: [
                             Checkbox(
                               value: _hasAchievements,
                               onChanged: (v) => setState(() => _hasAchievements = v ?? false),
-                              activeColor: AppColors.primary,
+                              activeColor: AppColors.scout,
                               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               visualDensity: VisualDensity.compact,
                             ),
@@ -425,10 +427,10 @@ class _TalentScoutAthleteDiscoveryScreenState
                         ),
                       ),
                       const Spacer(),
-                      FilledButton(
+                      PrimaryButton(
+                        label: 'Apply Filters',
+                        small: true,
                         onPressed: _applyFilters,
-                        style: FilledButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10)),
-                        child: const Text('Apply Filters'),
                       ),
                     ],
                   ),
@@ -440,7 +442,13 @@ class _TalentScoutAthleteDiscoveryScreenState
           if (!state.isLoading)
             Container(
               width: double.infinity,
-              color: AppColors.surface,
+              margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: AppColors.border),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: SportXShadows.e1,
+              ),
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
               child: Text(
                 '${state.athletes.length} athlete${state.athletes.length == 1 ? '' : 's'} found',
@@ -464,9 +472,10 @@ class _TalentScoutAthleteDiscoveryScreenState
                           ),
                         ),
                         const SizedBox(height: 12),
-                        ElevatedButton(
+                        PrimaryButton(
+                          label: 'Retry',
+                          icon: LucideIcons.refreshCw,
                           onPressed: _applyFilters,
-                          child: Text('Retry'),
                         ),
                       ],
                     ),
@@ -518,7 +527,7 @@ class _TalentScoutAthleteDiscoveryScreenState
                             padding: EdgeInsets.symmetric(vertical: 16),
                             child: Center(
                               child: CircularProgressIndicator(
-                                color: AppColors.primary,
+                                color: AppColors.scout,
                                 strokeWidth: 2,
                               ),
                             ),
@@ -539,19 +548,10 @@ class _TalentScoutAthleteDiscoveryScreenState
   }
 
   Widget _filterChip(String label, bool selected, VoidCallback onTap) {
-    return ChoiceChip(
-      label: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          color: selected ? Colors.white : AppColors.textSecondary,
-        ),
-      ),
+    return SportXChip(
+      label: label,
       selected: selected,
-      selectedColor: AppColors.primary,
-      backgroundColor: AppColors.surface,
-      side: BorderSide(color: selected ? AppColors.primary : AppColors.border),
-      onSelected: (_) => onTap(),
+      onTap: onTap,
     );
   }
 
@@ -564,7 +564,7 @@ class _TalentScoutAthleteDiscoveryScreenState
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
         ),
         child: Row(
@@ -593,14 +593,14 @@ class _TalentScoutAthleteDiscoveryScreenState
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(12),
+                            color: AppColors.scout.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
                             athlete.sports.first,
                             style: const TextStyle(
                               fontSize: 11,
-                              color: AppColors.primary,
+                              color: AppColors.scout,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -700,7 +700,7 @@ class _TalentScoutAthleteDiscoveryScreenState
                     const Icon(
                       LucideIcons.award,
                       size: 12,
-                      color: AppColors.primary,
+                      color: AppColors.scout,
                     ),
                     const SizedBox(width: 2),
                     Text(

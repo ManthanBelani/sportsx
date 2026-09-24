@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/sponsor/presentation/providers/sponsor_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class ApplicationDetailScreen extends ConsumerWidget {
@@ -52,20 +53,21 @@ class ApplicationDetailScreen extends ConsumerWidget {
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
-              child: OutlinedButton(
+              child: SecondaryButton(
+                label: 'View Full Profile',
+                icon: LucideIcons.user,
                 onPressed: () => context.push('/athlete-profile-view', extra: {'id': applicationId}),
-                child: const Text('View Full Profile'),
               ),
             ),
             const SizedBox(height: 32),
             Row(
               children: [
                 Expanded(
-                  child: FilledButton.icon(
+                  child: PrimaryButton(
+                    label: 'Shortlist',
+                    icon: LucideIcons.star,
+                    small: true,
                     onPressed: () => _act(ref, context, 'shortlisted', 'Added to shortlist'),
-                    style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink),
-                    icon: const Icon(LucideIcons.star),
-                    label: const Text('Shortlist'),
                   ),
                 ),
                 const SizedBox(width: 8),

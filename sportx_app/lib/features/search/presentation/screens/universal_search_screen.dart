@@ -228,7 +228,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
             crossAxisCount: 2,
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
-            childAspectRatio: 2.5,
+            childAspectRatio: 2.3,
             children: [
               _buildQuickLink('Academies', LucideIcons.building2, '/academies'),
               _buildQuickLink('Coaches', LucideIcons.user, '/coaches'),
@@ -315,7 +315,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: isSelected ? AppColors.yellowTint : AppColors.surface,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
                       count.toString(),

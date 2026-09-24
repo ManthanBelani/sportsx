@@ -36,7 +36,7 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         scrolledUnderElevation: 0,
         elevation: 0,
         title: Text('SportX', style: GoogleFonts.sora(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.ink)),
@@ -192,7 +192,7 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
                   child: Row(children: [
                     Container(
                       padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border), boxShadow: SportXShadows.e1),
                       child: const Icon(LucideIcons.clock, size: 18, color: AppColors.warnText),
                     ),
                     const SizedBox(width: 10),
@@ -298,7 +298,7 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                           Expanded(child: Text('${cat['tournament_name']} • ${cat['category_name']}', style: const TextStyle(fontSize: 12, color: AppColors.textPrimary), overflow: TextOverflow.ellipsis)),
-                          Text('$reg/$cap', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                          Text('$reg/$cap', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
                         ]),
                         const SizedBox(height: 4),
                         ClipRRect(
@@ -333,7 +333,7 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
                 ]),
                 const SizedBox(height: 12),
                 if (trials.isEmpty)
-                  const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('No trials yet. Tap Post Trial to create one.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)))
+                   Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('No trials yet. Tap Post Trial to create one.', style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary)))
                 else
                   ...trials.take(3).map((t) => InkWell(
                         onTap: () => context.push('/registrant-list', extra: {'id': t.id.toString(), 'title': t.title}),
@@ -365,7 +365,7 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
                 ]),
                 const SizedBox(height: 12),
                 if (tournaments.isEmpty)
-                  const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('No tournaments yet. Tap Post Tournament to create one.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)))
+                   Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('No tournaments yet. Tap Post Tournament to create one.', style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary)))
                 else
                   ...tournaments.take(3).map((t) => InkWell(
                         onTap: () => context.push('/registration-management', extra: {'id': t.id.toString(), 'title': t.title}),
@@ -506,7 +506,7 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
       loading: () => const GenericListSkeleton(itemCount: 6),
       error: (e, _) => Center(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Text('Failed to load analytics', style: const TextStyle(color: AppColors.textSecondary)),
+          Text('Failed to load analytics', style: GoogleFonts.inter(color: AppColors.textSecondary)),
           const SizedBox(height: 8),
           Text(e.toString(), style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
           const SizedBox(height: 12),
@@ -594,7 +594,7 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
               kind: user?.isVerified == true ? PillKind.ok : PillKind.pending,
             ),
             if (orgAsync.isLoading) const Padding(padding: EdgeInsets.only(top: 8), child: SizedBox(height: 14, width: 14, child: CircularProgressIndicator(strokeWidth: 2))),
-            if (orgAsync.hasError) Padding(padding: const EdgeInsets.only(top: 8), child: Text('Failed to load org profile', style: const TextStyle(fontSize: 11, color: AppColors.textSecondary))),
+            if (orgAsync.hasError) Padding(padding: const EdgeInsets.only(top: 8), child: Text('Failed to load org profile', style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondary))),
           ]),
         ),
         const SizedBox(height: 16),

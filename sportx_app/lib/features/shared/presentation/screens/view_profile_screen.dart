@@ -10,6 +10,7 @@ import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/chat/presentation/providers/chat_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/social_links.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
@@ -182,7 +183,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
                     const SizedBox(height: 12),
                     const Text('Profile not found or unavailable'),
                     const SizedBox(height: 12),
-                    FilledButton(onPressed: _loadProfile, child: const Text('Retry')),
+                    PrimaryButton(label: 'Retry', onPressed: _loadProfile),
                     TextButton(onPressed: () => context.pop(), child: const Text('Go back')),
                   ]),
                 )

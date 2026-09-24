@@ -161,7 +161,7 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.surface,
         scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
@@ -304,11 +304,11 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
                   const SizedBox(width: 8),
                   SizedBox(width: 90, child: TextField(controller: cat.capacity, keyboardType: TextInputType.number, decoration: const InputDecoration(hintText: 'Capacity'))),
                   const SizedBox(width: 8),
-                  InkWell(onTap: _categories.length>1 ? (){ setState(()=> _categories.removeAt(i)); } : null, child: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(8)), child: const Icon(LucideIcons.x, size: 14))),
+                  InkWell(onTap: _categories.length>1 ? (){ setState(()=> _categories.removeAt(i)); } : null, child: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(16)), child: const Icon(LucideIcons.x, size: 14))),
                 ]),
               );
             }),
-            InkWell(onTap: ()=> setState(()=> _categories.add(CategoryRow())), child: Row(children: const [Icon(LucideIcons.plus, size: 14, color: AppColors.primary), SizedBox(width: 6), Text('+ Add Category', style: TextStyle(color: AppColors.primary, fontSize: 14, fontWeight: FontWeight.w500))])),
+            InkWell(onTap: ()=> setState(()=> _categories.add(CategoryRow())), child: Row(children:  [Icon(LucideIcons.plus, size: 14, color: AppColors.primary), SizedBox(width: 6), Text('+ Add Category', style: GoogleFonts.inter(color: AppColors.primary, fontSize: 14, fontWeight: FontWeight.w500))])),
             const SizedBox(height: 24),
             Divider(color: AppColors.border, height: 1),
             const SizedBox(height: 24),

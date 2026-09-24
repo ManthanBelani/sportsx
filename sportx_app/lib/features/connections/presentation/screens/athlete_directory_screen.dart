@@ -9,6 +9,7 @@ import 'package:sportx_app/features/connections/presentation/providers/athlete_d
 import 'package:sportx_app/features/connections/presentation/providers/connections_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/widgets/athlete_avatar.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 /// Athlete-to-athlete discovery: find peers, connect, and chat.
@@ -81,12 +82,12 @@ class _AthleteDirectoryScreenState extends ConsumerState<AthleteDirectoryScreen>
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withValues(alpha: 0.88),
         surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
         title: Text('Find Athletes',
-            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
+            style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
         actions: [
           IconButton(icon: const Icon(LucideIcons.userPlus, color: AppColors.textPrimary), tooltip: 'Requests', onPressed: () => context.push('/connection-requests')),
           IconButton(icon: const Icon(LucideIcons.messageCircle, color: AppColors.textPrimary), tooltip: 'Chats', onPressed: () => context.push('/chat-list')),
@@ -107,7 +108,7 @@ class _AthleteDirectoryScreenState extends ConsumerState<AthleteDirectoryScreen>
                 _search.clear();
                 ref.read(athleteDirectoryProvider.notifier).load();
               }),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             ),
           ),
@@ -121,7 +122,7 @@ class _AthleteDirectoryScreenState extends ConsumerState<AthleteDirectoryScreen>
                       const SizedBox(height: 12),
                       Padding(padding: const EdgeInsets.symmetric(horizontal: 32), child: Text(state.error!, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary), textAlign: TextAlign.center)),
                       const SizedBox(height: 12),
-                      FilledButton(onPressed: () => ref.read(athleteDirectoryProvider.notifier).load(), style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink), child: const Text('Retry')),
+                      PrimaryButton(label: 'Retry', onPressed: () => ref.read(athleteDirectoryProvider.notifier).load()),
                     ]))
                   : state.athletes.isEmpty
                       ? const Center(child: Text('No athletes found', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)))
@@ -150,7 +151,7 @@ class _AthleteDirectoryScreenState extends ConsumerState<AthleteDirectoryScreen>
 
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border), boxShadow: SportXShadows.e1),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         InkWell(
           onTap: profileId.isEmpty ? null : () => context.push('/view-profile', extra: {'type': 'athlete', 'id': profileId}),

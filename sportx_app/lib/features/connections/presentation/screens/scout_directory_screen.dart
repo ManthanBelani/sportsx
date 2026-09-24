@@ -8,6 +8,7 @@ import 'package:sportx_app/features/chat/presentation/providers/chat_provider.da
 import 'package:sportx_app/features/connections/presentation/providers/scout_directory_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/widgets/athlete_avatar.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 /// Athlete discovers talent scouts and connects (two-way connect).
@@ -70,12 +71,12 @@ class _ScoutDirectoryScreenState extends ConsumerState<ScoutDirectoryScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withValues(alpha: 0.88),
         surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
         title: Text('Find Scouts',
-            style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
+            style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
         actions: [
           IconButton(icon: const Icon(LucideIcons.mail, color: AppColors.textPrimary), tooltip: 'Scout requests', onPressed: () => context.push('/scout-requests')),
           IconButton(icon: const Icon(LucideIcons.messageCircle, color: AppColors.textPrimary), tooltip: 'Chats', onPressed: () => context.push('/chat-list')),
@@ -96,7 +97,7 @@ class _ScoutDirectoryScreenState extends ConsumerState<ScoutDirectoryScreen> {
                 _search.clear();
                 ref.read(scoutDirectoryProvider.notifier).load();
               }),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             ),
           ),
@@ -110,7 +111,7 @@ class _ScoutDirectoryScreenState extends ConsumerState<ScoutDirectoryScreen> {
                       const SizedBox(height: 12),
                       Text(state.error!, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                       const SizedBox(height: 12),
-                      FilledButton(onPressed: () => ref.read(scoutDirectoryProvider.notifier).load(), style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink), child: const Text('Retry')),
+                      PrimaryButton(label: 'Retry', onPressed: () => ref.read(scoutDirectoryProvider.notifier).load()),
                     ]))
                   : state.scouts.isEmpty
                       ? const Center(child: Text('No scouts found', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)))
@@ -142,7 +143,7 @@ class _ScoutDirectoryScreenState extends ConsumerState<ScoutDirectoryScreen> {
 
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border), boxShadow: SportXShadows.e1),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           AthleteAvatar(photoUrl: photoUrl, radius: 26),
@@ -182,22 +183,13 @@ class _ScoutDirectoryScreenState extends ConsumerState<ScoutDirectoryScreen> {
 
   Widget _badge(String? status) {
     if (status == null) return const SizedBox.shrink();
-    Color bg;
-    Color fg;
-    switch (status) {
-      case 'accepted':
-        bg = AppColors.successLight;
-        fg = AppColors.success;
-        break;
-      case 'rejected':
-        bg = AppColors.errorLight;
-        fg = AppColors.error;
-        break;
-      default:
-        bg = AppColors.yellowTint;
-        fg = AppColors.warnText;
-    }
     final label = status[0].toUpperCase() + status.substring(1);
-    return Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(4)), child: Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: fg)));
+    return StatusPill(
+        label: label,
+        kind: status == 'accepted'
+            ? PillKind.ok
+            : status == 'rejected'
+                ? PillKind.no
+                : PillKind.pending);
   }
 }

@@ -10,6 +10,7 @@ import 'package:sportx_app/features/talent_scout/presentation/providers/scout_co
 import 'package:sportx_app/features/talent_scout/presentation/widgets/athlete_avatar.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class TalentScoutDashboardScreen extends ConsumerStatefulWidget {
   const TalentScoutDashboardScreen({super.key});
@@ -55,19 +56,18 @@ class _TalentScoutDashboardScreenState extends ConsumerState<TalentScoutDashboar
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        elevation: 0,
-        title: const Text('SportX',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary)),
+      appBar: SportXTopBar(
+        titleWidget: Text('SportX',
+            style: GoogleFonts.sora(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.ink)),
         actions: [
-          IconButton(
-            icon: const Icon(LucideIcons.bell, color: AppColors.textPrimary),
-            onPressed: () => context.push('/notifications'),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: SportXIconButton(
+              icon: LucideIcons.bell,
+              onTap: () => context.push('/notifications'),
+            ),
           ),
         ],
-        bottom: PreferredSize(preferredSize: const Size.fromHeight(1), child: Container(height: 1, color: AppColors.border)),
       ),
       body: _buildHomeTab(),
     );
@@ -95,7 +95,7 @@ class _TalentScoutDashboardScreenState extends ConsumerState<TalentScoutDashboar
           Text(profileState.error ?? shortlistState.error ?? connectionState.error ?? 'Failed to load',
               style: const TextStyle(fontSize: 13, color: AppColors.textSecondary), textAlign: TextAlign.center),
           const SizedBox(height: 12),
-          FilledButton(onPressed: _refreshAll, style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink), child: const Text('Retry')),
+          PrimaryButton(label: 'Retry', onPressed: _refreshAll),
         ]),
       );
     }
@@ -108,46 +108,37 @@ class _TalentScoutDashboardScreenState extends ConsumerState<TalentScoutDashboar
       onRefresh: _refreshAll,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          // Welcome Banner
-          Container(
-            width: double.infinity,
-            color: AppColors.surface,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-            child: Row(children: [
-              Container(width: 56, height: 56, decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(8)), alignment: Alignment.center, child: const Icon(LucideIcons.userSearch, color: Colors.white, size: 28)),
-              const SizedBox(width: 14),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Welcome, ${user?.name ?? profile?.organization ?? 'Scout'}', style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
-                const SizedBox(height: 2),
-                const Text('Discover and connect with athletes', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-              ])),
-            ]),
+          // Welcome + completeness (v2 .greet)
+          GreetCard(
+            title: 'Welcome, ${user?.name ?? profile?.organization ?? 'Scout'}',
+            subtitle: completeness < 1
+                ? 'Complete your profile to build athlete trust'
+                : 'Discover and connect with athletes',
+            progress: completeness,
+            avatarText: (user?.name ?? profile?.organization ?? 'S').isNotEmpty
+                ? (user?.name ?? profile?.organization ?? 'S')[0].toUpperCase()
+                : 'S',
           ),
-          _divider(),
-          // Completeness
-          Container(
-            width: double.infinity,
-            color: AppColors.surface,
-            padding: const EdgeInsets.all(20),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                const Text('Profile completeness', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                Text('${(completeness * 100).toInt()}%', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary)),
-              ]),
-              const SizedBox(height: 8),
-              ClipRRect(borderRadius: BorderRadius.circular(4), child: LinearProgressIndicator(value: completeness, minHeight: 6, backgroundColor: AppColors.border, valueColor: const AlwaysStoppedAnimation(AppColors.primary))),
-              if (completeness < 1) ...[
-                const SizedBox(height: 8),
-                InkWell(onTap: () => context.push('/scout-profile'), child: const Text('Complete your profile →', style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500))),
-              ],
-            ]),
-          ),
-          _divider(),
+          if (completeness < 1)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: SecondaryButton(
+                label: 'Complete your profile',
+                icon: LucideIcons.arrowRight,
+                onPressed: () => context.push('/scout-profile'),
+              ),
+            ),
           // Stats Row
           Container(
             width: double.infinity,
-            color: AppColors.surface,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: SportXShadows.e1,
+            ),
             padding: const EdgeInsets.all(20),
             child: Row(children: [
               Expanded(child: _buildStatCard('${shortlist.length}', 'Shortlisted')),
@@ -158,45 +149,46 @@ class _TalentScoutDashboardScreenState extends ConsumerState<TalentScoutDashboar
             ]),
           ),
           _divider(),
-          // Quick Actions
-          Container(
-            width: double.infinity,
-            color: AppColors.surface,
-            padding: const EdgeInsets.all(20),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('Quick Actions', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-              const SizedBox(height: 16),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                _buildQuickAction(LucideIcons.search, 'Discover', () => context.push('/scout-discovery')),
-                _buildQuickAction(LucideIcons.star, 'Shortlist', () => context.push('/scout-shortlist')),
-                _buildQuickAction(LucideIcons.users, 'Connections', () => context.push('/scout-connections')),
-                _buildQuickAction(LucideIcons.user, 'Profile', () => context.push('/scout-profile')),
-              ]),
-            ]),
+          // Quick Actions (v2 .tiles)
+          const SectionHeader(title: 'Quick Actions'),
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: 2.3,
+            children: [
+              QuickTile(label: 'Discover', icon: LucideIcons.search, tintBg: AppColors.infoLight, tintFg: AppColors.scout, onTap: () => context.push('/scout-discovery')),
+              QuickTile(label: 'Shortlist', icon: LucideIcons.star, tintBg: AppColors.yellowTint, tintFg: AppColors.warnText, onTap: () => context.push('/scout-shortlist')),
+              QuickTile(label: 'Connections', icon: LucideIcons.users, tintBg: AppColors.successLight, tintFg: const Color(0xFF15803D), onTap: () => context.push('/scout-connections')),
+              QuickTile(label: 'Profile', icon: LucideIcons.user, tintBg: const Color(0xFFF1F3F5), tintFg: AppColors.dark, onTap: () => context.push('/scout-profile')),
+            ],
           ),
           _divider(),
           // Recent Shortlist
           Container(
             width: double.infinity,
-            color: AppColors.surface,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: SportXShadows.e1,
+            ),
             padding: const EdgeInsets.all(20),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                const Text('Recent Shortlist', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                GestureDetector(onTap: () => context.push('/scout-shortlist'), child: const Text('View All', style: TextStyle(fontSize: 13, color: AppColors.primary))),
-              ]),
-              const SizedBox(height: 12),
+              SectionHeader(title: 'Recent Shortlist', actionText: 'View All', onActionTap: () => context.push('/scout-shortlist')),
               if (shortlist.isEmpty)
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+                  decoration: BoxDecoration(color: AppColors.surface, border: Border.all(color: AppColors.borderSoft), borderRadius: BorderRadius.circular(16)),
                   child: Column(children: [
                     const Icon(LucideIcons.star, size: 24, color: AppColors.textSecondary),
                     const SizedBox(height: 8),
                     const Text('No athletes shortlisted yet.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                     const SizedBox(height: 8),
-                    OutlinedButton(onPressed: () => context.push('/scout-discovery'), style: OutlinedButton.styleFrom(foregroundColor: AppColors.primary, side: const BorderSide(color: AppColors.primary)), child: const Text('Discover Athletes')),
+                    SecondaryButton(label: 'Discover Athletes', icon: LucideIcons.search, onPressed: () => context.push('/scout-discovery')),
                   ]),
                 )
               else
@@ -206,11 +198,16 @@ class _TalentScoutDashboardScreenState extends ConsumerState<TalentScoutDashboar
           _divider(),
           Container(
             width: double.infinity,
-            color: AppColors.surface,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: SportXShadows.e1,
+            ),
             padding: const EdgeInsets.all(20),
             child: OutlinedButton.icon(
               onPressed: () async => await ref.read(authProvider.notifier).logout(),
-              style: OutlinedButton.styleFrom(foregroundColor: Colors.red, side: const BorderSide(color: Colors.red), minimumSize: const Size.fromHeight(48), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              style: OutlinedButton.styleFrom(foregroundColor: Colors.red, side: const BorderSide(color: Colors.red), minimumSize: const Size.fromHeight(48), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
               icon: const Icon(LucideIcons.logOut, size: 18),
               label: const Text('Log out', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             ),
@@ -220,33 +217,17 @@ class _TalentScoutDashboardScreenState extends ConsumerState<TalentScoutDashboar
     );
   }
 
-  Widget _divider() => Container(height: 8, color: AppColors.surface);
+  Widget _divider() => const SizedBox(height: 12);
 
   Widget _buildStatCard(String value, String label) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(16), boxShadow: SportXShadows.e1),
       child: Column(children: [
-        Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary)),
+        Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.scout)),
         const SizedBox(height: 4),
         Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary), textAlign: TextAlign.center),
       ]),
-    );
-  }
-
-  Widget _buildQuickAction(IconData icon, String label, VoidCallback onTap) {
-    return Semantics(
-      button: true,
-      label: label,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Column(children: [
-          Container(width: 48, height: 48, decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.border)), alignment: Alignment.center, child: Icon(icon, size: 20, color: AppColors.textPrimary)),
-          const SizedBox(height: 6),
-          Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-        ]),
-      ),
     );
   }
 

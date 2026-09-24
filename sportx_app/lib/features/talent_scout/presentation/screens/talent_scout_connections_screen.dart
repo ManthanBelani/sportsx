@@ -7,6 +7,7 @@ import 'package:sportx_app/features/chat/presentation/providers/chat_provider.da
 import 'package:sportx_app/features/talent_scout/presentation/providers/scout_connection_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/widgets/athlete_avatar.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
@@ -56,9 +57,9 @@ class _TalentScoutConnectionsScreenState extends ConsumerState<TalentScoutConnec
             child: Column(children: [
               Container(height: 1, color: AppColors.border),
               TabBar(
-                labelColor: AppColors.primary,
+                labelColor: AppColors.scout,
                 unselectedLabelColor: AppColors.textSecondary,
-                indicatorColor: AppColors.primary,
+                indicatorColor: AppColors.scout,
                 tabs: [
                   const Tab(text: 'Connected'),
                   Tab(text: state.incoming.isEmpty ? 'Requests' : 'Requests (${state.incoming.length})'),
@@ -76,7 +77,7 @@ class _TalentScoutConnectionsScreenState extends ConsumerState<TalentScoutConnec
                       const SizedBox(height: 12),
                       Padding(padding: const EdgeInsets.symmetric(horizontal: 32), child: Text(state.error!, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary), textAlign: TextAlign.center)),
                       const SizedBox(height: 12),
-                      FilledButton(onPressed: () => ref.read(scoutConnectionProvider.notifier).load(), style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink), child: const Text('Retry')),
+                      PrimaryButton(label: 'Retry', onPressed: () => ref.read(scoutConnectionProvider.notifier).load()),
                     ]),
                   )
                 : TabBarView(children: [
@@ -99,7 +100,7 @@ class _TalentScoutConnectionsScreenState extends ConsumerState<TalentScoutConnec
             const SizedBox(height: 8),
             const Text('Send a request from athlete profiles to start connecting', style: TextStyle(fontSize: 12, color: AppColors.textSecondary), textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            FilledButton.icon(onPressed: () => context.push('/scout-discovery'), style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink), icon: const Icon(LucideIcons.search, size: 16), label: const Text('Discover Athletes')),
+            PrimaryButton(label: 'Discover Athletes', icon: LucideIcons.search, onPressed: () => context.push('/scout-discovery')),
           ]),
         ),
       );
@@ -144,27 +145,27 @@ class _TalentScoutConnectionsScreenState extends ConsumerState<TalentScoutConnec
           final connId = conn['id'].toString();
           return Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
+            decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(16), boxShadow: SportXShadows.e1),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
                 AthleteAvatar(photoUrl: photoUrl, radius: 24),
                 const SizedBox(width: 14),
                 Expanded(child: Text(name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary))),
-                Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(color: AppColors.yellowTint, borderRadius: BorderRadius.circular(4)), child: const Text('New', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.warnText))),
+                const StatusPill(label: 'New', kind: PillKind.pending),
               ]),
               if (conn['message'] != null && conn['message'].toString().isNotEmpty)
                 Padding(padding: const EdgeInsets.only(top: 8), child: Text('"${conn['message']}"', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontStyle: FontStyle.italic), maxLines: 2, overflow: TextOverflow.ellipsis)),
               const SizedBox(height: 12),
               Row(children: [
-                Expanded(child: OutlinedButton(onPressed: () async {
+                Expanded(child: SecondaryButton(label: 'Decline', onPressed: () async {
                   final ok = await ref.read(scoutConnectionProvider.notifier).rejectIncoming(connId);
                   if (mounted) SnackBarUtils.showSuccess(context, ok ? 'Request declined' : ref.read(scoutConnectionProvider).error ?? 'Failed');
-                }, child: const Text('Decline'))),
+                })),
                 const SizedBox(width: 12),
-                Expanded(child: FilledButton(onPressed: () async {
+                Expanded(child: PrimaryButton(label: 'Accept', onPressed: () async {
                   final ok = await ref.read(scoutConnectionProvider.notifier).acceptIncoming(connId);
                   if (mounted) SnackBarUtils.showSuccess(context, ok ? 'Connected with $name — you can now chat' : ref.read(scoutConnectionProvider).error ?? 'Failed');
-                }, style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink), child: const Text('Accept'))),
+                })),
               ]),
             ]),
           );
@@ -180,20 +181,16 @@ class _TalentScoutConnectionsScreenState extends ConsumerState<TalentScoutConnec
     final name = athlete?['user']?['name']?.toString() ?? athlete?['full_name']?.toString() ?? 'Athlete';
     final connId = conn['id'].toString();
 
-    Color badgeColor;
-    Color badgeText;
+    PillKind badgeKind;
     switch (status) {
       case 'accepted':
-        badgeColor = AppColors.successLight;
-        badgeText = AppColors.success;
+        badgeKind = PillKind.ok;
         break;
       case 'rejected':
-        badgeColor = AppColors.errorLight;
-        badgeText = AppColors.error;
+        badgeKind = PillKind.no;
         break;
       default:
-        badgeColor = AppColors.yellowTint;
-        badgeText = AppColors.warnText;
+        badgeKind = PillKind.pending;
     }
 
     return Semantics(
@@ -204,11 +201,11 @@ class _TalentScoutConnectionsScreenState extends ConsumerState<TalentScoutConnec
             context.push('/scout-athlete/${athlete!['id']}');
           }
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
+          decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(16), boxShadow: SportXShadows.e1),
           child: Row(children: [
             AthleteAvatar(photoUrl: photoUrl, radius: 24),
             const SizedBox(width: 14),
@@ -216,7 +213,7 @@ class _TalentScoutConnectionsScreenState extends ConsumerState<TalentScoutConnec
               Text(name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
               const SizedBox(height: 4),
               Row(children: [
-                Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(color: badgeColor, borderRadius: BorderRadius.circular(4)), child: Text(status[0].toUpperCase() + status.substring(1), style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: badgeText))),
+                StatusPill(label: status[0].toUpperCase() + status.substring(1), kind: badgeKind),
                 if (conn['message'] != null && conn['message'].toString().isNotEmpty) ...[const SizedBox(width: 8), const Icon(LucideIcons.messageSquare, size: 12, color: AppColors.textSecondary)],
               ]),
               if (conn['message'] != null && conn['message'].toString().isNotEmpty)
@@ -228,7 +225,7 @@ class _TalentScoutConnectionsScreenState extends ConsumerState<TalentScoutConnec
                     onPressed: () => _openChat(athlete),
                     icon: const Icon(LucideIcons.messageCircle, size: 14),
                     label: const Text('Message', style: TextStyle(fontSize: 12)),
-                    style: OutlinedButton.styleFrom(foregroundColor: AppColors.primary, side: const BorderSide(color: AppColors.primary), visualDensity: VisualDensity.compact),
+                    style: OutlinedButton.styleFrom(foregroundColor: AppColors.scout, side: const BorderSide(color: AppColors.scout), visualDensity: VisualDensity.compact),
                   ),
                 ),
             ])),

@@ -8,6 +8,7 @@ import 'package:sportx_app/features/auth/presentation/providers/auth_provider.da
 import 'package:sportx_app/features/sponsor/presentation/providers/sponsor_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class SponsorDashboardScreen extends ConsumerStatefulWidget {
   const SponsorDashboardScreen({super.key});
@@ -33,15 +34,16 @@ class _SponsorDashboardScreenState extends ConsumerState<SponsorDashboardScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        elevation: 0,
-        title: const Text('SportX', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary)),
+      appBar: SportXTopBar(
+        titleWidget: Text('SportX',
+            style: GoogleFonts.sora(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.ink)),
         actions: [
-          IconButton(
-            icon: const Icon(LucideIcons.bell, color: AppColors.textPrimary),
-            onPressed: () => context.push('/notifications'),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: SportXIconButton(
+              icon: LucideIcons.bell,
+              onTap: () => context.push('/notifications'),
+            ),
           ),
         ],
       ),
@@ -102,38 +104,12 @@ class _SponsorDashboardScreenState extends ConsumerState<SponsorDashboardScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Brand Banner
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  alignment: Alignment.center,
-                  child: const Icon(LucideIcons.award, color: Colors.white, size: 28),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Sponsor Dashboard', style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
-                      SizedBox(height: 2),
-                      Text('Manage your sponsorships & applications', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          // Brand Banner (v2 .greet)
+          GreetCard(
+            title: 'Sponsor Dashboard',
+            subtitle: 'Manage your sponsorships & applications',
+            progress: listings.isEmpty ? 0 : active / listings.length,
+            avatarText: 'S',
           ),
           const SizedBox(height: 16),
 
@@ -149,29 +125,21 @@ class _SponsorDashboardScreenState extends ConsumerState<SponsorDashboardScreen>
           ),
           const SizedBox(height: 16),
 
-          // Quick Actions
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Quick Actions', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildQuickAction(LucideIcons.plusCircle, 'New Listing', () => context.push('/sponsor-posting')),
-                    _buildQuickAction(LucideIcons.inbox, 'Applications', () => context.push('/applications-inbox')),
-                    _buildQuickAction(LucideIcons.search, 'Discover', () => context.push('/athlete-discovery')),
-                    _buildQuickAction(LucideIcons.star, 'Shortlist', () => context.push('/shortlist')),
-                  ],
-                ),
-              ],
-            ),
+          // Quick Actions (v2 .tiles)
+          const SectionHeader(title: 'Quick Actions'),
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: 2.3,
+            children: [
+              QuickTile(label: 'New Listing', icon: LucideIcons.plusCircle, tintBg: AppColors.yellowTint, tintFg: AppColors.warnText, onTap: () => context.push('/sponsor-posting')),
+              QuickTile(label: 'Applications', icon: LucideIcons.inbox, tintBg: AppColors.infoLight, tintFg: AppColors.info, onTap: () => context.push('/applications-inbox')),
+              QuickTile(label: 'Discover', icon: LucideIcons.search, tintBg: AppColors.successLight, tintFg: const Color(0xFF15803D), onTap: () => context.push('/athlete-discovery')),
+              QuickTile(label: 'Shortlist', icon: LucideIcons.star, tintBg: const Color(0xFFF1F3F5), tintFg: AppColors.dark, onTap: () => context.push('/shortlist')),
+            ],
           ),
           const SizedBox(height: 16),
 
@@ -179,22 +147,15 @@ class _SponsorDashboardScreenState extends ConsumerState<SponsorDashboardScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(8),
+              color: Colors.white,
+              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: SportXShadows.e1,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('My Sponsorships', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                    GestureDetector(
-                      onTap: () => context.push('/my-sponsorships'),
-                      child: const Text('View All', style: TextStyle(fontSize: 13, color: AppColors.primary)),
-                    ),
-                  ],
-                ),
+                SectionHeader(title: 'My Sponsorships', actionText: 'View All', onActionTap: () => context.push('/my-sponsorships')),
                 const SizedBox(height: 12),
                 if (listings.isEmpty)
                   const Padding(
@@ -216,22 +177,15 @@ class _SponsorDashboardScreenState extends ConsumerState<SponsorDashboardScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(8),
+              color: Colors.white,
+              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: SportXShadows.e1,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Recent Applications', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                    GestureDetector(
-                      onTap: () => context.push('/applications-inbox'),
-                      child: const Text('View All', style: TextStyle(fontSize: 13, color: AppColors.primary)),
-                    ),
-                  ],
-                ),
+                SectionHeader(title: 'Recent Applications', actionText: 'View All', onActionTap: () => context.push('/applications-inbox')),
                 const SizedBox(height: 12),
                 if (applications.isEmpty)
                   const Padding(
@@ -261,7 +215,7 @@ class _SponsorDashboardScreenState extends ConsumerState<SponsorDashboardScreen>
               foregroundColor: Colors.red,
               side: const BorderSide(color: Colors.red),
               minimumSize: const Size.fromHeight(48),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
             icon: const Icon(LucideIcons.logOut, size: 18),
             label: const Text('Log out', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
@@ -275,8 +229,10 @@ class _SponsorDashboardScreenState extends ConsumerState<SponsorDashboardScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: SportXShadows.e1,
       ),
       child: Column(
         children: [
@@ -288,38 +244,14 @@ class _SponsorDashboardScreenState extends ConsumerState<SponsorDashboardScreen>
     );
   }
 
-  Widget _buildQuickAction(IconData icon, String label, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.border),
-            ),
-            alignment: Alignment.center,
-            child: Icon(icon, size: 20, color: AppColors.textPrimary),
-          ),
-          const SizedBox(height: 6),
-          Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-        ],
-      ),
-    );
-  }
-
   Widget _buildListingItem(String title, String meta, String status) {
-    Color badgeColor;
-    Color badgeText;
-    if (status == 'Active') {
-      badgeColor = AppColors.successLight;
-      badgeText = AppColors.success;
+    final PillKind kind;
+    if (status == 'Active' || status == 'Published') {
+      kind = PillKind.ok;
+    } else if (status == 'Draft') {
+      kind = PillKind.draft;
     } else {
-      badgeColor = AppColors.surface;
-      badgeText = AppColors.textSecondary;
+      kind = PillKind.pending;
     }
 
     return Padding(
@@ -336,11 +268,7 @@ class _SponsorDashboardScreenState extends ConsumerState<SponsorDashboardScreen>
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(color: badgeColor, borderRadius: BorderRadius.circular(4)),
-            child: Text(status, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: badgeText)),
-          ),
+          StatusPill(label: status, kind: kind),
         ],
       ),
     );

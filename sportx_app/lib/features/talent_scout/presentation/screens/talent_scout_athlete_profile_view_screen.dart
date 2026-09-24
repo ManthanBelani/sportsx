@@ -11,6 +11,7 @@ import 'package:sportx_app/shared/presentation/widgets/social_links.dart';
 import 'package:sportx_app/features/talent_scout/presentation/providers/scout_connection_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/providers/scout_shortlist_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
@@ -133,7 +134,9 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
                       const SizedBox(height: 16),
                       Text(_error!, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
                       const SizedBox(height: 16),
-                      FilledButton(
+                      PrimaryButton(
+                        label: 'Retry',
+                        icon: LucideIcons.refreshCw,
                         onPressed: () {
                           setState(() {
                             _isLoading = true;
@@ -141,8 +144,6 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
                           });
                           _loadAthlete();
                         },
-                        style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink),
-                        child: const Text('Retry'),
                       ),
                     ],
                   ),
@@ -199,7 +200,13 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
 
     return Container(
       width: double.infinity,
-      color: AppColors.surface,
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: SportXShadows.e1,
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
       child: Column(
         children: [
@@ -208,7 +215,7 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
             height: 96,
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              gradient: LinearGradient(colors: [AppColors.primary, AppColors.scout], begin: Alignment.topLeft, end: Alignment.bottomRight),
+              gradient: LinearGradient(colors: [AppColors.scout, AppColors.scout], begin: Alignment.topLeft, end: Alignment.bottomRight),
             ),
             child: ClipOval(
               child: resolved != null
@@ -245,8 +252,8 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(20)),
-              child: Text(metaLine, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.primary)),
+              decoration: BoxDecoration(color: AppColors.scout.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(20)),
+              child: Text(metaLine, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.scout)),
             ),
           ],
           const SizedBox(height: 20),
@@ -292,10 +299,10 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
+                color: AppColors.scout.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.15))),
-            child: Text(name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                border: Border.all(color: AppColors.scout.withValues(alpha: 0.15))),
+            child: Text(name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.scout)),
           );
         }).toList(),
       ),
@@ -309,7 +316,7 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(16), boxShadow: SportXShadows.e1),
           child: const Row(children: [
             Icon(LucideIcons.trophy, size: 20, color: AppColors.textSecondary),
             SizedBox(width: 10),
@@ -331,7 +338,7 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
             child: Row(children: [
               Container(
                 width: 40, height: 40,
-                decoration: BoxDecoration(color: AppColors.yellowTint, borderRadius: BorderRadius.circular(8)),
+                decoration: BoxDecoration(color: AppColors.yellowTint, borderRadius: BorderRadius.circular(14)),
                 alignment: Alignment.center,
                 child: const Icon(LucideIcons.award, size: 18, color: AppColors.warnText),
               ),
@@ -378,7 +385,7 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
             child: Row(children: [
               Container(
                   width: 40, height: 40,
-                  decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+                  decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(16), boxShadow: SportXShadows.e1),
                   alignment: Alignment.center,
                   child: Text(m['icon'] ?? '🏆', style: const TextStyle(fontSize: 20))),
               const SizedBox(width: 12),
@@ -428,9 +435,9 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
           final m = stat is Map<String, dynamic> ? stat : Map<String, dynamic>.from(stat as Map);
           return Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(16), boxShadow: SportXShadows.e1),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
-              Text((m['value'] ?? '0').toString(), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.primary)),
+              Text((m['value'] ?? '0').toString(), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.scout)),
               Text((m['label'] ?? '').toString(), style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
             ]),
           );
@@ -473,7 +480,7 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
               itemBuilder: (context, index) {
                 final isVideo = (_media[index] as Map)['media_type'] == 'video' || (_media[index] as Map)['type'] == 'video';
                 return ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(14),
                   child: Stack(fit: StackFit.expand, children: [
                     Image.network(images[index],
                         fit: BoxFit.cover, errorBuilder: (_, _, _) => Container(color: AppColors.surface, child: const Icon(LucideIcons.image, color: AppColors.textSecondary))),
@@ -494,12 +501,20 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
   Widget _buildActionButtons() {
     return Container(
       width: double.infinity,
-      color: AppColors.surface,
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: SportXShadows.e1,
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Column(children: [
         Row(children: [
           Expanded(
-            child: OutlinedButton.icon(
+            child: SecondaryButton(
+              label: _isShortlisted ? 'Shortlisted' : 'Shortlist',
+              icon: _isShortlisted ? LucideIcons.check : LucideIcons.star,
               onPressed: _isShortlisted
                   ? null
                   : () async {
@@ -521,14 +536,6 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
                         SnackBarUtils.showError(context, error ?? 'Failed to add to shortlist');
                       }
                     },
-              icon: Icon(_isShortlisted ? LucideIcons.check : LucideIcons.star, size: 18),
-              label: Text(_isShortlisted ? 'Shortlisted' : 'Shortlist'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: _isShortlisted ? AppColors.textSecondary : AppColors.primary,
-                side: BorderSide(color: _isShortlisted ? AppColors.border : AppColors.primary),
-                minimumSize: const Size.fromHeight(48),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -576,7 +583,7 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
         },
         icon: const Icon(LucideIcons.messageCircle, size: 18),
         label: const Text('Message'),
-        style: FilledButton.styleFrom(backgroundColor: AppColors.success, minimumSize: const Size.fromHeight(48), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+        style: FilledButton.styleFrom(backgroundColor: AppColors.success, minimumSize: const Size.fromHeight(48), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
       );
     }
     if (status == 'pending') {
@@ -584,21 +591,26 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
         onPressed: () => context.push('/scout-connections'),
         icon: const Icon(LucideIcons.clock, size: 18),
         label: const Text('Request Sent'),
-        style: OutlinedButton.styleFrom(foregroundColor: AppColors.warnText, side: const BorderSide(color: AppColors.warnText), minimumSize: const Size.fromHeight(48), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+        style: OutlinedButton.styleFrom(foregroundColor: AppColors.warnText, side: const BorderSide(color: AppColors.warnText), minimumSize: const Size.fromHeight(48), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
       );
     }
-    return FilledButton.icon(
+    return PrimaryButton(
+      label: 'Connect',
+      icon: LucideIcons.messageCircle,
       onPressed: () => context.push('/scout-connect/${widget.athleteId}'),
-      icon: const Icon(LucideIcons.messageCircle, size: 18),
-      label: const Text('Connect'),
-      style: FilledButton.styleFrom(backgroundColor: AppColors.primary, minimumSize: const Size.fromHeight(48), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
     );
   }
 
   Widget _buildSection({required String title, Widget? action, required Widget child}) {
     return Container(
       width: double.infinity,
-      color: AppColors.surface,
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: SportXShadows.e1,
+      ),
       padding: const EdgeInsets.all(20),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [

@@ -5,6 +5,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SponsorDirectoryCoachScreen extends ConsumerStatefulWidget {
   const SponsorDirectoryCoachScreen({super.key});
@@ -107,8 +108,7 @@ class _SponsorDirectoryCoachScreenState extends ConsumerState<SponsorDirectoryCo
                             children: [
                               const Icon(LucideIcons.briefcase, size: 64, color: AppColors.textTertiary),
                               const SizedBox(height: 16),
-                              Text('No sponsorships found',
-                                  style: TextStyle(color: AppColors.textSecondary)),
+                              Text('No sponsorships found', style: GoogleFonts.inter(color: AppColors.textSecondary)),
                             ],
                           ),
                         )

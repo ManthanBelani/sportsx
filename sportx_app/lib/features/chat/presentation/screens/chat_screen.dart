@@ -7,6 +7,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/chat/presentation/providers/chat_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -57,11 +58,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withValues(alpha: 0.88),
         surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
-        title: Text(widget.chatName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        title: Text(widget.chatName, style: GoogleFonts.sora(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
       ),
       body: Column(
         children: [
@@ -70,7 +71,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               loading: () => const GenericListSkeleton(itemCount: 5),
               error: (e, _) => Center(
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  Text(ApiException.messageFor(e), style: const TextStyle(color: AppColors.textSecondary)),
+                  Text(ApiException.messageFor(e), style: TextStyle(color: AppColors.textSecondary)),
                   const SizedBox(height: 12),
                   ElevatedButton(onPressed: () => ref.invalidate(conversationDetailProvider(widget.chatId)), child: const Text('Retry')),
                 ]),
@@ -102,23 +103,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
         decoration: BoxDecoration(
-          color: isMe ? AppColors.primary : AppColors.surface,
+          color: isMe ? AppColors.yellow : Colors.white,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
             bottomLeft: Radius.circular(isMe ? 16 : 4),
             bottomRight: Radius.circular(isMe ? 4 : 16),
           ),
-          border: isMe ? null : Border.all(color: AppColors.border),
+          border: isMe ? Border.all(color: const Color(0x33785000)) : Border.all(color: AppColors.border),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(message.body, style: TextStyle(color: isMe ? Colors.white : AppColors.textPrimary, fontSize: 14)),
+            Text(message.body, style: GoogleFonts.inter(color: isMe ? AppColors.ink : AppColors.textPrimary, fontSize: 14)),
             if (message.createdAt != null) ...[
               const SizedBox(height: 4),
               Text(message.createdAt!,
-                  style: TextStyle(color: isMe ? Colors.white70 : AppColors.textTertiary, fontSize: 11)),
+                  style: GoogleFonts.inter(color: isMe ? AppColors.primaryDarker : AppColors.textTertiary, fontSize: 11)),
             ],
           ],
         ),
@@ -129,7 +130,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget _buildMessageInput() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: const BoxDecoration(border: Border(top: BorderSide(color: AppColors.border))),
+      decoration: const BoxDecoration(
+          color: Colors.white, border: Border(top: BorderSide(color: AppColors.border))),
       child: SafeArea(
         child: Row(
           children: [
@@ -140,9 +142,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 decoration: InputDecoration(
                   hintText: 'Type a message...',
                   hintStyle: const TextStyle(color: AppColors.textTertiary),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
                   filled: true,
-                  fillColor: AppColors.surface,
+                  fillColor: Colors.white,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 ),
                 onSubmitted: (_) => _send(),
@@ -150,9 +153,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
             const SizedBox(width: 8),
             Container(
-              decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+              decoration: const BoxDecoration(color: AppColors.yellow, shape: BoxShape.circle),
               child: IconButton(
-                icon: const Icon(LucideIcons.sendHorizontal, color: Colors.white, size: 20),
+                icon: const Icon(LucideIcons.sendHorizontal, color: AppColors.ink, size: 20),
                 onPressed: _send,
               ),
             ),

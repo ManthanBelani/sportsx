@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class SponsorshipListScreen extends ConsumerStatefulWidget {
@@ -30,15 +30,7 @@ class _SponsorshipListScreenState extends ConsumerState<SponsorshipListScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        elevation: 0,
-        title: Text(
-          'Sponsorships',
-          style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink),
-        ),
-      ),
+      appBar: const SportXTopBar(title: 'Sponsorships'),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -49,8 +41,10 @@ class _SponsorshipListScreenState extends ConsumerState<SponsorshipListScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white,
+                    border: Border.all(color: AppColors.border),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: SportXShadows.e1,
                   ),
                   child: const TextField(
                     decoration: InputDecoration(
@@ -70,26 +64,10 @@ class _SponsorshipListScreenState extends ConsumerState<SponsorshipListScreen> {
                     separatorBuilder: (context, index) => const SizedBox(width: 8),
                     itemBuilder: (context, index) {
                       final filter = _filters[index];
-                      final isActive = filter == _selectedFilter;
-                      return GestureDetector(
+                      return SportXChip(
+                        label: filter,
+                        selected: filter == _selectedFilter,
                         onTap: () => setState(() => _selectedFilter = filter),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: isActive ? AppColors.primary : AppColors.surface,
-                            border: Border.all(color: isActive ? AppColors.primary : AppColors.border),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            filter,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: isActive ? Colors.white : AppColors.textPrimary,
-                            ),
-                          ),
-                        ),
                       );
                     },
                   ),
@@ -98,11 +76,8 @@ class _SponsorshipListScreenState extends ConsumerState<SponsorshipListScreen> {
             ),
           ),
           const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            child: Text(
-              'Available Sponsorships',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
-            ),
+            padding: EdgeInsets.fromLTRB(20, 8, 20, 0),
+            child: SectionHeader(title: 'Available Sponsorships'),
           ),
           Expanded(
             child: RefreshIndicator(
@@ -129,8 +104,10 @@ class _SponsorshipListScreenState extends ConsumerState<SponsorshipListScreen> {
                                 margin: const EdgeInsets.only(bottom: 12),
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: AppColors.surface,
-                                  borderRadius: BorderRadius.circular(8),
+                                  color: Colors.white,
+                                  border: Border.all(color: AppColors.border),
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: SportXShadows.e1,
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,11 +119,11 @@ class _SponsorshipListScreenState extends ConsumerState<SponsorshipListScreen> {
                                           height: 48,
                                           decoration: BoxDecoration(
                                             color: Colors.white,
-                                            borderRadius: BorderRadius.circular(8),
+                                            borderRadius: BorderRadius.circular(14),
                                           ),
                                           child: item.sponsorLogoUrl != null
                                               ? ClipRRect(
-                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderRadius: BorderRadius.circular(14),
                                                   child: Image.network(
                                                     item.sponsorLogoUrl!,
                                                     width: 48,
@@ -213,7 +190,7 @@ class _SponsorshipListScreenState extends ConsumerState<SponsorshipListScreen> {
                                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                             decoration: BoxDecoration(
                                               color: AppColors.successLight,
-                                              borderRadius: BorderRadius.circular(4),
+                                              borderRadius: BorderRadius.circular(999),
                                             ),
                                             child: Text(
                                               item.amountLabel!,
@@ -229,7 +206,7 @@ class _SponsorshipListScreenState extends ConsumerState<SponsorshipListScreen> {
                                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                             decoration: BoxDecoration(
                                               color: AppColors.successLight,
-                                              borderRadius: BorderRadius.circular(4),
+                                              borderRadius: BorderRadius.circular(999),
                                             ),
                                             child: Text(
                                               item.benefits!,
@@ -248,7 +225,7 @@ class _SponsorshipListScreenState extends ConsumerState<SponsorshipListScreen> {
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                         decoration: BoxDecoration(
                                           color: isSoon ? AppColors.yellowTint : AppColors.errorLight,
-                                          borderRadius: BorderRadius.circular(4),
+                                          borderRadius: BorderRadius.circular(999),
                                         ),
                                         child: Text(
                                           deadlineLabel,

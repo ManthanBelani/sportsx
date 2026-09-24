@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/providers/activity_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
@@ -126,7 +127,7 @@ class _EnquireScreenState extends ConsumerState<EnquireScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withValues(alpha: 0.88),
         surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(
@@ -135,7 +136,7 @@ class _EnquireScreenState extends ConsumerState<EnquireScreen> {
         ),
         title: Text(
           'Enquire with ${widget.title}',
-          style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink),
+          style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink),
         ),
         centerTitle: true,
       ),
@@ -198,9 +199,7 @@ class _EnquireScreenState extends ConsumerState<EnquireScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border),
+                color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border), boxShadow: SportXShadows.e1,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

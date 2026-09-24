@@ -1,12 +1,12 @@
-import 'dart:math';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
-import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/saved/presentation/providers/saved_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/theme/design_tokens.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class DetailPageTemplate extends ConsumerWidget {
@@ -66,26 +66,26 @@ class DetailPageTemplate extends ConsumerWidget {
     final isSaved = canSave && savedState.isSaved(savedType!, savedItemId!);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       body: Stack(
         children: [
           // Content
           SingleChildScrollView(
-            padding: const EdgeInsets.only(bottom: 100),
+            padding: const EdgeInsets.only(bottom: 110),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _buildHero(),
-                _buildContent(context, ref),
+                _buildContent(context),
               ],
             ),
           ),
 
-          // Header Actions
+          // Header Actions — v2 .hbtn (frosted dark circle)
           Positioned(
-            top: MediaQuery.of(context).padding.top + 8,
-            left: 16,
-            right: 16,
+            top: MediaQuery.of(context).padding.top + 12,
+            left: 12,
+            right: 12,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -103,7 +103,7 @@ class DetailPageTemplate extends ConsumerWidget {
                   // lucide icons don't react to Icon.fill — use the filled
                   // Material favorite glyph so the saved state is visible.
                   icon: isSaved ? Icons.favorite : LucideIcons.heart,
-                  iconColor: isSaved ? Colors.red : AppColors.textPrimary,
+                  iconColor: isSaved ? Colors.red : Colors.white,
                   onTap: canSave
                       ? () async {
                           final saved = await ref
@@ -119,11 +119,11 @@ class DetailPageTemplate extends ConsumerWidget {
             ),
           ),
 
-          // Bottom CTA
+          // Bottom CTA — v2 .stickybar
           Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
+            bottom: 12,
+            left: 12,
+            right: 12,
             child: _buildBottomCTA(context),
           ),
         ],
@@ -132,8 +132,9 @@ class DetailPageTemplate extends ConsumerWidget {
   }
 
   Widget _buildHero() {
+    // v2 .hero — dark photo block, 230px, gradient overlay via OppCard thumb.
     return Container(
-      height: 220,
+      height: 230,
       decoration: heroImageUrl != null
           ? BoxDecoration(
               image: DecorationImage(
@@ -141,16 +142,11 @@ class DetailPageTemplate extends ConsumerWidget {
                 fit: BoxFit.cover,
               ),
             )
-          : const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF1a365d), Color(0xFF2d5a87)],
-              ),
-            ),
+          : const BoxDecoration(color: Color(0xFF14161A)),
       alignment: Alignment.center,
-      child: heroImageUrl == null && heroIcon != null
-          ? Icon(heroIcon, size: 72, color: Colors.white.withValues(alpha: 0.8))
+      child: heroImageUrl == null
+          ? Icon(heroIcon ?? LucideIcons.trophy,
+              size: 46, color: Colors.white.withValues(alpha: 0.9))
           : null,
     );
   }
@@ -159,43 +155,51 @@ class DetailPageTemplate extends ConsumerWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 40,
-        height: 40,
+        width: 38,
+        height: 38,
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.9),
+          color: const Color(0x73141416),
           shape: BoxShape.circle,
+          border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
         ),
         alignment: Alignment.center,
         child: Icon(
           icon,
-          color: iconColor ?? AppColors.textPrimary,
-          size: 20,
+          color: iconColor ?? Colors.white,
+          size: 18,
         ),
       ),
     );
   }
 
-  Widget _buildContent(BuildContext context, WidgetRef ref) {
+  Widget _buildContent(BuildContext context) {
+    // v2 detail card overlapping hero: white, 20px radius, e1 shadow.
     return Transform.translate(
       offset: const Offset(0, -20),
       child: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.border),
+          boxShadow: SportXShadows.e1,
         ),
-        padding: const EdgeInsets.all(20),
+        margin: const EdgeInsets.symmetric(horizontal: 0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title Section
-            Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-            const SizedBox(height: 6),
+            // Title Section — v2 Sora 19
+            Text(title,
+                style: GoogleFonts.sora(
+                    fontSize: 19, fontWeight: FontWeight.w700, color: AppColors.ink, height: 1.25)),
+            const SizedBox(height: 4),
             Row(
               children: [
                 const Icon(LucideIcons.mapPin, size: 14, color: AppColors.textSecondary),
                 const SizedBox(width: 4),
                 Expanded(
-                  child: Text(subtitle, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                  child: Text(subtitle,
+                      style: GoogleFonts.inter(fontSize: 12.5, color: AppColors.textSecondary)),
                 ),
               ],
             ),
@@ -203,12 +207,15 @@ class DetailPageTemplate extends ConsumerWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Icon(LucideIcons.star, size: 16, color: Colors.amber),
+                  const Icon(LucideIcons.star, size: 16, color: AppColors.yellowDeep),
                   const SizedBox(width: 4),
-                  Text(rating!, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                  Text(rating!,
+                      style: GoogleFonts.inter(
+                          fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                   if (reviewsCount != null) ...[
                     const SizedBox(width: 6),
-                    Text(reviewsCount!, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                    Text(reviewsCount!,
+                        style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary)),
                   ],
                 ],
               ),
@@ -218,25 +225,32 @@ class DetailPageTemplate extends ConsumerWidget {
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: tags!.map((tag) => Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(tag, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
-                )).toList(),
+                children: tags!
+                    .map((tag) => Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            border: Border.all(color: AppColors.borderSoft),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(tag,
+                              style: GoogleFonts.inter(
+                                  fontSize: 12, color: AppColors.textSecondary)),
+                        ))
+                    .toList(),
               ),
             ],
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
-            // Details Grid
+            // Details Grid — v2 white cards on surface
             Row(
               children: [
-                const Icon(LucideIcons.clipboardList, size: 18, color: AppColors.primary),
+                const Icon(LucideIcons.clipboardList, size: 18, color: AppColors.yellowDeep),
                 const SizedBox(width: 8),
-                Text('Details', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                Text('Details',
+                    style: GoogleFonts.sora(
+                        fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
               ],
             ),
             const SizedBox(height: 12),
@@ -244,43 +258,53 @@ class DetailPageTemplate extends ConsumerWidget {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               crossAxisCount: 2,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 2.5,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 2.2,
               padding: EdgeInsets.zero,
               children: details.entries.map((entry) {
                 return Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.borderSoft),
+                    borderRadius: BorderRadius.circular(DesignTokens.radiusMd),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(entry.key, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(entry.key,
+                          style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 4),
-                      Text(entry.value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(entry.value,
+                          style: GoogleFonts.inter(
+                              fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
                     ],
                   ),
                 );
               }).toList(),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
             if (extraSections != null) ...[
               ...extraSections!,
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
             ],
 
             // Location Section
             Row(
               children: [
-                const Icon(LucideIcons.mapPin, size: 18, color: AppColors.primary),
+                const Icon(LucideIcons.mapPin, size: 18, color: AppColors.yellowDeep),
                 const SizedBox(width: 8),
-                Text('Location', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                Text('Location',
+                    style: GoogleFonts.sora(
+                        fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
               ],
             ),
             const SizedBox(height: 12),
@@ -289,7 +313,7 @@ class DetailPageTemplate extends ConsumerWidget {
                 height: 120,
                 decoration: BoxDecoration(
                   color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(DesignTokens.radiusMd),
                   border: Border.all(color: AppColors.border),
                 ),
                 alignment: Alignment.center,
@@ -297,139 +321,40 @@ class DetailPageTemplate extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
             ],
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(LucideIcons.building, size: 16, color: AppColors.textSecondary),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(addressStr, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.4)),
-                ),
-              ],
+            EntityRow(
+              title: addressStr.split(',').first.trim(),
+              subtitle: addressStr,
+              avatarText: addressStr.isNotEmpty ? addressStr[0].toUpperCase() : 'V',
+              trailing: const Icon(LucideIcons.navigation,
+                  size: 18, color: AppColors.textSecondary),
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 16),
 
             Center(
               child: GestureDetector(
-                onTap: () => _showReportDialog(context, ref),
-                child: const Row(
+                onTap: () {
+                  if (savedType == null || savedItemId == null) {
+                    SnackBarUtils.showSuccess(
+                        context, 'This listing cannot be reported');
+                    return;
+                  }
+                  context.push('/report', extra: {
+                    'type': savedType,
+                    'id': savedItemId,
+                    'title': title,
+                  });
+                },
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(LucideIcons.flag, size: 14, color: AppColors.textSecondary),
-                    SizedBox(width: 6),
-                    Text('Report this listing', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                    const Icon(LucideIcons.flag, size: 14, color: AppColors.textSecondary),
+                    const SizedBox(width: 6),
+                    Text('Report this listing',
+                        style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary)),
                   ],
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _showReportDialog(BuildContext context, WidgetRef ref) async {
-    if (savedType == null || savedItemId == null) {
-      SnackBarUtils.showSuccess(context, 'This listing cannot be reported');
-      return;
-    }
-
-    const reasons = {
-      'fake': 'Fake / misleading',
-      'outdated': 'Outdated',
-      'inappropriate': 'Inappropriate',
-      'other': 'Other',
-    };
-    String selectedReason = 'fake';
-    final commentController = TextEditingController();
-    bool submitting = false;
-
-    await showDialog(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (dialogContext, setDialogState) => AlertDialog(
-          backgroundColor: AppColors.background,
-          title: const Text('Report this listing', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ...reasons.entries.map((e) => RadioGroup<String>(
-                    onChanged: (v) => setDialogState(() => selectedReason = v!),
-                    child: RadioListTile<String>(
-                      value: e.key,
-                      activeColor: AppColors.primary,
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                      title: Text(e.value, style: const TextStyle(fontSize: 14)),
-                    ),
-                  )),
-              const SizedBox(height: 8),
-              TextField(
-                controller: commentController,
-                maxLines: 3,
-                enabled: !submitting,
-                decoration: InputDecoration(
-                  hintText: 'Add details (optional)',
-                  hintStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
-                  filled: true,
-                  fillColor: AppColors.surface,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.border),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.border),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.primary),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: submitting ? null : () => Navigator.pop(dialogContext),
-              child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              onPressed: submitting
-                  ? null
-                  : () async {
-                      setDialogState(() => submitting = true);
-                      try {
-                        await ref.read(dioProvider).post('/reports', data: {
-                          'reportable_type': savedType,
-                          'reportable_id': int.parse(savedItemId!),
-                          'reason': selectedReason,
-                          'comment': commentController.text.trim(),
-                        });
-                        if (dialogContext.mounted) Navigator.pop(dialogContext);
-                        if (context.mounted) {
-                          SnackBarUtils.showSuccess(context, 'Report submitted. Thank you!');
-                        }
-                      } on DioException catch (e) {
-                        setDialogState(() => submitting = false);
-                        if (dialogContext.mounted) {
-                          ScaffoldMessenger.of(dialogContext).showSnackBar(
-                            SnackBar(content: Text(ApiException.fromDio(e).message)),
-                          );
-                        }
-                      }
-                    },
-              child: submitting
-                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Submit', style: TextStyle(fontWeight: FontWeight.w600)),
             ),
           ],
         ),
@@ -440,11 +365,14 @@ class DetailPageTemplate extends ConsumerWidget {
   Widget _buildBottomCTA(BuildContext context) {
     final hasSecondary = secondaryCtaText != null && onSecondaryCtaPressed != null;
 
+    // v2 .stickybar — floating rounded bar, blur white, 18px radius, e2 shadow.
     return Container(
-      padding: EdgeInsets.fromLTRB(20, 16, 20, max(16, MediaQuery.of(context).padding.bottom)),
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        border: Border(top: BorderSide(color: AppColors.border)),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.94),
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: SportXShadows.e2,
       ),
       child: Row(
         children: [
@@ -455,57 +383,30 @@ class DetailPageTemplate extends ConsumerWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: Colors.white,
                   border: Border.all(color: AppColors.border),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: SportXShadows.e1,
                 ),
                 alignment: Alignment.center,
-                child: const Icon(LucideIcons.phone, size: 20, color: AppColors.textSecondary),
+                child: const Icon(LucideIcons.phone, size: 20, color: AppColors.dark),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
           ],
           if (hasSecondary) ...[
             Expanded(
-              child: OutlinedButton(
-                onPressed: isSecondaryCtaLoading ? null : onSecondaryCtaPressed,
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(0, 48),
-                  side: const BorderSide(color: AppColors.border),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                child: isSecondaryCtaLoading
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                    : Text(secondaryCtaText!, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-              ),
+              child: SecondaryButton(
+                  label: isSecondaryCtaLoading ? 'Please wait…' : secondaryCtaText!,
+                  onPressed: isSecondaryCtaLoading ? null : onSecondaryCtaPressed),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
-              child: ElevatedButton(
-                onPressed: onCtaPressed,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(0, 48),
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                child: Text(ctaText, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-              ),
+              child: PrimaryButton(label: ctaText, onPressed: onCtaPressed),
             ),
           ] else ...[
             Expanded(
-              child: ElevatedButton(
-                onPressed: onCtaPressed,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 48),
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                child: Text(ctaText, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-              ),
+              child: PrimaryButton(label: ctaText, onPressed: onCtaPressed),
             ),
           ],
         ],

@@ -10,6 +10,7 @@ import 'package:sportx_app/features/talent_scout/presentation/providers/talent_s
 import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class TalentScoutOnboardingScreen extends ConsumerStatefulWidget {
@@ -107,23 +108,35 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
           // Header
           Container(
             width: double.infinity,
-            color: AppColors.surface,
+            margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: SportXShadows.e1,
+            ),
             padding: const EdgeInsets.all(20),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(20)),
-                child: const Text('Step 1 of 1 — Scout Profile Setup', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                decoration: BoxDecoration(color: AppColors.yellowDeep.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(20)),
+                child: Text('Step 1 of 1 — Scout Profile Setup', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.yellowDeep)),
               ),
               const SizedBox(height: 12),
-              const Text('Professional details help athletes trust your outreach', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+              Text('Professional details help athletes trust your outreach', style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary)),
             ]),
           ),
-          Container(height: 8, color: AppColors.surface),
+          const SizedBox(height: 12),
           // Photo
           Container(
             width: double.infinity,
-            color: AppColors.surface,
+            margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: SportXShadows.e1,
+            ),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             child: Column(children: [
               Semantics(
@@ -136,7 +149,7 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
                     Container(
                       width: 96,
                       height: 96,
-                      decoration: const BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(colors: [AppColors.primary, AppColors.scout], begin: Alignment.topLeft, end: Alignment.bottomRight)),
+                      decoration: const BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(colors: [AppColors.yellowDeep, AppColors.scout], begin: Alignment.topLeft, end: Alignment.bottomRight)),
                       child: ClipOval(
                         child: _photoUrl != null
                             ? Image.network(MediaUtils.resolveUrl(_photoUrl), width: 96, height: 96, fit: BoxFit.cover, errorBuilder: (_, _, _) => const Icon(LucideIcons.user, size: 48, color: Colors.white))
@@ -145,21 +158,27 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
                     ),
                     Container(
                       padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                      decoration: const BoxDecoration(color: AppColors.yellowDeep, shape: BoxShape.circle),
                       child: const Icon(LucideIcons.camera, size: 14, color: Colors.white),
                     ),
                   ]),
                 ),
               ),
               const SizedBox(height: 10),
-              Text(_photoUrl == null ? 'Tap to add profile photo (optional)' : 'Photo ready — tap to change', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              Text(_photoUrl == null ? 'Tap to add profile photo (optional)' : 'Photo ready — tap to change', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
             ]),
           ),
-          Container(height: 8, color: AppColors.surface),
+          const SizedBox(height: 12),
           // Form
           Container(
             width: double.infinity,
-            color: AppColors.surface,
+            margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: SportXShadows.e1,
+            ),
             padding: const EdgeInsets.all(20),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               TextField(controller: _organization, decoration: const InputDecoration(labelText: 'Organization', hintText: 'Elite Talent Agency (optional)')),
@@ -174,15 +193,15 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
               const SizedBox(height: 16),
               DropdownButtonFormField<int>(initialValue: _cityId,
                 decoration: const InputDecoration(labelText: 'City'),
-                hint: const Text('Select city'),
+                hint: Text('Select city'),
                 items: meta.cities.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
                 onChanged: (v) => setState(() => _cityId = v),
               ),
               const SizedBox(height: 16),
-              const Text('Sports Specialization *', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
+              Text('Sports Specialization *', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
               const SizedBox(height: 8),
               if (meta.sports.isEmpty)
-                const Text('Loading sports...', style: TextStyle(fontSize: 13, color: AppColors.textSecondary))
+                Text('Loading sports...', style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary))
               else
                 Wrap(
                   spacing: 8,
@@ -192,15 +211,28 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
               const SizedBox(height: 16),
               TextField(controller: _bio, maxLines: 4, decoration: const InputDecoration(labelText: 'Bio (optional)', hintText: 'Tell athletes about your scouting background...', alignLabelWithHint: true)),
               const SizedBox(height: 8),
-              const Text('Visible on your public scout card', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              Text('Visible on your public scout card', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
-                child: FilledButton(
-                  onPressed: _saving ? null : _submit,
-                  style: FilledButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.symmetric(vertical: 14)),
-                  child: _saving ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('Create Scout Profile', style: TextStyle(fontWeight: FontWeight.w600)),
-                ),
+                child: _saving
+                    ? Container(
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: AppColors.yellow.withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        alignment: Alignment.center,
+                        child: const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.ink)),
+                      )
+                    : PrimaryButton(
+                        label: 'Create Scout Profile',
+                        icon: LucideIcons.userSearch,
+                        onPressed: _submit,
+                      ),
               ),
             ]),
           ),
@@ -211,13 +243,10 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
 
   Widget _buildSportChip(int id, String label) {
     final selected = _selectedSports.contains(id);
-    return FilterChip(
-      label: Text(label),
+    return SportXChip(
+      label: label,
       selected: selected,
-      onSelected: (val) => setState(() => val ? _selectedSports.add(id) : _selectedSports.remove(id)),
-      selectedColor: AppColors.primary.withValues(alpha: 0.15),
-      checkmarkColor: AppColors.primary,
-      labelStyle: TextStyle(color: selected ? AppColors.primary : AppColors.textSecondary, fontWeight: selected ? FontWeight.w600 : FontWeight.normal),
+      onTap: () => setState(() => selected ? _selectedSports.remove(id) : _selectedSports.add(id)),
     );
   }
 }
