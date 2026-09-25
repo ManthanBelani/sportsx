@@ -137,11 +137,16 @@ class _FormPageTemplateState extends State<FormPageTemplate> {
         ),
         child: SafeArea(
           top: false,
-          child: SizedBox(
-            width: double.infinity,
-            child: PrimaryButton(
-              label: widget.ctaText,
-              onPressed: _confirmed ? widget.onSubmit : null,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: SizedBox(
+                width: double.infinity,
+                child: PrimaryButton(
+                  label: widget.ctaText,
+                  onPressed: _confirmed ? widget.onSubmit : null,
+                ),
+              ),
             ),
           ),
         ),

@@ -544,7 +544,15 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
               const SizedBox(height: 4),
               Text('${a.totalRegistered}/${a.totalCapacity} capacity • ${a.utilizationPercent}% utilized', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
               const SizedBox(height: 12),
-              PrimaryButton(label: 'View detailed analytics', onPressed: () => context.push('/organizer-analytics')),
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 480),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: PrimaryButton(label: 'View detailed analytics', onPressed: () => context.push('/organizer-analytics')),
+                  ),
+                ),
+              ),
             ]),
           ),
         ]),
@@ -606,9 +614,14 @@ class _OrganizerDashboardScreenState extends ConsumerState<OrganizerDashboardScr
         _profileAction('Settings', LucideIcons.settings, () => context.push('/settings')),
         _profileAction('Help & Support', LucideIcons.helpCircle, () => context.push('/help-support')),
         const SizedBox(height: 16),
-        SizedBox(
-          width: double.infinity,
-          child: SecondaryButton(label: 'Log out', icon: LucideIcons.logOut, onPressed: () async => await ref.read(authProvider.notifier).logout()),
+        Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: SizedBox(
+              width: double.infinity,
+              child: SecondaryButton(label: 'Log out', icon: LucideIcons.logOut, onPressed: () async => await ref.read(authProvider.notifier).logout()),
+            ),
+          ),
         ),
       ]),
     );

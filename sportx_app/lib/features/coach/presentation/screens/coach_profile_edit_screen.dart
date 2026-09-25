@@ -313,16 +313,12 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
     final meta = ref.watch(metaProvider);
     final profile = ref.watch(coachProvider).coachProfile;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final maxWidth = constraints.maxWidth.isFinite
-            ? constraints.maxWidth
-            : MediaQuery.of(context).size.width;
-        return SingleChildScrollView(
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 640),
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: maxWidth),
-            child: Form(
+          child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -487,64 +483,55 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
             _buildAvailabilityGrid(),
 
             const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _saving ? null : _save,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.yellow,
-                  foregroundColor: AppColors.ink,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: PrimaryButton(
+                    label: _saving ? 'Saving…' : 'Save Changes',
+                    icon: LucideIcons.check,
+                    onPressed: _saving ? null : _save,
+                  ),
                 ),
-                child: _saving
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                      )
-                    : const Text('Save Changes', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               ),
             ),
             const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () => context.push('/social-links'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primary,
-                  side: const BorderSide(color: AppColors.primary),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: SecondaryButton(
+                    label: 'Manage Social Links',
+                    icon: LucideIcons.share2,
+                    onPressed: () => context.push('/social-links'),
+                  ),
                 ),
-                icon: const Icon(LucideIcons.share2, size: 18),
-                label: const Text('Manage Social Links', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               ),
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () async {
-                  await ref.read(authProvider.notifier).logout();
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  side: const BorderSide(color: Colors.red),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            const SizedBox(height: 12),
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: SecondaryButton(
+                    label: 'Log out',
+                    icon: LucideIcons.logOut,
+                    onPressed: () async {
+                      await ref.read(authProvider.notifier).logout();
+                    },
+                  ),
                 ),
-                icon: const Icon(LucideIcons.logOut, size: 18),
-                label: const Text('Log out', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               ),
             ),
           ],
         ),
       ),
+        ),
       ),
     );
-  },
-);
   }
 
   Widget _buildProfilePhoto(Coach? profile) {

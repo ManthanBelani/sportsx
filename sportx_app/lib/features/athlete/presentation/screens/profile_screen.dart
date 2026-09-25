@@ -577,17 +577,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget _buildShareProfileButton() {
     return Padding(
       padding: const EdgeInsets.all(20),
-      child: SizedBox(
-        width: double.infinity,
-        child: SecondaryButton(
-          label: 'Share Profile',
-          icon: LucideIcons.share2,
-          onPressed: () {
-            final shareUrl = '${ApiConfig.webBaseUrl}/profile/$_userId';
-            Share.share(
-              'Check out my profile on SportX India!\n$shareUrl',
-            );
-          },
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: SizedBox(
+            width: double.infinity,
+            child: SecondaryButton(
+              label: 'Share Profile',
+              icon: LucideIcons.share2,
+              onPressed: () {
+                final shareUrl = '${ApiConfig.webBaseUrl}/profile/$_userId';
+                Share.share(
+                  'Check out my profile on SportX India!\n$shareUrl',
+                );
+              },
+            ),
+          ),
         ),
       ),
     );
@@ -643,33 +648,48 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-         OutlinedButton.icon(
-              onPressed: () => context.push('/settings'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.textPrimary,
-                side: const BorderSide(color: AppColors.border),
-                minimumSize: const Size.fromHeight(48),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => context.push('/settings'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textPrimary,
+                    side: const BorderSide(color: AppColors.border),
+                    minimumSize: const Size.fromHeight(48),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  icon: const Icon(LucideIcons.settings, size: 18),
+                  label: const Text('Settings', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                ),
               ),
-              icon: const Icon(LucideIcons.settings, size: 18),
-              label: const Text('Settings', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
             ),
-            const SizedBox(height: 12),
-            OutlinedButton.icon(
-              onPressed: () async {
-                await ref.read(authProvider.notifier).logout();
-              },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.error,
-                side: const BorderSide(color: AppColors.error),
-                minimumSize: const Size.fromHeight(48),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+          const SizedBox(height: 12),
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    await ref.read(authProvider.notifier).logout();
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.error,
+                    side: const BorderSide(color: AppColors.error),
+                    minimumSize: const Size.fromHeight(48),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  icon: const Icon(LucideIcons.logOut, size: 18),
+                  label: const Text('Log out', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                ),
               ),
-              icon: const Icon(LucideIcons.logOut, size: 18),
-              label: const Text('Log out', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             ),
+          ),
         ],
       ),
     );

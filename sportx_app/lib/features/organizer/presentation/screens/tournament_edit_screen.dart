@@ -252,7 +252,15 @@ class _TournamentEditScreenState extends ConsumerState<TournamentEditScreen> {
           }),
           InkWell(onTap: () => setState(() => _categories.add(CategoryEditRow())), child:  Row(children: [Icon(LucideIcons.plus, size: 14, color: AppColors.primary), SizedBox(width: 6), Text('+ Add Category', style: GoogleFonts.inter(color: AppColors.primary, fontSize: 14))])),
           const SizedBox(height: 24),
-          SizedBox(width: double.infinity, child: PrimaryButton(label: 'Save Changes', icon: LucideIcons.check, onPressed: _saving ? null : _save)),
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: SizedBox(
+                width: double.infinity,
+                child: PrimaryButton(label: 'Save Changes', icon: LucideIcons.check, onPressed: _saving ? null : _save),
+              ),
+            ),
+          ),
           const SizedBox(height: 8),
           Center(child: StatusPill(label: 'Status: $_status', kind: _status == 'published' ? PillKind.ok : PillKind.draft)),
           const SizedBox(height: 32),

@@ -53,9 +53,11 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(32),
-          child: Column(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(32),
+            child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
@@ -139,12 +141,18 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                     width: 48,
                     child: CircularProgressIndicator(strokeWidth: 3, color: AppColors.ctaDark))
               else
-                SizedBox(
-                  width: double.infinity,
-                  child: PrimaryButton(
-                      label: 'Log In', icon: LucideIcons.logIn, onPressed: _login),
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 480),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: PrimaryButton(
+                          label: 'Log In', icon: LucideIcons.logIn, onPressed: _login),
+                    ),
+                  ),
                 ),
             ],
+          ),
           ),
         ),
       ),

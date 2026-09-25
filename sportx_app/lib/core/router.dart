@@ -177,7 +177,9 @@ String _dashboardRouteFor(String? role) {
 class RouterNotifier extends ChangeNotifier {
   RouterNotifier(Ref ref) {
     ref.listen<AuthState>(authProvider, (previous, next) {
-      if (previous?.status != next.status || previous?.needsOnboarding != next.needsOnboarding) {
+      if (previous?.status != next.status ||
+          previous?.needsOnboarding != next.needsOnboarding ||
+          previous?.user?.role != next.user?.role) {
         notifyListeners();
       }
     });
@@ -196,14 +198,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       final authState = ref.read(authProvider);
       final status = authState.status;
       final role = authState.user?.role;
-      const authScreens = ['/splash', '/role-selection', '/sign-up', '/login'];
+      const authScreens = ['/splash', '/role-selection', '/sign-up', '/login', '/admin/login'];
       const onboardingScreens = [
         '/onboarding-1', '/onboarding-2',
         '/coach-onboarding', '/academy-onboarding',
         '/organizer-onboarding', '/sponsor-onboarding',
         '/scout-onboarding',
       ];
-      const shellRouteScreens = ['/home', '/universal-search', '/saved', '/activity-hub', '/profile'];
+      const shellRouteScreens = ['/home', '/universal-search', '/saved', '/network', '/activity-hub', '/profile'];
 
       if (status == AuthStatus.authenticated) {
         final onboardingRoute = _onboardingRouteFor(role);
@@ -211,10 +213,13 @@ final routerProvider = Provider<GoRouter>((ref) {
 
         // Needs onboarding → force the user through their role onboarding first.
         if (authState.needsOnboarding && onboardingRoute != null) {
-          if (onboardingScreens.contains(loc)) {
-            return null; // Let them move freely between onboarding steps
+          if (loc == onboardingRoute) {
+            return null;
           }
-          return onboardingRoute; // Otherwise, force them to start onboarding
+          if (onboardingScreens.contains(loc)) {
+            return onboardingRoute;
+          }
+          return onboardingRoute;
         }
 
         // Fully set up → redirect auth/onboarding screens to role-specific dashboard.
@@ -238,6 +243,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (status == AuthStatus.unauthenticated) {
         if (loc == '/splash') return '/role-selection';
         if (authScreens.contains(loc)) return null;
+        if (loc.startsWith('/admin')) return null;
         return '/role-selection';
       }
 
@@ -425,7 +431,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           status: extra?['status'] as String? ?? 'pending',
         );
       }),
-      GoRoute(path: '/network', builder: (context, state) => const NetworkScreen()),
       GoRoute(path: '/report', builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
         return ReportScreen(
@@ -466,16 +471,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         return OppReviewDetailScreen(opportunity: opportunity ?? Opportunity(id: '', title: '', sponsorName: '', status: 'pending', createdAt: ''));
       }),
       GoRoute(path: '/admin/notifications/targeting', builder: (context, state) => const NotificationTargetingScreen()),
-      GoRoute(path: '/my-registrations', builder: (context, state) => const MyRegistrationsScreen()),
-      GoRoute(path: '/my-coaching-enrollments', builder: (context, state) => const MyCoachingEnrollmentsScreen()),
-      GoRoute(path: '/coach-enrollments', builder: (context, state) => const CoachEnrollmentScreen()),
+      GoRoute(path: '/activity-hub', builder: (context, state) => const ActivityHubScreen()),
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
         routes: [
           GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
           GoRoute(path: '/universal-search', builder: (context, state) => const UniversalSearchScreen()),
           GoRoute(path: '/saved', builder: (context, state) => const SavedScreen()),
-          GoRoute(path: '/activity-hub', builder: (context, state) => const ActivityHubScreen()),
+          GoRoute(path: '/network', builder: (context, state) => const NetworkScreen()),
           GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
         ],
       ),

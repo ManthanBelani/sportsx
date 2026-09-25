@@ -144,12 +144,20 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-              Opacity(
-                opacity: _selectedRole != null ? 1.0 : 0.5,
-                child: PrimaryButton(
-                  label: 'Continue',
-                  icon: LucideIcons.arrowRight,
-                  onPressed: _selectedRole != null ? _handleContinue : null,
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 480),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Opacity(
+                      opacity: _selectedRole != null ? 1.0 : 0.5,
+                      child: PrimaryButton(
+                        label: 'Continue',
+                        icon: LucideIcons.arrowRight,
+                        onPressed: _selectedRole != null ? _handleContinue : null,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
