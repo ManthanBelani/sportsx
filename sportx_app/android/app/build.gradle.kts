@@ -34,7 +34,7 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("/home/rainstreamweb/Pictures/test/sportsx/my-release-key.jks")
+            storeFile = file("d:/SportX Project/my-release-key.jks")
             storePassword = "SportX@11"
             keyAlias = "my-key-alias"
             keyPassword = "SportX@11"

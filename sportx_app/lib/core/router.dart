@@ -478,6 +478,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
           GoRoute(path: '/universal-search', builder: (context, state) => const UniversalSearchScreen()),
           GoRoute(path: '/saved', builder: (context, state) => const SavedScreen()),
+          GoRoute(path: '/activity-hub', builder: (context, state) => const ActivityHubScreen()),
           GoRoute(path: '/network', builder: (context, state) => const NetworkScreen()),
           GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
         ],

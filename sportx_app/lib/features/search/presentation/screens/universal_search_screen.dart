@@ -73,62 +73,42 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => context.pop(),
+            onTap: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/home');
+              }
+            },
             child: const Padding(
               padding: EdgeInsets.only(right: 12),
               child: Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary, size: 24),
             ),
           ),
-          if (hasResults) ...[
-            Expanded(
-              child: Text(
-                _searchController.text.trim().isEmpty ? 'Results' : '"${_searchController.text.trim()}"',
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            GestureDetector(
-              onTap: () => context.push('/search-filter'),
-              child: Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                alignment: Alignment.center,
-                child: const Icon(LucideIcons.slidersHorizontal, color: AppColors.textSecondary, size: 18),
-              ),
-            ),
-          ] else ...[
-            Expanded(
-              child: Container(
-                height: 44,
+          Expanded(
+            child: Container(
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   border: Border.all(color: AppColors.border),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.only(left: 14, right: 8),
-                      child: Icon(LucideIcons.search, color: AppColors.textSecondary, size: 18),
-                    ),
                     Expanded(
                       child: TextField(
                         controller: _searchController,
                         focusNode: _focusNode,
                         style: const TextStyle(fontSize: 15, color: AppColors.textPrimary),
+                        textAlignVertical: TextAlignVertical.center,
                         decoration: const InputDecoration(
                           hintText: 'Search academies, coaches, trials...',
                           hintStyle: TextStyle(color: AppColors.textSecondary, fontSize: 15),
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
                           focusedBorder: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 14),
                           isDense: true,
-                          contentPadding: EdgeInsets.zero,
                         ),
                         textInputAction: TextInputAction.search,
                         onSubmitted: _onSearchSubmitted,
@@ -151,7 +131,20 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
                 ),
               ),
             ),
-          ],
+          const SizedBox(width: 12),
+          GestureDetector(
+            onTap: () => context.push('/search-filter'),
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              alignment: Alignment.center,
+              child: const Icon(LucideIcons.slidersHorizontal, color: AppColors.textSecondary, size: 18),
+            ),
+          ),
         ],
       ),
     );
@@ -213,9 +206,13 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
 
           Text('Trending', style: GoogleFonts.sora(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
           const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 3,
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            childAspectRatio: 2.5,
             children: trendingSearches.map((term) => _buildTrendingChip(term, _iconForTrending(term))).toList(),
           ),
 
@@ -392,11 +389,13 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
       );
     }
 
+    final headerCount = category != SearchCategory.all ? 1 : 0;
+    
     return ListView.builder(
       padding: const EdgeInsets.all(20),
-      itemCount: items.length + (searchState.hasMore ? 1 : 0),
+      itemCount: items.length + headerCount + (searchState.hasMore ? 1 : 0),
       itemBuilder: (context, index) {
-        if (index == 0 && category != SearchCategory.all) {
+        if (index == 0 && headerCount > 0) {
           // Result count header
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
@@ -404,7 +403,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
           );
         }
         
-        final itemIndex = index - (category != SearchCategory.all ? 1 : 0);
+        final itemIndex = index - headerCount;
         if (itemIndex >= items.length) {
           if (searchState.isLoading) {
             return const Padding(

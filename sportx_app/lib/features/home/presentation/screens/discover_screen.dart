@@ -257,10 +257,14 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   }
 
   Widget _buildAthleteCard(dynamic athlete) {
+    final Map<String, dynamic> data = athlete as Map<String, dynamic>;
+    final sportName = data['sport'] is Map ? data['sport']['name'] : null;
+    final cityName = data['city'] is Map ? data['city']['name'] : null;
+    
     return InkWell(
       onTap: () => context.push('/view-profile', extra: {
         'type': 'athlete',
-        'id': athlete.id.toString(),
+        'id': data['id']?.toString() ?? '',
       }),
       borderRadius: BorderRadius.circular(16),
       child: Container(
@@ -278,14 +282,14 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
-                image: athlete.profilePhotoUrl != null
+                image: data['profile_photo_url'] != null
                     ? DecorationImage(
-                        image: NetworkImage(athlete.profilePhotoUrl!),
+                        image: NetworkImage(data['profile_photo_url']!),
                         fit: BoxFit.cover,
                       )
                     : null,
               ),
-              child: athlete.profilePhotoUrl == null
+              child: data['profile_photo_url'] == null
                   ? const Center(child: Icon(LucideIcons.user, size: 40, color: AppColors.textTertiary))
                   : null,
             ),
@@ -295,14 +299,14 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    athlete.fullName,
+                    data['full_name'] ?? data['name'] ?? 'Athlete',
                     style: GoogleFonts.sora(fontWeight: FontWeight.w600, color: AppColors.ink),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    athlete.sport?.name ?? 'Athlete',
+                    sportName ?? 'Athlete',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   const SizedBox(height: 8),
@@ -312,7 +316,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          athlete.city?.name ?? 'India',
+                          cityName ?? 'India',
                           style: Theme.of(context).textTheme.bodySmall,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -528,18 +532,52 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
               padding: const EdgeInsets.all(16),
               child: Text('Select Sport', style: GoogleFonts.sora(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
             ),
-            ..._sports.map((sport) {
-              return ListTile(
-                title: Text(sport),
-                trailing: _selectedSport == sport
-                    ? const Icon(LucideIcons.check, color: AppColors.primary)
-                    : null,
-                onTap: () {
-                  setState(() => _selectedSport = sport);
-                  Navigator.pop(context);
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                  childAspectRatio: 2.4,
+                ),
+                itemCount: _sports.length,
+                itemBuilder: (context, index) {
+                  final sport = _sports[index];
+                  final isSelected = _selectedSport == sport;
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() => _selectedSport = sport);
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppColors.yellowTint : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected ? AppColors.primary : AppColors.border,
+                        ),
+                      ),
+                      child: Text(
+                        sport,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                          color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  );
                 },
-              );
-            }),
+              ),
+            ),
             const SizedBox(height: 16),
           ],
         ),
@@ -562,18 +600,52 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
               padding: const EdgeInsets.all(16),
               child: Text('Select State', style: GoogleFonts.sora(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
             ),
-            ..._states.map((state) {
-              return ListTile(
-                title: Text(state),
-                trailing: _selectedState == state
-                    ? const Icon(LucideIcons.check, color: AppColors.primary)
-                    : null,
-                onTap: () {
-                  setState(() => _selectedState = state);
-                  Navigator.pop(context);
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                  childAspectRatio: 2.4,
+                ),
+                itemCount: _states.length,
+                itemBuilder: (context, index) {
+                  final state = _states[index];
+                  final isSelected = _selectedState == state;
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() => _selectedState = state);
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppColors.yellowTint : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected ? AppColors.primary : AppColors.border,
+                        ),
+                      ),
+                      child: Text(
+                        state,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                          color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  );
                 },
-              );
-            }),
+              ),
+            ),
             const SizedBox(height: 16),
           ],
         ),
@@ -596,18 +668,52 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
               padding: const EdgeInsets.all(16),
               child: Text('Select Age Group', style: GoogleFonts.sora(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
             ),
-            ..._ageGroups.map((age) {
-              return ListTile(
-                title: Text(age),
-                trailing: _selectedAgeGroup == age
-                    ? const Icon(LucideIcons.check, color: AppColors.primary)
-                    : null,
-                onTap: () {
-                  setState(() => _selectedAgeGroup = age);
-                  Navigator.pop(context);
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                  childAspectRatio: 2.4,
+                ),
+                itemCount: _ageGroups.length,
+                itemBuilder: (context, index) {
+                  final age = _ageGroups[index];
+                  final isSelected = _selectedAgeGroup == age;
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() => _selectedAgeGroup = age);
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppColors.yellowTint : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected ? AppColors.primary : AppColors.border,
+                        ),
+                      ),
+                      child: Text(
+                        age,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                          color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  );
                 },
-              );
-            }),
+              ),
+            ),
             const SizedBox(height: 16),
           ],
         ),

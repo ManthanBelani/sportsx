@@ -7,6 +7,7 @@ import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/chat/presentation/providers/chat_provider.dart';
 import 'package:sportx_app/features/connections/presentation/providers/athlete_directory_provider.dart';
 import 'package:sportx_app/features/connections/presentation/providers/connections_provider.dart';
+import 'package:sportx_app/features/chat/presentation/screens/chat_list_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/widgets/athlete_avatar.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
@@ -95,28 +96,50 @@ class _NetworkScreenState extends ConsumerState<NetworkScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: AppColors.surface,
+        appBar: AppBar(
+          backgroundColor: Colors.white.withValues(alpha: 0.88),
+          elevation: 0,
+          automaticallyImplyLeading: false,
+          title: Text('Inbox & Network',
+              style: GoogleFonts.sora(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.ink)),
+          bottom: const TabBar(
+            labelColor: AppColors.ink,
+            unselectedLabelColor: AppColors.textSecondary,
+            indicatorColor: AppColors.yellowDeep,
+            indicatorWeight: 3,
+            tabs: [
+              Tab(text: 'Network'),
+              Tab(text: 'Chats'),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            _buildNetworkTab(),
+            const ChatListScreen(isEmbedded: true),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNetworkTab() {
     final state = ref.watch(athleteDirectoryProvider);
     final people = state.athletes.take(8).toList();
 
-    return Scaffold(
-      backgroundColor: AppColors.surface,
-      appBar: AppBar(
-        backgroundColor: Colors.white.withValues(alpha: 0.88),
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: Text('Network',
-            style: GoogleFonts.sora(
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                color: AppColors.ink)),
-      ),
-      body: RefreshIndicator(
-        color: AppColors.yellowDeep,
-        onRefresh: () =>
-            ref.read(athleteDirectoryProvider.notifier).load(),
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
-          children: [
+    return RefreshIndicator(
+      color: AppColors.yellowDeep,
+      onRefresh: () => ref.read(athleteDirectoryProvider.notifier).load(),
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
+        children: [
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -142,36 +165,27 @@ class _NetworkScreenState extends ConsumerState<NetworkScreen> {
                           fontSize: 12.5,
                           color: AppColors.textSecondary)),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                          child: _hubTile(
-                              context,
-                              label: 'Connections',
-                              icon: LucideIcons.users,
-                              tintBg: AppColors.infoLight,
-                              tintFg: AppColors.info,
-                              route: '/my-connections')),
-                      const SizedBox(width: 10),
-                      Expanded(
-                          child: _hubTile(
-                              context,
-                              label: 'Messages',
-                              icon: LucideIcons.messageCircle,
-                              tintBg: const Color(0xFFDCFCE7),
-                              tintFg: const Color(0xFF15803D),
-                              route: '/chat-list')),
-                      const SizedBox(width: 10),
-                      Expanded(
-                          child: _hubTile(
-                              context,
-                              label: 'Requests',
-                              icon: LucideIcons.userPlus,
-                              tintBg: AppColors.yellowTint,
-                              tintFg: AppColors.warnText,
-                              route: '/connection-requests')),
-                    ],
-                  ),
+                      Row(
+                        children: [
+                          Expanded(
+                              child: _hubTile(
+                                  context,
+                                  label: 'Connections',
+                                  icon: LucideIcons.users,
+                                  tintBg: AppColors.infoLight,
+                                  tintFg: AppColors.info,
+                                  route: '/my-connections')),
+                          const SizedBox(width: 12),
+                          Expanded(
+                              child: _hubTile(
+                                  context,
+                                  label: 'Requests',
+                                  icon: LucideIcons.userPlus,
+                                  tintBg: AppColors.yellowTint,
+                                  tintFg: AppColors.warnText,
+                                  route: '/connection-requests')),
+                        ],
+                      ),
                 ],
               ),
             ),
@@ -240,7 +254,6 @@ class _NetworkScreenState extends ConsumerState<NetworkScreen> {
               for (final a in people) _personCard(a),
           ],
         ),
-      ),
     );
   }
 
