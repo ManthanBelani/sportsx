@@ -1,0 +1,4 @@
+# build / tooling artifacts
+__pycache__/
+*.pyc
+.qa/

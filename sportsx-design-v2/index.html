@@ -3,26 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <link rel="icon" href="assets/images/logo.png" type="image/png"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SportX v2 — Role-wise Design Showcase · 125 screens</title>
+  <title>SportX v3 — Role-wise Design Showcase · 132 screens</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <style>
     :root {
-      --bg:#ffffff; --bg-alt:#F4F5F7; --surface:#F5F7FA; --surface-2:#EDEFF2;
-      --fg:#111111; --fg-2:#2B2B2B; --muted:#6B7280; --muted-2:#9CA3AF;
-      --border:#E8EAED; --border-2:#D1D5DB;
-      --accent:#FFC107; --accent-dark:#D9A400; --accent-light:#FFF6DA; --accent-bg:#FFFCF0;
+      --bg:#ffffff; --bg-alt:#EEF1F8; --surface:#F5F7FA; --surface-2:#EDEFF2;
+      --fg:#0F1B3D; --fg-2:#1B2A52; --muted:#5B6785; --muted-2:#8A93AD;
+      --border:#E7EBF5; --border-2:#D1D5DB;
+      --accent:#FFC72C; --accent-dark:#E0A800; --accent-light:#FFF8E5; --accent-bg:#FFFCF0;
       --success:#22C55E; --warning:#F59E0B; --danger:#EF4444;
       --athlete:#F59E0B; --coach:#8A6AEA; --academy:#03B94C; --organizer:#FB802E; --scout:#3B82F6; --sponsor:#111111; --admin:#EF4444; --shared:#06B6D4;
       --auth:#6B7280;
-      --radius:12px; --radius-sm:8px; --radius-lg:20px;
+      --radius:18px; --radius-sm:8px; --radius-lg:20px;
       --shadow-sm:0 1px 2px rgba(0,0,0,0.04);
       --shadow:0 2px 8px rgba(0,0,0,0.04),0 1px 2px rgba(0,0,0,0.06);
       --shadow-lg:0 20px 40px -12px rgba(15,23,42,0.12),0 4px 12px rgba(0,0,0,0.04);
       --shadow-xl:0 32px 64px -16px rgba(15,23,42,0.18);
-      --gradient-hero:linear-gradient(135deg,#111111 0%,#1E1B0F 38%,#D9A400 100%);
+      --gradient-hero:linear-gradient(135deg,#0F1B3D 0%,#101A3A 38%,#E0A800 100%);
       --gradient-soft:linear-gradient(180deg,#FFFCF0 0%,#ffffff 100%);
     }
     *{margin:0;padding:0;box-sizing:border-box}
@@ -32,7 +32,7 @@
     .top-nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.85);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--border)}
     .top-nav-inner{max-width:1440px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:24px}
     .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:-0.4px;color:var(--fg);text-decoration:none}
-    .brand-mark{width:32px;height:32px;background:var(--fg);color:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Sora';font-weight:800;font-size:15px;box-shadow:0 4px 12px rgba(17,17,17,0.18)}
+    .brand-mark{width:32px;height:32px;background:var(--fg);color:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans';font-weight:800;font-size:15px;box-shadow:0 4px 12px rgba(17,17,17,0.18)}
     .nav-links{display:flex;gap:4px;align-items:center}
     .nav-link{padding:8px 14px;border-radius:8px;font-size:14px;font-weight:500;color:var(--fg-2);text-decoration:none;transition:all 0.15s ease}
     .nav-link:hover{background:var(--surface);color:var(--fg)}
@@ -79,13 +79,13 @@
     .nav-mobile-link:hover,.nav-mobile-link.active{background:var(--surface);color:var(--fg)}
     @media (max-width:1080px){.nav-groups,.nav-switcher{display:none}.nav-mobile-btn{display:flex}}
     /* HERO */
-    .hero{position:relative;padding:80px 32px 64px;background:var(--gradient-hero);overflow:hidden}
+    .hero{position:relative;padding:80px 32px 64px;background:linear-gradient(135deg,#0F1B3D 0%,#101A3A 38%,#E0A800 100%);overflow:hidden}
     .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(900px 480px at 15% 10%,rgba(255,193,7,0.28),transparent 60%),radial-gradient(600px 300px at 85% 70%,rgba(59,130,246,0.15),transparent);pointer-events:none}
     .hero-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1}
     .hero-pill{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.18);border-radius:100px;color:white;font-size:12px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:24px}
     .hero-pill-dot{width:6px;height:6px;background:var(--accent);border-radius:50%;box-shadow:0 0 0 3px rgba(255,193,7,0.25)}
-    .hero h1{font-family:'Sora';font-size:clamp(40px,7vw,72px);font-weight:800;color:white;letter-spacing:-2px;line-height:1.02;margin-bottom:20px}
-    .hero h1 .grad{background:linear-gradient(135deg,#FFD54A 0%,#FFC107 55%,#F5B400 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .hero h1{font-family:'Plus Jakarta Sans';font-size:clamp(40px,7vw,72px);font-weight:800;color:white;letter-spacing:-2px;line-height:1.02;margin-bottom:20px}
+    .hero h1 .grad{background:linear-gradient(135deg,#FFDA6B 0%,#FFC72C 55%,#F2B705 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
     .hero h1 em{font-style:normal;background:var(--accent);color:#111;padding:0 10px;border-radius:10px}
     .hero p.lead{font-size:clamp(16px,1.8vw,19px);color:rgba(255,255,255,0.82);max-width:740px;line-height:1.6;margin-bottom:32px}
     .hero-actions{display:flex;gap:12px;flex-wrap:wrap}
@@ -99,19 +99,19 @@
     .stats-grid{background:white;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-lg);display:grid;grid-template-columns:repeat(5,1fr);overflow:hidden}
     .stat{padding:20px 16px;text-align:center;border-right:1px solid var(--border)}
     .stat:last-child{border-right:none}
-    .stat-value{font-family:'Sora';font-size:28px;font-weight:800;color:var(--fg);letter-spacing:-1px;line-height:1}
+    .stat-value{font-family:'Plus Jakarta Sans';font-size:28px;font-weight:800;color:var(--fg);letter-spacing:-1px;line-height:1}
     .stat-value .accent{color:var(--accent-dark)}
     .stat-label{font-size:11px;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:0.5px;font-weight:700}
     /* SECTIONS */
     section{padding:72px 32px}
     .section-inner{max-width:1200px;margin:0 auto}
     .section-eyebrow{font-size:12px;font-weight:700;color:var(--accent-dark);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
-    .section-title{font-family:'Sora';font-size:clamp(28px,4vw,38px);font-weight:800;letter-spacing:-1px;margin-bottom:12px;color:var(--fg)}
+    .section-title{font-family:'Plus Jakarta Sans';font-size:clamp(28px,4vw,38px);font-weight:800;letter-spacing:-1px;margin-bottom:12px;color:var(--fg)}
     .section-sub{font-size:16px;color:var(--muted);max-width:680px;line-height:1.6;margin-bottom:40px}
     /* TOKENS */
     .tokens-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:24px}
     .token-card{background:white;border:1px solid var(--border);border-radius:16px;padding:28px}
-    .token-card h3{font-family:'Sora';font-size:16px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+    .token-card h3{font-family:'Plus Jakarta Sans';font-size:16px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px}
     .token-card h3 svg{width:18px;height:18px;color:var(--accent-dark)}
     .color-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
     .color-chip{height:74px;border-radius:10px;border:1px solid var(--border)}
@@ -128,7 +128,7 @@
     .role-tile:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--accent)}
     .role-icon-box{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center}
     .role-icon-box svg{width:20px;height:20px}
-    .role-name{font-family:'Sora';font-size:14px;font-weight:700}
+    .role-name{font-family:'Plus Jakarta Sans';font-size:14px;font-weight:700}
     .role-count{font-size:12px;color:var(--muted)}
     .role-tile[data-role="athlete"] .role-icon-box{background:rgba(245,158,11,0.14);color:var(--athlete)}
     .role-tile[data-role="coach"] .role-icon-box{background:rgba(138,106,234,0.14);color:var(--coach)}
@@ -143,16 +143,16 @@
     .role-section{padding-top:48px;padding-bottom:12px}
     .role-header{display:flex;align-items:center;gap:14px;margin-bottom:6px}
     .role-header .role-icon-box{width:48px;height:48px;border-radius:12px}
-    .role-header h2{font-family:'Sora';font-size:26px;font-weight:800;letter-spacing:-0.8px}
+    .role-header h2{font-family:'Plus Jakarta Sans';font-size:26px;font-weight:800;letter-spacing:-0.8px}
     .role-header .role-tag{padding:4px 10px;background:var(--surface);border:1px solid var(--border);border-radius:100px;font-size:11px;font-weight:700;color:var(--muted)}
     .role-description{font-size:14px;color:var(--muted);margin-bottom:22px;max-width:760px;line-height:1.6}
     /* SCREEN GRID */
     .screen-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px}
     .screen-card{background:white;border-radius:22px;overflow:hidden;transition:all 0.25s ease;border:1px solid var(--border);text-decoration:none;color:inherit;display:flex;flex-direction:column;box-shadow:0 1px 3px rgba(16,18,21,.06)}
     .screen-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--accent-dark)}
-    .device-frame{position:relative;width:100%;aspect-ratio:9/18.8;background:#0E0F12;overflow:hidden;border-bottom:1px solid var(--border);border-radius:20px 20px 0 0;display:flex;align-items:flex-start;justify-content:center}
+    .device-frame{position:relative;width:100%;aspect-ratio:390/844;background:#0E0F12;overflow:hidden;border-bottom:1px solid var(--border);border-radius:20px 20px 0 0;display:flex;align-items:flex-start;justify-content:center}
     .device-frame::before{content:'';position:absolute;top:8px;left:50%;transform:translateX(-50%);width:88px;height:6px;background:#1a1d22;border-radius:99px;z-index:3;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
-    .device-frame iframe{position:absolute;top:0;left:0;width:430px;height:884px;max-width:none;border:none;transform-origin:top left;pointer-events:none;will-change:transform;background:white;border-radius:20px 20px 0 0}
+    .device-frame iframe{position:absolute;top:0;left:0;width:390px;height:844px;max-width:none;border:none;transform-origin:top left;pointer-events:none;will-change:transform;background:white;border-radius:20px 20px 0 0}
     .screen-meta{padding:12px 14px 14px}
     .screen-name{font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px}
     .screen-name .badge{font-size:9px;font-weight:800;padding:3px 6px;border-radius:4px;background:var(--accent-light);color:var(--accent-dark);text-transform:uppercase;letter-spacing:0.3px}
@@ -161,7 +161,7 @@
     /* FLOWS */
     .flows-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
     .flow-card{background:white;border:1px solid var(--border);border-radius:16px;padding:20px}
-    .flow-card h4{font-family:'Sora';font-size:14px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+    .flow-card h4{font-family:'Plus Jakarta Sans';font-size:14px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
     .flow-card h4 .num{width:22px;height:22px;background:var(--fg);color:white;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
     .flow-card p{font-size:12.5px;color:var(--muted);margin-bottom:12px;line-height:1.5}
     .flow-steps{display:flex;flex-direction:column;gap:6px}
@@ -171,7 +171,7 @@
     footer{background:var(--fg);color:white;padding:48px 32px 28px}
     .footer-inner{max-width:1200px;margin:0 auto}
     .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px;margin-bottom:32px}
-    .footer-brand{font-family:'Sora';font-size:20px;font-weight:800;display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .footer-brand{font-family:'Plus Jakarta Sans';font-size:20px;font-weight:800;display:flex;align-items:center;gap:10px;margin-bottom:10px}
     .footer-desc{color:rgba(255,255,255,0.6);font-size:13px;line-height:1.6;max-width:340px}
     .footer-col h5{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:14px;color:rgba(255,255,255,0.4)}
     .footer-col ul{list-style:none}
@@ -195,7 +195,7 @@
 <body>
   <nav class="top-nav">
     <div class="top-nav-inner">
-      <a href="#top" class="brand"><span class="brand-mark"><img src="assets/images/logo.png" alt="SportX logo" style="width:100%;height:100%;object-fit:cover;border-radius:8px;display:block"></span> Sport<em style="font-style:normal;background:var(--accent);padding:0 6px;border-radius:6px;color:#111">X</em> v2</a>
+      <a href="#top" class="brand"><span class="brand-mark"><img src="assets/images/logo.png" alt="SportX logo" style="width:100%;height:100%;object-fit:cover;border-radius:8px;display:block"></span> Sport<em style="font-style:normal;background:var(--accent);padding:0 6px;border-radius:6px;color:var(--fg)">X</em> v3</a>
       <div class="nav-groups">
         <div class="nav-group" data-dropdown="sections">
           <button class="nav-trigger" type="button"><i data-lucide="list"></i> Sections <i class="chev" data-lucide="chevron-down"></i></button>
@@ -215,13 +215,14 @@
             <div class="nav-dd-section-label">Jump to a role</div>
             <div class="nav-dd-list">
               <a class="nav-dd-item role-auth" href="#role-auth"><div class="nav-dd-icon" style="background:rgba(107,114,128,.14);color:#6B7280"><i data-lucide="key-round"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Auth & Onboarding</div><div class="nav-dd-sub">14 screens</div></div></a>
-              <a class="nav-dd-item role-athlete" href="#role-athlete"><div class="nav-dd-icon"><i data-lucide="user"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Athlete</div><div class="nav-dd-sub">23 screens</div></div></a>
+              <a class="nav-dd-item role-athlete" href="#role-athlete"><div class="nav-dd-icon"><i data-lucide="user"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Athlete</div><div class="nav-dd-sub">25 screens</div></div></a>
               <a class="nav-dd-item role-coach" href="#role-coach"><div class="nav-dd-icon"><i data-lucide="award"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Coach</div><div class="nav-dd-sub">8 screens</div></div></a>
               <a class="nav-dd-item role-academy" href="#role-academy"><div class="nav-dd-icon"><i data-lucide="building-2"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Academy</div><div class="nav-dd-sub">10 screens</div></div></a>
               <a class="nav-dd-item role-organizer" href="#role-organizer"><div class="nav-dd-icon"><i data-lucide="calendar-days"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Organizer</div><div class="nav-dd-sub">10 screens</div></div></a>
               <a class="nav-dd-item role-scout" href="#role-scout"><div class="nav-dd-icon"><i data-lucide="eye"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Scout</div><div class="nav-dd-sub">12 screens</div></div></a>
               <a class="nav-dd-item role-sponsor" href="#role-sponsor"><div class="nav-dd-icon"><i data-lucide="briefcase"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Sponsor</div><div class="nav-dd-sub">6 screens</div></div></a>
               <a class="nav-dd-item role-admin" href="#role-admin"><div class="nav-dd-icon"><i data-lucide="shield"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Admin</div><div class="nav-dd-sub">14 screens</div></div></a>
+              <a class="nav-dd-item role-profile" href="#role-profile"><div class="nav-dd-icon" style="background:rgba(255,199,44,.18);color:#B4880A"><i data-lucide="clipboard-list"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Profile Fields</div><div class="nav-dd-sub">6 screens &middot; 180 fields</div></div></a>
               <a class="nav-dd-item role-shared" href="#role-shared"><div class="nav-dd-icon" style="background:rgba(6,182,212,.14);color:#06B6D4"><i data-lucide="compass"></i></div><div class="nav-dd-text"><div class="nav-dd-title">Shared</div><div class="nav-dd-sub">27 screens</div></div></a>
             </div>
           </div>
@@ -238,7 +239,7 @@
 
   <div class="nav-mobile" id="mobileMenu">
     <div class="nav-mobile-head">
-      <a href="#top" class="brand"><span class="brand-mark"><img src="assets/images/logo.png" alt="SportX logo" style="width:100%;height:100%;object-fit:cover;border-radius:8px;display:block"></span> SportX v2</a>
+      <a href="#top" class="brand"><span class="brand-mark"><img src="assets/images/logo.png" alt="SportX logo" style="width:100%;height:100%;object-fit:cover;border-radius:8px;display:block"></span> SportX v3</a>
       <button class="nav-mobile-close" id="mobileMenuClose" aria-label="Close"><i data-lucide="x"></i></button>
     </div>
     <div class="nav-mobile-section"><div class="nav-mobile-label">Showcase</div><a class="nav-mobile-link active" href="index.html"><i data-lucide="layout-grid" style="width:18px;height:18px"></i> Showcase</a><a class="nav-mobile-link" href="home.html"><i data-lucide="smartphone" style="width:18px;height:18px"></i> App Preview (Home)</a><a class="nav-mobile-link" href="index.original.html"><i data-lucide="layers" style="width:18px;height:18px"></i> Flat index</a></div>
@@ -250,7 +251,7 @@
     <div class="hero-inner">
       <div class="hero-pill"><span class="hero-pill-dot"></span> Design v2 · 125 screens · Role-wise · Mobile-first</div>
       <h1>Sport<em>X</em> — <span class="grad">every role,<br>one system.</span></h1>
-      <p class="lead">v2 is a polished, premium upgrade — yellow CTAs, Sora + Inter, blurred nav, real photography, 430px device frame. Now reorganized <b style="color:white">by role</b> so you can jump straight to the athlete, coach, academy, organizer, scout, sponsor or admin workspace. Same tokens, 125 screens, zero flat-file chaos.</p>
+      <p class="lead">v3 restyled to the new SportX design system — gold CTAs on deep navy, Plus Jakarta Sans, 390 &times; 844 shell with a 9:41 status bar. Now reorganized <b style="color:white">by role</b> so you can jump straight to the athlete, coach, academy, organizer, scout, sponsor or admin workspace. Same tokens, 125 screens, zero flat-file chaos.</p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="#screens"><i data-lucide="layout-grid" style="width:18px;height:18px"></i> Explore 125 screens</a>
         <a class="btn btn-ghost" href="home.html"><i data-lucide="smartphone" style="width:18px;height:18px"></i> Open App (Home)</a>
@@ -265,8 +266,8 @@
       <div class="stat"><div class="stat-value">125</div><div class="stat-label">Screens</div></div>
       <div class="stat"><div class="stat-value">9<span class="accent"> workspaces</span></div><div class="stat-label">Roles (inc. Auth)</div></div>
       <div class="stat"><div class="stat-value">10<span class="accent">+</span></div><div class="stat-label">Core flows</div></div>
-      <div class="stat"><div class="stat-value">430<span class="accent">px</span></div><div class="stat-label">Phone frame</div></div>
-      <div class="stat"><div class="stat-value">v2</div><div class="stat-label">Yellow · Sora</div></div>
+      <div class="stat"><div class="stat-value">390<span class="accent">px</span></div><div class="stat-label">Phone frame</div></div>
+      <div class="stat"><div class="stat-value">v3</div><div class="stat-label">Gold · Plus Jakarta Sans</div></div>
     </div>
   </div>
 
@@ -274,7 +275,7 @@
     <div class="section-inner">
       <div class="section-eyebrow">Platform overview</div>
       <h2 class="section-title">Nine workspaces, one design language.</h2>
-      <p class="section-sub">Every screen lives where its owner expects it. Tap a tile to jump to live iframe previews — each mockup is scaled to its real 430px phone frame.</p>
+      <p class="section-sub">Every screen lives where its owner expects it. Tap a tile to jump to live iframe previews — each mockup is scaled to its real 390px phone frame.</p>
       <div class="roles-overview">
         <a class="role-tile" data-role="auth" href="#role-auth"><div class="role-icon-box"><i data-lucide="key-round"></i></div><div class="role-name">Auth & Onboarding</div><div class="role-count">14 screens</div></a>
         <a class="role-tile" data-role="athlete" href="#role-athlete"><div class="role-icon-box"><i data-lucide="user"></i></div><div class="role-name">Athlete</div><div class="role-count">23 screens</div></a>
@@ -293,29 +294,31 @@
     <div class="section-inner">
       <div class="section-eyebrow">Design system v3 · Refined</div>
       <h2 class="section-title">Yellow CTA, Sora headlines, phone-frame truth.</h2>
-      <p class="section-sub">v2 tokens are production-locked. Every screen uses the same palette, type scale and elevation — no drift.</p>
+      <p class="section-sub">v3 tokens are production-locked. Every screen uses the same palette, type scale and elevation — no drift.</p>
       <div class="tokens-grid">
         <div class="token-card">
-          <h3><i data-lucide="palette"></i> Color · v2 palette</h3>
+          <h3><i data-lucide="palette"></i> Color · v3 palette</h3>
           <div class="color-grid">
-            <div><div class="color-chip" style="background:#FFC107"></div><div class="color-name">Accent / CTA</div><div class="color-hex">#FFC107</div></div>
-            <div><div class="color-chip" style="background:#111111"></div><div class="color-name">Foreground / Black</div><div class="color-hex">#111111</div></div>
-            <div><div class="color-chip" style="background:#F4F5F7"></div><div class="color-name">Background</div><div class="color-hex">#F4F5F7</div></div>
-            <div><div class="color-chip" style="background:#E8EAED"></div><div class="color-name">Border</div><div class="color-hex">#E8EAED</div></div>
-            <div><div class="color-chip" style="background:#8A6AEA"></div><div class="color-name">Coach Purple</div><div class="color-hex">#8A6AEA</div></div>
-            <div><div class="color-chip" style="background:#03B94C"></div><div class="color-name">Academy Green</div><div class="color-hex">#03B94C</div></div>
-            <div><div class="color-chip" style="background:#3B82F6"></div><div class="color-name">Scout Blue</div><div class="color-hex">#3B82F6</div></div>
-            <div><div class="color-chip" style="background:#EF4444"></div><div class="color-name">Admin Red</div><div class="color-hex">#EF4444</div></div>
+            <div><div class="color-chip" style="background:#FFC72C"></div><div class="color-name">Accent / CTA</div><div class="color-hex">#FFC72C</div></div>
+            <div><div class="color-chip" style="background:#0F1B3D"></div><div class="color-name">Ink / Heading</div><div class="color-hex">#0F1B3D</div></div>
+            <div><div class="color-chip" style="background:#F6F8FD"></div><div class="color-name">Background</div><div class="color-hex">#F6F8FD</div></div>
+            <div><div class="color-chip" style="background:#E7EBF5"></div><div class="color-name">Border</div><div class="color-hex">#E7EBF5</div></div>
+            <div><div class="color-chip" style="background:#1E6CF0"></div><div class="color-name">Link / Verified</div><div class="color-hex">#1E6CF0</div></div>
+            <div><div class="color-chip" style="background:#22A559"></div><div class="color-name">Approved / Open</div><div class="color-hex">#22A559</div></div>
+            <div><div class="color-chip" style="background:#E5334B"></div><div class="color-name">Like / Logout</div><div class="color-hex">#E5334B</div></div>
+            <div><div class="color-chip" style="background:#7B3FE4"></div><div class="color-name">Saved / Purple</div><div class="color-hex">#7B3FE4</div></div>
+            <div><div class="color-chip" style="background:#FFF8E5"></div><div class="color-name">Tint / Banner</div><div class="color-hex">#FFF8E5</div></div>
+            <div><div class="color-chip" style="background:#FFEFB8"></div><div class="color-name">Chip active</div><div class="color-hex">#FFEFB8</div></div>
           </div>
         </div>
         <div class="token-card">
-          <h3><i data-lucide="type"></i> Typography · Sora + Inter</h3>
-          <div class="type-row"><div style="font-family:'Sora';font-size:28px;font-weight:800;letter-spacing:-1.2px">Sora 800</div><div class="type-name">Display · 800</div></div>
-          <div class="type-row"><div style="font-family:'Sora';font-size:20px;font-weight:700">Sora 700</div><div class="type-name">H1 · 700</div></div>
+          <h3><i data-lucide="type"></i> Typography · Plus Jakarta Sans</h3>
+          <div class="type-row"><div style="font-family:'Plus Jakarta Sans';font-size:28px;font-weight:800;letter-spacing:-1.2px">Sora 800</div><div class="type-name">Display · 800</div></div>
+          <div class="type-row"><div style="font-family:'Plus Jakarta Sans';font-size:20px;font-weight:700">Sora 700</div><div class="type-name">H1 · 700</div></div>
           <div class="type-row"><div style="font-size:15px;font-weight:600">Inter 600</div><div class="type-name">Body · 15px</div></div>
           <div class="type-row"><div style="font-size:13px;color:var(--muted)">Inter 400 · muted</div><div class="type-name">Caption</div></div>
           <div class="type-row"><div style="font-size:11px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;color:var(--muted)">Label</div><div class="type-name">11px · 700 · CAPS</div></div>
-          <div style="margin-top:16px;padding:12px;background:var(--accent-light);border:1px solid #F0E3B2;border-radius:10px;font-size:12px;line-height:1.5"><b>Phone frame:</b> 430px max, 8px outline on ≥520px, blurred sticky topbar + bottom nav (Home · Discover · <b style="color:#D9A400">[+]</b> · Network · Me), yellow progress: <code>#FFC107</code></div>
+          <div style="margin-top:16px;padding:12px;background:var(--accent-light);border:1px solid #F0E3B2;border-radius:10px;font-size:12px;line-height:1.5"><b>Phone frame:</b> 390px, 8px outline on ≥520px, blurred sticky topbar + bottom nav (Home · Discover · <b style="color:var(--accent-dark)">[+]</b> · Network · Me), gold progress: <code>#FFC72C</code></div>
         </div>
       </div>
     </div>
@@ -343,10 +346,10 @@
     <div class="section-inner">
       <div class="section-eyebrow">Screen library · 125 screens</div>
       <h2 class="section-title">Every screen, live in its phone frame.</h2>
-      <p class="section-sub">Each card is a real 430px mockup rendered at scale. Click to open full-screen. Use the role nav to jump.</p>
+      <p class="section-sub">Each card is a real 390px mockup rendered at scale. Click to open full-screen. Use the role nav to jump.</p>
 
       <div id="role-auth" class="anchor-target role-section"><div class="role-header"><div class="role-icon-box" style="background:rgba(107,114,128,0.12);color:#6B7280"><i data-lucide="key-round"></i></div><h2>Auth & Onboarding</h2><span class="role-tag">14 screens · 00-auth-and-onboarding/</span></div><p class="role-description">Entry for every persona. Splash → login/OTP → sign-up → role selection → sport + location → role-specific onboarding + admin login.</p><div class="screen-grid" id="grid-auth"></div></div>
-      <div id="role-athlete" class="anchor-target role-section"><div class="role-header"><div class="role-icon-box" style="background:rgba(245,158,11,0.14);color:#F59E0B"><i data-lucide="user"></i></div><h2>Athlete</h2><span class="role-tag">23 screens · 01-athlete/</span></div><p class="role-description">Home + profile, achievements, trials/tournaments/scholarships/sponsorships, registrations, applications, enrollments, results & saved.</p><div class="screen-grid" id="grid-athlete"></div></div>
+      <div id="role-athlete" class="anchor-target role-section"><div class="role-header"><div class="role-icon-box" style="background:rgba(245,158,11,0.14);color:#F59E0B"><i data-lucide="user"></i></div><h2>Athlete</h2><span class="role-tag">25 screens · 01-athlete/</span></div><p class="role-description">Home + profile, achievements, trials/tournaments/scholarships/sponsorships, registrations, applications, enrollments, results & saved.</p><div class="screen-grid" id="grid-athlete"></div></div>
       <div id="role-coach" class="anchor-target role-section"><div class="role-header"><div class="role-icon-box" style="background:rgba(138,106,234,0.14);color:#8A6AEA"><i data-lucide="award"></i></div><h2>Coach</h2><span class="role-tag">8 screens · 02-coach/</span></div><p class="role-description">Dashboard + directory/detail, profile posting/edit, credential, enquiry inbox/detail for athlete leads.</p><div class="screen-grid" id="grid-coach"></div></div>
       <div id="role-academy" class="anchor-target role-section"><div class="role-header"><div class="role-icon-box" style="background:rgba(3,185,76,0.14);color:#03B94C"><i data-lucide="building-2"></i></div><h2>Academy</h2><span class="role-tag">10 screens · 03-academy/</span></div><p class="role-description">Dashboard, directory/detail, profile create/edit, facilities, trial form, registrants & capacity.</p><div class="screen-grid" id="grid-academy"></div></div>
       <div id="role-organizer" class="anchor-target role-section"><div class="role-header"><div class="role-icon-box" style="background:rgba(251,128,46,0.14);color:#FB802E"><i data-lucide="calendar-days"></i></div><h2>Organizer</h2><span class="role-tag">10 screens · 04-organizer/</span></div><p class="role-description">Tournament owner: dashboard, analytics, profile, create/edit, calendar, registrations, results & notifications.</p><div class="screen-grid" id="grid-organizer"></div></div>
@@ -354,18 +357,19 @@
       <div id="role-sponsor" class="anchor-target role-section"><div class="role-header"><div class="role-icon-box" style="background:rgba(17,17,17,0.08);color:#111"><i data-lucide="briefcase"></i></div><h2>Sponsor</h2><span class="role-tag">6 screens · 06-sponsor/</span></div><p class="role-description">Funding side: dashboard, directory, athlete profile (sponsor view), sponsorship create/detail/list.</p><div class="screen-grid" id="grid-sponsor"></div></div>
       <div id="role-admin" class="anchor-target role-section"><div class="role-header"><div class="role-icon-box" style="background:rgba(239,68,68,0.12);color:#EF4444"><i data-lucide="shield"></i></div><h2>Admin</h2><span class="role-tag">14 screens · 07-admin/</span></div><p class="role-description">Back-office: dashboard, analytics, users, moderation, content, settings, approval queues & reports.</p><div class="screen-grid" id="grid-admin"></div></div>
       <div id="role-shared" class="anchor-target role-section"><div class="role-header"><div class="role-icon-box" style="background:rgba(6,182,212,0.12);color:#06B6D4"><i data-lucide="compass"></i></div><h2>Shared / Common</h2><span class="role-tag">27 screens · 08-shared-common/</span></div><p class="role-description">Cross-role glue: discovery (trials/tournaments/scholarships/venues), search, network/chat/notifications, social, help & settings.</p><div class="screen-grid" id="grid-shared"></div></div>
+      <div id="role-profile" class="anchor-target role-section"><div class="role-header"><div class="role-icon-box" style="background:rgba(255,199,44,.18);color:#B4880A"><i data-lucide="clipboard-list"></i></div><h2>Profile Fields</h2><span class="role-tag">6 screens &middot; 09-profile-fields/</span></div><p class="role-description">All 30 profile fields for each of the 6 role sheets from the Profile Fields Spec &mdash; Athlete, Coach, Academy, Talent Scout, Generalized and Organizer (180 fields total). Each field carries its priority (Essential / High / Medium) and renders the widget its data type calls for.</p><div class="screen-grid" id="grid-profile"></div></div>
     </div>
   </section>
 
   <footer>
     <div class="footer-inner">
       <div class="footer-grid">
-        <div><div class="footer-brand"><span class="brand-mark" style="background:#fff;padding:2px"><img src="assets/images/logo.png" alt="SportX logo" style="width:28px;height:28px;object-fit:cover;border-radius:50%;display:block"></span> SportX v2</div><p class="footer-desc">India's sports network — v2 refined. Yellow CTA, Sora + Inter, 430px phone frame, 125 screens across 9 workspaces. Role-wise, mobile-first, production-ready.</p></div>
+        <div><div class="footer-brand"><span class="brand-mark" style="background:#fff;padding:2px"><img src="assets/images/logo.png" alt="SportX logo" style="width:28px;height:28px;object-fit:cover;border-radius:50%;display:block"></span> SportX v3</div><p class="footer-desc">India's sports network — v3 restyled to the new SportX design system. Gold CTA on deep navy, Plus Jakarta Sans, 390 &times; 844 shell with a 9:41 status bar, 132 screens across 10 workspaces. Role-wise, mobile-first, production-ready.</p></div>
         <div class="footer-col"><h5>Explore</h5><ul><li><a href="#overview">Overview</a></li><li><a href="#design-system">Design system</a></li><li><a href="#flows">Flows</a></li><li><a href="#screens">All screens</a></li></ul></div>
         <div class="footer-col"><h5>Roles A–O</h5><ul><li><a href="#role-auth">Auth</a></li><li><a href="#role-athlete">Athlete</a></li><li><a href="#role-coach">Coach</a></li><li><a href="#role-academy">Academy</a></li><li><a href="#role-organizer">Organizer</a></li></ul></div>
         <div class="footer-col"><h5>Roles S–Shared</h5><ul><li><a href="#role-scout">Scout</a></li><li><a href="#role-sponsor">Sponsor</a></li><li><a href="#role-admin">Admin</a></li><li><a href="#role-shared">Shared</a></li><li><a href="index.original.html">Flat index</a></li></ul></div>
       </div>
-      <div class="footer-bottom"><div>SportX v2 · 125 screens · 9 workspaces · Role-wise hub</div><div>Yellow #FFC107 · Sora + Inter · Mobile-first 430px · Sep 2026</div></div>
+      <div class="footer-bottom"><div>SportX v3 · 132 screens · 10 workspaces · Role-wise hub</div><div>Gold #FFC72C · Navy #0F1B3D · Plus Jakarta Sans · 390 &times; 844 shell</div></div>
     </div>
   </footer>
 
@@ -427,6 +431,8 @@
         {name:'Application Detail',path:'01-athlete/application-detail.html'},
         {name:'Registration Confirmation',path:'01-athlete/registration-confirmation.html',badge:'flow'},
         {name:'Results View',path:'01-athlete/results-view.html'},
+        {name:'Leaderboard',path:'01-athlete/leaderboard.html'},
+        {name:'More',path:'01-athlete/more.html',badge:'flow'},
         {name:'Saved',path:'01-athlete/saved.html'},
         {name:'Shortlist',path:'01-athlete/shortlist.html'},
         {name:'Coach Enrollment',path:'01-athlete/coach-enrollment.html'},
@@ -504,6 +510,14 @@
         {name:'Report Listing',path:'07-admin/report-listing.html'},
         {name:'User Detail Verify',path:'07-admin/user-detail-verify.html'}
       ],
+      profile:[
+        {name:'Athlete Profile',path:'09-profile-fields/profile-athlete.html',badge:'flow'},
+        {name:'Coach Profile',path:'09-profile-fields/profile-coach.html'},
+        {name:'Academy Profile',path:'09-profile-fields/profile-academy.html'},
+        {name:'Talent Scout Profile',path:'09-profile-fields/profile-scout.html'},
+        {name:'Organizer Profile',path:'09-profile-fields/profile-organizer.html'},
+        {name:'Generalized Profile',path:'09-profile-fields/profile-generalized.html'}
+      ],
       shared:[
         {name:'Discover',path:'08-shared-common/discover.html',badge:'flow'},
         {name:'Opportunities',path:'08-shared-common/opportunities.html'},
@@ -551,10 +565,10 @@
         if(!ifr) return;
         const w=f.clientWidth;
         if(w===0) return;
-        const scale=w/430;
+        const scale=w/390;
         ifr.style.transform='scale('+scale+')';
         // keep height proportional so bottom not cut
-        const h=884*scale;
+        const h=844*scale;
         f.style.height=h+'px';
       });
     }
