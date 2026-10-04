@@ -17,16 +17,27 @@ function doPost(e) {
   const sheet = getSheet();
   let data;
   
+  Logger.log('Received request');
+  Logger.log(e.postData ? e.postData.contents : 'No postData');
+  
   if (e.postData && e.postData.contents) {
     try {
       data = JSON.parse(e.postData.contents);
     } catch (parseError) {
-      const params = new URLSearchParams(e.postData.contents);
-      data = JSON.parse(decodeURIComponent(params.get('data')));
+      try {
+        const params = new URLSearchParams(e.postData.contents);
+        data = JSON.parse(decodeURIComponent(params.get('data')));
+      } catch (e) {
+        data = { error: 'Failed to parse' };
+      }
     }
-  } else {
+  } else if (e.parameter) {
     data = e.parameter;
+  } else {
+    data = { error: 'No data received' };
   }
+  
+  Logger.log('Parsed data: ' + JSON.stringify(data));
   
   // Add timestamp
   const timestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });

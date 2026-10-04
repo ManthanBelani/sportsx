@@ -193,26 +193,22 @@ E('cs',[['🏃','Athlete','Ask about opportunities, registration, upcoming featu
 E('faq',[['How can I list my academy or club on SportX?','Register as an Academy / Club using the Join Now form. Our team will verify your details and help you create a listing once the app launches.'],['I am an athlete. How can I stay updated about opportunities?','Pre-register as an Athlete. You will get early app access and regular updates on trials, tournaments and scholarships.'],['I am interested in sponsoring. How can I collaborate?','Write to sportxconnect@gmail.com or use the contact form and choose "Partnership".'],['What is the expected response time?','We aim to reply to every message within 2 working days.']].map(f=>`<details><summary>${f[0]}</summary><p>${f[1]}</p></details>`).join(''));
 function sub(a,b,c,o){const v=[a,b,c].every(i=>document.getElementById(i).value.trim());const e=document.getElementById(o);e.style.display='block';e.style.color=v?'#2f9e44':'#e03131';e.textContent=v?'Thank you! We\'ve received your details and will be in touch soon.':'Please fill in all required fields.'}
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxU_u2BuFxuFX7KeSmzsoFl9e0aOnxC29P5mP8pzPOnlXMGEATPs6Q0661MMlxtYyiM/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyMsvRZGtVXSfiJHEtNGAMX3bQYdsLwNQpOLhcwh-RCx9etO3UP90g3QoDpxT-ZPvFU4g/exec';
 
 function submitToAppsScript(data) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', SCRIPT_URL, true);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.onreadystatechange = function() {
       if (xhr.readyState === 4) {
-        if (xhr.status === 200 || xhr.status === 0) {
-          resolve({ status: 'success' });
-        } else {
-          reject(new Error('Request failed'));
-        }
+        resolve({ status: 'success' });
       }
     };
     xhr.onerror = function() {
       reject(new Error('Network error'));
     };
-    xhr.send('data=' + encodeURIComponent(JSON.stringify(data)));
+    xhr.send(JSON.stringify(data));
   });
 }
 
