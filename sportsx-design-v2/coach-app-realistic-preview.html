@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SportX Coach — Board Layout × Real Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,system-ui,sans-serif;background:#0f1420;color:#fff;min-height:100vh}
+.top{max-width:1180px;margin:auto;padding:26px 20px 6px}
+.top h1{font-family:Sora;font-size:21px}.top h1 span{background:#FFC107;color:#111;border-radius:7px;padding:0 6px;margin-left:2px}
+.top p{color:#98A2B3;font-size:13px;margin-top:8px;line-height:1.65;max-width:780px}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.pills button{border:1px solid #2b3348;background:#171d2e;color:#d0d5dd;border-radius:99px;padding:8px 13px;font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.pills button.on{background:#FFC107;color:#111;border-color:#FFC107}
+.wrap{max-width:1180px;margin:auto;display:flex;gap:26px;padding:18px 20px 60px;align-items:flex-start;justify-content:center;flex-wrap:wrap}
+.phone{width:390px;height:844px;background:#F4F5F7;color:#111;border-radius:52px;border:12px solid #000;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(0,0,0,.5);flex:none}
+.isl{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:120px;height:30px;background:#000;border-radius:20px;z-index:30}
+.status{height:50px;padding:15px 28px 0;display:flex;justify-content:space-between;font-size:13px;font-weight:700;flex:none;background:#F4F5F7}
+.screen{flex:1;overflow-y:auto;padding:2px 16px 16px;display:none;scrollbar-width:none}.screen::-webkit-scrollbar{display:none}
+.screen.on{display:block}
+/* ——— Real SportX system (from colors.dart / sportx_ui.dart) ——— */
+.card{background:#fff;border:1px solid #E8EAED;border-radius:16px;padding:14px;box-shadow:0 1px 2px rgba(16,18,21,.05),0 1px 3px rgba(16,18,21,.04);margin-bottom:12px}
+.applogo{display:flex;align-items:center;gap:8px;padding:8px 0 12px}
+.applogo .mark{width:32px;height:32px;border-radius:50%;background:#fff;border:1px solid #E8EAED;display:flex;align-items:center;justify-content:center;font-family:Sora;font-weight:800;font-size:15px}
+.applogo .wordmark{font-family:Sora;font-size:19px;font-weight:800}.applogo .wordmark em{font-style:normal;background:linear-gradient(#FFD54A,#FFC107,#F5B400);border-radius:7px;padding:1px 7px}
+.hd{display:flex;align-items:center;gap:8px;padding:8px 0 12px}.hd .t{flex:1;text-align:center;font-family:Sora;font-size:17px;font-weight:700}
+.back{border:1px solid #E8EAED;background:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:17px;color:#111;display:flex;align-items:center;justify-content:center;flex:none}
+.searchbar{height:50px;background:#fff;border:1.5px solid #E8EAED;border-radius:14px;display:flex;gap:10px;align-items:center;padding:0 14px;color:#6B7280;font-size:14px;margin-bottom:12px;box-shadow:0 1px 2px rgba(16,18,21,.05)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;height:34px;padding:0 15px;border-radius:11px;background:#fff;border:1px solid #E8EAED;color:#2B2B2B;font:inherit;font-size:13px;font-weight:500;cursor:pointer;box-shadow:0 1px 2px rgba(16,18,21,.05);flex:none;display:inline-flex;align-items:center;justify-content:center;line-height:1}
+.chip.on{background:linear-gradient(#FFD54A,#FFC107);border-color:rgba(120,80,0,.2);font-weight:700;color:#111;box-shadow:0 6px 16px rgba(255,193,7,.55)}
+.tabs{display:flex;border-bottom:1px solid #E8EAED;margin-bottom:12px;overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:1;white-space:nowrap;border:0;background:none;padding:10px 8px;color:#6B7280;font:inherit;font-size:13px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;flex:none;min-width:70px}
+.tabs button.on{color:#111;font-weight:700;border-bottom-color:#FFC107}
+.btn{background:linear-gradient(#FFD54A,#FFC107,#F5B400);border:1px solid rgba(120,80,0,.18);border-radius:11px;min-height:36px;padding:0 14px;font:inherit;font-size:13px;font-weight:700;color:#111;cursor:pointer;box-shadow:0 6px 16px rgba(255,193,7,.55);display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+.btn.ghost{background:#fff;border:1px solid #E8EAED;color:#344054;box-shadow:0 1px 2px rgba(16,18,21,.05)}
+.sect{display:flex;justify-content:space-between;align-items:center;margin:14px 2px 12px}
+.sect h3{font-family:Sora;font-size:19px;font-weight:700}
+.seeall{background:#fff;border:1px solid #E8EAED;border-radius:99px;padding:6px 12px;font-size:12.5px;font-weight:700;color:#6B7280;cursor:pointer;display:flex;gap:2px;align-items:center;font-family:Inter}
+/* GreetCard — exact: white→#FFFFF0, border #F0E3B2, radius 18 */
+.greet{background:linear-gradient(#fff,#FFFFF0);border:1px solid #F0E3B2;border-radius:18px;padding:15px;margin-bottom:14px;box-shadow:0 1px 2px rgba(16,18,21,.05)}
+.greet .bar{height:8px;background:#EDEFF2;border-radius:99px;margin-top:9px;overflow:hidden}.greet .bar i{display:block;height:100%;background:#F5B400}
+/* Avatar — exact EntityRow/GreetCard: yellow gradient initials */
+.av{border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-weight:800;color:#111;background:linear-gradient(135deg,#FFE9A8,#FFC107,#F5B400)}
+/* Thumb — exact OppCard: dark #14161A + centered lucide */
+.thumb{background:#14161A;color:rgba(255,255,255,.7);border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none;position:relative;overflow:hidden}
+.thumb .feat{position:absolute;top:8px;left:8px;background:#16A34A;color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:99px}
+.pill{font-size:11px;font-weight:700;padding:5px 11px;border-radius:99px;border:1px solid;display:inline-flex}
+.pill.new{background:#FFF6DA;color:#B45309;border-color:rgba(245,158,11,.25)}
+.pill.ok{background:#DCFCE7;color:#15803D;border-color:rgba(34,197,94,.25)}
+.tag{background:#F4F5F7;border:1px solid #EFF1F4;color:#475467;border-radius:99px;padding:4px 9px;font-size:11.5px;margin:0 6px 6px 0;display:inline-block}
+.stars{color:#B45309;font-weight:700;font-size:12px}
+.row{display:flex;align-items:center;gap:10px}
+.row>div,.mrow>div{min-width:0}
+.mrow{display:flex;gap:12px;align-items:center;padding:12px;background:#fff;border:1px solid #E8EAED;border-radius:16px;margin-bottom:10px;box-shadow:0 1px 2px rgba(16,18,21,.05);font-size:13.5px;line-height:1.45;overflow:hidden}
+.mrow small,.sub{color:#6B7280;font-size:12px}
+.mrow b,.t14{font-size:14px}
+/* QuickTile — exact */
+.qtile{background:#fff;border:1px solid #E8EAED;border-radius:16px;padding:12px;display:flex;gap:11px;align-items:center;flex:1;box-shadow:0 1px 2px rgba(16,18,21,.05);cursor:pointer;font:inherit;text-align:left;color:#111}
+.qtile .qi{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none}
+.qtile b{font-family:Sora;font-size:13.5px}
+/* Create rows — neutral like real schedule actions */
+.createrow{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid #E8EAED;border-radius:16px;padding:14px 16px;margin-bottom:10px;cursor:pointer;font:inherit;width:100%;text-align:left;color:#111;box-shadow:0 1px 2px rgba(16,18,21,.05)}
+.createrow .ci{width:44px;height:44px;border-radius:16px;background:rgba(138,106,234,.12);color:#8A6AEA;display:flex;align-items:center;justify-content:center;flex:none}
+/* Podium — restrained, system colors */
+.podium{background:linear-gradient(#fff,#FFFFF0);border:1px solid #F0E3B2;border-radius:18px;padding:16px 8px 12px;display:flex;justify-content:space-around;align-items:flex-end;text-align:center;margin-bottom:12px}
+.rank{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:linear-gradient(#FFD54A,#FFC107);border:2px solid #fff;width:24px;height:24px;border-radius:50%;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(255,193,7,.55)}
+.navbar{flex:none;background:#fff;border-top:1px solid #E8EAED;display:flex;padding:10px 6px 24px}
+.navbar button{flex:1;border:0;background:none;font:inherit;font-size:10.5px;color:#9CA3AF;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;font-weight:600}
+.navbar button .ind{width:56px;height:30px;border-radius:99px;display:flex;align-items:center;justify-content:center}
+.navbar button.on{color:#8A6D00;font-weight:800}
+.navbar button.on .ind{background:rgba(255,193,7,.22)}
+.fab{flex:none!important;width:52px;height:52px;align-self:flex-start;border-radius:50%;background:linear-gradient(#FFD54A,#FFC107,#F5B400)!important;color:#111!important;margin-top:-28px;border:4px solid #fff!important;box-shadow:0 10px 22px rgba(255,193,7,.55),0 3px 8px rgba(17,17,17,.18);font-size:24px!important;line-height:1;display:flex!important;align-items:center;justify-content:center;padding:0!important}
+.seg{display:flex;background:#EFF1F4;border-radius:12px;padding:3px;margin-bottom:12px}.seg button{flex:1;border:0;background:none;font:inherit;font-size:12.5px;font-weight:700;padding:9px;border-radius:9px;color:#6B7280;cursor:pointer}.seg button.on{background:#fff;color:#111;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.hero{background:#14161A;border-radius:18px;height:120px;display:flex;align-items:center;padding:0 18px;color:#fff;font-family:Sora;font-weight:800;font-size:22px;letter-spacing:3px;border:1px solid #E8EAED}
+.kv{display:flex;gap:10px;font-size:13px;padding:6px 0;color:#344054}.kv span{width:130px;color:#6B7280;flex:none}
+.badge{min-width:20px;height:20px;background:linear-gradient(#FFD54A,#FFC107);border-radius:99px;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;margin:4px 0 0 auto;padding:0 6px;color:#111;vertical-align:top}
+.side{flex:1;min-width:280px;max-width:430px;background:#12172a;border:1px solid #263049;border-radius:18px;padding:18px}
+.side h2{font-family:Sora;font-size:14px;margin-bottom:8px}.side p,.side li{font-size:12.5px;color:#98A2B3;line-height:1.65}.side ul{margin:10px 0 0 18px}.side b.w{color:#fff}
+.toast{position:absolute;left:50%;bottom:104px;transform:translateX(-50%) translateY(10px);background:#111;color:#fff;font-size:13px;font-weight:600;padding:10px 16px;border-radius:10px;opacity:0;transition:.2s;z-index:50;max-width:88%;white-space:normal;text-align:center;line-height:1.4}
+.msg-right{display:flex;flex-direction:column;align-items:flex-end;flex:none}
+@media(max-width:430px){.phone{width:100%;max-width:390px}.wrap{padding-left:12px;padding-right:12px}}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+button:focus-visible{outline:2px solid #3B82F6;outline-offset:2px}
+@media(max-width:900px){.wrap{flex-direction:column;align-items:center}}
+</style>
+</head>
+<body>
+<div class="top">
+<h1>Sport<span>X</span> · Coach — your layout × real design system</h1>
+<p>Same 11 screens, same IA, same copy as your reference board. Only the <b style="color:#fff">skin</b> changed to the shipped Flutter system: <b style="color:#fff">Sora + Inter</b>, surface <b style="color:#fff">#F4F5F7</b>, cards white radius 16, CTA gradient, chips/pills/search/tiles from <b style="color:#fff">sportx_ui.dart</b>, Lucide icons only, yellow-gradient initial avatars, dark OppCard photo blocks. No emoji, no cartoon faces.</p>
+<div class="pills" id="pills"></div>
+</div>
+<div class="wrap">
+<div class="phone" aria-label="Coach app preview">
+<div class="isl"></div>
+<div class="status"><span>9:41</span><span style="display:flex;gap:5px;align-items:center"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13" y="0" width="3" height="11" rx="1" opacity=".35"/></svg><svg width="22" height="11" viewBox="0 0 25 12"><rect x=".5" y=".5" width="20" height="11" rx="3" fill="none" stroke="currentColor" opacity=".4"/><rect x="2.5" y="2.5" width="14" height="7" rx="2" fill="currentColor"/><rect x="22.5" y="4" width="2" height="4" rx="1" fill="currentColor" opacity=".4"/></svg></span></div>
+
+<!-- 1 HOME -->
+<div class="screen on" data-s="home">
+<div class="applogo"><span class="mark">S</span><span class="wordmark">Sport<em>X</em></span><span style="flex:1"></span><button class="back" data-go="notif" aria-label="Notifications"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></button><span class="av" style="width:36px;height:36px;font-size:12px">RM</span></div>
+<div class="greet"><div class="row"><span class="av" style="width:56px;height:56px;font-size:19px">R</span><div style="flex:1"><b class="t14">Hi, Coach Rohit!</b><div class="sub">Complete your profile to get more opportunities</div></div><b style="font-size:12px">70% ›</b></div><div class="bar"><i style="width:70%"></i></div></div>
+<div class="sect"><h3 style="font-size:16px">Leaderboard</h3><span class="chip on" style="height:30px">Coaches</span><span style="flex:1"></span><button class="seeall" data-go="leader">View All ›</button></div>
+<div class="podium">
+<div style="position:relative"><span class="rank">2</span><span class="av" style="width:52px;height:52px;margin:auto;font-size:14px">AS</span><div class="t14" style="font-size:11px;margin-top:6px"><b>Ankit Sharma</b></div><div class="sub">2,120 pts</div></div>
+<div style="position:relative"><span class="rank">1</span><span class="av" style="width:64px;height:64px;margin:auto;font-size:17px;border:3px solid #fff;box-shadow:0 6px 16px rgba(255,193,7,.55)">RM</span><div class="t14" style="font-size:11px;margin-top:6px"><b>Rohit Mehta</b></div><div class="sub">2,450 pts</div></div>
+<div style="position:relative"><span class="rank">3</span><span class="av" style="width:52px;height:52px;margin:auto;font-size:14px">NP</span><div class="t14" style="font-size:11px;margin-top:6px"><b>Neha Patel</b></div><div class="sub">1,950 pts</div></div>
+</div>
+<div class="row" style="gap:10px;margin-bottom:4px">
+<button class="qtile" data-go="explore"><span class="qi" style="background:#FFF6DA;color:#B45309"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4a2 2 0 0 1-2-2V5h4M18 9h2a2 2 0 0 0 2-2V5h-4M6 3h12v6a6 6 0 0 1-12 0zM12 15v4M8 21h8"/></svg></span><span><b>Opportunities</b><br><small class="sub">Trials · Tournaments</small></span></button>
+<button class="qtile" data-go="academies"><span class="qi" style="background:#E3EFFF;color:#3B82F6"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg></span><span><b>Academies</b><br><small class="sub">Athletes · Centres</small></span></button>
+</div>
+<div class="tabs"><button class="on">For You</button><button>Following</button><button>Athletes</button><button>Coaches</button><button>Academies</button></div>
+<div class="card"><div class="row"><span class="av" style="width:42px;height:42px;font-size:13px">RM</span><div style="flex:1"><b class="t14">Rohit Mehta</b><div class="sub">Cricket Coach · Ahmedabad · 2h ago</div></div><button class="back" style="border:0;width:30px;height:30px" data-toast="Post options" aria-label="Post options"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button></div>
+<p style="font-size:13.5px;color:#344054;margin:10px 0;line-height:1.55">Today's U-14 batting session! Focus, discipline and small improvements every day.<br><span style="color:#3B82F6">Cricket · Youth Development</span></p>
+<div class="row" style="gap:6px;align-items:stretch"><div class="thumb" style="flex:1.5;height:132px"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 9H4a2 2 0 0 1-2-2V5h4M18 9h2a2 2 0 0 0 2-2V5h-4M6 3h12v6a6 6 0 0 1-12 0zM12 15v4M8 21h8"/></svg></div><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div class="thumb" style="flex:1"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div class="thumb" style="flex:1"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M23 7l-7 5 7 5zM3 5h11a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/></svg></div></div></div>
+<div class="row" style="margin-top:10px;color:#475467;font-size:12.5px;gap:16px"><button data-like style="border:0;background:none;font:inherit;display:flex;gap:5px;align-items:center;cursor:pointer;color:#475467"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"/></svg><span>256</span></button><span style="display:flex;gap:5px;align-items:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>18</span><button data-toast="Link copied" style="border:0;background:none;font:inherit;display:flex;gap:5px;align-items:center;cursor:pointer;color:#475467"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8h16v-8M16 6l-4-4-4 4M12 2v13"/></svg>12</button><span style="flex:1"></span><button data-toast="Saved" style="border:0;background:none;cursor:pointer;color:#475467"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button></div></div>
+</div>
+
+<!-- 2 EXPLORE -->
+<div class="screen" data-s="explore">
+<div class="applogo"><span class="mark">S</span><span class="wordmark">Sport<em>X</em></span><span style="flex:1"></span><button class="back" data-go="notif"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></button></div>
+<div class="searchbar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>Search athletes, coaches, academies…</div>
+<div class="chips"><button class="chip">Athletes</button><button class="chip on">Coaches</button><button class="chip">Academies</button><button class="chip">Training Centres</button></div>
+<div class="chips"><button class="chip on">All Sports</button><button class="chip">Cricket</button><button class="chip">Football</button><button class="chip">Badminton</button></div>
+<div class="sect"><h3>Featured Coaches</h3><button class="seeall">See all ›</button></div>
+<div id="coachList"></div>
+</div>
+
+<!-- 3 CREATE -->
+<div class="screen" data-s="create">
+<div class="hd"><button class="back" data-go="home">‹</button><div class="t">Create</div><div style="width:36px"></div></div>
+<div id="createList"></div>
+</div>
+
+<!-- 4 COMMUNITY -->
+<div class="screen" data-s="community">
+<div class="hd"><button class="back" data-go="home">‹</button><div class="t">Community</div><button class="back" data-toast="Filters open in the app" aria-label="Filters"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 3H2l8 9.5V19l4 2v-8.5z"/></svg></button></div>
+<div class="tabs"><button class="on">Network</button><button data-toast="Groups — join in one tap in the app">Groups</button><button data-toast="Events near Ahmedabad in the app">Events</button></div>
+<div class="searchbar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>Search people, groups, events…</div>
+<div class="chips"><button class="chip on">Athletes</button><button class="chip">Coaches</button><button class="chip">Academies</button></div>
+<b class="t14">Suggested for You</b><div style="height:8px"></div>
+<div id="sugList"></div>
+<div class="sect"><h3 style="font-size:15px">Join Groups</h3><button class="seeall">See all ›</button></div>
+<div id="grpList"></div>
+</div>
+
+<!-- 5 MORE -->
+<div class="screen" data-s="more">
+<div class="hd"><div style="width:36px"></div><div class="t">More</div><span class="av" style="width:30px;height:30px;font-size:10px">RM</span></div>
+<div class="card"><div class="row"><span class="av" style="width:52px;height:52px;font-size:15px">RM</span><div><b style="font-size:15px">Rohit Mehta</b><div class="sub">Cricket Coach</div><button data-go="profile" style="border:0;background:none;color:#3B82F6;font:inherit;font-size:12px;cursor:pointer;padding:0">View Profile ›</button></div></div></div>
+<div id="moreList"></div>
+</div>
+
+<!-- 6 PROFILE -->
+<div class="screen" data-s="profile">
+<div class="hd"><button class="back" data-go="home">‹</button><div class="t">Coach Profile</div><button class="back" data-go="notif"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></button></div>
+<div class="hero">COACH</div>
+<div class="row" style="margin:-24px 0 12px 8px;align-items:flex-end"><span class="av" style="width:62px;height:62px;font-size:18px;border:3px solid #fff">RM</span><div><b style="font-size:15px">Rohit Mehta</b><div class="sub">Cricket Coach · BCCI Level 2</div><div class="sub">Ahmedabad, Gujarat</div></div></div>
+<div class="row" style="gap:8px;margin-bottom:12px"><button class="btn" style="flex:1;min-height:46px" data-toast="Followed Rohit Mehta">Follow</button><button class="btn ghost" style="flex:1;min-height:46px" data-go="messages">Message</button></div>
+<div class="tabs"><button class="on">About</button><button>Posts</button><button data-go="programs">Programs</button><button>Achievements</button></div>
+<div class="card"><b class="t14">About</b><p class="sub" style="color:#344054;margin-top:6px;line-height:1.6;font-size:13px">Professional cricket coach with 12+ years of experience. Specialized in youth development, batting technique and fitness training.</p></div>
+<div class="card"><div class="kv"><span>Coaching Level</span><b>BCCI Level 2</b></div><div class="kv"><span>Experience</span><b>12+ Years</b></div><div class="kv"><span>Specialization</span><b>Batting, Fielding, Fitness</b></div><div class="kv"><span>Age Group</span><b>U-10, U-14, U-19, Open</b></div><div class="kv"><span>Languages</span><b>Hindi, English, Gujarati</b></div></div>
+</div>
+
+<!-- 7 PROGRAMS -->
+<div class="screen" data-s="programs">
+<div class="hd"><button class="back" data-go="more">‹</button><div class="t">My Training Programs</div><button class="back" data-toast="Filters open in the app" aria-label="Filters"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 3H2l8 9.5V19l4 2v-8.5z"/></svg></button></div>
+<div class="tabs"><button class="on">Active</button><button>Drafts</button><button>Past</button></div>
+<div style="text-align:right;margin-bottom:10px"><button class="btn" data-toast="Program builder opens in the app">＋ Add Program</button></div>
+<div id="progList"></div>
+</div>
+
+<!-- 8 LEADERBOARD -->
+<div class="screen" data-s="leader">
+<div class="hd"><button class="back" data-go="home">‹</button><div class="t">Leaderboard</div><button class="back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4a2 2 0 0 1-2-2V5h4M18 9h2a2 2 0 0 0 2-2V5h-4M6 3h12v6a6 6 0 0 1-12 0zM12 15v4M8 21h8"/></svg></button></div>
+<div class="chips"><button class="chip">Athletes</button><button class="chip on">Coaches</button><button class="chip">Academies</button><button class="chip">Teams</button></div>
+<div class="chips"><button class="chip on">All Sports</button><button class="chip">Cricket</button><button class="chip">Football</button><button class="chip">Badminton</button></div>
+<div class="podium">
+<div style="position:relative"><span class="rank">2</span><span class="av" style="width:52px;height:52px;margin:auto">AS</span><div style="font-size:11px;margin-top:6px"><b>Ankit S.</b></div><div class="sub">2,120</div></div>
+<div style="position:relative"><span class="rank">1</span><span class="av" style="width:64px;height:64px;margin:auto;border:3px solid #fff;box-shadow:0 6px 16px rgba(255,193,7,.55)">RM</span><div style="font-size:11px;margin-top:6px"><b>Rohit M.</b></div><div class="sub">2,450</div></div>
+<div style="position:relative"><span class="rank">3</span><span class="av" style="width:52px;height:52px;margin:auto">NP</span><div style="font-size:11px;margin-top:6px"><b>Neha P.</b></div><div class="sub">1,950</div></div>
+</div>
+<div id="leadList"></div>
+</div>
+
+<!-- 9 ACADEMIES -->
+<div class="screen" data-s="academies">
+<div class="hd"><button class="back" data-go="home">‹</button><div class="t">Academies</div><span class="chip" style="height:30px">Ahmedabad ▾</span></div>
+<div class="searchbar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>Search academies, coaches or training…</div>
+<div class="chips"><button class="chip on">Academies</button><button class="chip">Coaches</button><button class="chip">Training Centres</button></div>
+<div id="acadList"></div>
+</div>
+
+<!-- 10 NOTIF -->
+<div class="screen" data-s="notif">
+<div class="hd"><button class="back" data-go="home">‹</button><div class="t">Notifications</div><button class="back" data-toast="Notification history" aria-label="History"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></button></div>
+<div class="chips"><button class="chip on">All</button><button class="chip">People</button><button class="chip">Programs</button><button class="chip">Events</button></div>
+<b class="t14">Today</b><div style="height:8px"></div>
+<div class="mrow"><span class="av" style="width:38px;height:38px;font-size:12px">KJ</span><div style="flex:1"><b class="t14">Karan Joshi</b> started following you<div class="sub">2 minutes ago</div></div></div>
+<div class="mrow"><span class="av" style="width:38px;height:38px;font-size:12px">AC</span><div style="flex:1"><b class="t14">Ahmedabad Cricket Academy</b> liked your post<div class="sub">15 minutes ago</div></div></div>
+<div class="mrow"><span class="av" style="width:38px;height:38px;font-size:12px">NE</span><div style="flex:1">New enquiry for training program<div class="sub">1 hour ago</div></div></div>
+<b class="t14" style="display:block;margin:12px 0 8px">Yesterday</b>
+<div class="mrow"><span class="av" style="width:38px;height:38px;font-size:12px">PV</span><div style="flex:1">Your program received 10 new views<div class="sub">1 day ago</div></div></div>
+<div class="mrow"><span class="av" style="width:38px;height:38px;font-size:12px">DP</span><div style="flex:1"><b class="t14">Dev Patel</b> sent you a message<div class="sub">1 day ago</div></div></div>
+</div>
+
+<!-- 11 MESSAGES -->
+<div class="screen" data-s="messages">
+<div class="hd"><button class="back" data-go="home">‹</button><div class="t">Messages</div><button class="back" data-toast="Filters open in the app" aria-label="Filters"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 3H2l8 9.5V19l4 2v-8.5z"/></svg></button></div>
+<div class="seg"><button class="on">Chats</button><button data-toast="No pending requests">Requests</button></div>
+<div class="searchbar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg><input id="msgSearch" placeholder="Search messages…" style="border:0;background:none;outline:0;font:inherit;width:100%"></div>
+<div id="msgList"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="navbar" id="navbar">
+<button data-go="home" class="on"><span class="ind"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg></span>Home</button>
+<button data-go="explore"><span class="ind"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8l-2 6-6 2 2-6z"/></svg></span>Explore</button>
+<button data-go="create" class="fab">＋</button>
+<button data-go="community"><span class="ind"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg></span>Community</button>
+<button data-go="more"><span class="ind"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>More</button>
+</div>
+</div>
+
+<div class="side">
+<h2>What I changed (and didn't)</h2>
+<p><b class="w">Kept from your reference:</b> all 11 screens, same order, same copy, same bottom bar (Home · Explore · ＋ · Community · More), same cards and flows.</p>
+<ul>
+<li><b class="w">Design system only from Flutter:</b> Sora titles / Inter body, surface #F4F5F7, white 16px cards, gradient CTA, chips (34px/radius 11), pills, search (50px/radius 14), tiles, section headers with See-all pill.</li>
+<li><b class="w">De-AI'd:</b> Lucide outline icons instead of emoji, yellow-gradient initial avatars instead of cartoon faces, dark OppCard photo blocks instead of color gradients, subtle e1 shadows.</li>
+<li><b class="w">Try:</b> bottom bar + View All / Academies / View Profile / Programs / bell / Message buttons, Follow ⇄ Following, like counter, message search.</li>
+</ul>
+</div>
+</div>
+<script>
+const order=["home","explore","create","community","more","profile","programs","leader","academies","notif","messages"];
+const labels={home:"1 · Home",explore:"2 · Explore",create:"3 · Create",community:"4 · Community",more:"5 · More",profile:"6 · Profile",programs:"7 · Programs",leader:"8 · Leaderboard",academies:"9 · Academies",notif:"10 · Notifications",messages:"11 · Messages"};
+const pills=document.getElementById("pills");
+pills.innerHTML=order.map(s=>`<button data-go="${s}">${labels[s]}</button>`).join("");
+function go(s){document.querySelectorAll(".screen").forEach(e=>e.classList.toggle("on",e.dataset.s===s));document.querySelectorAll("#pills button").forEach(b=>b.classList.toggle("on",b.dataset.go===s));document.querySelectorAll("#navbar button[data-go]").forEach(b=>b.classList.toggle("on",b.dataset.go===s));}
+document.addEventListener("click",e=>{
+const g=e.target.closest("[data-go]");if(g){go(g.dataset.go);return;}
+const t=e.target.closest("[data-toast]");if(t){const x=document.getElementById("toast");x.textContent=t.dataset.toast;x.classList.add("show");clearTimeout(window._tt);window._tt=setTimeout(()=>x.classList.remove("show"),1700);return;}
+const f=e.target.closest("[data-follow]");if(f){const on=f.textContent.trim()==="Follow";f.textContent=on?"Following":"Follow";f.classList.toggle("ghost",on);return;}
+const j=e.target.closest("[data-join]");if(j){const on=j.textContent.trim()==="Join";j.textContent=on?"Joined":"Join";return;}
+const c=e.target.closest(".chips .chip");if(c&&!c.hasAttribute("data-go")){c.parentElement.querySelectorAll(".chip").forEach(x=>x.classList.remove("on"));c.classList.add("on");return;}
+const tb=e.target.closest(".tabs button");if(tb&&!tb.hasAttribute("data-go")){tb.parentElement.querySelectorAll("button").forEach(x=>x.classList.remove("on"));tb.classList.add("on");return;}
+const lk=e.target.closest("[data-like]");if(lk){const s=lk.querySelector("span");s.textContent=parseInt(s.textContent)+1;lk.style.color="#F04438";return;}
+});
+pills.querySelector("button").classList.add("on");
+const coaches=[["Rohit Mehta","Cricket Coach","Ahmedabad, Gujarat","4.8 (320)",["Batting","Youth Dev"],"RM"],["Priya Sharma","Football Coach","Vadodara, Gujarat","4.6 (210)",["Fitness","Strategy"],"PS"],["Dev Patel","Badminton Coach","Surat, Gujarat","4.5 (180)",["Technique","Mental"],"DP"],["Sneha Verma","Athletics Coach","Rajkot, Gujarat","4.4 (150)",["Strength","Conditioning"],"SV"]];
+document.getElementById("coachList").innerHTML=coaches.map(c=>`<div class="mrow" style="align-items:flex-start"><div class="thumb" style="width:76px;height:92px;font-family:Sora;font-weight:800;font-size:20px">${c[5]}</div><div style="flex:1"><b class="t14">${c[0]}</b> <span class="stars">★ ${c[3]}</span><div class="sub">${c[1]}</div><div class="sub">${c[2]}</div><div style="margin:8px 0 10px">${c[4].map(t=>`<span class="tag">${t}</span>`).join("")}</div><button class="btn" data-follow>Follow</button></div></div>`).join("");
+const creates=[["Create Post","Share coaching insights or announcements"],["Add Training Program","Create and list your training program"],["Create Event","Post trials, tournaments or camps"],["Share Achievement","Add your coaching achievements and certificates"],["Add Opportunity","Post scholarship, sponsorship or coaching openings"],["Upload Photo / Video","Share training moments, drills or tips"],["Go Live / Webinar","Host a live training session"],["Poll","Create a poll for your community"]];
+document.getElementById("createList").innerHTML=creates.map(c=>`<button class="createrow" data-toast="${c[0]} — form opens in the app"><span class="ci"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span><span><b class="t14">${c[0]}</b><br><small class="sub">${c[1]}</small></span></button>`).join("");
+const sugs=[["Karan Joshi","Cricket Player · Gujarat","KJ"],["Priya Sharma","Football Coach · Vadodara","PS"],["Ahmedabad Cricket Academy","Academy · Ahmedabad","AC"],["Neha Patel","Athlete · Athletics","NP"]];
+document.getElementById("sugList").innerHTML=sugs.map(s=>`<div class="mrow"><span class="av" style="width:40px;height:40px;font-size:12px">${s[2]}</span><div style="flex:1"><b class="t14">${s[0]}</b><div class="sub">${s[1]}</div></div><button class="btn" data-follow>Follow</button></div>`).join("");
+const grps=[["Cricket Coaches India","2.4K members"],["Youth Training & Development","1.8K members"],["Strength & Conditioning","1.2K members"]];
+document.getElementById("grpList").innerHTML=grps.map(g=>`<div class="mrow"><div class="thumb" style="width:42px;height:42px;border-radius:12px">S</div><div style="flex:1"><b class="t14" style="font-size:12.5px">${g[0]}</b><div class="sub">${g[1]}</div></div><button class="btn ghost" data-join>Join</button></div>`).join("");
+const mores=[["My Profile","profile"],["My Training Programs","programs"],["My Events","programs"],["My Opportunities","explore"],["My Achievements","profile"],["Saved","explore"],["My Connections","community"],["My Activity","notif"],["Notifications","notif"],["Messages","messages"],["Settings & Privacy",""],["Help & Support",""]];
+document.getElementById("moreList").innerHTML=`<div class="card" style="padding:6px 14px">${mores.map(m=>m[1]?`<button data-go="${m[1]}" style="display:flex;width:100%;gap:12px;align-items:center;padding:12px 0;border:0;border-bottom:1px solid #E8EAED;background:none;font:inherit;font-size:13.5px;cursor:pointer;color:#111">${m[0]}<span style="margin-left:auto;color:#9CA3AF">›</span></button>`:`<div style="display:flex;gap:12px;padding:12px 0;font-size:13.5px;border-bottom:1px solid #E8EAED">${m[0]}<span style="margin-left:auto;color:#9CA3AF">›</span></div>`).join("")}<div style="padding:12px 0;color:#F04438;font-weight:700;font-size:13.5px">Logout</div></div>`;
+const progs=[["Beginner Cricket Program","U-10 · U-14","3 Months · Offline","₹5,000","BC"],["Advanced Batting Training","U-14 · U-19","6 Months · Offline","₹8,000","AB"],["Weekend Coaching Program","All Ages","3 Months · Offline","₹3,000","WC"],["1-on-1 Personal Coaching","All Ages","Flexible · Offline/Online","₹1,500/session","1-1"]];
+document.getElementById("progList").innerHTML=progs.map(p=>`<div class="mrow" style="align-items:flex-start"><div class="thumb" style="width:76px;height:86px;font-size:15px;font-weight:800">${p[4]}</div><div style="flex:1"><b class="t14">${p[0]}</b><div style="margin:6px 0">${p[1].split(" · ").map(t=>`<span class="tag">${t}</span>`).join("")}</div><div class="sub">${p[2]}</div><div class="row" style="margin-top:8px"><b>${p[3]}</b><span style="flex:1"></span><button class="btn" data-toast="Program detail opens in the app">View Details</button></div></div></div>`).join("");
+const leads=[["Dev Patel","Badminton","1,780","DP"],["Sneha Verma","Athletics","1,650","SV"],["Karan Shah","Football","1,420","KS"],["Priya Desai","Volleyball","1,380","PD"],["Manav Joshi","Hockey","1,220","MJ"],["Riya Mehta","Swimming","1,150","RM"],["Amit Rathod","Table Tennis","1,020","AR"]];
+document.getElementById("leadList").innerHTML=`<div class="card" style="padding:6px 14px">${leads.map((l,i)=>`<div class="row" style="padding:9px 0;border-bottom:1px solid #E8EAED"><span class="sub" style="width:20px">${i+4}</span><span class="av" style="width:28px;height:28px;font-size:10px">${l[3]}</span><b class="t14" style="flex:1;font-size:12.5px">${l[0]}</b><small class="sub" style="width:70px">${l[1]}</small><b>${l[2]}</b></div>`).join("")}</div>`;
+const acads=[["Narendra Modi Cricket Academy","Motera, Ahmedabad · 2.5 km","Cricket · U-10 to U-19","4.8 (320)"],["Ahmedabad Football Academy","Bopal, Ahmedabad · 6.1 km","Football · U-8 to U-18","4.6 (210)"],["Gujarat Badminton Academy","Thaltej, Ahmedabad · 4.8 km","Badminton · U-10 to U-19","4.7 (180)"],["SportX Training Centre","Vastrapur, Ahmedabad · 5.3 km","Multi-Sport · All Ages","4.5 (140)"]];
+document.getElementById("acadList").innerHTML=acads.map((a,i)=>`<div class="mrow" style="align-items:flex-start"><div class="thumb" style="width:92px;height:78px;font-weight:800">0${i+1}</div><div style="flex:1"><b class="t14">${a[0]}</b><div class="sub">${a[1]}</div><div class="sub">${a[2]}</div><div class="row" style="margin-top:8px"><span class="stars">★ ${a[3]}</span><span style="flex:1"></span><button class="btn" data-toast="Academy detail opens in the app">View Details</button></div></div></div>`).join("");
+const msgs=[["Priya Sharma","Hey! Are weekend batches available?","10:30 AM",2,"PS"],["Karan Joshi","Thank you for the training!","9:15 AM",1,"KJ"],["Dev Patel","Can I join from next month?","Yesterday",0,"DP"],["Riya Mehta","Shared a photo","Yesterday",0,"RM"],["Sneha Verma","Ok, I will check and let you know.","2 Nov",0,"SV"],["Aman Shah","What is the fee for U-14 batch?","1 Nov",0,"AS"],["Neha Patel","Is personal coaching available?","30 Oct",0,"NP"]];
+function renderMsgs(f=""){document.getElementById("msgList").innerHTML=msgs.filter(m=>(m[0]+m[1]).toLowerCase().includes(f.toLowerCase())).map(m=>`<button class="mrow" data-toast="Chat with ${m[0]} opens in the app" style="width:100%;font:inherit;text-align:left;cursor:pointer"><span class="av" style="width:42px;height:42px;font-size:12px">${m[4]}</span><span style="flex:1"><b class="t14">${m[0]}</b><br><small class="sub">${m[1]}</small></span><span class="msg-right"><small class="sub">${m[2]}</small>${m[3]?`<span class="badge">${m[3]}</span>`:""}</span></button>`).join("")||`<p class="sub" style="text-align:center;padding:20px">No chats match.</p>`;}
+renderMsgs();
+document.getElementById("msgSearch").addEventListener("input",e=>renderMsgs(e.target.value));
+</script>
+</body>
+</html>

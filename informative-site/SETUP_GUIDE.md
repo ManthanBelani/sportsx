@@ -17,7 +17,8 @@
 ### Step 2: Configure the Script
 Open `Code.gs` and update these values at the top:
 ```javascript
-const CONFIG = {
+const CThe Web App might need to be re-deployed after code changes.
+ONFIG = {
   emailTo: 'YOUR_EMAIL@gmail.com',        // Change to your email
   emailSubject: 'New SportX Registration', // Email subject
   sheetName: 'Registrations'               // Name of your sheet tab
