@@ -1,0 +1,154 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SportX v3 â€” Role-wise Design Showcase Â· 44 screens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<style>
+  .top-strip { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.9); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); }
+  .top-strip-inner { max-width: 1280px; margin: 0 auto; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .top-strip .logo { font-size: 20px; }
+  .pill { font-size: 10px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--secondary); border: 1px solid var(--border); border-radius: 99px; padding: 6px 10px; background: #fff; }
+  .stats-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 22px; }
+  .stats-row span { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); color: #fff; font-size: 11px; font-weight: 700; border-radius: 99px; padding: 7px 12px; }
+  .note-bar { background: #fff8e5; border-bottom: 1px solid #f0e3b2; color: #8a6d00; font-size: 12px; padding: 10px 24px; text-align: center; }
+  .note-bar a { color: #8a6d00; font-weight: 800; }
+  a.showcase-card { text-decoration: none; color: inherit; display: block; }
+  a.showcase-card:hover .mini-phone { transform: translateY(-3px); box-shadow: 0 20px 40px rgba(17,17,17,.2); }
+  .mini-phone { transition: transform .2s ease, box-shadow .2s ease; }
+  footer { background: var(--ink); color: #aaa; padding: 32px 24px; font-size: 12px; text-align: center; }
+  footer a { color: var(--yellow); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="top-strip"><div class="top-strip-inner">
+  <div class="logo">Sport<span>X</span><i></i></div>
+  <span class="pill">Design v3 Â· 4 roles Â· 44 screens</span>
+  <a class="primary primary-compact" style="text-decoration:none;color:#111;padding:10px 14px;font-size:11px" href="screens/home.html">Open clickable prototype â†’</a>
+</div></div>
+<div class="note-bar">Phase 1 â€” Academy role is fully clickable in <a href="screens/home.html">screens/</a> (13 screens). Coach / Organizer / Scout screens reuse the same shell â€” role-specific content lands in Phase 2. React source preserved in <code>src/</code>.</div>
+<div id="showcase"></div>
+<footer>SportX v3 Â· static preview, no build step â€” open <a href="screens/home.html">screens/</a> for the phone prototype Â· source in <code>src/App.tsx</code></footer>
+<script>
+const photos = {
+  cricket: "https://images.unsplash.com/photo-1732315797079-fe90763b8bd9?auto=format&fit=crop&w=900&q=82",
+  football: "https://images.unsplash.com/photo-1625990637351-ee0e5e9ba5e5?auto=format&fit=crop&w=900&q=82",
+  player: "https://images.unsplash.com/photo-1547839918-5ed99eac4175?auto=format&fit=crop&w=700&q=82",
+  stadium: "https://images.unsplash.com/photo-1644664750583-1cf0430098ff?auto=format&fit=crop&w=900&q=82"
+};
+const people = [
+  { name: "Arjun Patel", role: "Cricket Â· All-rounder", img: photos.player },
+  { name: "Riya Sharma", role: "Football Â· U-17", img: photos.football },
+  { name: "Karan Joshi", role: "Cricket Â· Batter", img: photos.cricket },
+  { name: "Neha Patel", role: "Football Â· Striker", img: photos.stadium }
+];
+const miniPeople = ["Arjun Patel", "Riya Sharma", "Karan Joshi", "Neha Patel"];
+const createItems = [
+  ["âœŽ", "purple", "Create Post", "Share updates and announcements"],
+  ["ðŸ“…", "green", "Add Training Program", "Create and list your program"],
+  ["ðŸ†", "red", "Create Event / Trial", "Post trials and tournaments"],
+  ["ðŸ›", "blue", "Post Opportunity", "Scholarships or sponsorships"],
+  ["ðŸ“", "orange", "Add Facility", "Grounds, courts, venues"],
+  ["ðŸ‘¤", "pink", "Recruit Staff", "Coach openings"],
+  ["ðŸ–¼", "magenta", "Upload Media", "Photos and videos"]
+];
+const roleShowcase = {
+  coach: { title: "Coach", subtitle: "Rohit Mehta Â· Cricket Coach", accent: "role-coach", mark: "â—‰", screens: ["Home", "Explore", "Create", "Community", "More", "Coach Profile", "Training Programs", "Leaderboard", "Academies", "Notifications", "Messages"] },
+  academy: { title: "Academy", subtitle: "Motera Cricket Academy", accent: "role-academy", mark: "ðŸ›", screens: ["Home", "Explore", "Create", "Community", "More", "Academy Profile", "Training Programs", "Events / Trials", "Athletes", "Facilities", "Messages"] },
+  organizer: { title: "Organizer", subtitle: "Raj Sports Events", accent: "role-organizer", mark: "ðŸ“…", screens: ["Home", "Explore", "Create", "Community", "More", "Organizer Profile", "My Events", "Event Management", "Registrations", "Analytics", "Messages"] },
+  scout: { title: "Talent Scout", subtitle: "Sameer Desai Â· Scout", accent: "role-scout", mark: "â—Ž", screens: ["Home", "Explore", "Create", "Community", "More", "Scout Profile", "Shortlisted Talents", "Talent Report", "Opportunities", "Notifications", "Messages"] }
+};
+// maps showcase screen -> static HTML screen file (phase-1 academy prototype)
+function targetFor(name) {
+  const l = name.toLowerCase();
+  if (l === "home") return "screens/home.html";
+  if (l === "explore" || l === "academies") return "screens/explore.html";
+  if (l === "create") return "screens/create.html";
+  if (l === "community") return "screens/community.html";
+  if (l === "more") return "screens/more.html";
+  if (l.includes("profile")) return "screens/profile.html";
+  if (l.includes("program")) return "screens/programs.html";
+  if (l.includes("event") || l.includes("tournament")) return "screens/events.html";
+  if (l.includes("athlete") || l.includes("talent") || l.includes("shortlist")) return "screens/athletes.html";
+  if (l.includes("facilit")) return "screens/facilities.html";
+  if (l.includes("notif")) return "screens/notifications.html";
+  if (l.includes("message")) return "screens/messages.html";
+  if (l.includes("leaderboard") || l.includes("analytic") || l.includes("report") || l.includes("opportunit") || l.includes("regist") || l.includes("manage")) return "screens/home.html";
+  return "screens/home.html";
+}
+function miniHeader(title) {
+  if (title) return '<div class="mini-header"><span>â†</span><strong>' + title + "</strong><span></span></div>";
+  return '<div class="mini-header"><div class="logo">Sport<span>X</span><i></i></div><div><span style="font-size:11px">ðŸ””</span><span class="mini-avatar"></span></div></div>';
+}
+function miniNav(active) {
+  const labels = ["Home", "Explore", "Create", "Community", "More"];
+  const icons = ["âŒ‚", "â—Ž", "ï¼‹", "ðŸ‘¥", "â–¦"];
+  return '<div class="mini-nav">' + labels.map((l, i) => '<div class="' + (i === active ? "on" : "") + '"><span style="font-size:11px">' + icons[i] + "</span><span>" + l + "</span></div>").join("") + "</div>";
+}
+function miniPersonRows() {
+  return '<div>' + miniPeople.map((n, i) => '<div class="mini-person"><img src="' + people[i].img + '" alt=""/><p><strong>' + n + "</strong><span>" + people[i].role + '</span></p><b>Follow</b></div>').join("") + "</div>";
+}
+function miniCardRows(role) {
+  const titles = role === "organizer"
+    ? ["Youth Football Championship", "Inter Academy Cup", "State Badminton Tournament", "Ahmedabad Marathon"]
+    : role === "scout"
+    ? ["Open U-16 Cricket Trials", "Football Selection Camp", "State Athletics Trials", "Badminton Camp"]
+    : ["Beginner Cricket Program", "Advanced Batting Training", "Weekend Cricket Camp", "High Performance Program"];
+  return "<div>" + titles.map((t, i) => '<div class="mini-card-list"><div><img src="' + (i % 2 ? photos.football : photos.cricket) + '" alt=""/><p><strong>' + t + "</strong><span>Ahmedabad Â· Gujarat</span><b>View Details</b></p></div></div>").join("") + "</div>";
+}
+function miniMsgRows() {
+  return "<div>" + miniPeople.concat(["Dev Mehta", "Coach Rohan"]).map((n, i) => '<div class="mini-person"><img src="' + people[i % 4].img + '" alt=""/><p><strong>' + n + "</strong><span>" + (i % 2 ? "Thanks for the update!" : "When does the next batch start?") + "</span></p><small>" + (i < 2 ? "10:30" : "1d") + "</small></div>").join("") + "</div>";
+}
+function miniMenu(role) {
+  const items = ["My Profile", role === "organizer" ? "My Events" : "My Training Programs", role === "scout" ? "Shortlisted Talents" : "My Opportunities", "My Analytics", "Saved", "Notifications", "Messages", "Settings & Privacy"];
+  return '<div class="mini-menu">' + items.map(x => "<div><span>â€¢</span><span>" + x + "</span><span>â€º</span></div>").join("") + "</div>";
+}
+function miniBody(role, name, idx) {
+  const lower = name.toLowerCase();
+  const info = roleShowcase[role];
+  if (name === "Home") {
+    return '<div class="mini-greet"><img src="' + people[idx % 4].img + '" alt=""/><p><span>Good morning,</span><strong>' + info.subtitle + "</strong><small>Complete your profile</small><i></i></p><b>80%</b></div>"
+      + '<div class="mini-section"><strong>' + (role === "organizer" ? "Upcoming Events" : role === "scout" ? "Top Talents This Week" : "Leaderboard") + "</strong><span>View all â€º</span></div>"
+      + '<div class="mini-ranks">' + [0, 1, 2].map(i => "<div><b>" + (i + 1) + '</b><img src="' + people[i].img + '" alt=""/><span>' + miniPeople[i] + "</span></div>").join("") + "</div>"
+      + '<div class="mini-quick"><div><strong>ðŸ† Opportunities</strong></div><div><strong>ðŸ› ' + (role === "scout" ? "Find Talent" : "My Programs") + "</strong></div></div>"
+      + '<div class="mini-section"><strong>For you</strong><span>Following</span></div><div class="mini-feed"><p><span class="mini-avatar"></span><strong>' + info.subtitle + '</strong></p><img src="' + (role === "academy" ? photos.cricket : photos.football) + '" alt=""/></div>';
+  }
+  if (name === "Explore") return '<div class="mini-search">âŒ• Search athletes, coaches, academies...</div><div class="mini-chips"><b>All Sports</b><span>Cricket</span><span>Football</span></div><div class="mini-tabs"><span>Athletes</span><span>Coaches</span><b>' + (role === "organizer" ? "Events" : "Academies") + "</b></div>" + (role === "organizer" ? miniCardRows(role) : miniPersonRows());
+  if (name === "Create") return '<div class="mini-create">' + createItems.map(([ic, c, t, s]) => '<div><i class="' + c + '">' + ic + "</i><p><strong>" + t + "</strong><span>" + s + "</span></p></div>").join("") + "</div>";
+  if (name === "Community") return '<div class="mini-tabs"><b>Network</b><span>Groups</span><span>Events</span></div><div class="mini-search">âŒ• Search people, groups...</div><div class="mini-section"><strong>Suggested for you</strong></div>' + miniPersonRows();
+  if (name === "More") return '<div class="mini-profile"><img src="' + people[2].img + '" alt=""/><p><strong>' + info.subtitle + "</strong><span>" + info.title + "</span><b>View Profile â€º</b></p></div>" + miniMenu(role);
+  if (lower.includes("profile")) return '<div class="mini-profile-hero"><img src="' + (role === "organizer" ? photos.football : photos.cricket) + '" alt=""/><span><img src="' + people[2].img + '" alt=""/></span></div><div class="mini-profile-title"><strong>' + info.subtitle + ' âœ“</strong><span>Ahmedabad Â· Gujarat</span><b>Edit Profile</b></div><div class="mini-tabs"><b>About</b><span>Programs</span><span>Activity</span></div><div class="mini-about"><strong>About</strong><p>Verified sports profile with experience and achievements.</p>' + ["Experience", "Specialization", "Languages", "Members"].map(x => "<span>" + x + "<b>Verified</b></span>").join("") + "</div>";
+  if (lower.includes("program") || lower.includes("event") || lower.includes("facilit") || lower.includes("opportunit")) return '<div class="mini-tabs"><b>Active</b><span>Drafts</span><span>Past</span></div><div class="mini-add">ï¼‹ Add</div>' + miniCardRows(role);
+  if (lower.includes("message")) return '<div class="mini-tabs"><b>Chats</b><span>Requests</span></div><div class="mini-search">âŒ• Search messages...</div>' + miniMsgRows();
+  if (lower.includes("notif")) return '<div class="mini-tabs"><b>All</b><span>Opportunities</span><span>System</span></div>' + miniMsgRows();
+  return '<div class="mini-search">âŒ• Search ' + name.toLowerCase() + '...</div><div class="mini-chips"><b>All</b><span>Cricket</span><span>Football</span></div>' + miniPersonRows();
+}
+function render() {
+  let html = '<div class="showcase"><div class="showcase-hero"><div><div class="logo">Sport<span>X</span><i></i></div><span>Product prototype Â· v3</span></div>'
+    + '<div class="showcase-title">Every role. Every screen.<br/><em>One connected sports ecosystem.</em></div>'
+    + "<p>Browse the complete SportX mobile experience role by role. Phase 1 ships the Academy prototype fully clickable â€” Coach, Organizer and Scout reuse the same design shell.</p>"
+    + '<a class="primary" style="text-decoration:none;color:#111" href="screens/home.html">Open clickable prototype â†’</a>'
+    + '<div class="stats-row"><span>4 roles</span><span>44 screens</span><span>13 clickable (Academy)</span><span>430px mobile</span></div></div>';
+  Object.keys(roleShowcase).forEach(role => {
+    const info = roleShowcase[role];
+    html += '<section class="role-section ' + info.accent + '"><div class="role-heading"><div class="role-mark">' + info.mark + "</div><div><span>SPORTX FOR</span><div class='role-title'>" + info.title + "</div><p>" + info.screens.length + " connected mobile screens Â· " + info.subtitle + '</p></div><div class="scroll-hint">Scroll to explore â€º</div></div><div class="screen-row">';
+    info.screens.forEach((name, index) => {
+      const isMain = index < 5;
+      const headerTitle = isMain ? (["Create", "Community", "More"].includes(name) ? name : undefined) : name;
+      html += '<a class="showcase-card" href="' + targetFor(name) + '"><div class="screen-number">' + (index + 1) + ". " + name + " <span>(" + info.title + ')</span></div><div class="mini-phone ' + info.accent + '">' + miniHeader(headerTitle) + '<div class="mini-body">' + miniBody(role, name, index) + "</div>" + miniNav(Math.min(index, 4)) + "</div></a>";
+    });
+    html += "</div></section>";
+  });
+  html += "</div>";
+  document.getElementById("showcase").innerHTML = html;
+}
+render();
+</script>
+</body>
+</html>
+
+

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SportX v3 — Interactive App Preview (Academy)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<style>
+  body { background: #e8eaed; }
+  .prototype-shell { position: relative; }
+  .back-link {
+    position: fixed; z-index: 100; top: 18px; left: 18px;
+    display: flex; align-items: center; gap: 7px;
+    padding: 10px 14px; border: 1px solid var(--border); border-radius: 99px;
+    background: #fff; box-shadow: var(--shadow-up);
+    font-size: 12px; font-weight: 700; color: var(--ink); text-decoration: none;
+  }
+  .back-link:hover { border-color: var(--yellow-deep); }
+  @media (max-width: 600px) { .back-link { top: auto; bottom: 86px; left: 12px; } }
+</style>
+</head>
+<body>
+<div class="app-shell prototype-shell">
+  <a class="back-link" href="index.html">← All role screens</a>
+  <div class="phone" id="phone"></div>
+  <div class="toast" id="toast" style="display:none"></div>
+</div>
+<script>
+const photos = {
+  cricket: "https://images.unsplash.com/photo-1732315797079-fe90763b8bd9?auto=format&fit=crop&w=900&q=82",
+  football: "https://images.unsplash.com/photo-1625990637351-ee0e5e9ba5e5?auto=format&fit=crop&w=900&q=82",
+  player: "https://images.unsplash.com/photo-1547839918-5ed99eac4175?auto=format&fit=crop&w=700&q=82",
+  stadium: "https://images.unsplash.com/photo-1644664750583-1cf0430098ff?auto=format&fit=crop&w=900&q=82"
+};
+const people = [
+  { name: "Arjun Patel", role: "Cricket · All-rounder", img: photos.player },
+  { name: "Riya Sharma", role: "Football · U-17", img: photos.football },
+  { name: "Karan Joshi", role: "Cricket · Batter", img: photos.cricket },
+  { name: "Neha Patel", role: "Football · Striker", img: photos.stadium }
+];
+const ICONS = {
+  home: '<path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9"/><path d="M9 20v-7h6v7"/>',
+  compass: '<circle cx="12" cy="12" r="9"/><path d="m15 9-2 4-4 2 2-4 4-2Z"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/>',
+  message: '<path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+  chevron: '<path d="m9 18 6-6-6-6"/>',
+  arrow: '<path d="m15 18-6-6 6-6"/>',
+  star: '<path d="m12 2 3 6 7 .9-5 4.8 1.3 6.8-6.3-3.3-6.3 3.3L7 13.7 2 9l7-.9L12 2Z"/>',
+  map: '<path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>',
+  calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',
+  trophy: '<path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 6H3v2a4 4 0 0 0 4 4M17 6h4v2a4 4 0 0 1-4 4"/>',
+  bookmark: '<path d="M6 3h12v18l-6-4-6 4V3Z"/>',
+  share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/>',
+  edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>',
+  academy: '<path d="m3 10 9-6 9 6"/><path d="M5 10v9h14v-9M9 19v-5h6v5"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v6l4 2"/>',
+  chart: '<path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/>',
+  shield: '<path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/>',
+  image: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>',
+  video: '<rect x="3" y="5" width="14" height="14" rx="2"/><path d="m17 10 4-3v10l-4-3"/>',
+  settings: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+  logout: '<path d="M10 17l5-5-5-5M15 12H3M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>'
+};
+function icon(name, size) {
+  size = size || 20;
+  return '<svg class="icon" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[name] || "") + "</svg>";
+}
+const createItems = [
+  { icon: "edit", color: "purple", title: "Create Post", sub: "Share updates, achievements or announcements" },
+  { icon: "calendar", color: "green", title: "Add Training Program", sub: "Create and list your training program" },
+  { icon: "trophy", color: "red", title: "Create Event / Trial", sub: "Post trials, tournaments or camps" },
+  { icon: "academy", color: "blue", title: "Post Scholarship / Opportunity", sub: "List scholarships or sponsorships" },
+  { icon: "map", color: "orange", title: "Add Facility / Venue", sub: "Showcase your training grounds or courts" },
+  { icon: "user", color: "pink", title: "Recruit Staff", sub: "Post coach or staff openings" },
+  { icon: "image", color: "magenta", title: "Upload Photos / Videos", sub: "Share training moments and facilities" },
+  { icon: "video", color: "purple", title: "Go Live / Webinar", sub: "Host a live training session" }
+];
+const programs = ["Beginner Cricket Program", "Advanced Batting Training", "Fit & Bowling Specialist", "Weekend Cricket Camp", "1-on-1 Personal Coaching"];
+const eventsList = ["Open Trials · U-16 Cricket", "Winter Training Camp", "Inter Academy Cricket Tournament", "State Badminton Tournament", "Football Scouting Trial"];
+const facilities = [["Main Cricket Ground", photos.cricket], ["Indoor Nets", photos.player], ["Fitness Centre", photos.stadium], ["Classrooms", photos.football], ["Changing Rooms", photos.cricket]];
+const notes = [
+  ["user", "Karan Joshi joined your academy", "10 min"],
+  ["users", "Ahmedabad Cricket Academy followed you", "45 min"],
+  ["message", "New enquiry for training program", "1 hr"],
+  ["trophy", "Priya Sharma registered for U-16 trial", "3 hr"],
+  ["star", "You received a new 5-star review", "Yesterday"]
+];
+const menu = [
+  ["user", "My Profile", "profile"], ["calendar", "My Training Programs", "programs"],
+  ["trophy", "My Events / Trials", "events"], ["users", "My Athletes", "athletes"],
+  ["academy", "My Facilities / Venues", "facilities"], ["chart", "My Analytics", ""],
+  ["bookmark", "Saved", ""], ["bell", "Notifications", "notifications"],
+  ["message", "Messages", "messages"], ["settings", "Settings & Privacy", ""], ["shield", "Help & Support", ""]
+];
+
+let state = { screen: (location.hash || "#home").replace("#", "") || "home", exploreFilter: "Academies", communityTab: "Network" };
+const valid = ["home","explore","create","community","more","profile","programs","events","athletes","facilities","notifications","messages","detail"];
+if (!valid.includes(state.screen)) state.screen = "home";
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.style.display = "block";
+  clearTimeout(t._h); t._h = setTimeout(() => (t.style.display = "none"), 1800);
+}
+function go(s) { state.screen = s; location.hash = s; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+
+function topbar(o) {
+  o = o || {};
+  let left = "";
+  if (o.back) left = '<div role="button" class="tap icon-tap" data-go="' + (o.backTo || "more") + '">' + icon("arrow") + "</div>";
+  else if (o.title) left = '<div class="topbar-spacer"></div>';
+  else left = '<div class="logo">Sport<span>X</span><i></i></div>';
+  let right = '<div class="top-actions">';
+  if (o.message) right += '<div role="button" class="tap icon-tap" data-go="messages">' + icon("message", 18) + "</div>";
+  if (o.notify) right += '<div role="button" class="tap icon-tap notification-button" data-go="notifications">' + icon("bell", 18) + "<b>3</b></div>";
+  if (!o.back && !o.title) right += '<img class="avatar avatar-small" src="' + people[0].img + '" alt="profile" data-go="profile" style="cursor:pointer"/>';
+  if (o.back && !o.notify) right += '<div class="topbar-spacer"></div>';
+  right += "</div>";
+  return '<div class="topbar">' + left + (o.title ? '<div class="topbar-title">' + o.title + "</div>" : "") + right + "</div>";
+}
+function searchBar(ph) { return '<div class="search">' + icon("search", 18) + "<span>" + (ph || "Search athletes, coaches, academies...") + "</span></div>"; }
+function sectionHead(title, action) {
+  return '<div class="section-head"><div>' + title + "</div>" + (action ? '<div class="tap see-all" data-toast="' + action + ' clicked">' + action + icon("chevron", 13) + "</div>" : "") + "</div>";
+}
+function personRow(p, action, target) {
+  return '<div class="person-row"><img class="avatar" src="' + p.img + '" alt="' + p.name + '"/><div class="person-copy"><strong>' + p.name + '<span class="verified">✓</span></strong><p>' + p.role + '</p><span>' + icon("star", 11) + ' 4.8 · Ahmedabad</span></div><div class="tap primary primary-compact" data-go="' + (target || "athletes") + '">' + (action || "View Profile") + "</div></div>";
+}
+function bottomNav() {
+  const items = [["Home","home","home"],["Explore","compass","explore"],["Create","plus","create"],["Community","users","community"],["More","grid","more"]];
+  let active = state.screen;
+  if (["profile","programs","events","athletes","facilities"].includes(active)) active = "more";
+  return '<div class="bottom-nav">' + items.map(([label, ic, id]) =>
+    '<div class="tap nav-item ' + (active === id ? "nav-active" : "") + (id === "create" ? " create-nav" : "") + '" data-go="' + id + '"><div class="nav-icon">' + icon(ic, id === "create" ? 24 : 20) + "</div><span>" + label + "</span></div>"
+  ).join("") + "</div>";
+}
+
+function vHome() {
+  const ranks = ["Motera Cricket Academy", "Ahmedabad Football Academy", "Gujarat Badminton Academy"];
+  const imgs = [photos.cricket, photos.football, photos.stadium];
+  return topbar({ notify: 1, message: 1 }) + '<main class="page">'
+    + '<div class="tap greet-card" data-go="profile"><img class="avatar" src="' + people[0].img + '" alt=""/><div class="greet-copy"><span>Good morning,</span><strong>Hi, Motera Cricket Academy!</strong><p>Complete your profile to get discovered</p><div class="progress"><i></i></div></div><b>80%</b>' + icon("chevron", 18) + "</div>"
+    + '<div class="role-line"><span class="role-badge">ACADEMY</span><span>Ahmedabad, Gujarat</span></div>'
+    + sectionHead("Leaderboard", "View all")
+    + '<div class="leaderboard">' + ranks.map((n, i) => '<div class="rank"><span>' + (i + 1) + '</span><img src="' + imgs[i] + '" alt=""/><strong>' + n + "</strong><small>" + ((i + 1) * 3200 + 4100) + " pts</small></div>").join("") + "</div>"
+    + '<div class="quick-grid"><div class="tap quick-tile" data-go="events"><i class="tile-icon yellow">' + icon("trophy") + '</i><strong>Opportunities</strong><span>Trials & tournaments</span></div>'
+    + '<div class="tap quick-tile" data-go="facilities"><i class="tile-icon blue">' + icon("academy") + '</i><strong>Find Talent</strong><span>Connect with athletes</span></div></div>'
+    + sectionHead("For you", "Academies")
+    + '<div class="feed-card"><div class="feed-author"><img class="avatar avatar-small" src="' + people[2].img + '" alt=""/><div><strong>Motera Cricket Academy</strong><span>2h · Ahmedabad</span></div><div class="tap" data-toast="Post saved">' + icon("bookmark", 18) + '</div></div><p>New batch registrations open for our U-16 high performance cricket program.</p><img src="' + photos.cricket + '" alt="Cricket training"/><div class="feed-actions"><span>♥ 254</span><span>♡ 18</span><span>' + icon("share", 15) + " 12</span></div></div>"
+    + "</main>";
+}
+function vExplore() {
+  const chips = ["All Sports", "Cricket", "Football", "Badminton"].map(x => '<div class="tap chip' + (x === "All Sports" ? " chip-active" : "") + '">' + x + "</div>").join("");
+  const tabs = ["Athletes", "Coaches", "Academies", "Training Centres"].map(x => '<div class="tap' + (state.exploreFilter === x ? " tab-active" : "") + '" data-filter="' + x + '">' + x + "</div>").join("");
+  let body = "";
+  if (state.exploreFilter === "Athletes") body = people.map(p => personRow(p, "View Profile", "athletes")).join("");
+  else body = '<div class="academy-list">'
+    + [["Motera Cricket Academy", "Ahmedabad · 2.5 km", photos.cricket], ["Ahmedabad Football Academy", "Ahmedabad · 6.1 km", photos.football], ["Gujarat Badminton Academy", "Gujarat · 4.8 km", photos.stadium], ["AquaSport Swimming Academy", "Vastrapur · 8.2 km", photos.player]]
+      .map(([t, l, img]) => '<div class="tap academy-card" data-go="detail"><img src="' + img + '" alt=""/><div class="academy-info"><div class="verified-line"><strong>' + t + '</strong><span class="verified">✓</span></div><p>' + icon("map", 12) + l + '</p><div class="card-bottom"><span>' + icon("star", 12) + '4.8 (320)</span><span class="text-link">View Details</span></div></div></div>').join("") + "</div>";
+  return topbar({ notify: 1 }) + '<main class="page">' + searchBar() + '<div class="horizontal chips">' + chips + '</div><div class="tabs">' + tabs + "</div>"
+    + sectionHead(state.exploreFilter === "Athletes" ? "Featured athletes" : "Featured academies", "4.8 ★") + body + "</main>";
+}
+function vCreate() {
+  return topbar({ title: "Create" }) + '<main class="page create-page">'
+    + createItems.map(it => '<div class="tap create-row" data-toast="' + it.title + ' selected"><i class="create-icon ' + it.color + '">' + icon(it.icon) + "</i><div><strong>" + it.title + "</strong><p>" + it.sub + "</p></div>" + icon("chevron", 18) + "</div>").join("") + "</main>";
+}
+function vCommunity() {
+  const tabs = ["Network", "Groups", "Events"].map(x => '<div class="tap' + (state.communityTab === x ? " tab-active" : "") + '" data-ctab="' + x + '">' + x + "</div>").join("");
+  return topbar({ title: "Community", message: 1 }) + '<main class="page"><div class="tabs community-tabs">' + tabs + "</div>"
+    + searchBar("Search people, groups, events...") + sectionHead("Suggested for you")
+    + '<div class="horizontal chips"><div class="tap chip chip-active">Athletes</div><div class="tap chip">Coaches</div><div class="tap chip">Academies</div></div>'
+    + people.map((p, i) => personRow(p, i === 1 ? "Following" : "Follow", "")).join("")
+    + sectionHead("Join Groups", "See all")
+    + ["Gujarat Coaches Network", "Cricket Academies Gujarat", "Sports Facility Owners"].map((g, i) => '<div class="group-row"><img src="' + [photos.cricket, photos.football, photos.stadium][i] + '" alt=""/><div><strong>' + g + "</strong><span>" + (1.8 + i) + 'k members</span></div><div class="tap chip" data-toast="Joined ' + g + '">Join</div></div>').join("") + "</main>";
+}
+function vMore() {
+  return topbar({ title: "More" }) + '<main class="page">'
+    + '<div class="tap profile-summary" data-go="profile"><img class="avatar" src="' + people[2].img + '" alt=""/><div><strong>Motera Cricket Academy <span class="verified">✓</span></strong><span>Sports Academy</span><b>View Profile ›</b></div></div>'
+    + '<div class="menu-card">' + menu.map(([ic, label, sc]) => '<div class="tap menu-row" ' + (sc ? 'data-go="' + sc + '"' : 'data-toast="' + label + ' opened"') + ">" + icon(ic, 18) + "<span>" + label + "</span>" + icon("chevron", 17) + "</div>").join("")
+    + '<div class="tap menu-row logout" data-toast="Logged out">' + icon("logout", 18) + "<span>Logout</span></div></div></main>";
+}
+function backPage(title, inner, action) {
+  return topbar({ title: title, back: 1, backTo: "more" }) + '<main class="page subpage">' + inner + "</main>" + (action || "");
+}
+function vProfile() {
+  return backPage("Academy Profile",
+    '<div class="profile-hero"><img src="' + photos.cricket + '" alt=""/><div class="profile-avatar"><img src="' + photos.stadium + '" alt=""/></div></div>'
+    + '<div class="profile-title"><strong>Motera Cricket Academy <span class="verified">✓</span></strong><p>' + icon("map", 13) + ' Motera, Ahmedabad · Gujarat</p><span>' + icon("star", 13) + " 4.8 (320 reviews)</span></div>"
+    + '<div class="profile-actions"><div class="tap primary" data-toast="Profile editor opened">' + icon("edit", 16) + ' Edit Profile</div><div class="tap chip" data-toast="Profile shared">' + icon("share", 16) + " Share</div></div>"
+    + '<div class="tabs"><div class="tap tab-active">About</div><div class="tap">Programs</div><div class="tap">Facilities</div><div class="tap">Reviews</div></div>'
+    + '<section class="content-card">' + sectionHead("About") + "<p>Professional cricket academy with world-class coaching, certified trainers, and high-performance programs for aspiring athletes.</p>"
+    + '<div class="details">' + [["Founded", "2018"], ["Age Group", "U-8 to U-19"], ["Students", "320+"], ["Coaching staff", "12 coaches"], ["Languages", "English, Hindi, Gujarati"]].map(([a, b]) => "<div><span>" + a + "</span><strong>" + b + "</strong></div>").join("") + "</div></section>");
+}
+function vPrograms() {
+  return backPage("My Training Programs",
+    '<div class="tabs"><div class="tap tab-active">Active</div><div class="tap">Drafts</div><div class="tap">Past</div></div>'
+    + programs.map((p, i) => '<div class="list-card"><img src="' + (i % 2 ? photos.football : photos.cricket) + '" alt=""/><div><strong>' + p + "</strong><p>" + icon("users", 12) + " U-" + (12 + i * 2) + " · " + (8 + i * 4) + " weeks</p><b>₹" + ((i + 3) * 1000) + '</b></div><div class="tap primary primary-compact" data-toast="' + p + ' opened">View Details</div></div>').join(""),
+    '<div class="sticky-action"><div class="tap primary" data-toast="New program form opened">' + icon("plus") + " Add Program</div></div>");
+}
+function vEvents() {
+  return backPage("Events / Trials",
+    '<div class="tabs"><div class="tap tab-active">Upcoming</div><div class="tap">Past</div></div>'
+    + eventsList.map((e, i) => '<div class="event-card"><div class="event-date"><b>' + (11 + i * 3) + '</b><span>NOV</span></div><img src="' + (i % 2 ? photos.stadium : photos.cricket) + '" alt=""/><div><strong>' + e + "</strong><p>" + icon("map", 12) + ' Ahmedabad</p><span class="status-pill">' + (i === 0 ? "Registration open" : "Upcoming") + '</span></div><div class="tap" data-toast="' + e + ' opened">' + icon("chevron") + "</div></div>").join(""),
+    '<div class="sticky-action"><div class="tap primary" data-toast="Create event form opened">' + icon("plus") + " Create Event</div></div>");
+}
+function vAthletes() {
+  const all = people.concat(people.slice(0, 2));
+  return backPage("Our Athletes",
+    searchBar("Search athletes...") + '<div class="horizontal chips"><div class="tap chip chip-active">All</div><div class="tap chip">U-14</div><div class="tap chip">U-16</div><div class="tap chip">U-19</div></div>'
+    + all.map(p => personRow(p, "View Profile", "detail")).join(""));
+}
+function vFacilities() {
+  return backPage("Facilities",
+    '<div class="horizontal chips"><div class="tap chip chip-active">All</div><div class="tap chip">Grounds</div><div class="tap chip">Indoor</div></div>'
+    + facilities.map(([f, img]) => '<div class="list-card facility-card"><img src="' + img + '" alt=""/><div><strong>' + f + "</strong><p>" + icon("map", 12) + ' Motera Campus</p></div><div class="tap primary primary-compact" data-toast="' + f + ' opened">View Details</div></div>').join(""),
+    '<div class="sticky-action"><div class="tap primary" data-toast="Add facility form opened">' + icon("plus") + " Add Facility</div></div>");
+}
+function vNotifications() {
+  return topbar({ title: "Notifications", back: 1, backTo: "home" }) + '<main class="page"><div class="tabs"><div class="tap tab-active">All</div><div class="tap">Opportunities</div><div class="tap">System</div></div>'
+    + notes.map(([ic, text, time]) => '<div class="notification-row"><i>' + icon(ic, 18) + "</i><div><strong>" + text + "</strong><span>" + time + "</span></div><b></b></div>").join("") + "</main>";
+}
+function vMessages() {
+  const all = people.concat(people.slice(0, 2));
+  return topbar({ title: "Messages", back: 1, backTo: "home" }) + '<main class="page"><div class="tabs"><div class="tap tab-active">Chats</div><div class="tap">Requests</div></div>'
+    + searchBar("Search messages...")
+    + all.map((p, i) => '<div class="tap chat-row" data-toast="Opened chat with ' + p.name + '"><img class="avatar" src="' + p.img + '" alt=""/><div><strong>' + p.name + "</strong><p>" + (i % 2 ? "Thanks for the update!" : "When does the next batch start?") + "</p></div><span>" + (i < 2 ? "10:30" : "Yesterday") + (i < 3 ? "<b>" + (i + 1) + "</b>" : "") + "</span></div>").join("") + "</main>";
+}
+function vDetail() {
+  return '<div class="detail-page"><div class="detail-hero"><img src="' + photos.cricket + '" alt=""/><div class="tap floating-back" data-go="explore">' + icon("arrow") + '</div><div class="tap floating-save" data-toast="Saved to favourites">' + icon("bookmark") + "</div></div>"
+    + '<div class="detail-sheet"><span class="role-badge">CRICKET ACADEMY</span><div class="detail-title">Motera Cricket Academy <span class="verified">✓</span></div><p>' + icon("map", 14) + ' Motera, Ahmedabad · 2.5 km</p><div class="detail-rating">' + icon("star", 15) + " <b>4.8</b><span>(320 reviews)</span></div>"
+    + '<div class="detail-stats"><div class="stat"><strong>320+</strong><span>Athletes</span></div><div class="stat"><strong>12</strong><span>Coaches</span></div><div class="stat"><strong>8</strong><span>Programs</span></div></div>'
+    + sectionHead("About the academy") + "<p>World-class cricket coaching with certified professionals, modern facilities and athlete-first development programs.</p>"
+    + sectionHead("What we offer") + '<div class="offer-grid"><span>Indoor nets</span><span>Fitness center</span><span>Video analysis</span><span>Match practice</span></div></div>'
+    + '<div class="sticky-action detail-action"><div class="tap chip" data-toast="Message sent">' + icon("message") + ' Message</div><div class="tap primary" data-toast="Enquiry submitted">Send Enquiry</div></div></div>';
+}
+
+const views = { home: vHome, explore: vExplore, create: vCreate, community: vCommunity, more: vMore, profile: vProfile, programs: vPrograms, events: vEvents, athletes: vAthletes, facilities: vFacilities, notifications: vNotifications, messages: vMessages, detail: vDetail };
+function render() {
+  const phone = document.getElementById("phone");
+  phone.innerHTML = views[state.screen]() + ((["notifications", "messages", "detail"].includes(state.screen)) ? "" : bottomNav());
+}
+document.addEventListener("click", (e) => {
+  const f = e.target.closest("[data-filter]"); if (f) { state.exploreFilter = f.dataset.filter; render(); return; }
+  const c = e.target.closest("[data-ctab]"); if (c) { state.communityTab = c.dataset.ctab; render(); return; }
+  const t = e.target.closest("[data-toast]"); if (t) { showToast(t.dataset.toast); return; }
+  const g = e.target.closest("[data-go]"); if (g) { const d = g.dataset.go; if (d) go(d); return; }
+});
+window.addEventListener("hashchange", () => {
+  const h = location.hash.replace("#", "");
+  if (valid.includes(h) && h !== state.screen) { state.screen = h; render(); }
+});
+render();
+</script>
+</body>
+</html>

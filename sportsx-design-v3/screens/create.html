@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SportX v3 — Create</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css" />
+<style>.phone a.tap { color: inherit; text-decoration: none; }</style>
+</head>
+<body>
+<div class="app-shell"><div class="phone">
+
+  <div class="topbar">
+    <div class="topbar-spacer"></div>
+    <div class="topbar-title">Create</div>
+    <div class="top-actions"><div class="topbar-spacer"></div></div>
+  </div>
+
+  <!-- EDIT: duplicate .create-row blocks to add/remove options. Colors: purple green red blue orange pink magenta -->
+  <main class="page create-page">
+    <div class="tap create-row" data-toast="Create Post selected"><i class="create-icon purple">✎</i><div><strong>Create Post</strong><p>Share updates, achievements or announcements</p></div><span>›</span></div>
+    <div class="tap create-row" data-toast="Add Training Program selected"><i class="create-icon green">📅</i><div><strong>Add Training Program</strong><p>Create and list your training program</p></div><span>›</span></div>
+    <div class="tap create-row" data-toast="Create Event / Trial selected"><i class="create-icon red">🏆</i><div><strong>Create Event / Trial</strong><p>Post trials, tournaments or camps</p></div><span>›</span></div>
+    <div class="tap create-row" data-toast="Post Scholarship / Opportunity selected"><i class="create-icon blue">🏛</i><div><strong>Post Scholarship / Opportunity</strong><p>List scholarships or sponsorships</p></div><span>›</span></div>
+    <div class="tap create-row" data-toast="Add Facility / Venue selected"><i class="create-icon orange">📍</i><div><strong>Add Facility / Venue</strong><p>Showcase your training grounds or courts</p></div><span>›</span></div>
+    <div class="tap create-row" data-toast="Recruit Staff selected"><i class="create-icon pink">👤</i><div><strong>Recruit Staff</strong><p>Post coach or staff openings</p></div><span>›</span></div>
+    <div class="tap create-row" data-toast="Upload Photos / Videos selected"><i class="create-icon magenta">🖼</i><div><strong>Upload Photos / Videos</strong><p>Share training moments and facilities</p></div><span>›</span></div>
+    <div class="tap create-row" data-toast="Go Live / Webinar selected"><i class="create-icon purple">▶</i><div><strong>Go Live / Webinar</strong><p>Host a live training session</p></div><span>›</span></div>
+  </main>
+
+  <div class="bottom-nav">
+    <a class="tap nav-item" href="home.html"><div class="nav-icon">⌂</div><span>Home</span></a>
+    <a class="tap nav-item" href="explore.html"><div class="nav-icon">◎</div><span>Explore</span></a>
+    <a class="tap nav-item create-nav nav-active" href="create.html"><div class="nav-icon">＋</div><span>Create</span></a>
+    <a class="tap nav-item" href="community.html"><div class="nav-icon">👥</div><span>Community</span></a>
+    <a class="tap nav-item" href="more.html"><div class="nav-icon">▦</div><span>More</span></a>
+  </div>
+
+</div></div>
+<div class="toast" id="toast" style="display:none"></div>
+<script>
+function showToast(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(function(){t.style.display='none'},1800)}
+document.addEventListener('click',function(e){var t=e.target.closest('[data-toast]');if(t){showToast(t.getAttribute('data-toast'))}});
+</script>
+</body>
+</html>

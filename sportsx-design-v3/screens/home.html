@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SportX v3 — Home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css" />
+<style>.phone a.tap { color: inherit; text-decoration: none; }</style>
+</head>
+<body>
+<div class="app-shell"><div class="phone">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="logo">Sport<span>X</span><i></i></div>
+    <div class="top-actions">
+      <a class="tap icon-tap" href="messages.html">
+        <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/></svg>
+      </a>
+      <a class="tap icon-tap notification-button" href="notifications.html">
+        <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
+        <b>3</b>
+      </a>
+      <a class="tap" href="profile.html"><img class="avatar avatar-small" src="https://images.unsplash.com/photo-1547839918-5ed99eac4175?auto=format&fit=crop&w=700&q=82" alt="profile" /></a>
+    </div>
+  </div>
+
+  <main class="page">
+    <!-- GREET CARD -->
+    <a class="tap greet-card" href="profile.html">
+      <img class="avatar" src="https://images.unsplash.com/photo-1547839918-5ed99eac4175?auto=format&fit=crop&w=700&q=82" alt="" />
+      <div class="greet-copy">
+        <span>Good morning,</span>
+        <strong>Hi, Motera Cricket Academy!</strong>
+        <p>Complete your profile to get discovered</p>
+        <div class="progress"><i></i></div>
+      </div>
+      <b>80%</b>
+      <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </a>
+
+    <div class="role-line"><span class="role-badge">ACADEMY</span><span>Ahmedabad, Gujarat</span></div>
+
+    <!-- LEADERBOARD — EDIT: change names / images / points to update ranks -->
+    <div class="section-head"><div>Leaderboard</div><div class="tap see-all" data-toast="Leaderboard opened">View all
+      <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></div>
+    </div>
+    <div class="leaderboard">
+      <div class="rank"><span>1</span><img src="https://images.unsplash.com/photo-1732315797079-fe90763b8bd9?auto=format&fit=crop&w=900&q=82" alt="" /><strong>Motera Cricket Academy</strong><small>7300 pts</small></div>
+      <div class="rank"><span>2</span><img src="https://images.unsplash.com/photo-1625990637351-ee0e5e9ba5e5?auto=format&fit=crop&w=900&q=82" alt="" /><strong>Ahmedabad Football Academy</strong><small>10500 pts</small></div>
+      <div class="rank"><span>3</span><img src="https://images.unsplash.com/photo-1644664750583-1cf0430098ff?auto=format&fit=crop&w=900&q=82" alt="" /><strong>Gujarat Badminton Academy</strong><small>13700 pts</small></div>
+    </div>
+
+    <!-- QUICK TILES -->
+    <div class="quick-grid">
+      <a class="tap quick-tile" href="events.html">
+        <i class="tile-icon yellow"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 6H3v2a4 4 0 0 0 4 4M17 6h4v2a4 4 0 0 1-4 4"/></svg></i>
+        <strong>Opportunities</strong><span>Trials & tournaments</span>
+      </a>
+      <a class="tap quick-tile" href="facilities.html">
+        <i class="tile-icon blue"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-6 9 6"/><path d="M5 10v9h14v-9M9 19v-5h6v5"/></svg></i>
+        <strong>Find Talent</strong><span>Connect with athletes</span>
+      </a>
+    </div>
+
+    <!-- FEED -->
+    <div class="section-head"><div>For you</div><a class="tap see-all" href="explore.html">Academies
+      <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></a>
+    </div>
+    <div class="feed-card">
+      <div class="feed-author">
+        <img class="avatar avatar-small" src="https://images.unsplash.com/photo-1732315797079-fe90763b8bd9?auto=format&fit=crop&w=900&q=82" alt="" />
+        <div><strong>Motera Cricket Academy</strong><span>2h · Ahmedabad</span></div>
+        <div class="tap" data-toast="Post saved"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4V3Z"/></svg></div>
+      </div>
+      <p>New batch registrations open for our U-16 high performance cricket program.</p>
+      <img src="https://images.unsplash.com/photo-1732315797079-fe90763b8bd9?auto=format&fit=crop&w=900&q=82" alt="Cricket players training on a field" />
+      <div class="feed-actions"><span>♥ 254</span><span>♡ 18</span><span>⇪ 12</span></div>
+    </div>
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <a class="tap nav-item nav-active" href="home.html"><div class="nav-icon"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9"/><path d="M9 20v-7h6v7"/></svg></div><span>Home</span></a>
+    <a class="tap nav-item" href="explore.html"><div class="nav-icon"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-2 4-4 2 2-4 4-2Z"/></svg></div><span>Explore</span></a>
+    <a class="tap nav-item create-nav" href="create.html"><div class="nav-icon"><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div><span>Create</span></a>
+    <a class="tap nav-item" href="community.html"><div class="nav-icon"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><span>Community</span></a>
+    <a class="tap nav-item" href="more.html"><div class="nav-icon"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div><span>More</span></a>
+  </div>
+
+</div></div>
+<div class="toast" id="toast" style="display:none"></div>
+<script>
+function showToast(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(function(){t.style.display='none'},1800)}
+document.addEventListener('click',function(e){var t=e.target.closest('[data-toast]');if(t){showToast(t.getAttribute('data-toast'))}});
+</script>
+</body>
+</html>

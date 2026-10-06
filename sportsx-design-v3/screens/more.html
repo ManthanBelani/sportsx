@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SportX v3 — More</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css" />
+<style>.phone a.tap { color: inherit; text-decoration: none; }</style>
+</head>
+<body>
+<div class="app-shell"><div class="phone">
+
+  <div class="topbar">
+    <div class="topbar-spacer"></div>
+    <div class="topbar-title">More</div>
+    <div class="top-actions"><div class="topbar-spacer"></div></div>
+  </div>
+
+  <main class="page">
+    <a class="tap profile-summary" href="profile.html">
+      <img class="avatar" src="https://images.unsplash.com/photo-1732315797079-fe90763b8bd9?auto=format&fit=crop&w=900&q=82" alt="" />
+      <div><strong>Motera Cricket Academy <span class="verified">✓</span></strong><span>Sports Academy</span><b>View Profile ›</b></div>
+    </a>
+
+    <!-- EDIT: duplicate .menu-row to add items. Link rows use <a>, toast-only rows use <div data-toast> -->
+    <div class="menu-card">
+      <a class="tap menu-row" href="profile.html"><span>👤</span><span>My Profile</span><span>›</span></a>
+      <a class="tap menu-row" href="programs.html"><span>📅</span><span>My Training Programs</span><span>›</span></a>
+      <a class="tap menu-row" href="events.html"><span>🏆</span><span>My Events / Trials</span><span>›</span></a>
+      <a class="tap menu-row" href="athletes.html"><span>👥</span><span>My Athletes</span><span>›</span></a>
+      <a class="tap menu-row" href="facilities.html"><span>🏛</span><span>My Facilities / Venues</span><span>›</span></a>
+      <div class="tap menu-row" data-toast="My Analytics opened"><span>📊</span><span>My Analytics</span><span>›</span></div>
+      <div class="tap menu-row" data-toast="Saved opened"><span>🔖</span><span>Saved</span><span>›</span></div>
+      <a class="tap menu-row" href="notifications.html"><span>🔔</span><span>Notifications</span><span>›</span></a>
+      <a class="tap menu-row" href="messages.html"><span>✉</span><span>Messages</span><span>›</span></a>
+      <div class="tap menu-row" data-toast="Settings & Privacy opened"><span>⚙</span><span>Settings & Privacy</span><span>›</span></div>
+      <div class="tap menu-row" data-toast="Help & Support opened"><span>🛡</span><span>Help & Support</span><span>›</span></div>
+      <div class="tap menu-row logout" data-toast="Logged out"><span>↪</span><span>Logout</span></div>
+    </div>
+  </main>
+
+  <div class="bottom-nav">
+    <a class="tap nav-item" href="home.html"><div class="nav-icon">⌂</div><span>Home</span></a>
+    <a class="tap nav-item" href="explore.html"><div class="nav-icon">◎</div><span>Explore</span></a>
+    <a class="tap nav-item create-nav" href="create.html"><div class="nav-icon">＋</div><span>Create</span></a>
+    <a class="tap nav-item" href="community.html"><div class="nav-icon">👥</div><span>Community</span></a>
+    <a class="tap nav-item nav-active" href="more.html"><div class="nav-icon">▦</div><span>More</span></a>
+  </div>
+
+</div></div>
+<div class="toast" id="toast" style="display:none"></div>
+<script>
+function showToast(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(function(){t.style.display='none'},1800)}
+document.addEventListener('click',function(e){var t=e.target.closest('[data-toast]');if(t){showToast(t.getAttribute('data-toast'))}});
+</script>
+</body>
+</html>

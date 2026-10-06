@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SportX v3 — Events / Trials</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css" />
+<style>.phone a.tap { color: inherit; text-decoration: none; }</style>
+</head>
+<body>
+<div class="app-shell"><div class="phone">
+
+  <div class="topbar">
+    <a class="tap icon-tap" href="more.html">←</a>
+    <div class="topbar-title">Events / Trials</div>
+    <div class="top-actions"><div class="topbar-spacer"></div></div>
+  </div>
+
+  <main class="page subpage">
+    <div class="tabs"><div class="tap tab-active">Upcoming</div><div class="tap" data-toast="Past events — Phase 2">Past</div></div>
+
+    <!-- EDIT: duplicate .event-card to add events. Date / img / title / location / status -->
+    <div class="event-card"><div class="event-date"><b>11</b><span>NOV</span></div><img src="https://images.unsplash.com/photo-1732315797079-fe90763b8bd9?auto=format&fit=crop&w=900&q=82" alt="" /><div><strong>Open Trials · U-16 Cricket</strong><p>◉ Ahmedabad</p><span class="status-pill">Registration open</span></div><div class="tap" data-toast="Open Trials · U-16 Cricket opened">›</div></div>
+    <div class="event-card"><div class="event-date"><b>14</b><span>NOV</span></div><img src="https://images.unsplash.com/photo-1644664750583-1cf0430098ff?auto=format&fit=crop&w=900&q=82" alt="" /><div><strong>Winter Training Camp</strong><p>◉ Ahmedabad</p><span class="status-pill">Upcoming</span></div><div class="tap" data-toast="Winter Training Camp opened">›</div></div>
+    <div class="event-card"><div class="event-date"><b>17</b><span>NOV</span></div><img src="https://images.unsplash.com/photo-1732315797079-fe90763b8bd9?auto=format&fit=crop&w=900&q=82" alt="" /><div><strong>Inter Academy Cricket Tournament</strong><p>◉ Ahmedabad</p><span class="status-pill">Upcoming</span></div><div class="tap" data-toast="Inter Academy Cricket Tournament opened">›</div></div>
+    <div class="event-card"><div class="event-date"><b>20</b><span>NOV</span></div><img src="https://images.unsplash.com/photo-1644664750583-1cf0430098ff?auto=format&fit=crop&w=900&q=82" alt="" /><div><strong>State Badminton Tournament</strong><p>◉ Ahmedabad</p><span class="status-pill">Upcoming</span></div><div class="tap" data-toast="State Badminton Tournament opened">›</div></div>
+    <div class="event-card"><div class="event-date"><b>23</b><span>NOV</span></div><img src="https://images.unsplash.com/photo-1732315797079-fe90763b8bd9?auto=format&fit=crop&w=900&q=82" alt="" /><div><strong>Football Scouting Trial</strong><p>◉ Ahmedabad</p><span class="status-pill">Upcoming</span></div><div class="tap" data-toast="Football Scouting Trial opened">›</div></div>
+  </main>
+
+  <div class="sticky-action"><div class="tap primary" data-toast="Create event form opened">＋ Create Event</div></div>
+
+  <div class="bottom-nav">
+    <a class="tap nav-item" href="home.html"><div class="nav-icon">⌂</div><span>Home</span></a>
+    <a class="tap nav-item" href="explore.html"><div class="nav-icon">◎</div><span>Explore</span></a>
+    <a class="tap nav-item create-nav" href="create.html"><div class="nav-icon">＋</div><span>Create</span></a>
+    <a class="tap nav-item" href="community.html"><div class="nav-icon">👥</div><span>Community</span></a>
+    <a class="tap nav-item nav-active" href="more.html"><div class="nav-icon">▦</div><span>More</span></a>
+  </div>
+
+</div></div>
+<div class="toast" id="toast" style="display:none"></div>
+<script>
+function showToast(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(function(){t.style.display='none'},1800)}
+document.addEventListener('click',function(e){var t=e.target.closest('[data-toast]');if(t){showToast(t.getAttribute('data-toast'))}});
+</script>
+</body>
+</html>

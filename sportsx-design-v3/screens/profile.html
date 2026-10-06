@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SportX v3 — Academy Profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css" />
+<style>.phone a.tap { color: inherit; text-decoration: none; }</style>
+</head>
+<body>
+<div class="app-shell"><div class="phone">
+
+  <div class="topbar">
+    <a class="tap icon-tap" href="more.html">←</a>
+    <div class="topbar-title">Academy Profile</div>
+    <div class="top-actions"><div class="topbar-spacer"></div></div>
+  </div>
+
+  <main class="page subpage">
+    <!-- EDIT: swap the two img src values to change cover / avatar -->
+    <div class="profile-hero">
+      <img src="https://images.unsplash.com/photo-1732315797079-fe90763b8bd9?auto=format&fit=crop&w=900&q=82" alt="Cricket academy team" />
+      <div class="profile-avatar"><img src="https://images.unsplash.com/photo-1644664750583-1cf0430098ff?auto=format&fit=crop&w=900&q=82" alt="" /></div>
+    </div>
+
+    <div class="profile-title">
+      <strong>Motera Cricket Academy <span class="verified">✓</span></strong>
+      <p>◉ Motera, Ahmedabad · Gujarat</p>
+      <span>★ 4.8 (320 reviews)</span>
+    </div>
+
+    <div class="profile-actions">
+      <div class="tap primary" data-toast="Profile editor opened">✎ Edit Profile</div>
+      <div class="tap chip" data-toast="Profile shared">⇪ Share</div>
+    </div>
+
+    <div class="tabs">
+      <div class="tap tab-active">About</div>
+      <div class="tap" data-toast="Programs tab — Phase 2">Programs</div>
+      <div class="tap" data-toast="Facilities tab — Phase 2">Facilities</div>
+      <div class="tap" data-toast="Reviews tab — Phase 2">Reviews</div>
+    </div>
+
+    <!-- EDIT: text + details rows below -->
+    <section class="content-card">
+      <div class="section-head"><div>About</div></div>
+      <p>Professional cricket academy with world-class coaching, certified trainers, and high-performance programs for aspiring athletes.</p>
+      <div class="details">
+        <div><span>Founded</span><strong>2018</strong></div>
+        <div><span>Age Group</span><strong>U-8 to U-19</strong></div>
+        <div><span>Students</span><strong>320+</strong></div>
+        <div><span>Coaching staff</span><strong>12 coaches</strong></div>
+        <div><span>Languages</span><strong>English, Hindi, Gujarati</strong></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="bottom-nav">
+    <a class="tap nav-item" href="home.html"><div class="nav-icon">⌂</div><span>Home</span></a>
+    <a class="tap nav-item" href="explore.html"><div class="nav-icon">◎</div><span>Explore</span></a>
+    <a class="tap nav-item create-nav" href="create.html"><div class="nav-icon">＋</div><span>Create</span></a>
+    <a class="tap nav-item" href="community.html"><div class="nav-icon">👥</div><span>Community</span></a>
+    <a class="tap nav-item nav-active" href="more.html"><div class="nav-icon">▦</div><span>More</span></a>
+  </div>
+
+</div></div>
+<div class="toast" id="toast" style="display:none"></div>
+<script>
+function showToast(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(function(){t.style.display='none'},1800)}
+document.addEventListener('click',function(e){var t=e.target.closest('[data-toast]');if(t){showToast(t.getAttribute('data-toast'))}});
+</script>
+</body>
+</html>
