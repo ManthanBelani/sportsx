@@ -1,8 +1,145 @@
 # SportX India — Design Screen to API Endpoint Wiring
 
-Maps each Flutter screen (by design screen ID from `sportsx/src/screens/`) to its backend API endpoints in `sportx-api`.
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
+Maps each Flutter screen to its backend API endpoints in `sportx-api`.
+
+> **⚠️ [SUPERSEDED — see Backend-Feature-Delta.md].** The old screen IDs below (`S1`–`S12`, `A#`, `SP#`, `O#`, `C#`, `AC#`, `AD#`) referenced `sportsx/src/screens/` and the sponsor role. The v3 source of truth is `sportsx-design-v3/new_design_docs/SCREEN_INVENTORY.md` (129 screens, 6 roles; sponsor removed). **§v3 (below) is authoritative** — it maps new screen IDs to the new endpoints in `Backend-Feature-Delta.md` §11. The old tables are retained for history.
 
 ---
+
+## v3 wiring (authoritative) — new screens → new endpoints
+
+> Endpoints per `Backend-Feature-Delta.md` §11; every role profile now carries its **30 fields** (`SportX_Mandatory_Fields.md`). Base `/api/v1`, Bearer Sanctum. Status: ✅ exists · 🆕 new · 🔁 changed · ❓ verify · 🅿️ P1.
+
+### Auth, OTP & guardian (A.1–A.10)
+
+| Screen | Flutter (target) | Endpoints |
+|---|---|---|
+| A.1 Splash | `splash_screen.dart` | `GET /auth/me` |
+| A.2 Role Selection | `role_selection_screen.dart` | (local) — 5 roles |
+| A.3 Sign Up | `sign_up_screen.dart` | `POST /auth/register` 🔁 · `POST /auth/send-otp` 🆕 · (`POST /auth/google` ❓) |
+| A.4 OTP Verification | `otp_screen.dart` | `POST /auth/verify-otp` 🆕 · `POST /auth/resend-otp` 🆕 |
+| A.5 Login | `login_screen.dart` | `POST /auth/login` 🔁 (password + OTP branch) |
+| A.6 Forgot / Reset | `forgot_password_screen.dart` | `POST /auth/forgot-password` 🔁 · `POST /auth/reset-password` 🔁 |
+| A.9 Guardian Consent | `guardian_consent_screen.dart` | `POST /guardian/consent` 🆕 · `POST /guardian/verify-otp` 🆕 |
+| A.10 Verification Request | `verification_screen.dart` | `POST/GET /me/verification` 🆕 |
+| S.29 Logout | `settings_screen.dart` | `POST /auth/logout` ✅ |
+| S.22 Change password | `settings_screen.dart` | `POST /me/change-password` 🆕 |
+
+### Onboarding (AT.2, CO.1, AC.1, OR.1, SC.1)
+
+| Screen | Endpoints |
+|---|---|
+| AT.2 Athlete | `POST /onboarding/athlete` ✅ (+ guardian gate) |
+| CO.1 Coach | `POST /onboarding/coach` ✅ |
+| AC.1 Academy | `POST /onboarding/academy` ✅ |
+| OR.1 Organizer | `POST /onboarding/organizer` ✅ |
+| SC.1 Scout | `POST /onboarding/scout` 🆕 |
+| ~~Sponsor~~ | ~~`POST /onboarding/sponsor`~~ ❌ **REMOVED** |
+| AT.6 Completion checklist | `GET /me/completion-checklist` 🆕 |
+
+### Home, Explore, search, leaderboard, saved (S.1–S.7, S.20)
+
+| Screen | Endpoints |
+|---|---|
+| S.1 / role Homes (AT.1/CO.2/AC.2/OR.2/SC.2) | `GET /me/home` 🆕 (unified role-aware dashboard) · `GET /leaderboard/strip` 🆕 |
+| S.2 Explore — All | `GET /explore` 🆕 (grouped athletes/coaches/academies/events/opportunities) |
+| S.3 Category list | `GET /academies` · `/coaches` · `/trials` · `/tournaments` · `/opportunities` · `/programs` · `/scout` |
+| S.4 Filter & Sort | `GET /meta/positions` 🆕 · `/meta/facilities` 🆕 (+ sports/cities/age-groups) |
+| S.5 Universal Search | `GET /search` 🔁 (adds `athletes` group); `POST /me/recent-searches` 🆕 |
+| S.6 Leaderboard | `GET /leaderboard` 🆕 (tabs, sport/location/age, podium+ranks) |
+| S.7 Leaderboard Info | (client static) |
+| S.20 Saved | `GET /me/saved` 🔁 (morphs + post/opportunity/event) |
+
+### Profiles (D.1–D.5, A.10) — 30 fields per role
+
+| Screen | Endpoints |
+|---|---|
+| D.1 Athlete Profile | `GET /me/profile` ✅ · `PUT /me/profile` 🔁 · `PUT /me/profile/sports` 🔁 (+role/level/exp/primary) · `GET /athletes/{id}` 🔁 |
+| D.2 Coach Profile | `GET/PUT /me/coach-profile` ✅ · `GET /coaches/{id}` ✅ |
+| D.3 Academy Profile | `GET/PUT /me/academy` ✅ · `GET /academies/{id}` ✅ |
+| D.4 Organizer Profile | `GET/PUT /me/organizer-profile` 🆕 · `GET /organizers/{id}` 🆕 |
+| D.5 Scout Profile | `GET/PUT /me/scout-profile` 🆕 · `GET /scouts/{id}` 🆕 |
+| Achievements (S.11/AT.5) | `GET/POST /me/achievements` 🆕 · `PUT/DELETE /me/achievements/{id}` 🆕 |
+| Media (S.10/S.28) | `POST /media/upload` ✅ · `PUT /media/reorder` ✅ · `GET /me/media` 🆕 |
+| Privacy (S.22/AT.10) | `PUT /me/privacy` 🆕 · `GET/PUT /me/guardian-controls` 🆕 |
+| A.10 Verification | `POST/GET /me/verification` 🆕 |
+
+### Events, trials & registrations (D.6–D.8, AT.9, OR.4–OR.8)
+
+| Screen | Endpoints |
+|---|---|
+| D.6 Event/Trial Detail | `GET /events/{id}` 🆕 (or `/trials/{id}`+`/tournaments/{id}`) |
+| D.7 Registration Form | `POST /trials/{id}/register` · `POST /tournaments/{id}/register` ✅ |
+| D.8 Confirmation | `GET /registrations/{id}` ✅ |
+| OR.5 Create/Edit Event | `POST /me/events?type=` 🆕/🔁 |
+| OR.4/AC.6/CO.6 My Events | `GET /me/events` 🆕 |
+| OR.7 Registrations | `GET /events/{id}/registrations` ✅ · `POST /registrations/{id}/approve|reject` ✅ (+notify) |
+| OR.7 Export | `GET /events/{id}/registrations/export` 🆕 |
+| AT.9 My Registrations | `GET /me/registrations` 🆕 · `DELETE /me/registrations/{id}` 🆕 |
+| OR.9/OR.10/OR.11/OR.12/OR.14 | `GET/POST /events/{id}/schedule|gallery|results|analytics|announce` 🅿️ |
+
+### Opportunities, programs, facilities, enquiries (D.9–D.13, AT.8, CO.4/CO.5, AC.7/AC.8, SC.11/SC.12)
+
+| Screen | Endpoints |
+|---|---|
+| D.9 Opportunity Detail | `GET /opportunities` 🆕 · `GET /opportunities/{id}` 🆕 |
+| D.10 Apply / Pitch | `POST /opportunities/{id}/apply` 🆕 |
+| AT.8 My Opportunities | `GET /me/opportunities?type=applied\|saved\|created` 🆕 |
+| AC.9/SC.12 Create Opportunity | `POST /me/opportunities` 🆕 · `PUT/PATCH /me/opportunities/{id}` 🆕 |
+| Applicant review (P1) | `GET /opportunities/{id}/applications` 🅿️ · `PATCH …/applications/{app}` 🅿️ |
+| CO.4/CO.5/AC.4 Programs | `GET /me/programs` 🆕 · `POST/PUT /me/programs` 🆕 |
+| D.11 Program Detail | `GET /programs/{id}` 🆕 |
+| D.12 Enquiry | `POST /programs/{id}/enquire` 🆕 · `POST /enquiries` 🔁 (subject: program/opportunity) |
+| AC.7/AC.8 Facilities | `GET /me/facilities` 🆕 · `POST/PUT/DELETE /me/facilities` 🆕 |
+| D.13 Facility Detail | `GET /facilities/{id}` 🆕 |
+| OR.13 Venues | `GET/POST/PUT /me/venues` 🅿️ |
+
+### Social, network, messaging (S.8/S.9/S.27/S.28, S.12/S.19, S.17/S.18)
+
+| Screen | Endpoints |
+|---|---|
+| S.9 Create Post | `POST /posts` ❓/🆕 |
+| S.27 Post Detail | `GET/PATCH/DELETE /posts/{id}` ❓/🆕 · `POST/DELETE /posts/{id}/like` ❓/🆕 · `GET/POST /posts/{id}/comments` ❓/🆕 |
+| Feed (S.1 tabs) | `GET /feed` ❓/🆕 |
+| S.19 Connections | `POST/DELETE /follow/{type}/{id}` 🆕 · `GET /me/followers|following` 🆕 · `POST /connections` 🆕 · `GET /me/connections` 🆕 · `PATCH/DELETE /connections/{id}` 🆕 |
+| S.12 Network (P1) | `GET /me/suggestions` 🅿️ |
+| S.17/S.18 Chat | `GET /conversations` ❓/🆕 · `GET /conversations/{id}` ❓/🆕 · `POST /conversations/{id}/messages` ❓/🆕 · `PATCH /conversations/{id}/read` 🆕 |
+| S.23 Blocks/Report | `POST/GET/DELETE /blocks` 🆕 · `POST /reports` 🔁 (morphs + user/post) · `GET /me/reports` 🆕 |
+
+### Scouting (SC.2–SC.13)
+
+| Screen | Endpoints |
+|---|---|
+| SC.2 Dashboard | `GET /me/home` 🆕 (fold-in) |
+| SC.4 Discover Talents | `GET /athletes` 🔁 · `GET /search` 🔁 |
+| SC.5/SC.6 Shortlist | `GET/POST/DELETE /me/shortlist` 🔁 (status/tags/notes) |
+| SC.10 Observation | `POST/GET /observations` 🆕 |
+| SC.13 Contact | `POST /athletes/{id}/contact` 🆕 (guardian routing U-18) |
+| SC.7/SC.8/SC.9 Reports | `POST/GET /scout-reports` 🅿️ · `GET /scout/compare?ids=` 🅿️ |
+
+### Notifications, settings, admin, meta
+
+| Screen | Endpoints |
+|---|---|
+| S.16 Notifications | `GET /me/notifications?tab=` 🔁 · `PATCH …/read` · `POST …/read-all` ✅ · `POST /me/device-tokens` ✅ |
+| S.22–S.25 Settings/Help | `GET/PUT /me/settings` 🔁 · `GET /meta/faqs` 🆕 · `POST /support/contact` 🆕 |
+| AD.1/AD.2 Admin | `POST /admin/login` · `/admin/verify-2fa` ✅ · `GET /admin/dashboard` ✅ |
+| AD.3 Users | `GET /admin/users` 🆕 · `GET/POST /admin/users/{id}` · `…/suspend|ban` 🆕 |
+| AD.4 Verification | `GET/POST /admin/verification` · `…/{id}/approve|reject` 🆕 |
+| AD.5/AD.6 Content | `GET/POST /admin/content/{type}` 🔁 (+opportunities/programs/facilities/posts) |
+| AD.7/AD.8 Moderation | `/admin/moderation/**` 🔁 (+user/post targets, suspend) |
+| AD.9 Master data | `GET/POST /admin/categories/**` ✅/🆕 (+positions) |
+| AD.10 Expiry | `/admin/expiry*` 🔁 (+opportunity type) |
+| AD.11 Leaderboard config (P1) | `GET/PUT /admin/leaderboard-config` · `POST /admin/leaderboard/reset-season` 🅿️ |
+| AD.12 Broadcast (P1) | `POST/GET /admin/broadcasts` 🅿️ |
+| Master data | `GET /meta/sports|cities|age-groups|positions|facilities|trending-searches` |
+| Analytics | `POST /analytics/events` 🆕 |
+
+---
+
+## [SUPERSEDED] old wiring (pre-v3, incl. Sponsor)
 
 ## Auth Flow
 
@@ -38,14 +175,16 @@ Maps each Flutter screen (by design screen ID from `sportsx/src/screens/`) to it
 | C1 | Coach Onboarding | `coach_onboarding_screen.dart` | `POST /api/v1/onboarding/coach` |
 | AC1 | Academy Onboarding | `academy_onboarding_screen.dart` | `POST /api/v1/onboarding/academy` |
 | — | Organizer Onboarding | `organizer_onboarding_screen.dart` | `POST /api/v1/onboarding/organizer` |
-| SP1 | Sponsor Onboarding | `sponsor_onboarding_screen.dart` | `POST /api/v1/onboarding/sponsor` |
+| SC1 | **[SUPERSEDED]** Scout Onboarding (new) | `scout_onboarding_screen.dart` | `POST /api/v1/onboarding/scout` |
+| ~~SP1~~ | ~~Sponsor Onboarding~~ | — | **[REMOVED — see Backend-Feature-Delta.md §4]** |
 
 **Onboarding API Controller:** `OnboardingController`
 - `POST /onboarding/athlete` → athlete()
 - `POST /onboarding/coach` → coach()
 - `POST /onboarding/academy` → academy()
 - `POST /onboarding/organizer` → organizer()
-- `POST /onboarding/sponsor` → sponsor()
+- `POST /onboarding/scout` → scout() 🆕
+- ~~`POST /onboarding/sponsor`~~ → **[REMOVED]**
 
 ---
 
@@ -219,6 +358,8 @@ Maps each Flutter screen (by design screen ID from `sportsx/src/screens/`) to it
 
 ## Sponsorship / Sponsor Features
 
+> **[SUPERSEDED — see Backend-Feature-Delta.md §4].** The sponsor role and all `sponsor_*` endpoints are **REMOVED**; sponsorship is now an Opportunity type (`/opportunities/**`, see §v3). Table retained for history.
+
 | Screen ID | Screen Name | Flutter File | API Endpoints |
 |-----------|-------------|--------------|---------------|
 | A23 | Apply/Pitch to Sponsor | `sponsor_pitch_screen.dart` | `POST /api/v1/sponsorships/{sponsorship}/apply` |
@@ -339,9 +480,11 @@ Maps each Flutter screen (by design screen ID from `sportsx/src/screens/`) to it
 
 ## Summary
 
+> **[SUPERSEDED]** old summary (~90 screens, incl. Sponsor). New roll-up below.
+
 | Category | Screens | API Endpoints Used |
 |----------|---------|-------------------|
-| Auth | 8 | 8 |
+| Auth / OTP / Guardian | 10 | 8 |
 | Onboarding | 6 | 5 |
 | Directory/Discovery | 14 | 12 |
 | Search | 3 | 1 |
@@ -350,9 +493,11 @@ Maps each Flutter screen (by design screen ID from `sportsx/src/screens/`) to it
 | Enquiries | 5 | 5 |
 | Trial Registration | 7 | 11 |
 | Tournament Registration | 10 | 15 |
-| Sponsorship | 11 | 18 |
+| Sponsorship | 11 | 18 — **[REMOVED → opportunities]** |
 | Notifications | 4 | 4 |
 | Settings | 4 | 4 |
 | Activity Hub | 5 | 5 |
 | Admin | 13 | 10+ |
-| **Total** | **~90** | **~100** |
+| **Total (old)** | **~90** | **~100** |
+
+**New design (v3) roll-up** (`Backend-Feature-Delta.md` §11 end): P0 **~70 new endpoints / ~25 changed / ~10 verify-first**; P1 **~30 new**; sponsor routes (~12) removed. Screens: **129** (`SCREEN_INVENTORY.md`), across 6 roles.

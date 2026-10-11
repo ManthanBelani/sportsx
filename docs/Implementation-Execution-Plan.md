@@ -1,5 +1,7 @@
 # SportX India — Remaining Work: Execution Plan
 
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
 **Created:** 2026-08-11
 **Goal:** Move from "UI + API exist but disconnected" (≈36% of screens wired) to production-ready.
 **Companion doc:** `docs/UI-Completion-And-Backend-Wiring-Plan.md` (current status / evidence)
@@ -7,6 +9,10 @@
 ---
 
 ## How to read this plan
+
+> **v3 delta note:** this plan predates v3. Per `Backend-Feature-Delta.md` §9 the P0 build order is: roles/auth (OTP + guardian consent) → verification → **opportunities** → **programs/facilities** → **social** (posts/follows/connections/chat/blocks) → **leaderboard** → scout extensions → admin P0 (users, verification queue) → notifications → search. Items here that say `sponsor`/`sponsorships` are superseded by `opportunities`; add **programs, facilities, social, chat, follow/connect, leaderboard, verification queue, user management, positions** which are not yet represented below.
+>
+> **Already-partially-built check:** the delta flags that posts/feed/chat tables and `/posts` may already exist — verify Phase 4A/4C before rebuilding.
 
 - Work is split into **6 phases (0–5)**. Phases 0 and 1 unblock everything; 2–4 are largely **independent and parallelizable** per module.
 - Each task names the **exact file** and the endpoint/provider it consumes. The API endpoints already exist unless marked **[NEW BACKEND]**.
@@ -24,13 +30,13 @@ Unblocks Phases 1–2. No screens touched by the user yet.
 
 - [ ] **0.1 Add detail (single-record) providers** in `shared/providers/directory_provider.dart`:
   - `academyDetailProvider = FutureProvider.family<Academy, String>((ref, id) => ...)`
-  - Same for `coach`, `trial`, `tournament`, `scholarship`, `sponsorship`, `sportsVenue` — each `GET /{type}/{id}`.
+  - Same for `coach`, `trial`, `tournament`, `opportunity`, `program`, `facility`, `sportsVenue` — each `GET /{type}/{id}`. *(v3: `scholarship`/`sponsorship` collapse into `opportunity`.)*
 - [ ] **0.2 Create the missing module providers** (one file each, mirror `coach_provider.dart`):
   - `features/saved/presentation/providers/saved_provider.dart` → `/me/saved` (list + save + unsave)
   - `features/trial/presentation/providers/trial_provider.dart` → trial register + provider trials (`/me/trials`)
   - `features/tournament/presentation/providers/tournament_provider.dart` → register + `/me/tournaments` + capacity + results
   - `features/organizer/presentation/providers/organizer_provider.dart` → re-exports tournament provider for organizer shell
-  - `features/sponsor/presentation/providers/sponsor_provider.dart` → `/me/sponsorships`, `/athletes`, applications, shortlist
+  - `features/opportunity/presentation/providers/opportunity_provider.dart` → `/me/opportunities` (Created/Applied/Saved), `/opportunities/{id}/applications`, shortlist *(replaces `sponsor_provider.dart`; `sponsor` role removed)*
   - `features/shared/presentation/providers/enquiry_provider.dart` → `/me/enquiries`, `/enquiries/{id}`, reply
   - `features/shared/presentation/providers/activity_provider.dart` → `/me/activity`, `/me/registrations`, `/me/applications`
   - `features/academy/presentation/providers/academy_provider.dart` → `/me/academy` + `/me/trials` (academy shell)
@@ -53,7 +59,7 @@ Highest ROI: providers already exist, screens only switch from `dummyItems` to `
   - (scholarship + sports-venue list already wired — verify only)
 - [ ] **1.2 Detail screens** → `ConsumerWidget` + `FutureBuilder`/`ref.watch(xDetailProvider(id))` → real params into `DetailPageTemplate`:
   - `academy_detail_screen.dart`, `coach_detail_screen.dart`, `trial_detail_screen.dart`, `tournament_detail_screen.dart`
-  - scholarship/sponsorship/sports-venue detail routes (Phase 0.1 providers)
+  - opportunity/program/facility/sports-venue detail routes (Phase 0.1 providers)
 - [ ] **1.3 Saved** — `saved_screen.dart` → `savedProvider` (5 tabs filter by type), wire save/unsave toggle on directory cards.
 - [ ] **1.4 Home `search_screen.dart`** (bottom-nav tab) → reuse `searchProvider` (currently separate from `universal_search_screen`).
 
@@ -77,7 +83,7 @@ Each sub-phase is independent — can be assigned to separate Agent Manager work
 ### 2B Coach *(≈0.5 day)*
 - [ ] `coach_onboarding_screen.dart` → `POST /onboarding/coach`
 - [ ] `coach_profile_posting_screen.dart` → `PUT /me/coach-profile`
-- [ ] `coach_directory_screen.dart` (sponsor-directory) → `/coaches` with sponsor filter
+- [ ] `coach_directory_screen.dart` (provider-directory) → `/coaches` with provider filter
 - [ ] `shared/.../enquiry_inbox_screen.dart` → `/me/enquiries`
 - [ ] `shared/.../enquiry_detail_screen.dart` → `/enquiries/{id}` + reply + markRead
 
@@ -89,14 +95,17 @@ Each sub-phase is independent — can be assigned to separate Agent Manager work
 - [ ] `capacity_management_screen.dart` → capacity GET/PUT + payment PATCH
 - [ ] `results_publishing_screen.dart` / `results_view_screen.dart` → Results store/publish/index
 
-### 2D Sponsor *(≈1 day)*
-- [ ] `sponsor_onboarding_screen.dart` → `/onboarding/sponsor`
-- [ ] `sponsorship_posting_screen.dart`, `my_sponsorships_management_screen.dart` → `/me/sponsorships`
+### 2D Opportunities / Provider Ops *(≈1 day)* *(was Sponsor)*
+> **v3:** `sponsor` role removed. The same screens serve academy/organizer/coach/scout as opportunity providers.
+- [ ] `sponsorship_posting_screen.dart` → `POST /opportunities` (provider-scoped)
+- [ ] `my_sponsorships_management_screen.dart` → `/me/opportunities?tab=created`
 - [ ] `athlete_discovery_screen.dart` → `/athletes`; `athlete_profile_view_screen.dart` → `/athletes/{id}`
-- [ ] `applications_inbox_screen.dart` / `application_detail_screen.dart` → applications list + update
+- [ ] `applications_inbox_screen.dart` / `application_detail_screen.dart` → `/opportunities/{id}/applications` + shortlist/decline
 - [ ] `shortlist_screen.dart` → `/me/shortlist`
-- [ ] `sponsor_dashboard_screen.dart` → `/me/activity` + sponsor metrics
-- [ ] `shared/.../sponsor_pitch_screen.dart` → `POST /sponsorships/{id}/apply`
+- [ ] `shared/.../sponsor_pitch_screen.dart` → `POST /opportunities/{id}/applications`
+- [ ] `sponsor_dashboard_screen.dart` → repurpose to provider dashboard (`/me/activity`)
+- [ ] **[REMOVED]** `sponsor_onboarding_screen.dart` / `/onboarding/sponsor` — sponsor role gone
+- [ ] `talent_scout_onboarding_screen.dart` → `POST /onboarding/scout` (scout replaces talent_scout)
 
 ### 2E Athlete / shared remainder *(≈0.5 day)*
 - [ ] `trial_registration_screen.dart` → `POST /trials/{id}/register`; `tournament_registration_screen.dart` → tournaments equivalent
@@ -104,13 +113,23 @@ Each sub-phase is independent — can be assigned to separate Agent Manager work
 - [ ] `activity_hub_screen.dart` → `/me/activity` (+ registrations/applications tabs)
 - [ ] `athlete/.../media_gallery_screen.dart` → `mediaProvider`
 
-### 2F Talent Scout *(≈1 day)*
-- [ ] `talent_scout_onboarding_screen.dart` → `POST /onboarding/talent-scout`
+### 2F Scout *(≈1 day)* *(was Talent Scout)*
+- [ ] `talent_scout_onboarding_screen.dart` → `POST /onboarding/scout`
 - [ ] `talent_scout_dashboard_screen.dart` → `/me/scout-profile` + stats
 - [ ] `talent_scout_athlete_discovery_screen.dart` → `/athletes` with advanced filters (sport, age, location, skill, achievements)
 - [ ] `talent_scout_athlete_profile_view_screen.dart` → `/athletes/{id}` (public view)
 - [ ] `talent_scout_shortlist_screen.dart` → `/me/shortlist` (scout's saved athletes)
 - [ ] `talent_scout_connection_screen.dart` → `/athletes/{id}/connect` (enquiry/connection request)
+
+### 2G New v3 P0 modules *(≈2–3 days)*
+- [ ] **Opportunities** — unified list/detail + in-app apply + status tracking (replaces scholarships/sponsorships)
+- [ ] **Programs** — provider program CRUD + enquiry
+- [ ] **Facilities** — academy facility CRUD + public listing
+- [ ] **Social** — feed/posts/likes/comments *(verify existing tables first)*
+- [ ] **Follow / connect** — `follows` + `connection_requests`
+- [ ] **1:1 chat** — conversations + messages (text P0)
+- [ ] **Leaderboard** — points engine + `GET /leaderboard`
+- [ ] **Verification / guardian consent** — verification submissions + admin queue; minor signup consent
 
 **Exit criteria:** all provider-suite screens show live data; `grep ref.watch|ref.read` count ≥ 80.
 
@@ -124,6 +143,7 @@ Each sub-phase is independent — can be assigned to separate Agent Manager work
 - [ ] `admin_dashboard_screen.dart` → `GET /admin/dashboard`
 - [ ] `admin_content_list_screen.dart` / `admin_content_picker_screen.dart` → `/admin/content*`
 - [ ] `notification_targeting_screen.dart` → notification template endpoints
+- [ ] `pending_approvals_screen.dart` / `user_detail_verify_screen.dart` / `manage_users_screen.dart` → verification queue (AD.4) + user management (AD.3)
 
 ---
 
@@ -142,12 +162,22 @@ These design features have **no API yet**.
 - [ ] `ConnectionController`: request, accept, list, requests
 - [ ] Wire `my_connections_screen.dart` + `connection_requests_screen.dart` + Talent Scout connection flow (TS6)
 
-### 4C Social feed  *[NEW BACKEND]* *(scope decision needed)*
-- [ ] Posts + likes/comments models + `PostController`
+### 4C Social feed  *[NEW BACKEND]* *(v3: now P0 — verify partial)*
+- [ ] Posts + likes/comments models + `PostController` *(delta §9: posts/post_likes/post_comments and `/posts` may already exist — verify before building)*
 - [ ] Wire `create_post_screen.dart` (already wired to something — confirm) + `post_detail_screen.dart`
 - [ ] Home feed tab integration
 
-**Exit criteria:** chat + connections + social end-to-end with seeded data.
+### 4D Leaderboard  *[NEW BACKEND]* *(v3 P0)*
+- [ ] `leaderboard_scores` + `leaderboard_seasons` + recalculation job
+- [ ] `GET /leaderboard` (sport/location/age filters, podium + ranks 4–10; minors anonymized)
+- [ ] Wire home/leaderboard screens
+
+### 4E Blocks & verification  *[NEW BACKEND]* *(v3 P0)*
+- [ ] `blocks` table + block/unblock endpoints; enforce in messaging/follow
+- [ ] `verification_requests` + admin verification queue endpoints (AD.4)
+- [ ] `guardian_consents` + minor signup consent
+
+**Exit criteria:** chat + connections + social + leaderboard + verification end-to-end with seeded data.
 
 ---
 
@@ -169,7 +199,7 @@ Carry-over from the wiring plan; do in parallel with Phase 4.
 | Milestone | Phases | Effort | Cumulative |
 |-----------|--------|--------|------------|
 | M1 — Foundation + directories wired | 0 + 1 | 2–2.5 d | 2–2.5 d |
-| M2 — Provider suites wired (6 roles including Talent Scout) | 2A–2F | 4–5 d | 6–7.5 d |
+| M2 — Provider suites wired (roles: athlete, coach, academy, organizer, scout, admin) | 2A–2F | 4–5 d | 6–7.5 d |
 | M3 — Admin complete | 3 | 0.5 d | 6.5–8 d |
 | M4 — Chat/Connections/Social live | 4 | 3–4 d | 9.5–12 d |
 | M5 — Production ready | 5 | 2–3 d | 11.5–15 d |
@@ -180,7 +210,7 @@ A single dev: ~2.5–3 weeks. **Parallelized (Agent Manager, one worktree per mo
 
 ## Parallelization strategy (Agent Manager)
 
-Phase 2 sub-phases (2A Academy, 2B Coach, 2C Organizer, 2D Sponsor, 2E Athlete/shared, 2F Talent Scout) touch **disjoint file sets** and all depend only on Phase 0. Run them as 6 parallel worktree sessions, each with:
+Phase 2 sub-phases (2A Academy, 2B Coach, 2C Organizer, 2D Opportunities/Provider Ops, 2E Athlete/shared, 2F Scout) touch **disjoint file sets** and all depend only on Phase 0. Run them as 6 parallel worktree sessions, each with:
 - The provider file from Phase 0.x as a dependency (merge Phase 0 to base branch first),
 - Module-specific screen list,
 - Exit grep check + `flutter analyze` on the module.
@@ -195,4 +225,4 @@ Phases 4A/4B/4C are also mutually independent once their migrations land.
 2. `grep -rl "ref.watch\|ref.read\|dioProvider" sportx_app/lib/features --include="*_screen.dart" | wc -l` → **≥ 85**.
 3. Every Phase-4 feature has a backend + wired screen + a passing integration test.
 4. `flutter analyze` clean; admin routes behind 2FA; media behind signed URLs.
-5. Manual smoke per role: athlete, coach, academy, organizer, sponsor, admin — full happy path against staging API.
+5. Manual smoke per role: athlete, coach, academy, organizer, scout, admin — full happy path against staging API.

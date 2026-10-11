@@ -1,6 +1,10 @@
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
 # API Specification — SportX India
 
 Full endpoint listing for the Laravel REST API. Every endpoint maps to a feature in `Functional-Requirements.md` and a use case in `Use-Cases.md`.
+
+> **v3 additions:** the endpoint catalog now follows `Backend-Feature-Delta.md` §11. Each row carries a **Status** tag: `EXISTS` (old backend, keep) · `NEW` (build) · `CHANGED` (modify) · `VERIFY` (partially built — check `sportx-api` first) · `P1` (MVP+ wave) · `REMOVED`. **Role model:** `athlete, coach, academy, organizer, scout, admin` — the old `sponsor` role is **REMOVED** (sponsorship is now an `opportunity` type).
 
 > **Conventions & assumptions**
 > - **Base URL:** `/api/v1` — AS-15.
@@ -17,93 +21,136 @@ Full endpoint listing for the Laravel REST API. Every endpoint maps to a feature
 
 ---
 
-## 1. Authentication
+## 1. Authentication & OTP
 
-| Method | Path | Auth | Purpose | Source |
-|---|---|---|---|---|
-| POST | `/auth/register` | — | Create account; issues token directly (email/password only, no OTP). | FR-AUTH-2,3 |
-| POST | `/auth/verify-email` | — | Verify email with token (not OTP-based). | FR-AUTH-4 |
-| POST | `/auth/login` | — | Login with email + password; issue token. | FR-AUTH-5 |
-| POST | `/auth/logout` | Any | Revoke token. | — |
-| POST | `/auth/forgot-password` | — | Request password reset. | S5 |
-| POST | `/auth/reset-password` | — | Reset password with token. | S5 |
+> **v3 (D1):** OTP signup/login is **P0 again** — phone **or** email + 6-digit OTP. The old "no OTP / email-only / token-link-only" decision is **[SUPERSEDED — see Backend-Feature-Delta.md]**. Password login is **kept alongside** OTP.
 
-> **Note:** Google OAuth (FR-AUTH-12) is deferred to Phase 4.
-> **Note:** There is NO OTP verification flow. Registration returns token immediately.
-> **Note:** There is NO resend-otp endpoint currently implemented.
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| POST | `/auth/register` | — | CHANGED | Create account; `role` = `athlete/coach/academy/organizer/scout`; phone **or** email; triggers OTP (no instant token). | FR-AUTH-2,3; BE-M1.1 |
+| POST | `/auth/send-otp` | — | NEW | Send 6-digit OTP via `channel=email\|phone`; 60s cooldown, max 5 attempts. | A.3/A.4; BE-M1.1 |
+| POST | `/auth/verify-otp` | — | NEW | Verify OTP; issue token + `needs_onboarding`; sets `email_verified_at`/`phone_verified_at`. | A.4; BE-M1.1 |
+| POST | `/auth/resend-otp` | — | NEW | Re-send OTP (rate-limited; Flutter already calls this — currently 404). | A.4; BE-M1.1 |
+| POST | `/auth/login` | — | CHANGED | Keep email+password; **add** phone/email + OTP branch. | FR-AUTH-5 |
+| POST | `/auth/logout` | Any | EXISTS | Revoke token. | — |
+| GET | `/auth/me` | Any | EXISTS | Session check (already used by app). | — |
+| POST | `/auth/forgot-password` | — | P1 | Token-link exists; add OTP variant. | A.6; BE-P1.12 |
+| POST | `/auth/reset-password` | — | P1 | Same as above. | A.6; BE-P1.12 |
+| POST | `/auth/google` | — | P1 | Google sign-in shown on Sign Up wireframe; old spec deferred (confirm §8 D9). | A.3 |
+| POST | `/guardian/consent` | — | NEW | Guardian name/phone/relationship → OTP to guardian (minors). | A.9; BE-M1.4 |
+| POST | `/guardian/verify-otp` | — | NEW | Verify guardian consent; unlocks minor's profile. | A.9; BE-M1.4 |
+| GET/PUT | `/me/guardian-controls` | Athlete | NEW | Consent status, message/visibility prefs, leaderboard name mode. | AT.10; BE-M1.4 |
+| GET | `/me/completion-checklist` | Any | NEW | Per-role completion % + missing items with deep-link keys. | AT.6; BE-M1.6 |
+| POST | `/me/change-password` | Any | NEW | Logged-in password change. | S.22 |
+| POST | `/me/delete-account` | Any | EXISTS | Soft-delete (keep 90-day purge). | S.22 |
+
+> **Removed:** `POST /auth/verify-email` — the token-link verification endpoint is superseded by OTP; keep only as a **410 Gone** compatibility stub for one release (BE-M1.1). **Password auth stays** — do NOT drop email/password login (delta §3, Auth).
 
 ### POST `/auth/register`
 
-**Request:**
+**Request (email channel):**
 ```json
-{ "role": "athlete", "email": "aryan@example.com", "password": "secret", "name": "Aryan Patel" }
+{ "role": "scout", "name": "Kiran Patel", "email": "kiran@example.com", "password": "secret" }
 ```
-> `phone` optional. `role` required (one of: athlete, coach, academy, organizer, sponsor).
+> `role` required (one of: `athlete, coach, academy, organizer, scout` — **no `sponsor`**). `phone` optional. Registering triggers an OTP; verify it via `POST /auth/verify-otp` to receive a token.
+
+**Response 201:**
+```json
+{ "data": { "id": 1, "role": "scout", "name": "Kiran Patel", "otp_required": true, "needs_onboarding": true } }
+```
+
+### POST `/auth/send-otp`
+
+**Request:** `{ "channel": "phone", "destination": "+9198XXXXXXXX", "purpose": "signup" }`
+> `channel`: `email`|`phone`. `purpose`: `signup`|`login`|`reset_password`|`guardian_consent`|`verify_contact`. **429** if within 60s cooldown or attempts exhausted.
+
+**Response 200:** `{ "data": { "sent": true, "expires_at": "...", "resend_available_at": "..." } }`
+
+### POST `/auth/verify-otp`
+
+**Request:** `{ "channel": "phone", "destination": "+9198XXXXXXXX", "code": "482913" }`
 
 **Response 200:**
 ```json
-{ "token": "1|abc...", "user": { "id": 1, "role": "athlete", "name": "Aryan Patel", "email_verified_at": "..." }, "needs_onboarding": true }
+{ "data": { "token": "1|abc...", "user": { "id": 1, "role": "scout", "phone_verified_at": "..." }, "needs_onboarding": true } }
 ```
 
-### POST `/auth/verify-email`
+### POST `/auth/resend-otp`
 
-**Request:**
-```json
-{ "token": "abc123..." }
-```
-
-**Response 200:**
-```json
-{ "data": { "token": "1|abc...", "user": { "id": 1, "role": "athlete", "name": "...", "email_verified_at": "..." }, "needs_onboarding": true } }
-```
+**Request:** same as `/auth/send-otp`. **Response 200** or **429** (cooldown).
 
 ### POST `/auth/login`
 
-**Request:**
-```json
-{ "email": "aryan@example.com", "password": "secret" }
-```
+**Request (password):** `{ "email": "aryan@example.com", "password": "secret" }`
+**Request (OTP):** `{ "channel": "phone", "destination": "+9198XXXXXXXX" }` → sends OTP (then verify via `/auth/verify-otp`).
 
-**Response 200:** Same shape as register response.
+**Response 200:** Same shape as register response (`{ data: { token, user, needs_onboarding } }`).
+
+### POST `/guardian/consent`
+
+**Request:** `{ "athlete_user_id": 12, "guardian_name": "Suresh Mehta", "guardian_phone": "+9198XXXXXXXX", "relationship": "parent" }`
+> Sends OTP to the guardian. Minor's profile stays `pending` until `POST /guardian/verify-otp` succeeds (BE-M1.4).
+
+### GET `/me/completion-checklist`
+
+**Response 200:**
+```json
+{ "data": { "role": "athlete", "completion": 62, "missing": [ { "field": "achievements", "label": "Achievements", "deep_link": "profile/achievements" }, { "field": "photo_media_id", "label": "Profile Photo", "deep_link": "profile/photo" } ] } }
+```
 
 ---
 
 ## 2. Onboarding
 
-| Method | Path | Auth | Purpose | Source |
-|---|---|---|---|---|
-| GET | `/onboarding/{role}` | Any, needs_onboarding | Get onboarding form schema/options. | A1,A2,C1,... |
-| POST | `/onboarding/athlete` | Athlete | Step 1+2: sports, age group, skill level, city. | FR-AUTH-6 |
-| POST | `/onboarding/coach` | Coach | Sports coached, certs, experience. | FR-AUTH-7 |
-| POST | `/onboarding/academy` | Academy | Name, sports, city. | FR-AUTH-8 |
-| POST | `/onboarding/organizer` | Organizer | Org name, type, verification docs. | FR-AUTH-9 |
-| POST | `/onboarding/sponsor` | Sponsor | Brand name, logo, category, verification docs. | FR-AUTH-10 |
+> **v3:** `sponsor` onboarding is **REMOVED**; `scout` onboarding is **NEW**. All onboarding endpoints collect the role's 30 fields from `SportX_Mandatory_Fields.md` — mandatory fields (🔴) are required, optional fields (🟠/🟢) may be `null`.
+
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| GET | `/onboarding/{role}` | Any, needs_onboarding | EXISTS | Get onboarding form schema/options. Add `scout`; drop `sponsor`. | A1,A2,C1,... |
+| POST | `/onboarding/athlete` | Athlete | EXISTS | Athlete profile; **guardian gate if DOB < 18**. | FR-AUTH-6; AT.2 |
+| POST | `/onboarding/coach` | Coach | EXISTS | Coach profile. | FR-AUTH-7 |
+| POST | `/onboarding/academy` | Academy | EXISTS | Academy profile. | FR-AUTH-8 |
+| POST | `/onboarding/organizer` | Organizer | EXISTS | Organizer profile. | FR-AUTH-9 |
+| POST | `/onboarding/scout` | Scout | NEW | Scout org type, sports focus, experience, availability, languages, location. | SC.1; BE-M1.3 |
+| ~~POST~~ | ~~`/onboarding/sponsor`~~ | — | REMOVED | Removed with the `sponsor` role (BE-M1.2). Keep 410/404, never 500. | delta §4 |
 
 ### POST `/onboarding/athlete`
 
-**Request:**
+**Request (mandatory fields marked 🔴, `SportX_Mandatory_Fields.md` §1):**
 ```json
-{ "full_name": "Aryan Patel", "date_of_birth": "2012-05-15", "gender": "male", "sports": [1, 3], "age_group_id": 3, "skill_level": "intermediate", "city_id": 5 }
+{ "full_name": "Rohan Mehta", "date_of_birth": "2009-05-15", "gender": "male", "primary_sport_id": 1, "position": "Batsman (Right Hand)", "age_group_id": 3, "skill_level": "intermediate", "city_id": 5, "bio": "2–3 lines", "photo_media_id": 42, "sports": [1, 3] }
 ```
-> `full_name`, `date_of_birth`, `gender` are mandatory per Mandatory Fields PDF. `sports` = array of sport IDs matching A1 multi-select. `photo_media_id` uploaded via `POST /media/upload` with `owner_type=athlete_profile`.
+> 🔴 Mandatory: `full_name`, `date_of_birth`/`age_group_id`, `gender`, `primary_sport_id`, `position`, `skill_level`/`level`, `city_id`, `bio`, `photo_media_id`. 🟠/🟢 optional: `academy_id`, `team_name`, `coach_id`, `achievements`, `competition_history`, `performance_stats`, `personal_best`, `experience_years`, `training_centre`, `playing_hand`, `height_cm`, `weight_kg`, `goals`, `open_to`, `availability`, `relocation_preference`, `education`, `sponsorship_interest`, `social_links`. `sports` = array of sport IDs (primary flagged `is_primary`).
 
 **Response 201:**
 ```json
-{ "data": { "id": 1, "full_name": "Aryan Patel", "date_of_birth": "2012-05-15", "gender": "male", "sports": [...], "age_group": { "id": 3, "name": "Under-14" }, "skill_level": "intermediate", "city": { "id": 5, "name": "Ahmedabad", "state": "Gujarat" }, "profile_completeness": 80 } }
+{ "data": { "id": 1, "full_name": "Rohan Mehta", "age_group": { "id": 3, "name": "Under-16" }, "skill_level": "intermediate", "city": { "id": 5, "name": "Ahmedabad", "state": "Gujarat" }, "profile_completeness": 80, "guardian_consent_required": false } }
 ```
+> If `date_of_birth` < 18 years ago, `guardian_consent_required` is `true` and the profile stays `pending` until guardian OTP verification (BE-M1.4).
 
-> The other onboarding endpoints follow the same pattern with role-specific fields from their wireframes (C1, AC1, O1, SP1).
+### POST `/onboarding/scout`
+
+**Request (per `SportX_Mandatory_Fields.md` §4):**
+```json
+{ "full_name": "Rohit Kumar", "photo_media_id": 51, "scout_type": "club", "primary_sport_ids": [1, 3], "specializations": ["Batting", "Bowling", "Wicketkeeping"], "city_id": 5, "bio": "2–3 lines", "experience_years": 5, "scouting_level": "state", "organization_name": "Gujarat Cricket Association", "availability": "available" }
+```
+> 🔴 Mandatory: `full_name`, `photo_media_id`, `scout_type`, `primary_sport_ids`, `specializations`, `city_id`, `bio`. 🟠/🟢 optional: `experience_years`, `scouting_level`, `age_groups_scouted`, `organization_name`, `previous_organizations`, `certifications`, `scouting_methods`, `evaluation_areas`, `athletes_scouted`, `discoveries`, `scouting_achievements`, `regions`, `events_covered`, `services`, `recruitment_focus`, `affiliations`, `availability`, `fee_structure`, `website`, `social_links`.
+
+> The other onboarding endpoints (coach, academy, organizer) follow the same pattern with the role's 30 fields from `SportX_Mandatory_Fields.md` §2/§3/§5.
 
 ---
 
 ## 3. Master Data (Meta)
 
-| Method | Path | Auth | Purpose |
-|---|---|---|---|
-| GET | `/meta/sports` | Any | List sports (trending chips, filter options). |
-| GET | `/meta/cities` | Any | List cities grouped by state. |
-| GET | `/meta/age-groups` | Any | List age groups. |
-| GET | `/meta/trending-searches` | Any | Recent popular search terms. |
+| Method | Path | Auth | Status | Purpose |
+|---|---|---|---|---|
+| GET | `/meta/sports` | Any | EXISTS | List sports (trending chips, filter options). |
+| GET | `/meta/cities` | Any | EXISTS | List cities grouped by state. |
+| GET | `/meta/age-groups` | Any | EXISTS | List age groups. |
+| GET | `/meta/positions` | Any | NEW | Positions master (sport-scoped) for the athlete Position filter (S.4; BE-M11.6). |
+| GET | `/meta/facilities` | Any | NEW | Facility-type filter metadata (AC.7). |
+| GET | `/meta/trending-searches` | Any | EXISTS | Recent popular search terms. |
+| GET | `/meta/faqs` | Any | NEW | FAQ list for the Help/Support screen (S.24 P0). |
 
 **Response pattern (GET `/meta/sports`):**
 ```json
@@ -112,56 +159,73 @@ Full endpoint listing for the Laravel REST API. Every endpoint maps to a feature
 
 ---
 
-## 4. Athlete Profile & Media
+## 4. Athlete Profile, Achievements & Media
 
-| Method | Path | Auth | Purpose | Source |
-|---|---|---|---|---|
-| GET | `/me/profile` | Athlete | Own profile (view). | FR-ATH-1, A4 |
-| PUT | `/me/profile` | Athlete | Update profile fields. | FR-ATH-2, A5 |
-| POST | `/media/upload` | Athlete/Coach/Academy/Org/Sponsor | Upload photo/video/document. | A6, AC2 |
-| PUT | `/media/reorder` | Any | Reorder media items (drag-to-reorder). | A6 |
-| DELETE | `/media/{id}` | Owner | Delete a media item. | A6 |
-| GET | `/athletes/{id}` | Any | Public athlete profile (for sponsor discovery). | FR-SPON-4, SP6 |
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| GET | `/me/profile` | Athlete | EXISTS | Own profile (view). | FR-ATH-1, A4 |
+| PUT | `/me/profile` | Athlete | CHANGED | Update profile fields; add privacy fields, social links, cover. | FR-ATH-2, A5 |
+| PUT | `/me/profile/sports` | Athlete | CHANGED | Per-sport `playing_role`, `level`, `experience_years`, `is_primary` (AT.4). | BE-M2.1 |
+| GET/POST | `/me/achievements` | Athlete/Coach | NEW | Dedicated achievements CRUD: title, type, sport, level, year, certificate, description (S.11). | BE-M2.2 |
+| PUT/DELETE | `/me/achievements/{id}` | Owner | NEW | Owner (athlete/coach) only. | BE-M2.2 |
+| POST | `/media/upload` | Any logged-in | EXISTS | Upload photo/video/document (+ caption, sport tag). | A6, AC2 |
+| PUT | `/media/reorder` | Any | EXISTS | Reorder media items (drag-to-reorder). | A6 |
+| DELETE | `/media/{id}` | Owner | EXISTS | Delete a media item. | A6 |
+| GET | `/me/media` | Any | NEW | Gallery grid feed for the profile Media tab + viewer (S.28). | BE-M2.2 |
+| GET | `/athletes/{id}` | Any | CHANGED | Public athlete profile — open to all roles (was sponsor-scoped); minors restricted (AT.10 policy). | FR-SPON-4 → delta §3 |
+| POST/GET | `/me/verification` | Any | NEW | ID + org proof upload, status (pending/verified/rejected + reason) (A.10). | BE-M1.5 |
+| PUT | `/me/privacy` | Any | NEW | `profile_visibility`, `who_can_message`, `who_can_connect` (or fold into `/me/settings`). | S.22; BE-M7.5 |
 
 ### PUT `/me/profile` (Athlete)
 
 **Request:**
 ```json
-{ "full_name": "Aryan Patel", "date_of_birth": "2012-05-15", "gender": "male", "skill_level": "advanced", "city_id": 5, "phone": "+91 98XXXXXXXX", "academy_id": 5, "coach_id": 3, "position": "Batsman", "experience": "3 years", "achievements": [ { "id": 1, "text": "State-level U-14 selection 2025" }, { "text": "New achievement" } ] }
+{ "full_name": "Rohan Mehta", "date_of_birth": "2009-05-15", "gender": "male", "skill_level": "advanced", "city_id": 5, "phone": "+91 98XXXXXXXX", "academy_id": 5, "coach_id": 3, "position": "Batsman (Right Hand)", "experience_years": 3, "cover_media_id": 60, "social_links": { "instagram": "...", "youtube": "..." }, "profile_visibility": "connections", "who_can_message": "connections" }
 ```
-> `full_name`, `date_of_birth`, `gender` are mandatory per PDF and cannot be nulled. Optional fields (phone, academy_id, coach_id, position, experience) can be set to `null` to clear. `achievements` supports add-by-missing-id, remove-by-absence (diff-based). Sports updated via separate `PUT /me/profile/sports`.
+> 🔴 Mandatory fields cannot be nulled. Optional fields can be set to `null` to clear. Achievements now use dedicated `/me/achievements` CRUD (no longer diff-via-profile). Per-sport attributes (playing role, level, experience, primary) are updated via `PUT /me/profile/sports`.
+
+### GET `/me/achievements` / POST `/me/achievements`
+
+**Request:**
+```json
+{ "title": "State Level Winner", "achievement_type": "selection", "sport_id": 1, "level": "State", "year": 2025, "description": "Gujarat U-16", "certificate_media_id": 77 }
+```
 
 ### POST `/media/upload`
 
-**Request:** `multipart/form-data` — `file` (image/video), `owner_type` (e.g. `athlete_profile`), `owner_id`, `media_type` (`photo`/`video`/`document`).
+**Request:** `multipart/form-data` — `file` (image/video), `owner_type` (e.g. `athlete_profile`), `owner_id`, `media_type` (`photo`/`video`/`document`), `caption` (optional), `sport_id` (optional).
 
 **Response 201:**
 ```json
 { "data": { "id": 42, "url": "https://cdn.../path.jpg", "media_type": "photo" } }
 ```
 
+### POST `/me/verification`
+
+**Request:** `multipart/form-data` — `id_proof_media_id`, `org_proof_media_id` (optional), `note`.
+
+**Response 201:** `{ "data": { "id": 7, "status": "pending", "created_at": "..." } }`  → reviewed by admin (AD.4); result notification on decision.
+
 ---
 
 ## 5. Directory / Listing Endpoints
 
-All seven listing types share the same pattern: paginated card-list with consistent filters.
+All listing types share the same pattern: paginated card-list with consistent filters. **v3:** `scholarships` and `sponsorships` are replaced by the unified `/opportunities` endpoint (see §12); `/programs` and `/facilities` are new listing types; `/athletes` joins the directory set.
 
-| Method | Path | Auth | Purpose | Source |
-|---|---|---|---|---|
-| GET | `/academies` | Any | Browse academy directory. | FR-ATH-4, T1 |
-| GET | `/academies/{id}` | Any | Academy detail page. | A8, T2 |
-| GET | `/coaches` | Any | Browse coach directory. | FR-ATH-5, T1 |
-| GET | `/coaches/{id}` | Any | Coach detail page. | A10, T2 |
-| GET | `/trials` | Any | Browse trial listings. | FR-ATH-7, T1 |
-| GET | `/trials/{id}` | Any | Trial detail page. | A13, T2 |
-| GET | `/tournaments` | Any | Browse tournaments (list/calendar). | FR-ATH-9, A16 |
-| GET | `/tournaments/{id}` | Any | Tournament detail page. | A17, T2 |
-| GET | `/scholarships` | Any | Browse scholarship feed. | FR-ATH-11, T1 |
-| GET | `/scholarships/{id}` | Any | Scholarship detail page. | A20, T2 |
-| GET | `/sponsorships` | Any | Browse sponsorship opportunities. | FR-ATH-12, T1 |
-| GET | `/sponsorships/{id}` | Any | Sponsorship detail page. | A22, T2 |
-| GET | `/sports-venues` | Any | Browse sports venues directory. | AS-47, T1 |
-| GET | `/sports-venues/{id}` | Any | Sports venue detail page. | AS-47, T2 |
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| GET | `/academies` · `/academies/{id}` | Any | EXISTS | Academy directory + detail. | FR-ATH-4, T1/T2 |
+| GET | `/coaches` · `/coaches/{id}` | Any | EXISTS | Coach directory + detail (+ rating, distance, counts). | FR-ATH-5, T1/T2 |
+| GET | `/athletes` · `/athletes/{id}` | Any | CHANGED | Athlete directory + public profile (was sponsor-only; add `position`, `level`, `achievements` filters). | BE-M3.1, SC.4 |
+| GET | `/scouts/{id}` | Any | NEW | Public scout view: About + Activity only (shortlist/reports owner-only) (D.5). | BE-M1.3 |
+| GET | `/organizers/{id}` | Any | NEW | Public organizer profile (D.4). | delta §11.3 |
+| GET | `/trials` · `/trials/{id}` | Any | EXISTS | Browse trials + detail. | FR-ATH-7, T1/T2 |
+| GET | `/tournaments` · `/tournaments/{id}` | Any | EXISTS | Browse tournaments (list/calendar) + detail. | FR-ATH-9, A16/A17 |
+| GET | `/opportunities` · `/opportunities/{id}` | Any | NEW | Browse unified opportunities (scholarship/sponsorship/tryout/camp) + detail (D.9). | BE-M5.1 |
+| GET | `/programs` · `/programs/{id}` | Any | NEW | Browse training programs + public detail (D.11). | BE-M6.1 |
+| GET | `/facilities` · `/facilities/{id}` | Any | NEW | Browse facilities + public detail (D.13). | BE-M6.3 |
+| GET | `/sports-venues` · `/sports-venues/{id}` | Any | EXISTS | Browse sports venues directory + detail. | AS-47, T1/T2 |
+| ~~GET~~ | ~~`/scholarships`, `/sponsorships`~~ | — | REMOVED | Merged into `/opportunities`; keep 410 for one release (delta §4). | — |
 
 ### Shared query parameters (all GET directory endpoints)
 
@@ -170,6 +234,13 @@ All seven listing types share the same pattern: paginated card-list with consist
 | sport_id | int[] | Filter by sport(s). |
 | city_id | int | Filter by city. |
 | age_group_id | int | Filter by age group. |
+| position_id | int | Filter by position (S.4; BE-M11.6). |
+| level | string | Filter by skill/playing level. |
+| facilities | string[] | Filter by facility type (academies). |
+| price_min`, `price_max | int | Fee range (academies/coaches/programs). |
+| rating_min | number | Minimum rating (P1, reviews). |
+| distance`, `lat`, `lng | — | "Near me" distance sort (city-centroid for MVP — §8 D5). |
+| registration_status | string | Event card registration state (open/closing/closed). |
 | status | string | Filter by listing status. |
 | page | int | Page number. |
 | per_page | int | Items per page (default 20, max 50). |
@@ -180,18 +251,20 @@ All seven listing types share the same pattern: paginated card-list with consist
 
 | Endpoint | Extra params |
 |---|---|
-| `/academies` | `fee_min`, `fee_max` (S8 price range) |
-| `/coaches` | `fee_min`, `fee_max` |
-| `/trials` | `date_from`, `date_to` (event date range) |
-| `/tournaments` | `date_from`, `date_to`, `month` (calendar view) |
-| `/scholarships` | `deadline_from`, `deadline_to` |
-| `/sponsorships` | `deadline_from`, `deadline_to` |
+| `/academies` | `fee_min`, `fee_max`, `facility_type`, `rating_min` |
+| `/coaches` | `fee_min`, `fee_max`, `rating_min` |
+| `/athletes` | `position_id`, `level`, `skill_level`, `has_achievements` |
+| `/trials` | `date_from`, `date_to` |
+| `/tournaments` | `date_from`, `date_to`, `month` |
+| `/opportunities` | `type` (scholarship/sponsorship/tryout/camp), `deadline_from`, `deadline_to` |
+| `/programs` | `mode`, `age_group_id` |
+| `/facilities` | `facility_type` |
 | `/sports-venues` | `booking_available` (boolean) |
 
 ### GET `/trials` Response (card list)
 
 ```json
-{ "data": [ { "id": 1, "name": "U-14 Cricket Trials", "sport": { "id": 1, "name": "Cricket" }, "venue": "Sardar Patel Stadium", "city": { "name": "Ahmedabad", "state": "Gujarat" }, "event_datetime": "2026-08-15T07:00:00+05:30", "registration_deadline": "2026-08-14T23:59:59+05:30", "entry_fee": "₹200", "organization_name": "Elite Cricket Academy", "contact_number": "+91 98XXXXXXXX", "status": "published" } ], "meta": { "current_page": 1, "per_page": 20, "total": 89 } }
+{ "data": [ { "id": 1, "name": "U-14 Cricket Trials", "sport": { "id": 1, "name": "Cricket" }, "venue": "Sardar Patel Stadium", "city": { "name": "Ahmedabad", "state": "Gujarat" }, "event_datetime": "2026-08-15T07:00:00+05:30", "registration_deadline": "2026-08-14T23:59:59+05:30", "entry_fee": "₹200", "registration_status": "open", "organization_name": "Elite Cricket Academy", "contact_number": "+91 98XXXXXXXX", "status": "published" } ], "meta": { "current_page": 1, "per_page": 20, "total": 89 } }
 ```
 
 ### GET `/trials/{id}` Response (detail)
@@ -200,16 +273,17 @@ All seven listing types share the same pattern: paginated card-list with consist
 { "data": { "id": 1, "name": "U-14 Cricket Trials", "sport": { ... }, "organization_name": "Elite Cricket Academy", "event_datetime": "...", "venue": "...", "google_maps_url": "https://maps.google.com/...", "city": { ... }, "eligibility": "Boys, U-14, Ahmedabad residents", "entry_fee": "₹200", "registration_deadline": "...", "required_documents": ["Aadhaar Card", "Passport Photo"], "contact_number": "+91 98XXXXXXXX", "vacancies": 30, "benefits": "Selected athletes get free academy kit", "status": "published", "is_saved_by_me": true, "organizer": { "type": "academy", "name": "Elite Cricket Academy", "id": 5 } } }
 ```
 
-> All other detail endpoints follow this shape with fields from T2 field-substitution table in wireframes.
+> All other detail endpoints follow this shape with fields from the T2 field-substitution table in wireframes. Verification badges are surfaced on profile/card/search resources where `verification_status=verified` (BE-M1.5).
 
 ---
 
 ## 6. Universal Search
 
-| Method | Path | Auth | Purpose | Source |
-|---|---|---|---|---|
-| GET | `/search` | Any | Unified search across categories. | FR-DISC-1,2 |
-| GET | `/me/recent-searches` | Any | Saved recent searches. | S6 |
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| GET | `/search` | Any | CHANGED | Unified search; **add `athletes` group** (+ coaches). | FR-DISC-1,2; BE-M3.1 |
+| GET | `/me/recent-searches` | Any | EXISTS | Saved recent searches. | S6 |
+| POST | `/me/recent-searches` | Any | NEW | Persist a recent search (old spec had GET only). | delta §11.5 |
 
 ### GET `/search`
 
@@ -217,28 +291,31 @@ All seven listing types share the same pattern: paginated card-list with consist
 
 **Response 200:**
 ```json
-{ "data": { "academies": { "data": [...], "total": 3 }, "coaches": { "data": [...], "total": 2 }, "trials": { "data": [...], "total": 5 }, "tournaments": { "data": [...], "total": 1 }, "scholarships": { "data": [...], "total": 0 }, "sponsorships": { "data": [...], "total": 2 }, "sports_venues": { "data": [...], "total": 4 } }, "meta": { "query": "cricket ahmedabad", "page": 1 } }
+{ "data": { "athletes": { "data": [...], "total": 6 }, "academies": { "data": [...], "total": 3 }, "coaches": { "data": [...], "total": 2 }, "trials": { "data": [...], "total": 5 }, "tournaments": { "data": [...], "total": 1 }, "opportunities": { "data": [...], "total": 2 }, "programs": { "data": [...], "total": 1 }, "facilities": { "data": [...], "total": 0 }, "sports_venues": { "data": [...], "total": 4 } }, "meta": { "query": "cricket ahmedabad", "page": 1 } }
 ```
+> `scholarships`/`sponsorships` groups are **REMOVED** (merged into `opportunities`).
 
 ---
 
 ## 7. Enquiries
 
-| Method | Path | Auth | Purpose | Source |
-|---|---|---|---|---|
-| POST | `/enquiries` | Athlete | Send enquiry to coach/academy. | FR-ATH-6, FR-ENQ-1 |
-| GET | `/me/enquiries` | Coach/Academy | Enquiry inbox (T4). | FR-COACH-3, FR-ACAD-7 |
-| GET | `/enquiries/{id}` | Owner | Enquiry thread (T4b). | FR-COACH-4, FR-ACAD-9 |
-| POST | `/enquiries/{id}/messages` | Owner | Reply to enquiry. | FR-COACH-4 |
-| PUT | `/enquiries/{id}/read` | Owner | Mark messages as read. | — |
+> **v3:** enquiry `subject_type` morphology is extended (+ `program`, `opportunity`); enquiries open a linked chat thread (`conversation_id`). The old assumptions "sponsorship_application subject" and "enquiries are the only messaging" are **[SUPERSEDED — see Backend-Feature-Delta.md]**.
+
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| POST | `/enquiries` | Any (athlete-primary) | CHANGED | Send enquiry; `subject_type` adds `program`, `opportunity`; creates/opens a chat thread. | FR-ENQ-1; BE-M6.2 |
+| GET | `/me/enquiries` | Coach/Academy/Organizer/Scout | CHANGED | Enquiry inbox (T4); widen role scope + tabs Chats/Requests. | FR-COACH-3, FR-ACAD-7 |
+| GET | `/enquiries/{id}` | Owner | EXISTS | Enquiry thread (T4b). | FR-COACH-4, FR-ACAD-9 |
+| POST | `/enquiries/{id}/messages` | Owner | EXISTS | Reply to enquiry. | FR-COACH-4 |
+| PUT | `/enquiries/{id}/read` | Owner | EXISTS | Mark messages as read. | — |
 
 ### POST `/enquiries`
 
 **Request:**
 ```json
-{ "subject_type": "coach_profile", "subject_id": 3, "message": "Is there a slot this weekend?", "preferred_datetime": "2026-08-09T06:00:00+05:30" }
+{ "subject_type": "program", "subject_id": 3, "message": "Is there a slot this weekend?", "preferred_datetime": "2026-08-09T06:00:00+05:30" }
 ```
-> `subject_type`: `coach_profile`, `academy`, `sponsorship_application` (for sponsor reply flow — AS-04).
+> `subject_type`: `coach_profile`, `academy`, `organisation`, `program`, `opportunity`, `facility`. `sponsorship_application` is **REMOVED**. Response includes `conversation_id` for the linked thread (S.18).
 
 **Response 201:** `{ data: { id, subject_type, subject_id, created_at, ... } }`
 
@@ -336,147 +413,252 @@ All seven listing types share the same pattern: paginated card-list with consist
 
 ---
 
-## 11. Scholarships
+## 11. Scholarships — [SUPERSEDED — see Backend-Feature-Delta.md]
 
-| Method | Path | Auth | Purpose | Source |
-|---|---|---|---|---|
-| GET | `/scholarships` | Any | Browse feed. | FR-ATH-11 |
-| GET | `/scholarships/{id}` | Any | Detail with external link. | FR-ATH-11, A20 |
-
-> Scholarships are read-only for athletes; they link to an external application URL. Only admins can create/edit scholarships (see Admin section). FR-ADMIN-11.
+> Scholarship listings are **no longer admin-curated read-only**. They are one `type` of the unified `/opportunities` endpoint (see §12). `GET /scholarships` and `GET /scholarships/{id}` are **REMOVED** — keep 410 Gone for one release, or alias to `/opportunities?type=scholarship` (delta §4).
 
 ---
 
-## 12. Sponsorships & Applications
+## 12. Opportunities & Applications [CHANGED — replaces Scholarships + Sponsorships]
 
-### Sponsorship Listings (sponsor-facing)
+> **v3 (D2/D3, BE-M5.1):** `scholarships` (admin-only) and `sponsorships` (sponsor-owned) collapse into one `opportunities` table with a `type` enum. Providers (**academy/organizer/coach/scout**) post them; athletes apply in-app with a pitch and track status (AT.8). The old sponsor-facing endpoints (`/me/sponsorships`, `/me/applications`, sponsor `/me/shortlist`) are **REMOVED** (delta §4).
 
-| Method | Path | Auth | Purpose | Source |
-|---|---|---|---|---|
-| POST | `/me/sponsorships` | Sponsor | Create sponsorship listing. | FR-SPON-2, SP3 |
-| GET | `/me/sponsorships` | Sponsor | My sponsorships management list. | FR-SPON-3, SP4 |
-| PUT | `/me/sponsorships/{id}` | Sponsor | Edit. | FR-SPON-2 |
-| PATCH | `/me/sponsorships/{id}/status` | Sponsor | Publish/close. | FR-SPON-2 |
+### Browse & apply (public + athlete)
 
-### Athlete-facing
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| GET | `/opportunities` | Any | NEW | Filters: `type` (scholarship/sponsorship/tryout/camp), sport, age, deadline; SC.11 hub tabs. | D.9, SC.11 |
+| GET | `/opportunities/{id}` | Any | NEW | Provider, eligibility, benefits/amount, deadline. | D.9 |
+| POST | `/opportunities/{id}/apply` | Athlete | NEW | Pitch + docs; profile snapshot auto-attached; **409** on duplicate. | AT.8 |
+| GET | `/me/opportunities?type=applied\|saved\|created` | Any | NEW | My Opportunities (AT.8). | AT.8 |
 
-| Method | Path | Auth | Purpose |
-|---|---|---|---|
-| POST | `/sponsorships/{sponsorship}/apply` | Athlete | Submit pitch (FR-ATH-13, A23). |
+### Provider posting (academy/organizer/coach/scout; athlete P1)
 
-**Request:** `{ "pitch_note": "I've represented my state at the U-14 level..." }`
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| POST | `/me/opportunities` | Provider | NEW | Create (type-specific validation); athlete P1 via policy flag. | BE-M5.1 |
+| PUT/PATCH | `/me/opportunities/{id}` (+publish/close) | Owner | NEW | Edit / status transitions (owner-only). | BE-M5.1 |
+| GET | `/opportunities/{id}/applications` | Provider | P1 | Applicant review list. | BE-M5.2 |
+| PATCH | `/opportunities/{id}/applications/{app}` | Provider | P1 | Shortlist / decline + note. | BE-M5.2 |
 
-### Sponsor Inbox & Shortlist
+### POST `/opportunities/{id}/apply`
 
-| Method | Path | Auth | Purpose | Source |
-|---|---|---|---|---|
-| GET | `/me/applications` | Sponsor | Applications inbox. | FR-SPON-6, SP7 |
-| GET | `/sponsorships/{sponsorship}/applications` | Sponsor | Applications for a sponsorship. | FR-SPON-7, SP8 |
-| PATCH | `/sponsorships/{sponsorship}/applications/{application}` | Sponsor | Update application (shortlist/reject). | FR-SPON-7 |
-| GET | `/me/shortlist` | Sponsor | Shortlist list. | FR-SPON-8, SP9 |
-| POST | `/me/shortlist` | Sponsor | Add athlete to shortlist directly. | FR-SPON-5 |
-| DELETE | `/me/shortlist/{entry}` | Sponsor | Remove from shortlist. | FR-SPON-8 |
+**Request:** `{ "pitch": "I've represented my state at the U-16 level...", "documents": [88, 89] }`
 
-### Sponsor Athlete Discovery
+**Response 201:** `{ "data": { "id": 12, "opportunity_id": 3, "status": "submitted", "profile_snapshot": { ... } } }` — `409` if already applied.
 
-| Method | Path | Auth | Purpose | Source |
-|---|---|---|---|---|
-| GET | `/athletes` | Sponsor | Search athlete profiles. | FR-SPON-4, SP5 |
+### POST `/me/opportunities`
 
-**Params:** `sport_id`, `age_group_id`, `city_id`, `skill_level`, `q`, `page`, `per_page`.
+**Request:**
+```json
+{ "type": "scholarship", "title": "Merit Scholarship 2026", "sport_id": 1, "organization_name": "Khel Academy", "eligibility": "U-18, state-level players", "benefits": "Full fee waiver", "amount": 50000, "currency": "INR", "location": "Ahmedabad", "deadline": "2026-10-31", "documents_required": ["Aadhaar"], "description": "..." }
+```
+> `type`: `scholarship`|`sponsorship`|`tryout`|`camp`. `amount` numeric; all other fee columns are display-strings (no payments — `Database-Design.md` conventions).
 
 ---
 
 ## 13. Activity Hub & Saved Items
 
-| Method | Path | Auth | Purpose | Source |
-|---|---|---|---|---|
-| GET | `/me/activity` | Athlete | My Activity tabs: trials, tournaments, sponsorships. | FR-ATH-14, A24 |
-| GET | `/me/saved` | Any | Saved/bookmarked items grouped by type. | FR-ATH-15, A25 |
-| POST | `/me/saved` | Any | Save an item. | — |
-| DELETE | `/me/saved` | Any | Unsave. | — |
-
-### GET `/me/activity`
-
-**Params:** `type` (`trials`, `tournaments`, `sponsorships`), `status` (optional filter).
-
-**Response:**
-```json
-{ "data": [ { "type": "trial_registration", "id": 1, "registration_ref": "#TR20260815-0042", "trial": { "id": 1, "name": "U-14 Cricket Trials", "event_datetime": "...", "venue": "..." }, "status": "pending", "reminder_enabled": true } ] }
-```
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| GET | `/me/activity` | Any | CHANGED | Activity tabs: trials, tournaments, **opportunities**, registrations. | FR-ATH-14, A24 |
+| GET | `/me/saved` | Any | CHANGED | Saved/bookmarked items grouped by type. **Morphs extend** to `post`, `opportunity`, `event`. | FR-ATH-15, A25; BE-M3.3 |
+| POST | `/me/saved` | Any | CHANGED | Save an item (`item_type` now accepts `post`/`opportunity`/`event`). | — |
+| DELETE | `/me/saved` | Any | EXISTS | Unsave. | — |
 
 ### POST `/me/saved`
 
-**Request:** `{ "item_type": "trial", "item_id": 1 }`
-
-> 409 if already saved. 201 on success.
+**Request:** `{ "item_type": "opportunity", "item_id": 1 }`
+> Extended `item_type` set: `academy`, `coach_profile`, `trial`, `tournament`, `opportunity`, `program`, `facility`, `post`, `event`, `generalized_profile`. 409 if already saved. 201 on success.
 
 ---
 
 ## 14. Notifications
 
-| Method | Path | Auth | Purpose | Source |
-|---|---|---|---|---|
-| GET | `/me/notifications` | Any | Notifications center list (S9). | FR-NOTIF-1 |
-| PATCH | `/me/notifications/{id}/read` | Any | Mark single notification read. | — |
-| POST | `/me/notifications/read-all` | Any | Mark all read. | — |
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| GET | `/me/notifications?tab=` | Any | CHANGED | Tabs All/People/Opps/Events/Mentions; Today/Yesterday/Week grouping (S.16). | FR-NOTIF-1 |
+| PATCH | `/me/notifications/{id}/read` | Any | EXISTS | Mark single notification read. | — |
+| POST | `/me/notifications/read-all` | Any | EXISTS | Mark all read. | — |
+| POST | `/me/device-tokens` | Any | EXISTS | Register FCM device token. | delta §11.14 |
 
-**Params:** `?unread=true` to filter unread-only. `page`, `per_page`.
+> **Notification `type` enum extends** to: `reminder`, `enquiry_reply`, `status_update`, `follow`, `connection_request`, `connection_accepted`, `message`, `enquiry`, `registration_decision`, `verification_result`, `mention`, `broadcast`, `opportunity_deadline` (`Database-Design.md` §12).
 
 ---
 
-## 15. Reports
+## 15. Trust & Safety — Reports, Blocks
 
-| Method | Path | Auth | Purpose | Source |
-|---|---|---|---|---|
-| POST | `/reports` | Any | Report a listing (S10). | FR-TRUST-1 |
-| GET | `/admin/moderation/queue` | Admin | Reported listings queue (AD6). | FR-ADMIN-6 |
-| GET | `/admin/moderation/reports/{id}` | Admin | Report detail + listing (AD7). | FR-ADMIN-7 |
-| POST | `/admin/moderation/reports/{id}/approve` | Admin | Approve listing (no action). | FR-ADMIN-7 |
-| POST | `/admin/moderation/reports/{id}/remove` | Admin | Remove listing. | FR-ADMIN-7 |
-| POST | `/admin/moderation/reports/{id}/edit-then-resolve` | Admin | Edit listing content + resolve. | FR-ADMIN-7 |
-| POST | `/admin/moderation/reports/{id}/warn` | Admin | Warn listing owner. | FR-ADMIN-7 |
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| POST | `/reports` | Any | CHANGED | Report content (S.10/S.26). **Morphs extend** to `user`, `post`, `opportunity`, `program`, `facility`. | FR-TRUST-1; BE-M11.1 |
+| GET | `/me/reports` | Any | NEW | My report statuses (S.23 safety centre). | delta §11.15 |
+| POST | `/blocks` | Any | NEW | Block a user (S.23). | BE-M11.2 |
+| GET | `/blocks` | Any | NEW | Blocked-users list. | BE-M11.2 |
+| DELETE | `/blocks/{id}` | Any | NEW | Unblock. | BE-M11.2 |
+| GET | `/admin/moderation/queue` | Admin | EXISTS | Reported listings queue (AD6). | FR-ADMIN-6 |
+| GET | `/admin/moderation/reports/{id}` | Admin | EXISTS | Report detail + listing (AD7). | FR-ADMIN-7 |
+| POST | `/admin/moderation/reports/{id}/approve` | Admin | EXISTS | Approve listing (no action). | FR-ADMIN-7 |
+| POST | `/admin/moderation/reports/{id}/remove` | Admin | EXISTS | Remove listing. | FR-ADMIN-7 |
+| POST | `/admin/moderation/reports/{id}/edit-then-resolve` | Admin | EXISTS | Edit listing content + resolve. | FR-ADMIN-7 |
+| POST | `/admin/moderation/reports/{id}/warn` | Admin | EXISTS | Warn owner. | FR-ADMIN-7 |
+| POST | `/admin/moderation/reports/{id}/suspend` | Admin | NEW | Suspend owner (BE-M11.4). | BE-M11.4 |
 
 ### POST `/reports`
 
 **Request:**
 ```json
-{ "reportable_type": "academy", "reportable_id": 5, "reason": "outdated", "comment": "Fees listed are wrong" }
+{ "reportable_type": "post", "reportable_id": 5, "reason": "inappropriate", "comment": "Abusive content" }
 ```
-> `reportable_type` accepts: `academy`, `coach_profile`, `trial`, `tournament`, `scholarship`, `sponsorship`, `sports_venue`. `reason`: `fake`, `outdated`, `inappropriate`, `other`.
+> `reportable_type` accepts: `user`, `post`, `academy`, `coach_profile`, `organizer_profile`, `generalized_profile`, `trial`, `tournament`, `opportunity`, `program`, `facility`. `reason`: `fake`, `outdated`, `inappropriate`, `misleading`, `spam`, `other`.
 
 ---
 
 ## 16. Settings
 
-| Method | Path | Auth | Purpose | Source |
-|---|---|---|---|---|
-| GET | `/me/settings` | Any | Get user settings. | S11 |
-| PUT | `/me/settings` | Any | Update notification prefs, language, etc. | FR-PLAT-1 |
-| POST | `/me/delete-account` | Any | Request account deletion. | S11 |
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| GET | `/me/settings` | Any | CHANGED | Get user settings (+ visibility/messaging prefs, language, push toggles). | S11; BE-M7.5 |
+| PUT | `/me/settings` | Any | CHANGED | Update prefs (incl. `profile_visibility`, `who_can_message`, `who_can_connect`). | FR-PLAT-1 |
+| POST | `/me/delete-account` | Any | EXISTS | Request account deletion. | S11 |
+| POST | `/support/contact` | Any | NEW | Report-a-problem + contact form (S.24 P0). | delta §11.16 |
+
+## 16A. Discovery — Home, Explore, Leaderboard
+
+> **v3:** role-aware dashboards replace the 5 separate home screens; leaderboard is a **new P0 points engine** (BE-M8.1).
+
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| GET | `/me/home` | Any | NEW | One role-aware dashboard for all 5 homes: greeting, completion %, leaderboard strip/top-talents, shortcut counts (enquiries/registrations), feed preview. | AT.1, CO.2, AC.2, OR.2, SC.2 |
+| GET | `/explore` | Any | NEW | Grouped sections (athletes/coaches/academies/events/opportunities) for S.2/Explore; cheaper than 5 calls. | S.2 |
+| GET | `/leaderboard` | Any | NEW | Tabs (athletes/coaches/academies/teams/events), sport/location/age filters, podium + ranks 4–10; minors anonymized. | S.6; BE-M8.1 |
+| GET | `/leaderboard/strip` | Any | NEW | Top-5 for home (AT.1/CO.2/AC.2). | BE-M8.1 |
+
+**GET `/leaderboard` params:** `sport_id`, `city_id`, `age_group_id`, `season_id`, `tab`.
+**Response:** `{ "data": { "podium": [...], "ranks": [...], "season": { "id": 1, "name": "2026 Season" } }, "meta": { ... } }`
+
+**Leaderboard points** recalc on: verified achievement, profile-completion milestones, post/event participation (BE-M8.1). Admin config endpoints (`/admin/leaderboard-config`, `/admin/leaderboard/reset-season`) are P1.
+
+---
+
+## 16B. Social Feed — Posts, Likes, Comments **[NEW — verify partial first]**
+
+> Social feed/chat were **spec-excluded in the old design** — this is superseded (D7). Migrations/endpoints may be partially built; start each with a verify pass (delta §M7).
+
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| GET | `/feed` | Any | VERIFY/NEW | Tabs For You/Following/Athletes/Coaches/Academies/Events; S.9. | BE-M7.1 |
+| POST | `/posts` | Any | VERIFY/NEW | Text + media + hashtags + sport tag + audience (S.9). | BE-M7.1 |
+| GET/PATCH/DELETE | `/posts/{id}` | Any/Owner | VERIFY/NEW | Detail (S.27); edit/delete own. | BE-M7.1 |
+| POST/DELETE | `/posts/{id}/like` | Any | VERIFY/NEW | Toggle like + counts. | BE-M7.2 |
+| GET/POST | `/posts/{id}/comments` | Any | VERIFY/NEW | Comment list + add (S.27). | BE-M7.2 |
+| DELETE | `/comments/{id}` | Owner | NEW | Delete own comment. | BE-M7.2 |
+| GET | `/hashtags/trending` | Any | P1 | Hashtag + mention notifications (BE-P1.8). | BE-P1.8 |
+
+**POST `/posts` Request:** `{ "body": "...", "media": [101], "hashtags": ["cricket"], "sport_id": 1, "audience": "public" }`
+
+---
+
+## 16C. Network — Follow & Connect **[NEW]**
+
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| POST/DELETE | `/follow/{type}/{id}` | Any | NEW | One-way follow (athlete/coach/academy/event). | BE-M7.3 |
+| GET | `/me/followers` · `/me/following` | Any | NEW | S.19 tabs. | BE-M7.3 |
+| POST | `/connections` | Any | NEW | Connection request (athlete↔athlete; scout→athlete with purpose). | BE-M7.3, BE-M10.3 |
+| GET | `/me/connections` | Any | NEW | Tabs Connections/Requests/Sent. | BE-M7.3 |
+| PATCH | `/connections/{id}` | Any | NEW | Accept/decline → unlocks chat. | BE-M7.3 |
+| DELETE | `/connections/{id}` | Any | NEW | Cancel sent / remove connection. | BE-M7.3 |
+| GET | `/me/suggestions` | Any | P1 | Suggested-for-you (S.12). | BE-P1.8 |
+
+> **Minors (BE-M10.3):** contact/connect to a U-18 athlete routes to the guardian — guardian consent required before chat unlock.
+
+---
+
+## 16D. Messaging — Conversations **[NEW — verify partial first]**
+
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| GET | `/conversations` | Any | VERIFY/NEW | Tabs Chats/Requests, search, unread badges (S.17). | BE-M7.4 |
+| POST | `/conversations` | Any | NEW | Start from an accepted connection (or auto-create on accept). | BE-M7.4 |
+| GET | `/conversations/{id}` | Any | VERIFY/NEW | Thread (S.18); report/block entry. | BE-M7.4 |
+| POST | `/conversations/{id}/messages` | Any | VERIFY/NEW | Text P0; attachments P1. | BE-M7.4 |
+| PATCH | `/conversations/{id}/read` | Any | NEW | Read receipts. | BE-M7.4 |
+
+> **Rules enforced (BE-M7.4):** no cold DMs; open only for an accepted connection OR an enquiry thread; minors = guardian-allowed connections only; blocks hide content both ways.
+
+---
+
+## 16E. Scouting — Shortlist, Observations, Contact
+
+> The talent-scout role is **first-class** in v3 (`talent_scout_profiles`, 30 fields) — it is no longer only a side-guide. See `Talent-Scout-Implementation-Guide.md`.
+
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| GET | `/me/scout-dashboard` | Scout | NEW | Dashboard aggregates; or fold into `/me/home` (recommended). | SC.2; BE-M10.4 |
+| GET/POST/DELETE | `/me/shortlist` | Scout | CHANGED | Extend: `status` (under_review/good/high/final), `tags`, private `notes`, pipeline tabs. | SC.5/SC.6; BE-M10.1 |
+| POST/GET | `/observations` | Scout | NEW | Quick note + rating + optional media (SC.10). | BE-M10.2 |
+| POST | `/athletes/{id}/contact` | Scout | NEW | Purpose (trial invite/enquiry); U-18 routes to guardian (SC.13). | BE-M10.3 |
+| POST/GET | `/scout-reports` | Scout | P1 | 5-dimension assessment + conclusion (SC.8/SC.9). | BE-P1.6 |
+| GET | `/scout/compare?ids=` | Scout | P1 | Side-by-side scores (SC.7). | BE-P1.6 |
+
+**GET/POST `/me/shortlist` Request:** `{ "athlete_id": 12, "status": "under_review", "tags": ["fast-bowler"], "notes": "private note" }` — `shortlist/notes/reports` are **owner-only** (scout-data privacy policy).
+
+---
+
+## 16F. Programs & Facilities **[NEW]**
+
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| GET | `/me/programs` | Coach/Academy | NEW | Tabs Active/Drafts/Past (CO.4/AC.4). | BE-M6.1 |
+| POST/PUT | `/me/programs`, `/me/programs/{id}` | Coach/Academy | NEW | Full program form (CO.5); publish/draft. | BE-M6.1 |
+| GET | `/programs/{id}` | Any | NEW | Public program detail (D.11). | BE-M6.1 |
+| POST | `/programs/{id}/enquire` | Any | NEW | Preferred batch + message → creates chat thread (D.12 → S.18). | BE-M6.2 |
+| GET | `/me/facilities` | Academy | NEW | Tabs All/Grounds/Indoor/Gym/Other (AC.7). | BE-M6.3 |
+| POST/PUT/DELETE | `/me/facilities`, `/me/facilities/{id}` | Academy | NEW | Facility form (AC.8). | BE-M6.3 |
+| GET | `/facilities/{id}` | Any | NEW | Public facility detail (D.13). | BE-M6.3 |
+
+---
+
+## 16G. Events (unified create), Analytics & Share
+
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| POST | `/me/events?type=trial\|tournament\|camp` | Organizer/Academy (Coach/Athlete P1) | NEW/CHANGED | Unified create (OR.5); maps to `trials`/`tournaments` tables per §8 D2. | BE-M4.1 |
+| GET | `/me/events` | Provider | NEW | My Events (OR.4/AC.6) with registered counts, Upcoming/Past. | §11.6 |
+| GET | `/me/registrations` | Athlete | NEW | Unified My Registrations (upcoming/past) across trials+tournaments (AT.9). | §11.6 |
+| DELETE | `/me/registrations/{id}` | Athlete | NEW | Cancel registration. | §11.6 |
+| GET | `/events/{id}/registrations/export` | Provider | NEW | Registrant CSV/Excel export (OR.7). | BE-M4.3 |
+| GET/POST | `/events/{id}/schedule` | Provider | P1 | Timetable slots (OR.9). | BE-P1.2 |
+| GET | `/events/{id}/gallery` | Any | P1 | Gallery via media morph (OR.10). | BE-P1.2 |
+| POST | `/events/{id}/results` | Provider | P1 | Results (OR.11). | BE-P1.3 |
+| GET | `/events/{id}/analytics` | Provider | P1 | Views/regs/inquiries, timeline, sources (OR.12). | BE-P1.4 |
+| POST | `/events/{id}/announce` | Provider | P1 | Announce to registrants/followers (OR.14). | BE-P1.5 |
+| GET | `/share/{type}/{slug}` | Public | P1 | Deep-link resolver for profile/event/opportunity/post (S.30). | BE-M2.4 |
+| POST | `/analytics/events` | Any | NEW | Batch funnel logging (signup, registration, enquiry, shortlist) → feeds OR.12. | BE-M12.1 |
 
 ---
 
 ## 17. Provider — Coach Listing
 
-| Method | Path | Auth | Purpose | Source |
-|---|---|---|---|---|
-| GET | `/me/coach-profile` | Coach | Own listing. | FR-COACH-1 |
-| PUT | `/me/coach-profile` | Coach | Update listing. | FR-COACH-1 |
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| GET | `/me/coach-profile` | Coach | EXISTS | Own listing (+ programs tab data, rating aggregate P1). | FR-COACH-1 |
+| PUT | `/me/coach-profile` | Coach | EXISTS | Update listing (30 fields — `SportX_Mandatory_Fields.md` §2). | FR-COACH-1 |
 
 ---
 
 ## 18. Provider — Academy Listing & Trials
 
-| Method | Path | Auth | Purpose | Source |
-|---|---|---|---|---|
-| GET | `/me/academy` | Academy | Own academy listing. | FR-ACAD-1 |
-| PUT | `/me/academy` | Academy | Update listing. | FR-ACAD-1 |
-| GET | `/me/trials` | Academy/Organizer | My trials list (AC5/O4). | FR-ACAD-4, FR-ORG-2 |
-| POST | `/me/trials` | Academy/Organizer | Create trial (AC4/O3). | FR-ACAD-3, FR-ORG-2 |
-| PUT | `/me/trials/{id}` | Owner | Edit trial. | FR-ACAD-3, FR-ORG-2 |
-| PATCH | `/me/trials/{id}/publish` | Owner | Publish draft. | — |
-| PATCH | `/me/trials/{id}/close` | Owner | Close trial. | FR-ACAD-4 |
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| GET | `/me/academy` | Academy | EXISTS | Own academy listing (+ programs/facilities/events/reviews tab data). | FR-ACAD-1 |
+| PUT | `/me/academy` | Academy | EXISTS | Update listing (30 fields — `SportX_Mandatory_Fields.md` §3). | FR-ACAD-1 |
+| GET | `/me/trials` | Academy/Organizer | EXISTS | My trials list (AC5/O4). | FR-ACAD-4, FR-ORG-2 |
+| POST | `/me/trials` | Academy/Organizer | EXISTS | Create trial (AC4/O3). | FR-ACAD-3, FR-ORG-2 |
+| PUT | `/me/trials/{id}` | Owner | EXISTS | Edit trial. | FR-ACAD-3, FR-ORG-2 |
+| PATCH | `/me/trials/{id}/publish` | Owner | EXISTS | Publish draft. | — |
+| PATCH | `/me/trials/{id}/close` | Owner | EXISTS | Close trial. | FR-ACAD-4 |
+| GET/POST | `/me/facilities` | Academy | NEW | Facilities CRUD (see §16F; replaces `academies.facilities` JSON). | BE-M6.3 |
 
 ### POST `/me/trials`
 
@@ -490,13 +672,14 @@ All seven listing types share the same pattern: paginated card-list with consist
 
 ## 19. Provider — Organizer Tournaments
 
-| Method | Path | Auth | Purpose | Source |
-|---|---|---|---|---|
-| GET | `/me/tournaments` | Organizer | My tournaments list (O6). | FR-ORG-4 |
-| POST | `/me/tournaments` | Organizer | Create tournament (O5). | FR-ORG-3 |
-| PUT | `/me/tournaments/{id}` | Organizer | Edit tournament. | FR-ORG-3 |
-| PATCH | `/me/tournaments/{id}/publish` | Organizer | Publish. | — |
-| PATCH | `/me/tournaments/{id}/close` | Organizer | Close. | — |
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| GET | `/me/tournaments` | Organizer | EXISTS | My tournaments list (O6). | FR-ORG-4 |
+| POST | `/me/tournaments` | Organizer | EXISTS | Create tournament (O5); `event_type` supports camp/championship/league/etc. | FR-ORG-3 |
+| PUT | `/me/tournaments/{id}` | Organizer | EXISTS | Edit tournament. | FR-ORG-3 |
+| PATCH | `/me/tournaments/{id}/publish` | Organizer | EXISTS | Publish. | — |
+| PATCH | `/me/tournaments/{id}/close` | Organizer | EXISTS | Close. | — |
+| GET/POST/PUT | `/me/venues` | Organizer | P1 | Organizer-owned venues (OR.13); public browse exists. | BE-M6.4 |
 
 ### POST `/me/tournaments`
 
@@ -531,7 +714,25 @@ All routes prefixed `/api/v1/admin`. Require `role=admin` + 2FA-verified session
 | PUT | `/admin/content/{type}/{id}` | Admin | Update record. | FR-ADMIN-5 |
 | DELETE | `/admin/content/{type}/{id}` | Admin | Delete record. | FR-ADMIN-5 |
 
-> `{type}` = `academies`, `coaches`, `trials`, `tournaments`, `scholarships`, `sponsorships`, `sports_venues`. Each uses the same schema as the owner's own edit form.
+> `{type}` = `academies`, `coaches`, `trials`, `tournaments`, `opportunities`, `programs`, `facilities`, `posts`, `sports_venues`. **Changed:** `scholarships`/`sponsorships` are removed; the extended set adds opportunities/programs/facilities/posts (BE-M11.5). Each uses the same schema as the owner's own edit form.
+
+### Admin — User Management & Verification (NEW P0)
+
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| GET | `/admin/users` | Admin | NEW | Search + role/status filters (AD.3). | BE-M11.3 |
+| GET | `/admin/users/{id}` | Admin | NEW | User detail. | BE-M11.3 |
+| POST | `/admin/users/{id}/suspend` · `/ban` | Admin | NEW | Suspend/ban (uses `users.status`). | BE-M11.3 |
+| GET | `/admin/verification` | Admin | NEW | Verification queue (AD.4). | BE-M1.5 |
+| POST | `/admin/verification/{id}/approve` · `/reject` | Admin | NEW | Approve / reject + reason (queues result notification). | BE-M1.5 |
+
+### Admin — Leaderboard Config (P1)
+
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| GET/PUT | `/admin/leaderboard-config` | Admin | P1 | Points weights + season length (AD.11). | BE-M8.2 |
+| POST | `/admin/leaderboard/reset-season` | Admin | P1 | Reset active season. | BE-M8.2 |
+| POST/GET | `/admin/broadcasts` | Admin | P1 | Audience filter + schedule + FCM fan-out (AD.12). | BE-P1.9 |
 
 ### Expiry Rules & Monitor
 
@@ -559,6 +760,7 @@ All routes prefixed `/api/v1/admin`. Require `role=admin` + 2FA-verified session
 | POST | `/admin/categories/age-groups` | Admin | Add. | FR-ADMIN-12 |
 | PUT | `/admin/categories/age-groups/{id}` | Admin | Edit. | FR-ADMIN-12 |
 | DELETE | `/admin/categories/age-groups/{id}` | Admin | Remove (soft). | FR-ADMIN-12 |
+| GET/POST/PUT/DELETE | `/admin/categories/positions` | Admin | Positions master CRUD (S.4 filter; BE-M11.6). | BE-M11.6 |
 
 ---
 
@@ -584,32 +786,40 @@ All routes prefixed `/api/v1/admin`. Require `role=admin` + 2FA-verified session
 
 ## 22. Endpoint Count Summary
 
-| Module | Endpoints |
-|---|---|
-| Auth | 9 |
-| Onboarding | 6 |
-| Meta/Master Data | 4 |
-| Athlete Profile & Media | 6 |
-| Directories (7 listing types × 2) | 14 |
-| Universal Search | 2 |
-| Enquiries | 5 |
-| Trial Registrations | 6 |
-| Tournament Registrations | 5 |
-| Results | 2 |
-| Sponsorships & Applications | 12 |
-| Athlete Discovery | 1 |
-| Activity & Saved | 5 |
-| Notifications | 3 |
-| Reports (user + admin) | 8 |
-| Settings | 3 |
-| Coach Listing | 2 |
-| Academy Listing & Trials | 7 |
-| Organizer Tournaments | 5 |
-| Admin Auth & Dashboard | 3 |
-| Admin Content CRUD | 6 |
-| Admin Expiry | 5 |
-| Admin Categories | 12 |
-| Media Upload | 3 |
-| **Total** | **~141** |
+> Counts updated for the v3 delta. See `Backend-Feature-Delta.md` §11 roll-up: **P0 ≈ 70 new, ≈ 25 changed, ≈ 10 verify-first; P1 ≈ 30 new.** `sponsor` role routes (~12) are removed.
 
-> Approximate: includes 2 new `/sports-venues` endpoints. Some endpoints share paths under the same method. Exact count finalized during implementation.
+| Module | Endpoints | Notes |
+|---|---|---|
+| Auth & OTP | 17 | + send/verify/resend OTP, guardian consent, completion checklist, change-password |
+| Onboarding | 6 | scout added, sponsor removed |
+| Meta/Master Data | 7 | + positions, facilities, faqs |
+| Athlete Profile, Achievements & Media | 12 | + achievements CRUD, media gallery, verification, privacy |
+| Directories (incl. athletes/opportunities/programs/facilities) | 20 | scholarships/sponsorships removed |
+| Universal Search | 3 | + athletes group, POST recent-searches |
+| Discovery (home/explore/leaderboard) | 4 | new |
+| Enquiries | 5 | extended morphs |
+| Events (unified) + Registrations | ~20 | + schedule/gallery/results/analytics/announce, export |
+| Results | 2 | |
+| Opportunities & Applications | 10 | replaces Scholarships + Sponsorships |
+| Programs & Facilities | 8 | new |
+| Social Feed | 7 | verify-first |
+| Network (follow/connect) | 7 | new |
+| Messaging | 5 | verify-first |
+| Scouting | 8 | shortlist/observations/reports/contact |
+| Activity & Saved | 4 | extended morphs |
+| Notifications | 4 | extended types |
+| Trust & Safety (reports/blocks) | 9 | extended morphs + blocks |
+| Settings/Support | 4 | + privacy, support contact |
+| Provider (coach/academy/organizer) | 20 | + venues, facilities |
+| Admin Auth & Dashboard | 3 | |
+| Admin Users & Verification | 5 | new P0 |
+| Admin Content CRUD | 6 | extended `{type}` |
+| Admin Moderation | 8 | + suspend |
+| Admin Expiry | 5 | + opportunity type |
+| Admin Categories | 14 | + positions |
+| Admin Leaderboard/Broadcasts (P1) | 4 | |
+| Analytics/Share | 2 | |
+| Media Upload | 3 | |
+| **Approx. total** | **~230** | Includes ~110 new/changed v3 endpoints |
+
+> Approximate: some endpoints share paths under the same method; exact count finalized during implementation. **REMOVED:** `sponsor` onboarding/routes, `/scholarships*`, `/sponsorships*`, `/auth/verify-email` (superseded by OTP).

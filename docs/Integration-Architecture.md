@@ -1,8 +1,12 @@
 # Integration Architecture — SportX India
 
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
 How the Flutter mobile app and Laravel backend connect: API contracts, auth flow, error handling, third-party integrations.
 
-> **Scope:** Payments are **excluded** from MVP (stakeholder decision). Third-party integrations are limited to: OTP/email delivery (vendor undecided), push notifications (vendor undecided), Google OAuth, object storage, and a map preview embed. All undecided vendors are abstracted behind interfaces.
+> **Scope:** Payments are **excluded** from MVP (stakeholder decision). Third-party integrations are limited to: OTP delivery (**phone + email — P0**, vendor TBD), push notifications (vendor TBD), Google OAuth, object storage, and a map preview embed. All undecided vendors are abstracted behind interfaces.
+>
+> **Role model:** `athlete`, `coach`, `academy`, `organizer`, `scout`, `admin`. The `sponsor` role is **REMOVED** (sponsorship is now an `opportunities.type`); `scout` is added.
 
 ---
 
@@ -61,30 +65,34 @@ How the Flutter mobile app and Laravel backend connect: API contracts, auth flow
 
 ## 3. Authentication Flow
 
-### 3.1 Email OTP Registration & Login
+### 3.1 OTP Registration & Login (phone or email)
+
+> **P0 (D1/D5):** OTP is the primary signup/login path over **phone OR email**. `POST /auth/register` triggers an OTP instead of issuing an instant token; `POST /auth/send-otp` / `resend-otp` are rate-limited (60s cooldown, max 5 attempts — `otp_codes`).
 
 ```
-┌────────┐          ┌────────┐          ┌────────┐          ┌────────┐
-│ Flutter│          │  API   │          │  DB    │          │  Email │
-└───┬────┘          └───┬────┘          └───┬────┘          └───┬────┘
+┌────────┐          ┌────────┐          ┌────────┐          ┌────────────┐
+│ Flutter│          │  API   │          │  DB    │          │ Email / SMS│
+└───┬────┘          └───┬────┘          └───┬────┘          └───┬────────┘
     │                    │                    │                    │
     │ POST /auth/register│                    │                    │
-    │ {email, role}      │                    │                    │
+    │ {email|phone, role}│                    │                    │
     │───────────────────►│                    │                    │
-    │                    │ INSERT user        │                    │
+    │                    │ INSERT user (pending)                   │
     │                    │───────────────────►│                    │
+    │                    │ POST /auth/send-otp │                    │
     │                    │ Queue SendOtpJob    │                    │
     │                    │───────────────────►│                    │
-    │                    │                    │ Send OTP code      │
+    │                    │                    │ Send 6-digit code  │
     │                    │                    │───────────────────►│
-    │ ◄── 202 {email}   │                    │                    │
+    │ ◄── 202 {channel} │                    │                    │
     │                    │                    │                    │
-    │ POST /auth/verify  │                    │                    │
-    │ {email, code}      │                    │                    │
+    │ POST /auth/verify-otp                   │                    │
+    │ {email|phone, code}│                    │                    │
     │───────────────────►│                    │                    │
     │                    │ Validate code hash │                    │
     │                    │───────────────────►│                    │
-    │ ◄── 200 {token}   │                    │                    │
+    │ ◄── 200 {token,   │                    │                    │
+    │      needs_onboarding}                  │                    │
     │                    │                    │                    │
     │ GET /onboarding/..│                    │                    │
     │ [Bearer token]     │                    │                    │
@@ -98,10 +106,10 @@ How the Flutter mobile app and Laravel backend connect: API contracts, auth flow
 
 ### 3.2 Login (Password or OTP)
 
-- **Password:** `POST /auth/login {email, password}` → validate bcrypt → issue token.
-- **OTP login:** `POST /auth/login {email, otp_code: true}` → API sends OTP to email → user submits `POST /auth/verify-otp` → token.
-  - Alternative: single-step `POST /auth/login {email, otp_code: "123456"}` if OTP already sent — design choice left to implementation (AS-28).
-- **Google:** OAuth 2.0 redirect; backend exchanges code for Google token → find-or-create user → issue Sanctum token. `email_verified_at` set from Google account.
+- **Password:** `POST /auth/login {email, password}` → validate bcrypt → issue token. (Password auth is **kept** alongside OTP.)
+- **OTP login:** `POST /auth/login {email|phone, otp_code: true}` → API sends OTP → user submits `POST /auth/verify-otp` → token.
+  - Alternative: single-step `POST /auth/login {email|phone, otp_code: "123456"}` if OTP already sent — design choice left to implementation (AS-28).
+- **Google:** OAuth 2.0 redirect; backend exchanges code for Google token → find-or-create user → issue Sanctum token. `email_verified_at` set from Google account. (**Confirm P0 — decision D9.**)
 
 ### 3.3 Token Lifecycle
 
@@ -137,6 +145,15 @@ class AuthInterceptor extends Interceptor {
   }
 }
 ```
+
+### 3.5 Guardian Consent (minors, DOB < 18)
+
+> **P0 (D4 — closes AS-34).** An athlete account with DOB < 18 cannot activate its profile until a guardian consent is verified.
+
+- `POST /guardian/consent` → guardian name/phone/relationship stored; OTP sent to the guardian's phone.
+- `POST /guardian/verify-otp` → verifies consent; unlocks the minor's profile.
+- `GET/PUT /me/guardian-controls` → parent controls: `allow_messages`, `allow_public_profile`, `leaderboard_name_mode`.
+- **Enforcement:** backend policies gate chat (guardian-allowed connections only), discovery visibility, and leaderboard name anonymization for minors.
 
 ---
 
@@ -202,14 +219,15 @@ Flutter                                    Laravel API                    Object
 | Scope | `email`, `profile` (read-only) |
 | Data stored | `google_id` on `users` table; email and name from Google account |
 
-### 6.2 OTP/Email Provider (abstract)
+### 6.2 OTP Provider (abstract) — phone + email, P0
 
 | Aspect | Detail |
 |---|---|
-| Interface | `App\Services\OtpProvider` — `send(destination, code): bool` |
+| Interface | `App\Services\OtpProvider` — `send(destination, code, channel): bool` |
+| Channels | **email and phone (SMS)** — OTP for both is P0 (D1/D5) |
 | Dev default | `LogOtpProvider` — writes to Laravel log |
 | Production swap | Bind implementation in `AppServiceProvider` when vendor chosen |
-| Candidates | MSG91, Twilio, Amazon SES, SendGrid, Postmark (none committed — AS-03) |
+| Candidates | MSG91, Twilio (SMS); Amazon SES, SendGrid, Postmark (email) — **SMS vendor selection is now blocking (AS-03)** |
 
 ### 6.3 Push Notification Provider (abstract)
 
@@ -228,7 +246,7 @@ Flutter                                    Laravel API                    Object
 | Driver | Laravel Filesystem `s3` disk (AWS S3, Cloudflare R2, or compatible) |
 | CDN | CloudFront or similar in front of bucket (AS-07) |
 | Public assets | Academy photos, coach photos, trial/tournament banners — public-read ACL |
-| Private assets | Verification documents (organizer/sponsor onboarding), trial registration documents — signed URL on access |
+| Private assets | Verification documents (`verification_requests` — provider/org onboarding), trial registration documents, guardian consent artefacts — signed URL on access |
 
 ### 6.5 Map Preview (T2 "Location" section)
 
@@ -257,7 +275,7 @@ NotificationService::send(user, NotificationDto)
       FCM / other → user's device
 ```
 
-**Deep linking:** Notifications carry `notifiable_type` + `notifiable_id`. Flutter uses these to navigate to the relevant screen (e.g. tap enquiry reply notification → open thread).
+**Deep linking:** Notifications carry `notifiable_type` + `notifiable_id`. Flutter uses these to navigate to the relevant screen (e.g. tap enquiry reply notification → open thread). The `notifications.type` enum is extended for the new design: `reminder`, `enquiry_reply`, `status_update`, `follow`, `connection_request`, `connection_accepted`, `message`, `enquiry`, `registration_decision`, `verification_result`, `mention`, `broadcast`, `opportunity_deadline`.
 
 ---
 
@@ -269,8 +287,8 @@ By stakeholder decision, **no payment gateway is integrated in this MVP**. The i
 |---|---|
 | Trial entry fee | Display-only string on trial detail and registration form ("payment note") — no checkout flow |
 | Tournament entry fee | Same as trial; organizer manually tracks `payment_status` flag |
-| Sponsorship stipend | Display-only string in the sponsorship listing |
-| Scholarship amount | Display-only on the scholarship feed |
+| Opportunity amount (sponsorship/scholarship) | Display/sort-only numeric `opportunities.amount` in the unified opportunities listing |
+| Program price / facility booking | Display-only strings (`programs.price`, `sports_venues.pricing`) |
 
 This is documented as **AS-33** in `Glossary-and-Assumptions.md`.
 

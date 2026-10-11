@@ -1,9 +1,29 @@
 # SportX India — Design Implementation Plan (v2)
 
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
 **Date:** 2026-08-09
-**Design Source:** `sportsx-design-v1/` (78 HTML screens)
+**Design Source:** `sportsx-design-v1/` (78 HTML screens) — **[SUPERSEDED: current source is `sportsx-design-v3/`]**
 **Target:** Flutter Mobile App + Admin Web Panel
 **Architecture Reference:** `docs/Mobile-Architecture.md`, `docs/Admin-Panel-Implementation-Prompt.md`
+
+> **⚠️ [SUPERSEDED — see Backend-Feature-Delta.md].** This plan targeted `sportsx-design-v1/` (78 screens, sponsor role, no OTP/feed/leaderboard). The current design is `sportsx-design-v3/new_design_docs/` (**129 screens, 6 roles; sponsor removed**) which adds OTP auth (A.3–A.6), guardian consent (A.9/AT.10), verification (A.10/AD.4), social feed/posts (S.9/S.27), connections/chat (S.17–S.19), leaderboard (S.6/S.7), unified opportunities (D.9/D.10/AT.8), programs (CO.4/CO.5), facilities (AC.7/AC.8) and admin users/verification (AD.3/AD.4). See **§v3** below for the updated scope; the v1 mapping/phases are retained for history.
+
+---
+
+## v3 scope delta (what changes vs this plan)
+
+| Area | This plan (v1) | New (v3) |
+|---|---|---|
+| Roles | 6 incl. Sponsor | 5 selectable roles (Athlete/Parent, Coach, Academy, Organizer, Scout) + Admin; **Sponsor removed** |
+| Screens | 78 HTML / 63 mobile | **129 screens** (`SCREEN_INVENTORY.md`) — 94 P0 / 25 P1 / 10 P2 |
+| Auth | email+password, OTP screen existing | **OTP P0** (phone/email), guardian consent, verification request |
+| Profile | basic | **30 fields per role** (`SportX_Mandatory_Fields.md`) + completion checklist (AT.6) |
+| New modules | — | Feed/posts, follow/connect, 1-to-1 chat, leaderboard, opportunities, programs, facilities |
+| Dashboards | per-role screens | unified `GET /me/home` + `GET /explore` |
+| Admin | content/moderation/categories/expiry | + **user management (AD.3)** and **verification queue (AD.4)** |
+
+**New v3 implementation phases to add:** (1) OTP + guardian-consent auth; (2) verification request/queue; (3) feed/posts/likes/comments; (4) follow/connect + chat; (5) leaderboard; (6) unified opportunities + applications; (7) programs + facilities; (8) admin users + verification; (9) settings/privacy/safety + share. Remove all `sponsor/` work (Phase 5 sponsor tasks, Phase 8 sponsor-verification page).
 
 ---
 
@@ -24,6 +44,8 @@ This plan outlines how to implement the new mobile and admin panel designs from 
 ---
 
 ## 2. Design Source Analysis
+
+> **[SUPERSEDED]** — this analyses `sportsx-design-v1/` (includes Sponsor). For v3 see the companion docs `sportsx-design-v3/new_design_docs/SCREEN_INVENTORY.md` + `MVP_FEATURE_LIST.md`.
 
 ### 2.1 Mobile Screens (63 files)
 
@@ -214,7 +236,7 @@ class AppColors {
 - [ ] Coach dashboard + enquiries
 - [ ] Academy dashboard + trials + registrants
 - [ ] Organizer dashboard + tournaments + capacity
-- [ ] Sponsor dashboard + applications
+- [ ] ~~Sponsor dashboard + applications~~ **[REMOVED — sponsor role dropped]**
 - [ ] Talent Scout dashboard + discovery + shortlist
 
 ### Phase 6: Athlete Features
@@ -222,8 +244,8 @@ class AppColors {
 
 - [ ] Profile view/edit update
 - [ ] Media gallery update
-- [ ] Scholarship/sponsorship screens update
-- [ ] Apply sponsor form update
+- [ ] **[v3]** Opportunity screens update (replaces scholarship/sponsorship)
+- [ ] **[v3]** Apply/pitch form update (replaces sponsor-pitch)
 
 ### Phase 7: Cross-Cutting Features
 **Duration:** 2-3 days
@@ -240,9 +262,9 @@ class AppColors {
 - [ ] Admin dashboard redesign
 - [ ] Analytics page creation
 - [ ] User management update
-- [ ] Moderation queue update
-- [ ] Sponsor verification page
-- [ ] Category management update
+- [ ] Moderation queue update (+ user/post targets)
+- [ ] ~~Sponsor verification page~~ **[REMOVED]** → **Verification queue (AD.4)** + **User management (AD.3)**
+- [ ] Category management update (+ positions)
 - [ ] Report center update
 - [ ] Notification templates update
 - [ ] System settings page
@@ -265,7 +287,7 @@ sportsx/src/  # Old TypeScript React source (if replaced by Flutter)
 **/backup/**/*.html
 ```
 
-**Note:** Based on current glob search, no old reference files were found in the workspace. The `sportsx-design-v1/` folder IS the current design source.
+**Note:** **[SUPERSEDED]** The current design source is **`sportsx-design-v3/`** (see `sportsx-design-v3/new_design_docs/SCREEN_INVENTORY.md`), not `sportsx-design-v1/`. Do not delete `sportsx-design-v3/`.
 
 ---
 
@@ -296,8 +318,8 @@ sportsx/src/  # Old TypeScript React source (if replaced by Flutter)
 
 After implementation:
 
-- [ ] All 63 mobile screens match design fidelity
-- [ ] All 11 admin screens match design fidelity
+- [ ] All **129** v3 screens (`SCREEN_INVENTORY.md`) match design fidelity **[was 63]**
+- [ ] All **12** admin screens (AD.1–AD.12) match design fidelity **[was 11, incl. sponsor-verification]**
 - [ ] No horizontal overflow on 360px, 390px, 430px viewports
 - [ ] Design tokens consistent across all screens
 - [ ] Interactive states (hover, focus, disabled, loading) match design
@@ -358,11 +380,15 @@ sportx_app/
 │       ├── coach/                    # Phase 4
 │       ├── trial/                    # Phase 4
 │       ├── tournament/               # Phase 4
-│       ├── scholarship/              # Phase 6
-│       ├── sponsorship/              # Phase 6
+│       ├── opportunities/            # [v3] Phase 6 (replaces scholarship/sponsorship)
+│       ├── programs/                 # [v3] programs/facilities
+│       ├── facilities/               # [v3]
+│       ├── feed/                     # [v3] social feed + posts
+│       ├── network/                  # [v3] follow/connect
+│       ├── messaging/                # [v3] chat
+│       ├── leaderboard/              # [v3]
 │       ├── organizer/                # Phase 5
-│       ├── sponsor/                  # Phase 5
-│       ├── talent_scout/             # Phase 5 (new)
+│       ├── scout/                    # [v3] Phase 5 (was talent_scout)
 │       ├── admin/                    # Phase 8
 │       ├── saved/                    # Phase 7
 │       ├── activity/                 # Phase 7
@@ -376,9 +402,10 @@ sportx-api/
 │   ├── dashboard.blade.php          # Phase 8
 │   ├── analytics.blade.php          # Phase 8 (new)
 │   ├── users.blade.php              # Phase 8
-│   ├── moderation.blade.php         # Phase 8
-│   ├── sponsor-verification.blade.php # Phase 8 (new)
-│   ├── categories.blade.php         # Phase 8
+│   ├── moderation.blade.php          # Phase 8
+│   ├── verification.blade.php        # [v3] Phase 8 (verification queue AD.4; replaces sponsor-verification)
+│   ├── users.blade.php               # [v3] Phase 8 (user management AD.3)
+│   ├── categories.blade.php          # Phase 8
 │   ├── reports.blade.php            # Phase 8
 │   ├── notifications.blade.php      # Phase 8
 │   └── system-settings.blade.php    # Phase 8 (new)

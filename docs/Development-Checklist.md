@@ -1,13 +1,16 @@
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
 # Development Checklist — SportX India
 
 Trackable checklist organized by phase and module. Maps to Jira ticket IDs in `Jira-Tickets.md` and feature IDs in `Functional-Requirements.md`.
 
-> **Last Updated:** 2026-09-04
+> **Last Updated:** 2026-09-04 (v3 sync)
 >
-> **Design Source:** `sportsx-design-v1/` (78 HTML screens - mobile + admin)
+> **Design Source:** old `sportsx-design-v1/` (78 HTML screens); **v3 source:** `sportsx-design-v3/new_design_docs/`
 >
-> **Backend Status:** ~136/141 endpoints implemented
-> **Flutter Status:** All 63 screens implemented (UI complete)
+> **v3 backend status:** old spec ~136/141 implemented — **now superseded by the v3 delta** (≈70 new P0 + ≈25 changed + ≈10 verify-first; `Backend-Feature-Delta.md` §11). **Role model:** `athlete, coach, academy, organizer, scout, admin` — `sponsor` REMOVED, `scout` added. **Auth:** OTP (phone/email) is P0 again.
+>
+> **⚠️ SUPERSEDED phases:** Phase 0-E2 (Phone/OTP legacy) and Phase 5 (Phone/OTP → Email/Password) are **[SUPERSEDED — see Backend-Feature-Delta.md]**. The v3 P0 work is tracked in **Phase 8** below.
 >
 > **Design Tokens (from `sportsx-design-v1/`):**
 > - Primary Blue: `#1677ff`, Surface: `#f7f8fa`, Text: `#111111`, Muted: `#6b7280`
@@ -40,10 +43,9 @@ Trackable checklist organized by phase and module. Maps to Jira ticket IDs in `J
 - [x] Shared models complete
 - [x] Flutter theme with design tokens
 
-### P0-E2: Auth API (Phone/OTP - Legacy)
+### P0-E2: Auth API (Phone/OTP - Legacy) — [SUPERSEDED — see Backend-Feature-Delta.md]
 
-> **⚠️ DEPRECATED:** Auth system is being changed to Email/Password.
-> See Phase 5 for new auth implementation.
+> **⚠️ SUPERSEDED (v3, D1):** OTP is **P0 again**. The old "replace OTP with email/password" plan is reversed — the OTP stack is re-created (phone **or** email) **alongside** password login. See Phase 8.
 
 - [x] `POST /auth/register` — phone-based (to be replaced)
 - [x] `POST /auth/verify-otp` — OTP verification (to be replaced)
@@ -61,11 +63,11 @@ Trackable checklist organized by phase and module. Maps to Jira ticket IDs in `J
 ### Auth UI (Flutter)
 
 - [x] S1 Splash screen (3-dot pulse animation implemented)
-- [x] S2 Role Selection (60px top padding, 6 role cards)
-- [x] S3 Sign Up (Full Name field first, Email, Phone, Password order)
-- [x] S4 OTP Verification (email-based verification)
-- [x] S5 Login (email/password only)
-- [x] Auth state management (email/password flow)
+- [x] S2 Role Selection (60px top padding; 5 public roles — **scout added, sponsor removed**)
+- [x] S3 Sign Up (Full Name field first, Email, Phone, Password order; triggers OTP — v3)
+- [x] S4 OTP Verification (phone **or** email 6-digit OTP — v3 D1)
+- [x] S5 Login (email/password + phone/email OTP branch — v3)
+- [x] Auth state management (password + OTP flow)
 
 ### Onboarding & Profile
 
@@ -89,8 +91,8 @@ Trackable checklist organized by phase and module. Maps to Jira ticket IDs in `J
 - [x] A9/A10 Coach Directory + Detail
 - [x] A12/A13 Trial Listings + Detail
 - [x] A16/A17 Tournament Calendar + Detail
-- [x] A19/A20 Scholarship Feed + Detail
-- [x] A21/A22 Sponsorship List + Detail
+- [x] A19/A20 Scholarship Feed + Detail — **[SUPERSEDED — see Backend-Feature-Delta.md]** now `opportunities`
+- [x] A21/A22 Sponsorship List + Detail — **[SUPERSEDED — see Backend-Feature-Delta.md]** now `opportunities`
 - [x] Sports Venue Directory + Detail
 
 ### Save & Report
@@ -124,22 +126,28 @@ Trackable checklist organized by phase and module. Maps to Jira ticket IDs in `J
 - [x] O2-O10 Organizer Tournament Management
 - [x] A24 Activity Hub — Tournaments tab
 
-### Sponsorship Applications
+### Sponsorship Applications — [SUPERSEDED — see Backend-Feature-Delta.md]
 
-- [x] A23 Apply/Pitch to Sponsor
-- [x] SP1-SP9 Sponsor Screens
-- [x] A24 Activity Hub — Sponsorships tab
+> Sponsor role REMOVED (v3 D2). Applicants now apply to unified `opportunities` (scholarship/sponsorship/tryout/camp) via `/opportunities/{id}/apply`. See Phase 8.
+
+- [x] A23 Apply/Pitch to Sponsor — **[SUPERSEDED]** now `POST /opportunities/{id}/apply`
+- [x] SP1-SP9 Sponsor Screens — **[SUPERSEDED]** sponsor role/routes removed
+- [x] A24 Activity Hub — Sponsorships tab — now `opportunities`
 
 ### Coach Browse Mode
 
 - [x] C6 Coach Browse Mode
 
-### Talent Scout
+### Talent Scout — first-class role (v3)
 
-- [ ] TS2/TS3 Talent Scout Dashboard + Athlete Discovery (search/filter)
-- [ ] TS4 Talent Scout Athlete Profile View
-- [ ] TS5 Talent Scout Shortlist
-- [ ] TS6 Talent Scout Connection/Enquiry
+> **v3:** the scout role is now first-class (was a side-guide). 30 fields in `talent_scout_profiles`; shortlist status/tags/notes; observations; guardian contact for U-18 (`Talent-Scout-Implementation-Guide.md`).
+
+- [ ] SC.1 Scout onboarding + `talent_scout_profiles` (30 fields)
+- [ ] SC.2 Scout dashboard (fold into `/me/home`)
+- [ ] SC.4/SC.5/SC.6 Athlete search + shortlist (status/tags/notes, pipeline tabs)
+- [ ] SC.10 Observations
+- [ ] SC.13 Contact athlete/parent via guardian connection
+- [ ] SC.8/SC.9 Scout reports (P1)
 
 ---
 
@@ -153,7 +161,7 @@ Trackable checklist organized by phase and module. Maps to Jira ticket IDs in `J
 - [x] AD6-AD7 Moderation Queue + Detail
 - [x] AD8-AD9 Expiry Rules + Monitor
 - [x] AD10-AD12 Category Management
-- [x] FR-ADMIN-11 Scholarship CRUD
+- [x] FR-ADMIN-11 Scholarship CRUD — **[SUPERSEDED — see Backend-Feature-Delta.md]** now unified `opportunities` + admin verification/user mgmt (Phase 8)
 - [x] Admin Web Panel views (`admin/*.blade.php`)
 
 ### Auto-Expiry Engine
@@ -189,7 +197,9 @@ Trackable checklist organized by phase and module. Maps to Jira ticket IDs in `J
 
 ---
 
-## Phase 5 — UI Completion & Auth Redesign ✅ COMPLETED
+## Phase 5 — UI Completion & Auth Redesign — [SUPERSEDED — see Backend-Feature-Delta.md]
+
+> **⚠️ SUPERSEDED (v3, D1):** the "Phone/OTP → Email/Password" auth change described below is reversed — OTP is P0 again. The email/password endpoints/mailables remain (password auth is kept), but OTP + `otp_codes` are re-added. UI fixes from this phase remain valid. See Phase 8 for the v3 P0 auth work.
 
 ### ⚠️ Auth System (Phone/OTP → Email/Password)
 
@@ -275,6 +285,74 @@ Trackable checklist organized by phase and module. Maps to Jira ticket IDs in `J
 
 ---
 
+## Phase 8 — v3 P0 Delta (new design) 🔴 IN PROGRESS
+
+> Source of truth: `Backend-Feature-Delta.md` §1 (P0), §11 (endpoint catalog), `SportX_Mandatory_Fields.md` (30 fields/role). Build order: delta §9.
+
+### 8.1 Roles, Auth & Trust (BE-M1.x)
+
+- [ ] `UserRole` enum: remove `sponsor`, add `scout` (middleware/policies/seeders/admin filters)
+- [ ] OTP stack: re-create `otp_codes`; `POST /auth/send-otp`, `/auth/verify-otp`, `/auth/resend-otp` (phone + email); `RateLimitOtp`
+- [ ] Keep email/password login + reset (do NOT drop)
+- [ ] Guardian consent: `guardian_consents`, `POST /guardian/consent`, `/guardian/verify-otp`, `GET/PUT /me/guardian-controls`; enforce < 18
+- [ ] Verification: `verification_requests`, `POST/GET /me/verification`, `GET/POST /admin/verification` + approve/reject + badge surfacing
+- [ ] Profile completion checklist API `GET /me/completion-checklist` per role
+
+### 8.2 Profiles (30 fields/role) (BE-M1.3, BE-M2.x)
+
+- [ ] `talent_scout_profiles` (30 fields) + `POST /onboarding/scout` + `/me/scout-profile`
+- [ ] `athlete_sports` pivot: `playing_role`, `level`, `experience_years`, `is_primary`
+- [ ] Typed `achievements` CRUD; `GET /me/media`; social links; privacy (`PUT /me/privacy`)
+- [ ] Other profiles collect all 30 fields from `SportX_Mandatory_Fields.md`
+
+### 8.3 Opportunities (BE-M5.x)
+
+- [ ] `opportunities` table + `opportunity_applications`
+- [ ] `GET /opportunities`, `/opportunities/{id}`, `POST /me/opportunities`, edit/publish/close, `POST /opportunities/{id}/apply`, `GET /me/opportunities?type=`
+- [ ] Migrate `sponsorships`/`scholarships` → `opportunities`; `sponsorship_applications` → `opportunity_applications`; old endpoints 410
+- [ ] Applicant review (P1): `GET /opportunities/{id}/applications`, `PATCH …/applications/{app}`
+
+### 8.4 Programs & Facilities (BE-M6.x)
+
+- [ ] `programs` table + CRUD + public detail + Explore surfacing
+- [ ] `facilities` table + CRUD + public detail (replace `academies.facilities` JSON)
+- [ ] Program enquiry → chat thread (`POST /programs/{id}/enquire`)
+
+### 8.5 Discovery, Leaderboard & Search (BE-M3.x, BE-M8.x)
+
+- [ ] `GET /me/home` (role-aware) + `GET /explore`
+- [ ] Athletes group in `/search`; recent-searches POST; enriched cards; distance sort; position/level/facility/price/rating filters
+- [ ] `leaderboard_scores` + `leaderboard_seasons` + points engine + `RecalculateLeaderboardJob`
+- [ ] `GET /leaderboard` + `GET /leaderboard/strip` (+ P1 admin config)
+
+### 8.6 Social, Network & Messaging (BE-M7.x) — verify partial first
+
+- [ ] Posts + feed (`/feed`, `/posts*`, likes, comments)
+- [ ] Follows + connection requests (`/follow*`, `/connections*`)
+- [ ] 1:1 chat (`/conversations*`); rules: accepted connection / enquiry thread; minors guardian-only
+- [ ] Blocks + report user/post; privacy enforcement
+
+### 8.7 Scouting (BE-M10.x)
+
+- [ ] Shortlist status/tags/notes (`/me/shortlist`); observations; reports (P1)
+- [ ] `POST /athletes/{id}/contact` (guardian routing for U-18)
+
+### 8.8 Admin P0 (BE-M1.5, BE-M11.x)
+
+- [ ] `GET /admin/users` (+ filters), detail, suspend/ban
+- [ ] Verification queue approve/reject
+- [ ] Content `{type}` extensions: opportunities/programs/facilities/posts; moderation suspend; positions master
+- [ ] Registrant export CSV (`GET /events/{id}/registrations/export`)
+- [ ] `analytics_events` log (`POST /analytics/events`)
+
+### 8.9 Notifications, Jobs & Policies
+
+- [ ] Notification `type` enum extensions + events/listeners (`RegistrationDecided`, `VerificationDecided`, `ConnectionAccepted`)
+- [ ] `RecalculateLeaderboardJob`, `ResetLeaderboardSeasonJob`; expiry + opportunities
+- [ ] Policies: minors, scout-data privacy, provider posting matrix, review gating, no cold DMs
+
+---
+
 ## Summary — Remaining Items
 
 ### Auth System (Phase 5) ✅ COMPLETED
@@ -306,9 +384,24 @@ Trackable checklist organized by phase and module. Maps to Jira ticket IDs in `J
 ### Deferred to Phase 7
 | Item | Status |
 |------|--------|
-| Google OAuth | Pending |
+| Google OAuth | Pending (P1 / confirm D9) |
 | Auto waitlist promotion | Pending |
 | Load testing | Pending |
+
+### v3 P0 Delta (Phase 8)
+| Item | Status |
+|------|--------|
+| Roles (scout add / sponsor remove) | Pending |
+| OTP stack (phone + email) | Pending |
+| Guardian consent | Pending |
+| Verification queue + admin user mgmt | Pending |
+| Opportunities (unified) + migration | Pending |
+| Programs + facilities | Pending |
+| Social feed + chat + follows + blocks | Pending (verify first) |
+| Leaderboard points engine | Pending |
+| Discovery (`/me/home`, `/explore`) + athlete search | Pending |
+| Profiles 30 fields + scout onboarding | Pending |
+| Notifications matrix + jobs + policies | Pending |
 
 ---
 
@@ -316,9 +409,12 @@ Trackable checklist organized by phase and module. Maps to Jira ticket IDs in `J
 
 | Document | Purpose |
 |----------|---------|
+| `docs/Backend-Feature-Delta.md` | **v3 source of truth** — new/changed/removed backend features + full endpoint catalog |
+| `sportsx-design-v3/new_design_docs/SportX_Mandatory_Fields.md` | 30 profile fields per role (mandatory/optional) |
+| `docs/Database-Design.md` | Canonical v3 schema |
 | `docs/Design-Implementation-Plan.md` | Design source analysis, screen mapping |
 | `docs/UI-Completion-And-Backend-Wiring-Plan.md` | UI fixes, backend wiring, auth change |
 | `docs/Production-Backend-Plan.md` | Production hardening, OAuth, monitoring |
-| `sportsx-design-v1/` | 78 HTML design files (mobile + admin) |
+| `sportsx-design-v1/` | Legacy 78 HTML design files (mobile + admin) |
 | `docs/Admin-Panel-Implementation-Prompt.md` | Admin web panel specs |
 | `docs/Mobile-Architecture.md` | Flutter architecture |

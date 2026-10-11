@@ -1,8 +1,66 @@
 # SportX India — Design-to-Flutter Screen Mapping
 
-Maps each screen in `sportsx/src/screens/` (design prototype) to the equivalent Flutter screen in `sportx_app/lib/`.
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
+Maps each design screen to the equivalent Flutter screen in `sportx_app/lib/`.
+
+> **⚠️ [SUPERSEDED — see Backend-Feature-Delta.md].** The old mapping below referenced `sportsx/src/screens/` (TypeScript prototype, **90 screens incl. Sponsor**). The v3 source of truth is `sportsx-design-v3/new_design_docs/SCREEN_INVENTORY.md` (**129 screens, 6 roles; sponsor removed**), with new modules for feed/posts, follow/connect, chat, leaderboard, opportunities, programs, facilities, verification and guardian consent. **§v3 (below) is authoritative**; old tables are kept for history.
 
 ---
+
+## v3 mapping (authoritative) — new screen IDs → Flutter
+
+> Target files use `sportx_app/lib/features/<module>/presentation/screens/`. New modules per `Mobile-Architecture.md` §6. Status: ✅ exists · ⚠️ partial · 🆕 to build.
+
+| New screen | Purpose | Target Flutter file | Status |
+|---|---|---|---|
+| A.1 Splash | splash | `auth/.../splash_screen.dart` | ✅ |
+| A.2 Role Selection | 5 roles | `auth/.../role_selection_screen.dart` | ⚠️ (remove Sponsor card) |
+| A.3 Sign Up | phone/email | `auth/.../sign_up_screen.dart` | ⚠️ (add OTP channel) |
+| A.4 OTP Verification | OTP + resend | `auth/.../otp_screen.dart` | 🆕 (wire `/auth/send-otp`,`/verify-otp`,`/resend-otp`) |
+| A.5 Login | password/OTP | `auth/.../login_screen.dart` | ⚠️ |
+| A.6 Forgot/Reset | OTP reset | `auth/.../forgot_password_screen.dart` | 🆕 |
+| A.7 Language · A.8 Permissions | locale/permissions | `settings/...`, `onboarding/...` | 🆕 |
+| A.9 Guardian Consent | minors | `guardian/.../guardian_consent_screen.dart` | 🆕 |
+| A.10 Verification Request | blue check | `verification/.../verification_screen.dart` | 🆕 |
+| S.1 Home shell | role dashboard | `home/.../home_screen.dart` | ⚠️ (call `GET /me/home`) |
+| S.2/S.3 Explore + category list | discovery | `directory/.../directory_list_screen.dart` + `GET /explore` | ⚠️ |
+| S.4 Filter & Sort | filters | `search/.../search_filter_screen.dart` | ⚠️ |
+| S.5 Universal Search | search | `search/.../search_screen.dart` | ⚠️ (+athletes group) |
+| S.6/S.7 Leaderboard + Info | ranked list | `leaderboard/.../leaderboard_screen.dart` | 🆕 |
+| S.8 Create Launcher | action grid | `feed/.../create_launcher_screen.dart` | 🆕 |
+| S.9 Create Post | post compose | `feed/.../create_post_screen.dart` | 🆕 |
+| S.10 Upload Media · S.11 Achievement | media/achievements | `profile/...`, `profile/.../add_achievement_screen.dart` | 🆕 |
+| S.12 Network (P1) · S.13/S.14 Groups (P2) | community | `network/.../network_screen.dart` | 🆕 |
+| S.15 More / account hub | account | `settings/.../more_screen.dart` | 🆕 |
+| S.16 Notifications | activity | `notifications/.../notifications_screen.dart` | ✅/⚠️ (tabs) |
+| S.17/S.18 Inbox + Chat | messaging | `messaging/.../conversations_screen.dart`, `chat_screen.dart` | 🆕 |
+| S.19 Connections | network mgmt | `network/.../connections_screen.dart` | 🆕 |
+| S.20 Saved | bookmarks | `saved/.../saved_screen.dart` | ✅/⚠️ |
+| S.21 My Activity | own feed | `activity/.../activity_hub_screen.dart` | ✅ |
+| S.22–S.26 Settings/Safety/Help/About/Report | settings+safety | `settings/...`, `reports/.../report_sheet.dart` | 🆕/⚠️ |
+| S.27 Post Detail · S.28 Media Viewer | post/media | `feed/.../post_detail_screen.dart`, `.../media_viewer_screen.dart` | 🆕 |
+| S.29 Logout · S.30 Share/Deep link | share | `settings/...`, `share/.../share_sheet.dart` | 🆕 |
+| D.1–D.5 Athlete/Coach/Academy/Organizer/Scout profiles | profiles | `directory/.../detail_page_template.dart` + per-role | ⚠️ partial (Organizer/Scout new) |
+| D.6–D.8 Event detail/register/confirm | events | `trials/...`, `tournaments/...` | ✅/⚠️ |
+| D.9/D.10 Opportunity detail/apply | opportunities | `opportunities/.../opportunity_detail_screen.dart`, `apply_screen.dart` | 🆕 |
+| D.11/D.12 Program detail/enquiry | programs | `programs/.../program_detail_screen.dart`, `enquiry_screen.dart` | 🆕 |
+| D.13 Facility detail | facilities | `facilities/.../facility_detail_screen.dart` | 🆕 (some via `sports_venue`) |
+| D.14/D.15 Reviews (P1) | reviews | `reviews/...` | 🅿️ |
+| D.16 Map (P2) · D.17 Team page (P2) | parked | — | ⏸️ |
+| AT.1–AT.10 Athlete screens | home/onboarding/profile/opps/regs/guardian | `athlete/...`, `onboarding/...`, `opportunities/...` | ⚠️/🆕 |
+| CO.1–CO.8 Coach screens | onboarding/dashboard/programs/events | `coach/...`, `programs/...` | ⚠️/🆕 |
+| AC.1–AC.12 Academy screens | onboarding/dashboard/facilities/programs/events/opportunities/athletes | `academy/...`, `facilities/...`, `programs/...` | ⚠️/🆕 |
+| OR.1–OR.17 Organizer screens | onboarding/dashboard/events/registrations/venues | `organizer/...`, `facilities/...` | ⚠️/🆕 |
+| SC.1–SC.13 Scout screens | onboarding/dashboard/discover/shortlist/observations/opportunities | `scout/...` | 🆕 (was `talent_scout`) |
+| AD.1–AD.12 Admin (web) | admin dashboard/users/verification/moderation/master/leaderboard/broadcast | `admin/...` | ⚠️/🆕 |
+| ~~Sponsor (SP1–SP9)~~ | — | — | ❌ **REMOVED** |
+
+**Key new build areas (v3):** social feed + posts, follow/connect + messaging, leaderboard, unified opportunities, programs, facilities, verification, guardian consent, and role-aware dashboards via `GET /me/home`.
+
+---
+
+## [SUPERSEDED] old mapping (pre-v3)
 
 ## Auth Screens (`auth.tsx`)
 
@@ -80,7 +138,9 @@ Maps each screen in `sportsx/src/screens/` (design prototype) to the equivalent 
 
 ---
 
-## Sponsor Screens (`sponsor.tsx`)
+## Sponsor Screens (`sponsor.tsx`) — **[SUPERSEDED — see Backend-Feature-Delta.md §4]**
+
+> Sponsor role **REMOVED**. Sponsorship is now an Opportunity type (`D.9`/`D.10`/`AT.8`). Table retained for history.
 
 | Design Screen | Flutter Screen | Status |
 |---------------|----------------|--------|
@@ -139,17 +199,19 @@ Maps each screen in `sportsx/src/screens/` (design prototype) to the equivalent 
 
 ---
 
-## Summary
+## [SUPERSEDED] Summary (pre-v3, 90 screens incl. Sponsor)
 
 | Category | Total Design Screens | Fully Matched | Partial | Missing |
 |----------|---------------------|---------------|---------|---------|
 | Auth | 7 | 4 | 1 | 2 |
 | Athlete | 35 | 16 | 9 | 10 |
 | Coach | 10 | 6 | 1 | 3 |
-| Sponsor | 13 | 10 | 3 | 0 |
+| Sponsor | 13 | 10 | 3 | 0 — **[REMOVED]** |
 | Shared | 11 | 5 | 5 | 1 |
 | Admin | 14 | 4 | 0 | 10 |
-| **Total** | **90** | **45 (50%)** | **19 (21%)** | **26 (29%)** |
+| **Total (old)** | **90** | **45 (50%)** | **19 (21%)** | **26 (29%)** |
+
+**New design (v3):** **129 screens** (`SCREEN_INVENTORY.md`), 6 roles, sponsor removed; see §v3 mapping above for the authoritative screen→Flutter view.
 
 ---
 

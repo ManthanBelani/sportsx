@@ -1,6 +1,10 @@
 # Mobile Architecture — SportX India (Flutter)
 
-Flutter app architecture: folder structure, state management, navigation, key packages. Consistent with the screen inventory (63 screens per `SportX_India_Screen_Inventory_v1.1.md`) and wireframe templates (T1–T4b).
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
+Flutter app architecture: folder structure, state management, navigation, key packages.
+
+> **⚠️ [SUPERSEDED screen reference — see Backend-Feature-Delta.md].** The v1.1 inventory (**63 screens**) referenced below is replaced by `sportsx-design-v3/new_design_docs/SCREEN_INVENTORY.md` (**129 screens, 6 roles: Athlete/Parent, Coach, Academy, Organizer, Talent Scout, Admin**; sponsor removed). New modules — social feed, network/messaging, opportunities, programs, leaderboard — are added in §6.
 
 > **Design System Reference:** All UI must follow `SportX_India_Design_System.md` from the Figma HTML reference (`/sportsx/src/imports/SportX_Design_System.md`).
 >
@@ -102,13 +106,13 @@ lib/
 │   │   ├── api_client.dart             # Dio singleton with auth interceptor
 │   │   └── storage_service.dart         # flutter_secure_storage
 │   └── providers/
-│       ├── auth_provider.dart           # AuthNotifier (register/verify-otp/login/logout)
-│       ├── meta_provider.dart           # Sports, cities, age groups
+│       ├── auth_provider.dart           # AuthNotifier (send-otp/verify-otp/login/logout)
+│       ├── meta_provider.dart           # Sports, cities, age groups, positions, facilities
 │       └── directory_provider.dart       # Generic paginated directory notifier
 │
 ├── shared/
-│   ├── models/                          # Sport, City, AgeGroup, Academy, Coach,
-│   │   └── models.dart                  # Trial, Tournament, Scholarship, Sponsorship,
+│   ├── models/                          # Sport, City, AgeGroup, Position, Academy, Coach,
+│   │   └── models.dart                  # Trial, Tournament, Opportunity, Program, Post,
 │   │                                   # SportsVenue, User + barrel export
 │   └── providers/
 │       ├── meta_provider.dart
@@ -118,65 +122,80 @@ lib/
 │   ├── auth/
 │   │   └── presentation/
 │   │       ├── screens/
-│   │       │   ├── splash_screen.dart   # S1
-│   │       │   ├── role_selection_screen.dart  # S2
-│   │       │   ├── sign_up_screen.dart  # S3
-│   │       │   ├── otp_screen.dart      # S4
-│   │       │   └── login_screen.dart    # S5
+│   │       │   ├── splash_screen.dart   # A.1
+│   │       │   ├── role_selection_screen.dart  # A.2
+│   │       │   ├── sign_up_screen.dart  # A.3
+│   │       │   ├── otp_screen.dart      # A.4
+│   │       │   ├── login_screen.dart    # A.5
+│   │       │   └── forgot_password_screen.dart  # A.6
 │   │       └── providers/
 │   │           └── auth_provider.dart   # AuthNotifier (Riverpod)
 │   │
+│   ├── guardian/                        # [v3] A.9 guardian consent + AT.10 controls
+│   │
 │   ├── onboarding/
 │   │   └── presentation/
-│   │       ├── screens/                 # AthleteOnboarding (2 steps), CoachOnboarding,
-│   │       │                           # AcademyOnboarding, OrganizerOnboarding,
-│   │       │                           # SponsorOnboarding
+│   │       ├── screens/                 # AthleteOnboarding (AT.2), CoachOnboarding (CO.1),
+│   │       │                           # AcademyOnboarding (AC.1), OrganizerOnboarding (OR.1),
+│   │       │                           # ScoutOnboarding (SC.1)
 │   │       └── widgets/                # SportChipSelector, AgeGroupPicker
 │   │
 │   ├── home/
 │   │   └── presentation/
 │   │       └── screens/
-│   │           └── home_screen.dart     # A3: search bar, sport chips, sections
+│   │           └── home_screen.dart     # S.1 / role Home (AT.1/CO.2/AC.2/OR.2/SC.2): GET /me/home
 │   │
-│   ├── profile/                         # A4 My Profile, A5 Edit Profile, A6 Media
+│   ├── profile/                         # D.1/D.2/D.3/D.4/D.5 own+public
 │   │   └── presentation/
 │   │       ├── screens/
 │   │       └── widgets/
 │   │
-│   ├── search/                          # S6 Universal Search, S7 Results, S8 Filter
+│   ├── search/                          # S.5 Universal Search + S.4 filter
 │   │   └── presentation/
 │   │       └── screens/
 │   │
-│   ├── directory/                       # T1 list + T2 detail templates
+│   ├── directory/                       # S.2/S.3 list + detail
 │   │   └── presentation/
 │   │       ├── screens/
-│   │       │   ├── directory_list_screen.dart   # T1 generic
-│   │       │   └── directory_detail_screen.dart # T2 generic
+│   │       │   ├── directory_list_screen.dart   # S.3 generic
+│   │       │   └── directory_detail_screen.dart # detail generic
 │   │       └── widgets/
-│   │           ├── listing_card.dart    # T1 card (athlete/coach/academy/sponsor)
+│   │           ├── listing_card.dart    # card (athlete/coach/academy/organizer/scout)
 │   │           ├── detail_hero.dart
 │   │           ├── save_button.dart     # ♡ toggle
-│   │           └── report_modal.dart    # S10
+│   │           └── report_modal.dart    # S.26
 │   │
-│   ├── academy/                        # A7, A8
-│   ├── coach/                           # A9, A10, C3
-│   ├── trials/                          # A12, A13, A14, A15
-│   ├── tournaments/                     # A16, A17, A18
-│   ├── scholarships/                    # A19, A20
-│   ├── sponsorships/                     # A21, A22, A23
-│   ├── sports_venues/                    # AS-47: venue directory + detail
-│   ├── saved/                           # A25 Saved/Bookmarked
-│   ├── reports/                         # S10 Report a Listing
+│   ├── academy/                        # AC.1–AC.12
+│   ├── coach/                           # CO.1–CO.8
+│   ├── trials/                          # D.6–D.8 (event/trial detail+register)
+│   ├── tournaments/                     # OR/detail (unified events)
+│   ├── sports_venues/                    # D.13 venue directory + detail
+│   ├── saved/                           # S.20 Saved/Bookmarked
+│   ├── reports/                         # S.26 Report (user/post/listing)
 │   │
-│   ├── notifications/                   # S9 Notifications Center
-│   ├── settings/                        # S11 Settings, S12 Help/Support
-│   ├── enquiries/                       # A11 Enquire + C4/C5/AC8/AC9 Inbox/Thread
-│   ├── activity/                        # A24 My Activity Hub
+│   ├── notifications/                   # S.16 Notifications Center
+│   ├── settings/                        # S.22 Settings, S.23 Safety, S.24 Help, S.25 About
+│   ├── enquiries/                       # D.12 Enquire + inbox/thread (S.18)
+│   ├── activity/                        # S.21 My Activity Hub
 │   │
-│   ├── academy_management/              # AC2–AC9
-│   ├── organizer/                       # O2–O10
-│   ├── sponsor_management/              # SP1–SP9
-│   └── admin/                           # AD1–AD12 (Phase 3)
+│   ├── academy_management/              # AC.5–AC.12
+│   ├── organizer/                       # OR.1–OR.17
+│   ├── admin/                           # AD.1–AD.12
+│   │
+│   ├── feed/                            # [v3] S.8/S.9/S.27/S.28 social feed + posts
+│   ├── network/                         # [v3] S.12/S.19 follow/connect; S.13/S.14 groups (P2)
+│   ├── messaging/                       # [v3] S.17/S.18 conversations + chat
+│   ├── opportunities/                   # [v3] D.9/D.10/AT.8/AC.9/SC.11/SC.12
+│   ├── programs/                        # [v3] CO.4/CO.5/AC.4/D.11/D.12
+│   ├── facilities/                      # [v3] AC.7/AC.8/D.13/OR.13
+│   ├── leaderboard/                     # [v3] S.6/S.7 + home strip (AT.1)
+│   ├── verification/                    # [v3] A.10 request + status + badge
+│   ├── guardian/                        # [v3] A.9 consent + AT.10 parent controls
+│   ├── scout/                           # [v3] SC.1–SC.13 (was `talent_scout`)
+│   └── share/                           # [v3] S.30 deep-link/share resolver
+│
+│   # [REMOVED] `sponsor/` and `sponsor_management/` (SP1–SP9) — sponsor role dropped;
+│   #           sponsorship is an opportunity type (see Backend-Feature-Delta.md §4)
 ```
 
 ---
@@ -192,50 +211,60 @@ lib/
 | **Filters** | `StateProvider<FilterState>` | `filterProvider` — sport, city, age, price, date |
 | **Saved items** | `StateNotifierProvider<SavedNotifier, Set<SavedKey>>` | Optimistic ♡ toggle |
 | **Notifications** | `AsyncNotifierProvider<NotificationsNotifier, List>` | `notificationsProvider` — unread count |
+| **Home / Explore** | `AsyncNotifierProvider<HomeNotifier, HomeState>` | `[v3]` `GET /me/home` role-aware dashboard + `GET /explore` grouped sections |
+| **Feed / posts** | `AsyncNotifierProvider<FeedNotifier, FeedState>` | `[v3]` `feedProvider` — tabs For You/Following/…; optimistic like/comment |
+| **Network** | `StateNotifierProvider<NetworkNotifier, NetworkState>` | `[v3]` `networkProvider` — followers/following/connections/requests |
+| **Messaging** | `StreamNotifierProvider<ChatNotifier, ChatState>` | `[v3]` `conversationsProvider` — inbox + thread, unread badges |
+| **Opportunities** | `AsyncNotifierProvider<OpportunitiesNotifier, …>` | `[v3]` `opportunitiesProvider` — browse/apply/my (Applied/Saved/Created) |
+| **Programs** | `AsyncNotifierProvider<ProgramsNotifier, …>` | `[v3]` `programsProvider` — Active/Drafts/Past + public detail |
+| **Leaderboard** | `AsyncNotifierProvider<LeaderboardNotifier, …>` | `[v3]` `leaderboardProvider` — tabs/filters + home strip |
+| **Guardian (minors)** | `AsyncNotifierProvider<GuardianNotifier, …>` | `[v3]` consent status + parent controls (AT.10) |
 
 ---
 
 ## 3. Navigation — go_router
 
-Auth redirect logic: authenticated → redirect to `/home`, unauthenticated → redirect to `/role-selection`.
+Auth redirect logic: authenticated → redirect to `/home`, unauthenticated → redirect to `/role-selection`. **[v3]** Signup/login pass through OTP (`/sign-up` → `/otp`), and a minor (DOB < 18) is forced to `/guardian-consent` before onboarding.
 
 ### Key Routes
 
 | Path | Screen | Auth | Notes |
 |---|---|---|---|
-| `/splash` | S1 Splash | — | Auto-redirect |
-| `/role-selection` | S2 Role Selection | — | 6 role cards |
-| `/sign-up` | S3 Sign Up | — | Role passed via extra |
-| `/otp` | S4 OTP Verification | — | email+role via extra |
-| `/login` | S5 Login | — | Email/password + Google placeholder |
-| `/home` | A3 Home Dashboard | Auth | Bottom nav tab 1 |
-| `/search` | S6 Universal Search | Auth | Bottom nav tab 2 |
-| `/saved` | A25 Saved Items | Auth | Bottom nav tab 3 |
-| `/profile` | A4 My Profile | Auth | Bottom nav tab 4 |
-| `/academies` | A7 Academy Directory | Auth | T1 template |
-| `/academies/:id` | A8 Academy Detail | Auth | T2 template |
-| `/coaches` | A9 Coach Directory | Auth | T1 template |
-| `/coaches/:id` | A10 Coach Detail | Auth | T2 template |
-| `/trials` | A12 Trial Listings | Auth | T1 template |
-| `/trials/:id` | A13 Trial Detail | Auth | T2 template |
-| `/tournaments` | A16 Tournament Calendar | Auth | Calendar/list toggle |
-| `/tournaments/:id` | A17 Tournament Detail | Auth | T2 template |
-| `/scholarships` | A19 Scholarship Feed | Auth | T1 template |
-| `/scholarships/:id` | A20 Scholarship Detail | Auth | T2 template + external link |
-| `/sponsorships` | A21 Sponsorship List | Auth | T1 template |
-| `/sponsorships/:id` | A22 Sponsorship Detail | Auth | T2 template |
-| `/sports-venues` | Sports Venue Directory | Auth | T1 template |
-| `/sports-venues/:id` | Sports Venue Detail | Auth | T2 template |
-| `/notifications` | S9 Notifications | Auth | |
-| `/settings` | S11 Settings | Auth | |
-| `/settings/help` | S12 Help/Support | Auth | |
-| `/coach/dashboard` | C3 Coach Dashboard | Coach | |
-| `/coach/enquiries` | C4/C5 Enquiry Inbox/Thread | Coach | |
-| `/academy/dashboard` | AC3 Academy Dashboard | Academy | |
-| `/academy/enquiries` | AC8/AC9 Enquiry Inbox/Thread | Academy | |
-| `/organizer/dashboard` | O2 | Organizer | |
-| `/sponsor/dashboard` | SP2 | Sponsor | |
-| `/admin/*` | AD1–AD12 | Admin | Phase 3 |
+| `/splash` | A.1 Splash | — | Auto-redirect |
+| `/role-selection` | A.2 Role Selection | — | **5** selectable role cards (sponsor removed) |
+| `/sign-up` | A.3 Sign Up | — | Role passed via extra; phone/email |
+| `/otp` | A.4 OTP Verification | — | phone/email+role via extra; resend timer |
+| `/login` | A.5 Login | — | password **or** OTP; Google deferred |
+| `/forgot-password` | A.6 Forgot/Reset | — | OTP-based (P1) |
+| `/guardian-consent` | A.9 Guardian Consent | — | Required when DOB < 18 |
+| `/home` | AT.1/CO.2/AC.2/OR.2/SC.2 Home Dashboard | Auth | Shell tab 1; `GET /me/home` |
+| `/explore` | S.2 Explore | Auth | Shell tab 2; `GET /explore` |
+| `/create` | S.8 Create Launcher | Auth | Shell tab 3 |
+| `/community` | S.12 Network (P1) | Auth | Shell tab 4 |
+| `/more` | S.15 More / account hub | Auth | Shell tab 5 |
+| `/search` | S.5 Universal Search | Auth | |
+| `/academies`, `/academies/:id` | D.3 Academy | Auth | + Programs/Facilities/Events/Reviews tabs |
+| `/coaches`, `/coaches/:id` | D.2 Coach | Auth | + Programs tab |
+| `/athletes/:id` | D.1 Athlete Profile | Auth | open to all roles; minors restricted |
+| `/organizers/:id`, `/scouts/:id` | D.4/D.5 | Auth | public views |
+| `/events`, `/events/:id` | D.6 Event/Trial Detail | Auth | Register (`D.7`) |
+| `/opportunities`, `/opportunities/:id` | D.9/D.10 | Auth | browse/apply; `AT.8` My Opportunities |
+| `/programs/:id` | D.11 Program Detail | Auth | Enquire (`D.12`) |
+| `/facilities/:id` | D.13 Facility Detail | Auth | |
+| `/leaderboard` | S.6 Leaderboard | Auth | + `/leaderboard/info` (`S.7`) |
+| `/feed`, `/posts/:id` | S.9/S.27 | Auth | community feed + post detail |
+| `/notifications` | S.16 Notifications | Auth | tabs + read-all |
+| `/messages`, `/messages/:id` | S.17/S.18 | Auth | inbox + chat thread |
+| `/connections` | S.19 Connections | Auth | followers/following/requests |
+| `/saved` | S.20 Saved | Auth | + post/opportunity/event morphs |
+| `/settings` | S.22 Settings & Privacy | Auth | + `/settings/safety` (`S.23`) |
+| `/settings/help`, `/settings/about` | S.24/S.25 | Auth | |
+| `/coach/dashboard`, `/coach/enquiries` | CO.2 / D.12+S.18 | Coach | |
+| `/academy/dashboard`, `/academy/facilities`, `/academy/programs` | AC.2 / AC.7 / AC.4 | Academy | |
+| `/scout/dashboard`, `/scout/discovery`, `/scout/shortlist` | SC.2 / SC.4 / SC.5 | Scout | |
+| `/organizer/dashboard`, `/organizer/events` | OR.2 / OR.4 | Organizer | |
+| ~~`/sponsor/*`~~ | — | — | **[REMOVED]** sponsor role dropped |
+| `/admin/*` | AD.1–AD.12 | Admin | separate portal (web) |
 
 ---
 
@@ -251,7 +280,7 @@ Auth redirect logic: authenticated → redirect to `/home`, unauthenticated → 
 | `table_calendar` | Tournament calendar (A16) |
 | `image_picker` | Photo/video upload (A6, A14) |
 | `cached_network_image` | Image caching |
-| `url_launcher` | External links (scholarships, sponsor sites) |
+| `url_launcher` | External links (registration links, provider sites) |
 | `share_plus` | Share listing |
 | `shimmer` | Loading skeleton placeholders |
 | `intl` | Date formatting |
@@ -259,6 +288,26 @@ Auth redirect logic: authenticated → redirect to `/home`, unauthenticated → 
 ---
 
 ## 5. Screen → Feature Mapping (63 Screens per v1.1)
+
+> **[SUPERSEDED — see Backend-Feature-Delta.md].** This v1.1 mapping (63 screens, includes Sponsor) is replaced by the v3 inventory (`sportsx-design-v3/new_design_docs/SCREEN_INVENTORY.md`, 129 screens). Use `Design-to-Flutter-Mapping.md` for the current screen→Flutter mapping. Retained for history.
+
+### [v3] New modules → feature folders (summary)
+
+| New area | New screens | Feature folder |
+|---|---|---|
+| Social feed & posts | S.8, S.9, S.27, S.28 | `features/feed/` |
+| Network (follow/connect) | S.12, S.19 (S.13/S.14 P2) | `features/network/` |
+| Messaging | S.17, S.18 | `features/messaging/` |
+| Opportunities | D.9, D.10, AT.8, AC.9, SC.11, SC.12 | `features/opportunities/` |
+| Programs | CO.4, CO.5, AC.4, D.11, D.12 | `features/programs/` |
+| Facilities / venues | AC.7, AC.8, D.13, OR.13 | `features/facilities/` |
+| Leaderboard | S.6, S.7, AT.1 strip | `features/leaderboard/` |
+| Verification | A.10, AD.4 | `features/verification/` |
+| Guardian (minors) | A.9, AT.10 | `features/guardian/` |
+| Scout | SC.1–SC.13 | `features/scout/` |
+| Share / deep links | S.30 | `features/share/` |
+
+### [SUPERSEDED] v1.1 detail
 
 Screen IDs below reference v1.1 inventory (`SportX_India_Screen_Inventory_v1.1.md`), grouped by section:
 - **Auth-#** = Section 1 (Authentication & Onboarding)
@@ -370,6 +419,18 @@ Academy screens share the same section (Coach-# IDs above, but via `features/aca
 
 ---
 
-*Design system: `/sportsx/src/imports/SportX_Design_System.md`*  
-*Screen inventory v1.1: `/sportsx/src/imports/SportX_India_Screen_Inventory_v1.1.md`*  
-*Wireframe reference: `/sportsx/src/imports/SportX_India_Complete_Wireframe.md`*
+*Design system: `SportX_India_Design_System.md` (see §Design System above)*  
+*Screen inventory (v3, canonical): `sportsx-design-v3/new_design_docs/SCREEN_INVENTORY.md`*  
+*Wireframes (v3): `sportsx-design-v3/new_design_docs/01_athlete_wireframes.md`–`06_admin_wireframes.md`*  
+
+---
+
+## 6. [v3] New module notes
+
+- **Feed/social:** a `features/feed/` module exposing `GET /feed` with tabs (For You / Following / Athletes / Coaches / Academies / Events) and full post CRUD, likes and comments. Denormalized `likes_count`/`comments_count` on post resources (delta §11.9).
+- **Network/messaging:** one-way `follows` and mutual `connection_requests` plus `conversations`/`messages` for 1-to-1 chat. Chat unlocks only after an accepted connection or an enquiry thread; minors restricted to guardian-allowed connections (delta §11.10/§11.11, rules §7).
+- **Opportunities:** unified `opportunities` (types scholarship/sponsorship/tryout/camp) with in-app applications (`pitch` + profile snapshot) and My Opportunities tabs Applied/Saved/Created (delta §11.7).
+- **Programs:** `programs` owned by coach/academy with Active/Drafts/Past tabs and public detail + enquiry→thread (delta §11.8).
+- **Leaderboard:** `GET /leaderboard` + `GET /leaderboard/strip` for the home dashboard; athletes P0, coaches/academies/teams/events P1; minors anonymized (delta §11.5, M8.1).
+- **Unified dashboard:** all role homes now call `GET /me/home` (greeting, completion %, leaderboard strip, shortcut counts, feed preview); Explore calls `GET /explore` (delta §11.5).
+- **Profile fields:** every role captures its **30 fields** (`SportX_Mandatory_Fields.md`); completion is itemized per-role (`GET /me/completion-checklist`, `AT.6`).

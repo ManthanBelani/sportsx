@@ -1,5 +1,14 @@
 # Integration Audit — SportX India (Flutter ↔ Laravel)
 
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
+> **HISTORICAL (pre-v3):** describes the old state; see Backend-Feature-Delta.md for the current plan.
+
+> **v3 annotation (do not delete the findings below):** This is a point-in-time audit. Several findings are now addressed or superseded by the v3 plan:
+> - OTP/`verifyOtp`/`resendOtp` gaps → **OTP is now P0** (phone **or** email) with `otp_codes` re-added.
+> - `sponsor` references → **`sponsor` role removed**; sponsorship is now an `opportunities.type`. So `SponsorEngagement`/sponsor endpoints are slated for migration, not repair.
+> - Social/chat/posts gaps → **now P0** (`posts`, `post_likes`, `post_comments`, `follows`, `connection_requests`, `conversations`, `messages`, `blocks`); some may already be partially built.
+
 **Audit Date:** 2026-08-18
 **Auditor:** Flutter-Laravel Integration Auditor Agent
 

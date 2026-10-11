@@ -1,5 +1,7 @@
 # SportX Admin Web Panel — Implementation Prompt
 
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
 **Design Reference:** `sportsx/src/screens/admin.tsx`
 **Backend:** `sportx-api/` (Laravel)
 **Design System:** `sportsx/src/imports/SportX_Design_System.md`
@@ -59,14 +61,14 @@ Match `AdminWebLayout` from `sportsx/src/screens/admin.tsx`:
 │ [SX] SportX Admin   │ ┌─ TopBar ──────────────────┐ │
 │                      │ │ h-16 (64px)               │ │
 │ 📊 Dashboard        │ │ px-8 (32px)               │ │
-│ 👥 Manage Users     │ └────────────────────────────┘ │
-│ ✅ Approvals         │                                │
-│ 🚨 Moderation       │ ┌─ Content ────────────────┐ │
-│ 🤝 Opportunities    │ │ max-w-5xl (~1024px)      │ │
-│ 🔔 Notifications    │ │ p-8 (32px padding)       │ │
-│ 📈 Reports          │ │ flex gap-6 (24px)         │ │
-│                      │ │                            │ │
-│                      │ │                            │ │
+│ 🛡️ Verification    │ └────────────────────────────┘ │
+│ 👥 Manage Users     │                                │
+│ ✅ Approvals         │ ┌─ Content ────────────────┐ │
+│ 🚨 Moderation       │ │ max-w-5xl (~1024px)      │ │
+│ 🤝 Opportunities    │ │ p-8 (32px padding)       │ │
+│ 📍 Positions        │ │ flex gap-6 (24px)         │ │
+│ 🔔 Notifications    │ │                            │ │
+│ 📈 Reports          │ │                            │ │
 │                      │ └────────────────────────────┘ │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -126,7 +128,9 @@ Match `AdminWebLayout` from `sportsx/src/screens/admin.tsx`:
 │  ┌─────────────────────────────────────────────────┐   │
 │  │ 👤 Athletes     892                             │   │
 │  │ 🏫 Coaches     187                             │   │
-│  │ 🤝 Sponsors    166                             │   │
+│  │ 🏟️ Academies   142                             │   │
+│  │ 📅 Organizers   98                             │   │
+│  │ 🔎 Scouts       71                             │   │
 │  └─────────────────────────────────────────────────┘   │
 │                                                         │
 │  RECENT ACTIVITY                                        │
@@ -154,7 +158,7 @@ Match `AdminWebLayout` from `sportsx/src/screens/admin.tsx`:
 ┌─────────────────────────────────────────────────────────┐
 │ ← Back        Manage Users                    🔍        │
 ├─────────────────────────────────────────────────────────┤
-│  [All] [Athletes] [Coaches] [Sponsors]  (tab pills)    │
+│  [All] [Athletes] [Coaches] [Academies] [Organizers] [Scouts]  (tab pills) │
 │                                                         │
 │  [Verified ▼] [Active ▼]  (filter chips)              │
 │                                                         │
@@ -333,9 +337,11 @@ Match `AdminWebLayout` from `sportsx/src/screens/admin.tsx`:
 ├─────────────────────────────────────────────────────────┤
 │  USERS BY ROLE                                          │
 │  ┌─────────────────────────────────────────────────┐   │
-│  │ Athletes  ████████████████████░░░░ 71.6%  892 │   │
-│  │ Coaches   █████░░░░░░░░░░░░░░░░░░░░  15.0%  187 │   │
-│  │ Sponsors ████░░░░░░░░░░░░░░░░░░░░░  13.3%  166 │   │
+│  │ Athletes   ███████████████████░░░░ 64.7%  892 │   │
+│  │ Coaches    ████░░░░░░░░░░░░░░░░░░░  13.6%  187 │   │
+│  │ Academies  ███░░░░░░░░░░░░░░░░░░░░  10.3%  142 │   │
+│  │ Organizers ██░░░░░░░░░░░░░░░░░░░░░   7.1%   98 │   │
+│  │ Scouts     ██░░░░░░░░░░░░░░░░░░░░░   5.2%   71 │   │
 │  └─────────────────────────────────────────────────┘   │
 │                                                         │
 │  USERS BY REGION                                        │
@@ -376,7 +382,7 @@ Match `AdminWebLayout` from `sportsx/src/screens/admin.tsx`:
 │                                                         │
 │  ┌─────────────────────────────────────────────────┐   │
 │  │ [Logo] Youth Cricket Program 2024              │   │
-│  │        Adidas India                            │   │
+│  │        Khel Cricket Academy (Academy)          │   │
 │  │        Cricket · Maharashtra                    │   │
 │  │        Submitted: Today                        │   │
 │  │  [Reject]  [Approve]                         │   │
@@ -384,7 +390,7 @@ Match `AdminWebLayout` from `sportsx/src/screens/admin.tsx`:
 │                                                         │
 │  ┌─────────────────────────────────────────────────┐   │
 │  │ [Logo] Women in Sports Fund                    │   │
-│  │        Puma Sports                              │   │
+│  │        Gujarat Sports Events (Organizer)        │   │
 │  │        Athletics · Pan-India                     │   │
 │  │        Submitted: Yesterday                      │   │
 │  │  [Reject]  [Approve]                         │   │
@@ -393,11 +399,52 @@ Match `AdminWebLayout` from `sportsx/src/screens/admin.tsx`:
 │  RECENTLY APPROVED                                     │
 │  ┌─────────────────────────────────────────────────┐   │
 │  │ [Logo] Athlete Sponsorship 2024                  │   │
-│  │        Nike India                    [View]       │   │
+│  │        Coach Rohit Mehta (Coach)      [View]      │   │
 │  │        Approved: Oct 12 2024                     │   │
 │  └─────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────┘
 ```
+
+> **v3 note:** `opportunities` replaces the old `sponsorships`/`scholarships` listings. Providers (academy, organizer, coach, scout) post opportunities; admin moderation/approval applies here. Admin also manages **expiry** for opportunities.
+
+### 11. Verification Queue (`admin/verification.blade.php`) — AD.4
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Back        Verification Queue                        │
+├─────────────────────────────────────────────────────────┤
+│  [All] [Athletes] [Coaches] [Academies] [Organizers] [Scouts] │
+│                                                         │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │ [Avatar] Priya Patel              👤 Athlete     │   │
+│  │          Document: Age Proof (Aadhaar)          │   │
+│  │  [View Document]  [Reject]  [Approve Badge]     │   │
+│  └─────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │ [Logo]   Delhi Cricket Academy     🏟️ Academy    │   │
+│  │          Document: Registration Certificate      │   │
+│  │  [View Document]  [Reject]  [Approve Badge]     │   │
+│  └─────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────┘
+```
+
+Verification queue lists pending verification submissions by content type (athletes/coaches/academies/organizers/scouts). Approving grants a verified badge (e.g. academy verified badge); rejecting records a reason.
+
+### 12. Positions Master (`admin/positions.blade.php`)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← Back        Positions Master               [+ Add]     │
+├─────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────────────────┐   │
+│  │ Goalkeeper        Football        [Edit] [✕]      │   │
+│  │ Striker           Football        [Edit] [✕]      │   │
+│  │ Wicket Keeper     Cricket         [Edit] [✕]      │   │
+│  └─────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────┘
+```
+
+Position master data (sport → positions) feeds profile position pickers and search filters.
 
 ---
 
@@ -548,7 +595,7 @@ Match `AdminWebLayout` from `sportsx/src/screens/admin.tsx`:
 |--------|----------|-------------|
 | GET | `/api/v1/admin/dashboard` | Stats: active_listings, flagged_items, pending_expirations, new_signups_30d |
 | GET | `/api/v1/admin/content` | Category picker with counts |
-| GET | `/api/v1/admin/content/{type}` | Paginated list (type = academies/coaches/trials/tournaments/scholarships/sponsorships/sports_venues) |
+| GET | `/api/v1/admin/content/{type}` | Paginated list (type = academies/coaches/trials/tournaments/opportunities/programs/facilities/posts/sports_venues) |
 | GET | `/api/v1/admin/content/{type}/{id}` | Single item |
 | POST | `/api/v1/admin/content/{type}` | Create |
 | PUT | `/api/v1/admin/content/{type}/{id}` | Update |
@@ -572,6 +619,18 @@ Match `AdminWebLayout` from `sportsx/src/screens/admin.tsx`:
 | POST | `/api/v1/admin/categories/age-groups` | Add age group |
 | PUT | `/api/v1/admin/categories/age-groups/{id}` | Update age group |
 | DELETE | `/api/v1/admin/categories/age-groups/{id}` | Delete age group |
+| GET | `/api/v1/admin/users?q=&role=&status=` | Search/filter users (AD.3) |
+| POST | `/api/v1/admin/users/{id}/suspend` | Suspend a user |
+| POST | `/api/v1/admin/users/{id}/ban` | Ban a user |
+| GET | `/api/v1/admin/verification?type=&status=` | Verification queue (AD.4) |
+| POST | `/api/v1/admin/verification/{id}/approve` | Approve verification / grant badge |
+| POST | `/api/v1/admin/verification/{id}/reject` | Reject verification |
+| GET | `/api/v1/admin/positions?sport=` | Positions master list |
+| POST | `/api/v1/admin/positions` | Add position |
+| PUT | `/api/v1/admin/positions/{id}` | Update position |
+| DELETE | `/api/v1/admin/positions/{id}` | Delete position |
+| GET | `/api/v1/admin/expiry/opportunities?tab=pending` | Opportunity expiry monitor |
+| POST | `/api/v1/admin/expiry/opportunities/{id}/override` | Override opportunity expiry |
 
 ---
 
@@ -591,6 +650,8 @@ sportx-api/
 │   ├── report-detail.blade.php
 │   ├── notification-compose.blade.php
 │   ├── opportunities.blade.php
+│   ├── verification.blade.php
+│   ├── positions.blade.php
 │   └── reports.blade.php
 ├── public/admin/css/
 │   └── admin.css               # All admin styles
@@ -619,6 +680,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/moderation/{id}', [AdminController::class, 'reportDetail'])->name('moderation.detail');
         Route::get('/notifications/compose', [AdminController::class, 'composeNotification'])->name('notifications.compose');
         Route::get('/opportunities', [AdminController::class, 'opportunities'])->name('opportunities');
+        Route::get('/verification', [AdminController::class, 'verification'])->name('verification');
+        Route::get('/positions', [AdminController::class, 'positions'])->name('positions');
         Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
     });
 });
@@ -640,6 +703,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 - [ ] Create report detail page
 - [ ] Create notification compose page
 - [ ] Create opportunities page
+- [ ] Create verification queue page (AD.4)
+- [ ] Create positions master page
 - [ ] Create platform reports page
 - [ ] Add admin routes to `routes/web.php`
 - [ ] Create AdminController with all methods

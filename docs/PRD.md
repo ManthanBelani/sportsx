@@ -1,10 +1,12 @@
 # Product Requirements Document (PRD) — SportX India
 
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
 | | |
 |---|---|
 | **Document** | Product Requirements Document |
 | **Project** | SportX India |
-| **Version** | 1.0 (idea-stage, SRS-level) |
+| **Version** | 2.0 (idea-stage, SRS-level; synced to v3 design) |
 | **Sources of truth** | `SportX-India-MVP-Overview.md`, `SportX-India-Screen-Inventory.md`, `SportX-India-Wireframes.md` |
 | **Status** | Draft for review |
 
@@ -14,13 +16,15 @@
 
 SportX India is a **discovery and connection platform for India's sports ecosystem**.
 
-It brings together **athletes and parents**, **coaches**, **academies**, **trial/tournament organizers**, **sponsors/brands**, and **talent scouts** in one place — so athletes can find opportunities (academies, coaches, trials, tournaments, scholarships, sponsorships) and the supply side (coaches, academies, organizers, sponsors, talent scouts) can find, engage, and manage athletes.
+It brings together **athletes and parents**, **coaches**, **academies**, **trial/tournament organizers**, and **talent scouts** (now a first-class role) in one place — so athletes can find opportunities (academies, coaches, trials, tournaments, scholarships, sponsorships, tryouts, camps, training programs) and the supply side (coaches, academies, organizers, scouts, plus **generalized provider** directory profiles such as NGOs, doctors, stores, nutritionists, agents, federations) can find, engage, and manage athletes.
 
-An **Admin** team operates behind the scenes to keep the data clean, moderate listings, and manage master categories (sports, cities, age groups).
+> **[SUPERSEDED — see Backend-Feature-Delta.md]** The v1 vision listed **sponsors/brands** as a full role here. The `sponsor` role is **removed** (decision D2); sponsorship is now an `opportunities.type` posted by Academy/Organizer/Coach/Scout. Brands/NGOs/etc. appear as **generalized provider directory profiles**, not login roles.
+
+An **Admin** team operates behind the scenes to keep the data clean, moderate listings, run the verification queue, manage users, and manage master categories (sports, cities, age groups, positions).
 
 > The platform has two core jobs:
-> 1. **Discovery** — let athletes/parents search and filter academies, coaches, trials, tournaments, scholarships, and sponsorships.
-> 2. **Connection & Management** — let coaches, academies, organizers, and sponsors publish listings, manage enquiries/registrations, and find athletes.
+> 1. **Discovery** — let athletes/parents search and filter academies, coaches, trials, tournaments, opportunities (scholarships/sponsorships/tryouts/camps), programs, facilities, and athletes.
+> 2. **Connection & Management** — let coaches, academies, organizers, and scouts publish listings, manage enquiries/registrations, post opportunities, and find/connect with athletes (feed, follow/connect, 1-to-1 chat).
 
 ---
 
@@ -31,8 +35,10 @@ India's sports ecosystem is fragmented:
 - **Athletes / parents** have no single trustworthy place to discover academies, coaches, upcoming trials, tournaments, scholarships, or sponsorship opportunities. Discovery happens through word of mouth, local WhatsApp groups, or scattered social media posts.
 - **Coaches and academies** have no structured channel to market themselves or manage incoming interest beyond phone calls and messages.
 - **Organizers** of trials and tournaments lack a distribution channel to reach athletes, and track registrations through ad-hoc spreadsheets and forms.
-- **Sponsors/brands** looking to back promising athletes have no searchable pool of verified athlete profiles.
-- **Talent scouts** looking for promising athletes have no structured way to discover and connect with talent across sports and regions.
+- **Providers and brands** — academies, organizers, coaches, scouts, and generalized directories (NGOs, stores, doctors) — looking to back or recruit promising athletes have no searchable pool of verified athlete profiles or a single place to post scholarships, sponsorships, tryouts, and camps.
+- **Talent scouts** looking for promising athletes have no structured way to discover, shortlist, observe, and connect with talent across sports and regions.
+
+> **[SUPERSEDED — see Backend-Feature-Delta.md]** The v1 line "Sponsors/brands … no searchable pool" is replaced by the provider/brand line above (sponsor role removed, D2).
 - **Fake, stale, or out-of-date listings** erode trust in every one of these interactions.
 
 SportX India solves this by being the single, moderated, searchable marketplace for the Indian sports ecosystem.
@@ -45,30 +51,33 @@ SportX India solves this by being the single, moderated, searchable marketplace 
 
 | # | Goal |
 |---|---|
-| G1 | A single, universal search surface across academies, coaches, trials, tournaments, scholarships, and sponsorships |
-| G2 | Every listing type (academy, coach, trial, tournament, scholarship, sponsorship, sports venue) has a consistent browse → filter → detail → act flow |
-| G3 | Every supply-side role (coach, academy, organizer, sponsor) can self-serve their listing creation and management |
-| G4 | Athletes can register/apply/enquire directly in-app and track all their activity in one place |
-| G5 | The platform is moderated — users can report listings, admins can act on reports, and time-boxed listings auto-expire |
-| G6 | Reminders ensure athletes never miss a saved trial date, tournament date, or scholarship deadline |
+| G1 | A single, universal search surface across academies, coaches, trials, tournaments, and opportunities (scholarships/sponsorships/tryouts/camps) — plus athletes |
+| G2 | Every listing type (academy, coach, trial, tournament, opportunity, program, facility, sports venue) has a consistent browse → filter → detail → act flow |
+| G3 | Every supply-side role (coach, academy, organizer, scout) can self-serve their listing creation and management; generalized providers are directory-discoverable |
+| G4 | Athletes can register/apply/enquire directly in-app and track all their activity in one place (registrations, opportunities, applications) |
+| G5 | The platform is moderated — users can report users/posts/listings and block, admins can act on reports/verifications, and time-boxed listings auto-expire |
+| G6 | Reminders ensure athletes never miss a saved trial date, tournament date, or opportunity deadline; a leaderboard surfaces verified achievement |
 
 ### 3.2 Non-Goals (out of scope for MVP)
 
-The following are **explicitly excluded** from the MVP. They were either flagged in the source gap-analysis or decided during documentation authoring:
+> **[SUPERSEDED — see Backend-Feature-Delta.md]** Several v1 "non-goals" are now **in scope** in the new design (v3): ratings & reviews (P1), in-app 1-to-1 chat (P0), and event analytics (P1). The map view stays **parked (P2)**. The table below is preserved for history; the "Reason / Source" column records the new status.
+
+The following were **explicitly excluded** from the v1 MVP, either flagged in the source gap-analysis or decided during documentation authoring:
 
 | Item | Reason / Source |
 |---|---|
-| In-app payments / payment gateway integration | **Excluded by decision** (entry fees shown as informational "payment note" only). See `Glossary-and-Assumptions.md` |
-| Ratings & reviews | Flagged in Screen Inventory as "not yet covered" — not in original MVP feature list |
-| In-app chat / messaging threads (beyond enquiry reply flow) | Flagged in Screen Inventory as "not yet covered". The enquiry inbox/reply (T4/T4b) is in scope; a full chat system is not |
-| Listing analytics dashboards | Flagged in Screen Inventory as "not yet covered" |
-| Native maps integration beyond a "map preview" on detail pages | Map preview shown in wireframes (T2), full interactive maps not specified |
+| In-app payments / payment gateway integration | **Still excluded** (parked, P2). Entry fees shown as informational "payment note" only; tournament payment-status is a manual flag. See `Glossary-and-Assumptions.md` |
+| Ratings & reviews | **Now P1** (Superseded — see `Backend-Feature-Delta.md` BE-P1.1); gated to verified interactions |
+| In-app chat / messaging threads (beyond enquiry reply flow) | **Now P0** (Superseded — see `Backend-Feature-Delta.md` M7/BE-M7.4): conversations + messages introduced alongside enquiry threads; accepted-connections + enquiry threads only, no cold DMs |
+| Listing analytics dashboards | **Now P1** event analytics (Superseded — see BE-P1.4) |
+| Native maps integration beyond a "map preview" on detail pages | **Still parked (P2)** — map view is explicitly out |
+| Groups, polls, live/webinar/streaming, boosted/promoted placement, multi-role accounts, teams, staff recruiting | **Parked (P2)** per `Backend-Feature-Delta.md` §10 |
 
 ---
 
 ## 4. Target Users & Personas
 
-Six roles are defined in the MVP Overview. Personas below are consistent with the sample data used throughout the wireframes (e.g. "Aryan Patel — Cricket U-14 — Ahmedabad").
+Six roles are defined in the MVP (v3): **athlete, coach, academy, organizer, scout, admin**. Personas below are consistent with the sample data used throughout the wireframes (e.g. "Aryan Patel — Cricket U-14 — Ahmedabad"). **129 screens** span these 6 roles (see `SCREEN_INVENTORY.md`).
 
 ### 4.1 Athlete / Parent (primary consumer)
 
@@ -101,13 +110,12 @@ Six roles are defined in the MVP Overview. Personas below are consistent with th
 - Tracks registrations with payment-status flags and capacity per category, manages spots and waitlists.
 - Publishes results/brackets after events conclude.
 
-### 4.5 Sponsor / Brand
+### 4.5 ~~Sponsor / Brand~~ → Talent Scout (first-class) + Generalized Provider
 
-> **Persona: "ProGear Sports", a sportswear brand**
+> **[SUPERSEDED — see Backend-Feature-Delta.md]** The v1 PRD defined **"Sponsor / Brand"** as a full role (persona "ProGear Sports"). The `sponsor` role is **removed** (D2). Sponsorship is now an `opportunities.type` posted by Academy/Organizer/Coach/Scout. Two replacements:
 
-- Posts sponsorship opportunities (e.g. "U-16 Cricket Kit — free kit + stipend/month").
-- Discovers athletes via filtered search (sport, age, city, level, achievements).
-- Reviews incoming applications/pitches, shortlists candidates with notes.
+- **Talent Scout** (§4.6) is now a **first-class role** — scouts post scouting opportunities, discover/shortlist/observe athletes, and contact athletes/parents.
+- **Generalized Provider** — NGOs, doctors/physiotherapists, sports stores, brands, nutritionists, journalists, agents, federations, facilities, schools/colleges, sports media, photographers, psychologists, and government bodies appear as **directory profiles** (`generalized_profiles`), not login roles; they are discoverable in search and can be created via generic provider onboarding or admin.
 
 ### 4.6 Talent Scout
 
@@ -115,12 +123,13 @@ Six roles are defined in the MVP Overview. Personas below are consistent with th
 
 - Searches for promising athletes across sports, age groups, locations, and skill levels.
 - Reviews athlete profiles including sports history, achievements, and media.
-- Shortlists promising athletes for follow-up and sends connection requests through the platform.
+- Shortlists promising athletes with status/tags/private notes, adds observations, and sends contact requests through the platform (guardian-routed for minors).
 
 ### 4.7 Admin (Internal / Platform team)
 
 - Not a marketplace end-user. Secured behind a dedicated admin login with 2FA.
-- Seeds and corrects data across all categories, reviews flagged listings, configures auto-expiry rules, manages master lists (sports, cities, age groups).
+- Runs the **verification queue** and **user management** (suspend/ban) — both **P0** in v3, not deferred.
+- Seeds and corrects data across all categories, reviews flagged users/posts/listings, configures auto-expiry rules, manages master lists (sports, cities, age groups, positions).
 
 ---
 
@@ -128,18 +137,22 @@ Six roles are defined in the MVP Overview. Personas below are consistent with th
 
 ### 5.1 In Scope (MVP)
 
-Mapped one-to-one from the MVP Overview feature lists:
+Aligned with the new design (v3) `MVP_FEATURE_LIST.md` (P0) and `SCREEN_INVENTORY.md` (**129 screens across 6 roles** — Athlete/Parent, Coach, Academy, Organizer, Talent Scout, Admin). `sponsor` is **not** a role.
 
-- **Auth:** Sign up / login via phone or email, OTP/email verification, onboarding per role, Google social sign-in (shown on S3), password or OTP login toggle (S5).
-  - **By decision:** Email is verified via OTP first; phone verification is a later addition. (See Assumptions.)
-- **Athlete/Parent:** Digital profile (info, sports, achievements, media gallery), academy directory, coach directory, trial listings, tournament calendar (calendar + list), scholarship feed, sponsorship opportunities, sports venue directory (new from PDF), universal search, global filters, deadline/date reminders, report a listing, saved/bookmarked items, my activity hub.
-- **Coach:** Own profile creation, enquiry inbox + reply, browse like any user.
-- **Academy:** Own listing creation, trial posting (create/edit/publish/close), registrant management (incl. document viewing and verify/reject actions), enquiry inbox.
-- **Organizer:** Trial listing management, tournament listing management, registration management (incl. capacity/spot management, waitlist toggle, payment-status flag), results publishing (bracket/placements + public results view).
-- **Sponsor/Brand:** Sponsorship posting, athlete discovery, applications inbox (accept/reject/shortlist/reply), shortlist with notes.
-- **Talent Scout:** Scout profile creation, athlete discovery with advanced filters, athlete profile view, shortlist management, connection/enquiry to athletes.
-- **Admin:** Content CRUD across all content categories, listing moderation queue + actions (approve/edit/remove/warn), content expiry rules configuration + expiry monitor with override/restore, category management (sports/cities/age groups), admin dashboard counters. **Full documentation, build scheduled in a later phase (by decision).**
-- **Shared:** Universal search results across categories, shared filter panel (sport, city/state, age group, price range, date range), notifications center, settings (notification prefs, language, logout, delete account), help/support (FAQ + contact form).
+- **Roles (6):** athlete, coach, academy, organizer, scout, admin. One account = one role (multi-role parked, P2). Sponsorship is an **opportunity type**, not a role.
+- **Auth (P0):** Sign up / login via **phone or email + 6-digit OTP** (resend timer); password login kept alongside; role onboarding per role; **guardian consent for minors (<18)** gating profile activation; forgot-password via OTP (P1); Google sign-in shown but deferred (decision D9). **[SUPERSEDED — see Backend-Feature-Delta.md]** The v1 decision "email-OTP first, phone deferred" is superseded: OTP now serves **both** phone and email channels at MVP (D1/D5), making SMS-vendor selection (AS-03) blocking.
+- **Profiles (P0):** **30 fields per role** (8–9 mandatory; see `SportX_Mandatory_Fields.md`); per-sport role/level/experience/primary; rich typed achievements + certificates; media gallery; privacy controls (visibility, who can message/connect); profile completion checklist.
+- **Athlete/Parent (P0):** Digital profile, explore/discovery (athletes, coaches, academies, training), unified **opportunities** (scholarship/sponsorship/tryout/camp) with in-app apply + pitch and status tracking, event/trial registration with status notifications, **leaderboard**, saved/bookmarks, report/block, my activity/registrations/opportunities.
+- **Coach (P0):** Own profile, **training programs** (create/manage), enquiry/chat inbox, browse like any user.
+- **Academy (P0):** Own listing, **facilities CRUD**, training programs, trials/events (reuse organizer flow), registrant management (approve/reject/export), opportunities, enquiry inbox; our-athletes (P1).
+- **Organizer (P0):** Trial/tournament/**camp** listing management, registration management (capacity/waitlist, manual payment-status flag), **registrant export CSV**, results publishing; event schedule/gallery/analytics/announcements (P1).
+- **Talent Scout (first-class, P0):** Scout onboarding + profile, discover talents with advanced filters, **shortlist with status/tags/private notes**, **observations**, contact athlete/parent (guardian-routed for minors), scouting opportunities hub; talent reports + compare (P1).
+- **Generalized Provider (directory, P0):** NGOs, doctors, stores, brands, nutritionists, agents, federations, facilities, schools, media etc. exist as `generalized_profiles` (directory-only, not login roles), discoverable in search.
+- **Social (P0):** lightweight **feed + posts + likes + comments**; **follow (one-way)** / **connect (mutual)**; **1-to-1 chat** (accepted connections + enquiry threads only; no cold DMs); share/deep links (P1).
+- **Trust & Safety (P0):** report users/posts/listings, **block users**, verification request + blue-check **admin queue**, moderation actions (remove/warn/suspend) with outcome notifications.
+- **Admin (P0 slice):** dedicated 2FA portal, dashboard, **user management (suspend/ban)**, verification queue, content CRUD (incl. opportunities/programs/facilities/posts), moderation, master data (incl. **positions**), expiry rules; leaderboard config + broadcasts (P1). **[SUPERSEDED — see Backend-Feature-Delta.md]** v1 "full documentation, build scheduled later" is superseded: the verification queue (AD.4) and user management (AD.3) are **P0**.
+- **Sponsor/Brand:** **[SUPERSEDED — see Backend-Feature-Delta.md]** Removed as a role (D2). Sponsorship posting is now an opportunity type available to Academy/Organizer/Coach/Scout (athlete P1).
+- **Shared:** Universal search across categories (incl. **athletes**), shared filter panel (sport, city/state, age group, position, level, facilities, price, date; sort relevance/distance/rating), notifications center, settings (notification prefs, visibility/messaging prefs, language, logout, delete account), help/support (FAQ + contact form).
 
 ### 5.2 Out of Scope (MVP)
 
@@ -153,16 +166,18 @@ Success metrics are **not stated in the source documents**. The following are pr
 
 | # | Metric | What it indicates |
 |---|---|---|
-| M1 | Sign-ups by role (athletes, coaches, academies, organizers, sponsors) | Marketplace health on both sides |
+| M1 | Sign-ups by role (athletes, coaches, academies, organizers, scouts) | Marketplace health on both sides |
 | M2 | Number of active (published, non-expired) listings per category | Supply depth |
 | M3 | Searches per active user; filter usage rate | Discovery engagement |
 | M4 | Trial/tournament registrations completed per week | Core transactional activation |
 | M5 | Enquiries sent → replied-to rate (coach & academy inboxes) | Connection quality |
-| M6 | Sponsorship applications submitted; shortlist rate | Sponsor-side value |
+| M6 | Opportunity applications submitted; shortlist rate | Provider-side value |
 | M7 | Listings reported → resolved within SLA (moderation turnaround) | Trust & safety |
 | M8 | Auto-expired listings per week (hygiene working as intended) | Data freshness |
 | M9 | Reminder opt-in rate on saved items; notification open rate | Retention loops |
 | M10 | 7-day / 30-day retention of athlete accounts | Product stickiness |
+| M11 | Posts / likes / comments per active user; follows & connections made | Social engagement (new P0) |
+| M12 | Verification requests → approved; % verified profiles; leaderboard participation | Trust & credibility (new P0) |
 
 ---
 
@@ -172,10 +187,11 @@ Success metrics are **not stated in the source documents**. The following are pr
 
 | # | Assumption | Rationale |
 |---|---|---|
-| A1 | **Email is the primary verified channel (email-OTP first); phone verification comes later** | Confirmed by stakeholder decision |
-| A2 | **No in-app payments in this MVP** — entry fees and payment-related fields are informational; where a fee applies, the UI carries a "payment note" only (T3) and organizer registration lists track a payment status flag manually (O7) | Confirmed by stakeholder decision |
-| A3 | Push notification provider and SMS/OTP provider are **undecided placeholders**; the docs define abstract interfaces (e.g. `NotificationProvider`, `OtpProvider`) rather than committing to a vendor | Confirmed by stakeholder decision |
-| A4 | Admin (AD1–AD12) is **fully documented** but its **build is scheduled in a later phase**; early data seeding happens directly via database/admin tooling in the interim | Confirmed by stakeholder decision |
+| A1 | **OTP signup/login supports phone OR email** (6-digit code); password login kept alongside. SMS-vendor selection (AS-03) is blocking for the phone channel. **[SUPERSEDED — see Backend-Feature-Delta.md]** The v1 "email-OTP first; phone deferred" decision is superseded (D1/D5). | Stakeholder decision (v3) |
+| A1b | **Guardian consent is mandatory for minors (<18)**: guardian name/phone + consent OTP before profile activation; restricted defaults; leaderboard anonymization. Closes AS-34. | Stakeholder decision (v3, D4) |
+| A2 | **No in-app payments in this MVP** — entry fees and payment-related fields are informational; where a fee applies, the UI carries a "payment note" only and organizer registration lists track a payment status flag manually. Payments are **parked (P2)**. | Confirmed by stakeholder decision |
+| A3 | Push notification provider and SMS/OTP provider are **undecided placeholders**; the docs define abstract interfaces (e.g. `NotificationProvider`, `OtpProvider`) rather than committing to a vendor. **OTP SMS vendor is now blocking** (phone channel is P0). | Confirmed by stakeholder decision |
+| A4 | Admin verification queue (AD.4) and user management (AD.3) are **P0** — not deferred. Remaining admin console pages can follow. **[SUPERSEDED — see Backend-Feature-Delta.md]** v1 "admin built in a later phase" is superseded. | Stakeholder decision (v3, D6) |
 | A5 | `SportX_India_Mandatory_Fields_MVP.pdf` could not be parsed in this environment; all field-level decisions are inferred from the three markdown sources and marked as assumptions where ambiguous | Environment limitation |
 | A6 | The product launches in **India**, with phone numbers in `+91` format and pricing in ₹ (per wireframes) | Implied by S3 and all fee fields |
 | A7 | Multi-language support exists as a settings option (S11 "Language") but MVP ships **English only** | Language switcher shown, no localization content specified |
@@ -187,21 +203,23 @@ Success metrics are **not stated in the source documents**. The following are pr
 | C1 | **Flutter mobile app + Laravel backend** — fixed technology stack | Stated by stakeholder |
 | C2 | Mobile-first UX, ~375px portrait baseline | Wireframes header |
 | C3 | Data model must be consistent with the reusable screen templates (directory list → detail → form, inbox list → detail → action) | Screen Inventory "Notes for Build Planning" |
-| C4 | Time-boxed content (trials, tournaments, sponsorships, scholarships with deadlines) must support automatic expiry, per admin-configurable rules | AD8/AD9 |
+| C4 | Time-boxed content (trials, tournaments, opportunities with deadlines) must support automatic expiry, per admin-configurable rules. Programs/facilities do not expire. | AD8/AD9, BE-M4.4 |
 | C5 | Trust & safety (user reporting, admin moderation actions) must exist at MVP level, even though the admin console build is phased | S10, AD6/AD7 |
 
 ---
 
 ## 8. Release Strategy (summary)
 
-The build is broken into demo-able phases in `Phased-Roadmap.md`:
+The build is broken into demo-able phases in `Phased-Roadmap.md`. The v3 sequence follows `Backend-Feature-Delta.md` §9:
 
-1. **Phase 1 — Foundation & Discovery:** auth + onboarding, master data, all directories/feeds with search & filters, detail pages, saved items, report-a-listing.
-2. **Phase 2 — Actions & Supply Side:** athlete registrations/enquiries/applications + activity hub, coach/academy/organizer/sponsor listing creation + inboxes + management.
-3. **Phase 3 — Admin, Expiry, Reminders:** admin console, moderation workflow, auto-expiry engine, notification/reminder system.
-4. **Phase 4 — Polish & Scale:** capacity/waitlist refinement, results publishing polish, settings/language shell, performance & hardening.
+1. **Phase 1 — Roles & Trust:** role model (drop `sponsor`, add `scout`), OTP stack (phone + email), role onboarding (incl. scout), **guardian consent for minors**, verification request + admin queue + blue-check badge.
+2. **Phase 2 — Profiles & Discovery:** 30-field profiles per role, achievements/media, universal search (incl. athletes), filters/sort, saved items, explore/discovery, report.
+3. **Phase 3 — Opportunities & Programs:** unified opportunities (scholarship/sponsorship/tryout/camp) + in-app applications, programs, facilities, enquiries→chat threads.
+4. **Phase 4 — Social, Network & Leaderboard:** posts/feed/likes/comments, follow/connect, 1-to-1 chat, blocks, leaderboard points engine.
+5. **Phase 5 — Events & Supply-side Management:** event/trial/camp create flow, registrations + decision notifications + CSV export, coach/academy/organizer management, admin P0 (users, verification, content types, moderation).
+6. **Phase 6 — Polish & Scale (incl. P1 wave):** reviews, event schedule/gallery/analytics, announcements, scout reports + compare, admin broadcasts, recommendations, settings/language shell, performance & hardening.
 
-*(Decision applied: no payment phase — payment content removed and noted as excluded.)*
+*(Decisions applied: no payment phase — payments parked; sponsor role removed, so no sponsor phase.)*
 
 ---
 

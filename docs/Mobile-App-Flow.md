@@ -1,10 +1,18 @@
 # SportX India — Mobile App Flow (per role)
 
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
 The authoritative end-to-end flow for the Flutter app, covering auth, role onboarding, the persistent bottom-nav shell, and the role-specific tools each user type reaches. This reflects the **wired** behaviour after the flow fixes.
+
+> **⚠️ Partly [SUPERSEDED — see Backend-Feature-Delta.md].** The v3 design (`sportsx-design-v3/new_design_docs/SCREEN_INVENTORY.md`, 129 screens / 6 roles) changes several things described below: the bottom nav is `[Home][Explore][(+) Create][Community][More]`, auth is **OTP** (not email/password-only), the **Sponsor/Brand role is REMOVED**, and new modules ship (feed/posts, follow/connect, chat, leaderboard, opportunities, programs, facilities). New v3 sections are marked **[v3]** below; stale sections are kept for history.
 
 ---
 
 ## 1. The shell: one persistent bottom nav for every role
+
+> **[v3]** The new design uses a 5-tab shell: **`[Home] [Explore] [(+) Create] [Community] [More]`**. `Home` is the role-aware dashboard (`AT.1`/`CO.2`/`AC.2`/`OR.2`/`SC.2`); `Explore` is `S.2`; `Create` is the `S.8` launcher; `Community` hosts Network `S.12` (P1) / Groups (P2) / Events (P1); `More` is the `S.15` account hub. Header icons reach Search `S.5`, Notifications `S.16` and own profile. Messages are reached from More and profile "Message" buttons (`S.17`).
+
+### [SUPERSEDED] old shell
 
 All signed-in users (any role) live inside a single **`MainShell`** (`lib/core/router.dart`) with 5 tabs that **never disappear** while navigating between them:
 
@@ -23,33 +31,44 @@ All signed-in users (any role) live inside a single **`MainShell`** (`lib/core/r
 
 ## 2. Entry & authentication flow (shared)
 
+> **[v3] OTP is now P0** (`A.3` Sign Up, `A.4` OTP, `A.5` Login, `A.6` Forgot/Reset). Sign up uses **phone _or_ email + 6-digit OTP** (`POST /auth/send-otp`, `/auth/verify-otp`, `/auth/resend-otp`, delta §11.1); password login is retained. After OTP, an athlete with DOB < 18 is routed to **Guardian Consent** (`A.9`) before onboarding. Google sign-in remains deferred unless overridden (delta §8 D9).
+
 ```
  App start
    │
    ▼
- Splash ──► Role Selection ──┬──► Sign Up (email + password) ──┐
-                             │                                  │
-                             └──► Login (email + password) ─────┤
-                                                                ▼
-                                                   AuthProvider.register / login
-                                                   (backend issues token)
-                                                                │
-                                              ┌─────────────────┴──────────────────┐
-                                              ▼                                    ▼
-                                  needs_onboarding == true            needs_onboarding == false
-                                              │                                    │
-                                              ▼                                    ▼
-                                   <role> onboarding screen                   /home (shell)
-                                              │
-                                              ▼
-                                   markOnboardingComplete() → role landing
+ Splash (A.1) ──► Role Selection (A.2) ──┬──► Sign Up (A.3) ──► OTP (A.4) ──┐
+                                         │                                   │
+                                         └──► Login (A.5) ───────────────────┤
+                                                                             ▼
+                                                        AuthProvider (send/verify OTP, token)
+                                                                             │
+                                          ┌──────────────────────────────────┴─────────────┐
+                                          ▼                                                 ▼
+                              DOB < 18 → Guardian Consent (A.9)                adult/other roles
+                                          │                                                 │
+                                          └──────────────► <role> onboarding ◄──────────────┘
+                                          (AT.2 / CO.1 / AC.1 / OR.1 / SC.1)
+                                                                             │
+                                                                             ▼
+                                                        markOnboardingComplete() → role landing
 ```
 
-- Auth is **email + password only** (no OTP). Registration auto-verifies and returns a token immediately.
+- **v3 auth:** phone **or** email + OTP (`A.3`–`A.6`); password login kept alongside. OTP sets `email_verified_at` / `phone_verified_at` and returns a token + `needs_onboarding`.
 - The router **redirects automatically** based on `AuthState`:
   - `authenticated + needs_onboarding` → forced to that role's onboarding screen.
   - `authenticated + onboarding done` → `/home` (auth/onboarding screens are blocked).
   - `unauthenticated` → `/role-selection`.
+
+> **[SUPERSEDED] old auth (email + password only, no OTP).** Registration auto-verified and returned a token immediately. Shown here for history only:
+>
+> ```
+>  Splash ──► Role Selection ──┬──► Sign Up (email + password) ──┐
+>                              └──► Login (email + password) ─────┤
+>                                                                 ▼
+>                                                    AuthProvider.register / login → token
+> ```
+> This flow lost the OTP stack (`otp_codes` dropped) and left Flutter `verifyOtp()` calls pointing at dead endpoints (delta D1). **Do not build against it.**
 
 ---
 
@@ -59,13 +78,15 @@ Each role collects its profile info right after signup. On success the screen ca
 
 | Role | Onboarding route(s) | Collects | After submit → |
 |------|---------------------|----------|----------------|
-| **Athlete** | `/onboarding-1` → `/onboarding-2` | Sport(s) + age group → skill level + city | `/home` |
-| **Coach** | `/coach-onboarding` | sport coached, experience | `/coach-dashboard` |
-| **Academy** | `/academy-onboarding` | academy name, sport, city | `/academy-dashboard` |
-| **Organizer** | `/organizer-onboarding` | organization name, type | `/organizer-dashboard` |
-| **Sponsor** | `/sponsor-onboarding` | brand name, category | `/sponsor-dashboard` |
-| **Talent Scout** | `/scout-onboarding` | organization, sports specialization, experience, location | `/scout-dashboard` |
+| **Athlete** | `/onboarding-1` → `/onboarding-2` (`AT.2`) | Sport(s) + age group → skill level + city; **guardian consent first if < 18 (`A.9`/`AT.10`)** | `/home` |
+| **Coach** | `/coach-onboarding` (`CO.1`) | 4-step: profile → credentials → sports/fees → review | `/coach-dashboard` |
+| **Academy** | `/academy-onboarding` (`AC.1`) | 5-step: basic → sports/age → facilities → fees/photos → review | `/academy-dashboard` |
+| **Organizer** | `/organizer-onboarding` (`OR.1`) | organization name, type | `/organizer-dashboard` |
+| ~~**Sponsor**~~ | ~~`/sponsor-onboarding`~~ | **[REMOVED — see Backend-Feature-Delta.md]** sponsorships are now Opportunity type (`D.9`/`D.10`) | — |
+| **Talent Scout** | `/scout-onboarding` (`SC.1`) | organization, sports specialization, experience, availability region, languages, location | `/scout-dashboard` |
 | Admin | — (no onboarding) | separate portal at `/admin/login` | `/admin/dashboard` |
+
+> Onboarding now captures the role's **30 profile fields** (`SportX_Mandatory_Fields.md`, 8–9 mandatory) with a completion checklist (`AT.6`, `GET /me/completion-checklist`). The old `/sponsor-onboarding` route is retired (should 404/410, never 500).
 
 ---
 
@@ -83,7 +104,7 @@ Each role collects its profile info right after signup. On success the screen ca
    │
  Profile tab ──► Quick Links: Edit Profile · Media · Activity · Scholarships · Venues · Connections
                   └─ Settings / Log out
- Activity tab ──► My registrations & applications (trials/tournaments/sponsorships)
+ Activity tab ──► My registrations & applications (trials/tournaments/**opportunities**)
 ```
 
 ### 🏏 Coach
@@ -129,18 +150,13 @@ Each role collects its profile info right after signup. On success the screen ca
    └─ Activity (/activity-hub)
 ```
 
-### 💰 Sponsor / Brand
-**Landing:** `/sponsor-dashboard`.
-
+### 💰 Sponsor / Brand — **[REMOVED — see Backend-Feature-Delta.md]**
+**Landing:** ~~`/sponsor-dashboard`~~ — the `sponsor` role is **removed** (delta §0 D2 / §4). Sponsorship is now an **Opportunity type** (`D.9`/`D.10`/`AT.8`) posted by Academy/Organizer/Coach/Scout. Old flow kept for history:
 ```
  Onboarding done ──► /sponsor-dashboard
- Profile tab Quick Links:
-   ├─ Dashboard (/sponsor-dashboard)
    ├─ Post Sponsor (/sponsor-posting)      → publish
    ├─ Discover (/athlete-discovery)        → shortlist athletes (/shortlist)
-   ├─ Applications (/applications-inbox)   → /application-detail (accept/reject)
-   └─ My Listings (/my-sponsorships)
- Athletes apply via /sponsor-pitch/:id (athlete side) → appear in Applications.
+   └─ Applications (/applications-inbox)   → /application-detail (accept/reject)
 ```
 
 ### 🔍 Talent Scout
@@ -168,11 +184,32 @@ Each role collects its profile info right after signup. On success the screen ca
                   ├─ Users (/admin/users) → verify/suspend/delete
                   ├─ Approvals (/admin/approvals)
                   ├─ Moderation (/admin/moderation) → report actions
-                  ├─ Opportunities (/admin/opportunities) → approve/reject sponsorships
+                  ├─ Content / Opportunities (AD.5) → manage opportunities/programs/facilities/posts
+   ├─ Verification Queue (AD.4) → approve/reject blue-check requests
                   ├─ Notifications (compose / targeted)
                   └─ Expiry monitor · Categories (sports/cities/age-groups)
  Admin is NOT part of the user bottom-nav shell — it has its own navigation.
 ```
+
+---
+
+## 4a. [v3] New shared modules (all roles)
+
+These screens/modules are **new in v3** (`SCREEN_INVENTORY.md` v2) and are reached from the shell, profile or detail screens:
+
+| Module | Screens | Entry / flow | Backend (delta §11) |
+|---|---|---|---|
+| **Social feed & posts** | `S.8` Create Launcher, `S.9` Create Post, `S.27` Post Detail, `S.28` Media Viewer | Home feed tabs (For You/Following/…) → create/like/comment/save | `GET /feed`, `/posts/**` (§11.9) |
+| **Network (follow/connect)** | `S.12` Network, `S.19` Connections, `S.13`/`S.14` Groups (P2) | Explore/profile → Follow (instant) or Connect (request) → accept | `/follow/**`, `/connections/**` (§11.10) |
+| **Messaging** | `S.17` Inbox, `S.18` Chat Thread | More / profile Message → accepted connection or enquiry thread | `/conversations/**`, `/enquiries/**` (§11.11/§11.8) |
+| **Opportunities** | `D.9` Detail, `D.10` Apply, `AT.8` My Opportunities, `AC.9`/`SC.11`/`SC.12` posting | Explore/Home → detail → apply with pitch → track status | `/opportunities/**` (§11.7) |
+| **Programs** | `CO.4`/`CO.5` Coach, `AC.4`, `D.11` Detail, `D.12` Enquiry | Coach/Academy → create → Explore → athlete enquires → chat | `/me/programs`, `/programs/**` (§11.8) |
+| **Facilities** | `AC.7`/`AC.8`, `D.13` Detail, `OR.13` venues | Academy/Organizer → create → D.3 tab / Explore | `/me/facilities`, `/facilities/**` (§11.8) |
+| **Leaderboard** | `S.6` Leaderboard, `S.7` Info, `AT.1` strip | Home strip / Explore → ranked tabs (athletes P0; others P1) | `GET /leaderboard`, `/leaderboard/strip` (§11.5) |
+| **Guardian / minors** | `A.9`, `AT.10` | Minor signup → guardian consent → restricted defaults | `/guardian/**`, `/me/guardian-controls` (§11.1) |
+| **Verification** | `A.10`, `AD.4` | Profile → request blue check → admin queue | `/me/verification`, `/admin/verification/**` (§11.1/§11.17) |
+| **Settings / safety** | `S.22`–`S.26`, `S.29`, `S.30` | More → settings/privacy, blocks, report, logout, share | `/me/settings`, `/blocks`, `/reports` (§11.15/§11.16) |
+| **Unified dashboards** | `AT.1`/`CO.2`/`AC.2`/`OR.2`/`SC.2`, `S.2` Explore | One role-aware home + grouped explore | `GET /me/home`, `GET /explore` (§11.5) |
 
 ---
 
@@ -197,7 +234,7 @@ redirect(context, state):
 | coach | `/coach-onboarding` |
 | academy | `/academy-onboarding` |
 | organizer | `/organizer-onboarding` |
-| sponsor | `/sponsor-onboarding` |
+| ~~sponsor~~ | **[REMOVED — no route]** |
 | talent_scout | `/scout-onboarding` |
 | (other) | `null` |
 
@@ -215,7 +252,8 @@ Each onboarding screen calls `authProvider.notifier.markOnboardingComplete()` on
 | Login (email + password) | `lib/features/auth/presentation/screens/login_screen.dart` |
 | Role selection | `lib/features/auth/presentation/screens/role_selection_screen.dart` |
 | Athlete onboarding (2 steps) | `lib/features/onboarding/presentation/screens/onboarding_*.dart` |
-| Role onboarding (coach/academy/organizer/sponsor) | `lib/features/<role>/presentation/screens/<role>_onboarding_screen.dart` |
+| Role onboarding (coach/academy/organizer/scout) | `lib/features/<role>/presentation/screens/<role>_onboarding_screen.dart` |
+| v3 modules (feed/social, network, messaging, opportunities, programs, leaderboard) | new `lib/features/{feed,network,messaging,opportunities,programs,leaderboard}/` — see `Mobile-Architecture.md` |
 | Home shell content | `lib/features/home/presentation/screens/home_screen.dart` |
 | Role-aware Profile + Quick Links | `lib/features/athlete/presentation/screens/profile_screen.dart` |
 

@@ -1,5 +1,11 @@
 # SportX India — Laravel ↔ Flutter Integration Test Report
 
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
+> **HISTORICAL (pre-v3):** describes the old state; see Backend-Feature-Delta.md for the current plan.
+
+> **v3 annotation (findings below are preserved as-is):** this report validates the pre-v3 build. Since then: `sponsor` role is **removed** and `scout` added (so the BONUS `sponsor /athletes` note no longer maps to a role); OTP/phone verification is **P0**; and social/chat/posts + opportunities/programs/facilities/leaderboard/verification are now planned P0 work.
+
 **Date:** 2026-08-12  *(updated: all findings fixed & verified)*
 **Stack:** Laravel 13.24 (Sanctum Bearer, MySQL `sportx`) @ `sportx-api` + Flutter 3.41 (Riverpod/Dio/go_router) @ `sportx_app`
 **API:** `http://127.0.0.1:8002/api/v1` (health OK, DB connected, 49 tables, all 24 migrations applied)

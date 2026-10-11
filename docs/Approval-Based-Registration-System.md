@@ -1,5 +1,7 @@
 # Approval-Based Registration System for SportX
 
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
 ## Overview
 
 This document outlines the approval-based registration system to replace payment integration for trials, tournaments, and other bookable entities. Instead of processing payments via Stripe, athletes submit requests to participate, and organizers approve or reject these requests.
@@ -18,13 +20,15 @@ This document outlines the approval-based registration system to replace payment
 |--------|---------------|-------------------|
 | Trial Registration | `verification_status`: pending/verified/rejected | `POST /registrations/trials/{id}/verify`, `/reject` |
 | Tournament Registration | `payment_status`: pending/paid | `PATCH /registrations/tournaments/{id}/payment` |
-| Sponsorship | `status`: pending/approved/rejected | `POST /sponsorships/{id}/applications` |
-| User Registration | `status`: pending/active | Admin approves coaches/sponsors |
+| Opportunity Application *(was Scholarship/Sponsorship)* | `status`: pending/approved/rejected | `POST /opportunities/{id}/applications` |
+| User Registration | `status`: pending/active | Admin approves coaches/academies/organizers/scouts |
 
 ### Roles in System
 ```
-athlete, coach, academy, organizer, sponsor, admin, talent_scout
+athlete, coach, academy, organizer, scout, admin
 ```
+
+> **v3 change:** the `sponsor` role is **removed** and `scout` added (`talent_scout` → `scout`). `sponsorships`/`scholarships` collapse into unified `opportunities`, so the former sponsorship-application approval workflow now applies to **opportunity applications** (provider reviews athlete), in addition to the trial/tournament/coaching flows below.
 
 ---
 
@@ -2918,6 +2922,9 @@ public function adminRejectTournament(Request $request, TournamentRegistration $
 | Organizer | Only their tournament/trial registrations | Can approve/reject only their registrations |
 | Athlete | Only their own registrations | Cannot approve/reject |
 | Academy | Only their trial registrations | Can approve/reject their trials |
+| Scout | No registration scope | Reviews **opportunity applications** only (not registrations) |
+
+> **v3 change:** roles are now `athlete, coach, academy, organizer, scout, admin` (no `sponsor`). Scout does not approve registrations, but providers—including scouts—review applications to their `opportunities`.
 
 ### 8.10 Integration with Existing Admin Moderation
 
@@ -3022,6 +3029,7 @@ private function getDisputedCount(): int
 - [ ] Test athlete enrollment request flow (submit → coach reviews → notification)
 - [ ] Test coach approval flow (view pending → approve → set start date → athlete notified)
 - [ ] Test coach rejection flow (view pending → reject with reason → athlete notified)
+- [ ] Test opportunity application flow (athlete applies with pitch → provider shortlists/declines → athlete notified)
 
 ---
 
@@ -3043,6 +3051,7 @@ private function getDisputedCount(): int
 |--------|-----------|----------|-------|
 | Tournament Registration | Athlete | Organizer | Category-based capacity |
 | Trial Registration | Athlete | Organizer/Academy | Document verification |
+| Opportunity Application *(was Scholarship/Sponsorship)* | Athlete | Provider (Academy/Organizer/Coach/Scout) | In-app pitch + docs; provider shortlist/decline (P1) |
 | Coach Enrollment | Athlete | Coach | Plan types: session/monthly/quarterly |
 | Academy Subscription | Athlete | Academy | Future expansion |
 | Equipment Booking | Athlete | Venue Owner | Future expansion |

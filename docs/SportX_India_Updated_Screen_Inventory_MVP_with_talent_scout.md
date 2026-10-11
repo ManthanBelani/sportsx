@@ -1,14 +1,20 @@
-@# SportX India
+# SportX India
 ## Updated Flutter Screen Inventory (MVP)
+
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+>
+> **⚠️ [SUPERSEDED — see Backend-Feature-Delta.md and `sportsx-design-v3/new_design_docs/SCREEN_INVENTORY.md`].** This document is the **old** inventory (44 screens, 6 numbered roles including *Sponsor / Brand*, no verified scout pipeline). The new canonical inventory is `sportsx-design-v3/new_design_docs/SCREEN_INVENTORY.md` (**129 screens, 6 roles: Athlete/Parent, Coach, Academy, Organizer, Talent Scout, Admin**) with ID prefixes `A`/`S`/`D`/`AT`/`CO`/`AC`/`OR`/`SC`/`AD`. Kept for history; use the new inventory for screen IDs.
 
 ---
 
 ## 0. Shared / Common (All Roles)
 
+> **[SUPERSEDED]** — the new design replaces these with `S.1–S.30` shared-shell screens plus `A.1–A.10` auth screens (OTP auth + guardian consent + verification request). See §8 mapping.
+
 | # | Screen | Purpose | Key Elements | Navigates To |
 |---|--------|---------|---------------|---------------|
 | 0.1 | Splash Screen | App load, auth check, route to onboarding or home. | Logo, loader. | Onboarding or role-based Home |
-| 0.2 | Role Selection | First-time user selects their role. | 6 role cards: Athlete/Parent, Coach, Academy, Organizer, Sponsor, Talent Scout. | Sign Up (0.3) |
+| 0.2 | Role Selection | First-time user selects their role. | **[SUPERSEDED]** New `A.2`: 5 selectable role cards (Athlete/Parent, Coach, Academy, Organizer, Talent Scout) — *Sponsor removed*; Admin is internal. | Sign Up (0.3) |
 | 0.3 | Sign Up | Phone/email registration. | Phone/email, OTP or password, T&C checkbox. | OTP Verification (0.4) |
 | 0.4 | OTP Verification | Verify phone/email. | OTP input, resend timer. | Role onboarding |
 | 0.5 | Login | Returning-user login. | Phone/email, password/OTP toggle. | Role-based Home |
@@ -112,6 +118,8 @@
 
 ## 6. Sponsor / Brand
 
+> **[SUPERSEDED — see Backend-Feature-Delta.md].** The `sponsor` role is **REMOVED** (delta §0 D2 / §4). Sponsorship is now an **Opportunity type** posted by Academy/Organizer/Coach/Scout (Athlete P1) and browsed by all — see new screens `D.9`/`D.10` (opportunity detail/apply), `AT.8` (My Opportunities), `AC.9`/`SC.11`/`SC.12` (provider posting). The sponsor screens below are retained for history only; their backend (`sponsor_profiles`, `sponsorships`, sponsor onboarding) is dropped/migrated (`Database-Design.md` §16).
+
 | # | Screen | Purpose | Key Elements | Navigates To |
 |---|--------|---------|---------------|---------------|
 | 6.1 | Onboarding — Sponsor Setup | Capture brand info and sport focus. | Form fields, logo upload. | Sponsor Home |
@@ -143,7 +151,9 @@
 
 ## Updated Screen Count Summary
 
-| Role | Primary Screens |
+> **[SUPERSEDED]** The table below is the old count (**44 named screens, incl. Sponsor**). The new canonical inventory (`sportsx-design-v3/new_design_docs/SCREEN_INVENTORY.md` §11) counts **129 screens** across 6 roles.
+
+| Role | Primary Screens (OLD — superseded) |
 |------|------------------|
 | Shared / Common | 10 |
 | Athlete / Parent | 28 |
@@ -151,7 +161,42 @@
 | Academy | 7 (+ shared enquiry screens) |
 | Organizer | 5 (+ shared trial management) |
 | Talent Scout | 6 (+ shared athlete/search/filter screens) |
-| Sponsor / Brand | 9 |
+| Sponsor / Brand | 9 — **[REMOVED]** |
 | Admin | 8 |
 
-**Note:** Athlete-to-athlete chat is intentionally limited to accepted connections. The MVP does not include a public social feed, stories, posts or open group chat.
+**New counts (v3 / `SCREEN_INVENTORY.md` §11):** Auth & Onboarding 10 · Shared shell 30 · Shared detail & forms 17 · Athlete/Parent 10 · Coach 8 · Academy 12 · Organizer 17 · Talent Scout 13 · Admin 12 → **Total 129 (94 P0 / 25 P1 / 10 P2)**.
+
+**Note:** Athlete-to-athlete chat remains limited to accepted connections, **but** the MVP **now includes** a lightweight public social feed, posts, likes/comments, follow/connect and 1-to-1 chat (new `S.9`/`S.27`/`S.12`/`S.17`/`S.18`/`S.19`). Stories, group chat and cold DMs stay out. This old note is **[SUPERSEDED]**.
+
+---
+
+## 8. Mapping — old IDs → new v3 screen IDs
+
+> Source of new IDs: `sportsx-design-v3/new_design_docs/SCREEN_INVENTORY.md`. Use the new IDs everywhere.
+
+| Old (this doc) | New v3 ID(s) | Notes |
+|---|---|---|
+| 0.1 Splash | `A.1` | — |
+| 0.2 Role Selection | `A.2` | Sponsor card removed |
+| 0.3 Sign Up | `A.3` | OTP + phone/email + Google (D9) |
+| 0.4 OTP Verification | `A.4` | Now **P0** (delta D1) |
+| 0.5 Login | `A.5` | Keep password; add OTP branch |
+| — | `A.6` Forgot/Reset (OTP) | P1 |
+| — | `A.7` Language · `A.8` Permissions | P1 |
+| — | `A.9` Guardian Consent · `AT.10` Parent Controls | **NEW** P0 (minors) |
+| — | `A.10` Verification Request · `AD.4` Verification Queue | **NEW** P0 |
+| 0.6 Universal Search | `S.5` | — |
+| 0.7 Global Filter Sheet | `S.4` | — |
+| 0.8 Notifications | `S.16` | + role tabs |
+| 0.9 Report Listing/User | `S.26` | + report users/posts |
+| 0.10 Settings/Account | `S.15` More · `S.22` Settings/Privacy | + safety centre `S.23` |
+| 1.x Athlete directory/detail | `S.2`/`S.3`/`S.4` + `D.1`–`D.13` | Grouped discovery + detail forms |
+| 1.14–1.16 Tournaments | `D.6`–`D.8`/`AT.9` | Unified event detail/registration |
+| 1.17–1.21 Scholarships/Sponsorships | `D.9`/`D.10`/`AT.8`/`SC.11` | **Unified opportunities** |
+| 1.23–1.28 Athlete discovery/chat | `S.12`–`S.14`/`S.17`–`S.19` | Feed/follow/connect/chat |
+| 2.x Coach | `CO.1`–`CO.8` | + Programs (`CO.4`/`CO.5`) |
+| 3.x Academy | `AC.1`–`AC.12` | + Facilities (`AC.7`/`AC.8`) |
+| 4.x Organizer | `OR.1`–`OR.17` | + Opportunity/Venue/Announcement |
+| 5.x Talent Scout | `SC.1`–`SC.13` | + shortlist pipeline/reports/observations |
+| 6.x Sponsor | — | **[REMOVED]** → opportunities |
+| 7.x Admin | `AD.1`–`AD.12` | + user mgmt/verification/leaderboard config |

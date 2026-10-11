@@ -1,11 +1,52 @@
 # Phased Roadmap — SportX India
 
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
 Break the build into demo-able phases. Each phase has a feature list and a clear "client can see/test" milestone. Payments are **excluded** (stakeholder decision). Admin is fully documented but scheduled in a later phase.
 
 > **Assumptions**
 > - Each phase is ~4–6 weeks with a small team (assumption — AS-46; actual timeline depends on team size and velocity).
 > - Phases build on each other sequentially; overlap between phases is possible but not assumed.
 > - "Client can see/test" means a demoable APK/web build with the listed features working end-to-end on dev/staging.
+
+---
+
+## v3 Design Delta — Re-sequencing & New P0 Modules
+
+> **The phase order below predates v3. The v3 build order (from `Backend-Feature-Delta.md` §9) is the authoritative sequence for P0 work:**
+>
+> 1. Roles & auth: enum change (**drop `sponsor`, add `scout`**), OTP stack (phone **or** email, P0), scout onboarding, guardian consent.
+> 2. Verification requests + admin queue + badge surfacing.
+> 3. Opportunities (+ migrate `sponsorships`/`scholarships`) + applications + My lists.
+> 4. Programs + facilities + program enquiry.
+> 5. Social core: posts/feed/likes/comments (verify partial first), follows, connections, 1:1 chat, blocks.
+> 6. Leaderboard engine + API.
+> 7. Scout extensions (shortlist status, observations, guardian contact, dashboard).
+> 8. Admin P0: users, verification queue, content-type extensions, export CSV.
+> 9. Notifications matrix + reminders extension + policies + audit.
+> 10. Search/discovery enrichment, saved morphs, completion checklist, share resolver.
+
+### New P0 modules to slot into the phases below
+
+| Module | v3 change | Maps to |
+|---|---|---|
+| OTP signup/login (phone **or** email) | **P0** (was deferred); re-add `otp_codes` + SMS channel | P0-5 |
+| Guardian consent | **P0** — `guardian_consents`, minors | Phase 1 (auth/onboarding) |
+| Role model | `sponsor` **removed**, `scout` **added** | P0-6 |
+| Verification queue (AD.4) + user management (AD.3) | **P0** (was later phase) | Pull into an early phase |
+| Unified `opportunities` (+ `opportunity_applications`) | Replaces `scholarships`/`sponsorships`; posted by academy/organizer/coach/scout | P1-14, P2-17–P2-20 |
+| Programs | **New P0** listing (academy programs) | Phase 2 |
+| Facilities | **New P0** (academy facilities) | Phase 2 |
+| Social feed (posts/likes/comments) | **P0** (was explicitly excluded) | Phase 2 |
+| Follow / connect (network) | **P0** | Phase 2 |
+| 1:1 chat | **P0** (text; media P1) | Phase 2 |
+| Leaderboard (points engine) | **P0** | Phase 2 |
+| Blocks / reports (safety) | **P0** | Phase 2/3 |
+| Content-type extensions (opportunities/programs/facilities/posts) | **P0** admin | Phase 3 |
+| Positions master | **P0** admin | Phase 3 |
+| Opportunity expiry | **P0** admin | Phase 3 |
+
+> **Social/chat note:** `Backend-Feature-Delta.md` §9 flags that posts/feed/chat may already be **partially built** (see `UI-Completion-And-Backend-Wiring-Plan.md`) — verify existing tables/endpoints before building.
 
 ---
 
@@ -20,7 +61,7 @@ Break the build into demo-able phases. Each phase has a feature list and a clear
 | P0-3 | Master data seeders | Sports, cities, age groups, expiry rules |
 | P0-4 | Flutter project scaffolding | `flutter create`, folder structure per `Mobile-Architecture.md`, Dio setup, go_router shell |
 | P0-5 | API auth endpoints (register, OTP, login, logout) | Working auth flow: email OTP → token → logout |
-| P0-6 | Onboarding endpoints (all 6 roles) | Post-verify profile creation per role (Athlete, Coach, Academy, Organizer, Sponsor, Talent Scout) |
+| P0-6 | Onboarding endpoints (all roles) | Post-verify profile creation per role (Athlete, Coach, Academy, Organizer, Scout, Admin) — **`sponsor` removed, `scout` added** |
 | P0-7 | CI/CD skeleton (GitHub Actions / equivalent) | Lint + test on push; staging deploy on merge |
 | P0-8 | Dev data seeding script | Seed sample academies, coaches, trials, athletes for testing |
 
@@ -49,8 +90,9 @@ Break the build into demo-able phases. Each phase has a feature list and a clear
 | P1-10 | **Coach directory:** List (A9/T1) + detail page (A10/T2) | FR-ATH-5 | A9–A10 |
 | P1-11 | **Trial listings:** List (A12/T1) + detail page (A13/T2) | FR-ATH-7 | A12–A13 |
 | P1-12 | **Tournament calendar:** Calendar/list toggle (A16) + detail page (A17/T2) | FR-ATH-9 | A16–A17 |
-| P1-13 | **Scholarship feed:** List (A19/T1) + detail page (A20/T2 with external link) | FR-ATH-11 | A19–A20 |
-| P1-14 | **Sponsorship opportunities:** List (A21/T1) + detail page (A22/T2) | FR-ATH-12 | A21–A22 |
+| P1-13 | **Opportunities feed** *(was Scholarship feed)*: List (A19/T1) + detail page (A20/T2) — now provider-posted, in-app apply | FR-ATH-11 | A19–A20 |
+| P1-14 | **Opportunities (type = sponsorship):** List (A21/T1) + detail page (A22/T2) | FR-ATH-12 | A21–A22 |
+| P1-14c | **Programs + Facilities:** program listings + academy facility pages (new P0) | AS-47 | New screens |
 | P1-14b | **Sports venue directory:** List + detail page (new from Mandatory Fields PDF — AS-47). Uses T1/T2 templates. | AS-47 | New screens |
 | P1-15 | **Saved/bookmarked items:** Save from detail (T2 ♡), saved items list (A25) | FR-ATH-15 | A25 |
 | P1-16 | **Report a listing:** Report modal (S10) | FR-TRUST-1 | S10 |
@@ -84,8 +126,8 @@ Break the build into demo-able phases. Each phase has a feature list and a clear
 | P2-2 | **Coach enquiry inbox** (C4) + reply (C5) | FR-COACH-3,4 | C4, C5 |
 | P2-3 | **Trial registration** — form (A14/T3) + confirmation (A15) | FR-ATH-8 | A14, A15 |
 | P2-4 | **Tournament registration** — form (A18/T3) | FR-ATH-10 | A18 |
-| P2-5 | **Apply/pitch to sponsor** — form (A23/T3) | FR-ATH-13 | A23 |
-| P2-6 | **My Activity Hub** — tabs: trials, tournaments, sponsorships with status (A24) | FR-ATH-14 | A24 |
+| P2-5 | **Apply/pitch to opportunity** — form (A23/T3) | FR-ATH-13 | A23 |
+| P2-6 | **My Activity Hub** — tabs: trials, tournaments, opportunities with status (A24) | FR-ATH-14 | A24 |
 | P2-7 | **Academy trial posting** — create/edit/publish/close (AC4) + My Trials list (AC5) | FR-ACAD-3,4 | AC4, AC5 |
 | P2-8 | **Academy registrant management** — list (AC6) + detail (AC7) + verify/reject | FR-ACAD-5,6 | AC6, AC7 |
 | P2-9 | **Academy enquiry inbox** (AC8) + reply (AC9) | FR-ACAD-7 | AC8, AC9 |
@@ -95,11 +137,18 @@ Break the build into demo-able phases. Each phase has a feature list and a clear
 | P2-13 | **Organizer registration management** — list per event (O7) + manual payment status flag | FR-ORG-5 | O7 |
 | P2-14 | **Organizer capacity/spot management** — per category + waitlist toggle (O8) | FR-ORG-6 | O8 |
 | P2-15 | **Organizer results publishing** — form (O9) + public view (O10) | FR-ORG-7,8 | O9, O10 |
-| P2-16 | **Sponsor onboarding** (SP1) + **dashboard** (SP2) | FR-AUTH-10 | SP1, SP2 |
-| P2-17 | **Sponsorship listing CRUD** — create/edit/publish (SP3) + management list (SP4) | FR-SPON-2,3 | SP3, SP4 |
-| P2-18 | **Sponsor athlete discovery** — search/filter athletes (SP5) + profile view (SP6) | FR-SPON-4,5 | SP5, SP6 |
-| P2-19 | **Sponsor applications inbox** (SP7) + detail/reply/shortlist/reject (SP8) | FR-SPON-6,7 | SP7, SP8 |
-| P2-20 | **Sponsor shortlist** with notes (SP9) | FR-SPON-8 | SP9 |
+| P2-16 | **[REMOVED] Sponsor onboarding/dashboard** — `sponsor` role dropped in v3 (SP1/SP2 retired) | — | — |
+| P2-17 | **Opportunity posting (provider)** — academy/organizer/coach/scout create/edit/publish unified `opportunities` (SP3/SP4 layouts reused) | FR-SPON-2,3 | SP3, SP4 |
+| P2-18 | **Provider athlete discovery** — search/filter athletes (SP5) + profile view (SP6) | FR-SPON-4,5 | SP5, SP6 |
+| P2-19 | **Opportunity applications inbox** (SP7) + detail/reply/shortlist/decline (SP8); applicant review P1 | FR-SPON-6,7 | SP7, SP8 |
+| P2-20 | **Shortlist with notes** (SP9) — scout/opportunity shortlist | FR-SPON-8 | SP9 |
+| P2-20b | **Programs** — provider program CRUD + enquiry | New | New screens |
+| P2-20c | **Facilities** — academy facility CRUD + public listing | New | New screens |
+| P2-20d | **Social feed** — posts, likes, comments | New | S.8, S.9 |
+| P2-20e | **Follow / connect** — network graph + connection requests | New | S.3, S.12–S.14 |
+| P2-20f | **1:1 chat** — conversations + messages (text P0; media P1) | New | S.17, S.18 |
+| P2-20g | **Leaderboard** — points engine + sport/location/age filters, podium + ranks 4–10 | New | S.6, AT.1 |
+| P2-20h | **Blocks / reports** — block users + report content | FR-TRUST-1 | S.23, S.26 |
 | P2-21 | **Talent Scout dashboard** (TS2) — search shortcut, saved athletes, activity summary | FR-TS-2 | TS2 |
 | P2-22 | **Talent Scout athlete discovery** — filterable athlete cards by sport, age, location, skill, achievements (TS3) | FR-TS-3,4 | TS3 |
 | P2-23 | **Talent Scout athlete profile view** (TS4) — sports history, achievements, media, shortlist/connect CTAs | FR-TS-5 | TS4 |
@@ -113,7 +162,7 @@ Break the build into demo-able phases. Each phase has a feature list and a clear
 2. Athlete registers for a trial → gets confirmation with registration ID → sees "Pending Review" in My Activity.
 3. Organizer creates tournament with 3 categories + capacity → athlete registers → organizer sees registration → flips payment status.
 4. Organizer publishes results → public results view shows bracket.
-5. Sponsor creates sponsorship listing → athlete pitches → sponsor shortlists → shortlist shows with notes.
+5. Provider (academy/organizer/coach/scout) posts an opportunity → athlete applies with a pitch → provider shortlists → shortlist shows with notes.
 6. Academy posts trial → athlete registers → academy sees registrant list → verifies documents → athlete sees "Confirmed" in My Activity.
 7. Talent Scout logs in → lands on Scout Dashboard → searches athletes by sport/age/location → views athlete profile → shortlists athlete → sends connection request.
 
@@ -129,13 +178,15 @@ Break the build into demo-able phases. Each phase has a feature list and a clear
 | # | Feature | FR References | Screens |
 |---|---|---|---|
 | P3-1 | **Admin login** with 2FA (AD1) + **admin dashboard** (AD2) | FR-ADMIN-1,2 | AD1, AD2 |
-| P3-2 | **Content management** — category picker with counts (AD3), content list per category (AD4), create/edit/delete via dynamic form (AD5) | FR-ADMIN-3–5 | AD3–AD5 |
+| P3-1b | **Verification queue (AD.4)** + **user management (AD.3: search/suspend/ban)** — **now P0; pull earlier** | FR-ADMIN | AD.4, AD.3 |
+| P3-1c | **Positions master** — sport → position CRUD | New | New |
+| P3-2 | **Content management** — category picker with counts (AD3), content list per category (AD4), create/edit/delete via dynamic form (AD5). **Content types extended:** + opportunities / programs / facilities / posts | FR-ADMIN-3–5 | AD3–AD5 |
 | P3-3 | **Listing moderation** — reported listings queue (AD6) + detail/actions (AD7) | FR-ADMIN-6,7 | AD6, AD7 |
-| P3-4 | **Expiry rules configuration** (AD8) — per content type | FR-ADMIN-8 | AD8 |
+| P3-4 | **Expiry rules configuration** (AD8) — per content type (**+ opportunity**) | FR-ADMIN-8 | AD8 |
 | P3-5 | **Expiry monitor** (AD9) — pending/expired/overridden tabs + override/restore | FR-ADMIN-9 | AD9 |
 | P3-6 | **Category management** — sports, cities, age groups CRUD (AD10–AD12) | FR-ADMIN-10 | AD10–AD12 |
-| P3-7 | **Scholarship admin CRUD** — admin creates/maintains scholarships (only source) | FR-ADMIN-11 | AD5 (scholarships tab) |
-| P3-8 | **Auto-expiry engine** — scheduled job, expiry events, listing status change | FR-ADMIN-8,9 | Backend |
+| P3-7 | **Opportunity admin oversight** — admin moderates provider-posted `opportunities` (no longer sole source; providers post) | FR-ADMIN-11 | AD5 |
+| P3-8 | **Auto-expiry engine** — scheduled job, expiry events, listing status change (**incl. opportunities**) | FR-ADMIN-8,9 | Backend |
 | P3-9 | **Reminder system** — subscription creation on save/confirm, scheduled delivery | FR-NOTIF-2, FR-ATH-16 | Backend |
 | P3-10 | **Notifications center** (S9) — list all alerts, mark read | FR-NOTIF-1 | S9 |
 | P3-11 | **Notification toggle** in Settings | FR-NOTIF-4 | S11 |
@@ -194,4 +245,4 @@ Break the build into demo-able phases. Each phase has a feature list and a clear
 | P4 Polish | 3 weeks | Production-ready, Google sign-in, hardening | ~5 (Google OAuth, password reset) |
 | **Total** | **~19 weeks** | **Complete MVP** | **~147** |
 
-> **Note:** MVP now includes **6 roles** (previously 5): Athlete/Parent, Coach, Academy, Organizer, Sponsor/Brand, **Talent Scout**
+> **Note:** MVP includes **6 roles**: Athlete/Parent, Coach, Academy, Organizer, Scout, Admin. **v3: `sponsor` removed, `scout` added** (sponsorship is now an `opportunities.type`).

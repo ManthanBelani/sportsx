@@ -1,3 +1,5 @@
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
 # Security and Non-Functional Requirements — SportX India
 
 Auth/authorization model, data protection, rate limiting, scalability, performance targets, and compliance considerations relevant to a sports discovery platform in India.
@@ -10,13 +12,16 @@ Auth/authorization model, data protection, rate limiting, scalability, performan
 
 | Mechanism | Detail | Source |
 |---|---|---|
-| Primary channel | Email OTP (6-digit, hashed, 5-min expiry) | FR-AUTH-4, decision |
-| Secondary channel | Email/password login (bcrypt) | FR-AUTH-5 |
-| Social auth | Google OAuth 2.0 (email + profile scope) | S3 |
+| Primary channel | **OTP (phone OR email)**, 6-digit, hashed, 5-min expiry, 60s resend cooldown, max 5 attempts | FR-AUTH-4; BE-M1.1 |
+| Secondary channel | Email/password login (bcrypt) — **kept alongside OTP** | FR-AUTH-5 |
+| Social auth | Google OAuth 2.0 (deferred — confirm D9) | S3 |
 | Token mechanism | Laravel Sanctum API tokens (SHA-256 hashed in DB) | AS-16 |
 | Token lifetime | Configurable; default 1 year for MVP | AS-28 |
 | Logout | Token revocation on `POST /auth/logout` | — |
 | Account deletion | `POST /me/delete-account` → soft-delete (`status=deleted`) | S11 |
+| Guardian consent | Minors (< 18) require verified guardian consent before profile activation (`guardian_consents`, `/guardian/consent` + `/guardian/verify-otp`) | A.9/AT.10; BE-M1.4 |
+
+> **v3 (D1):** OTP was **never dropped** in the new design — it is P0 for both phone and email channels. The earlier "email OTP only" framing is **[SUPERSEDED — see Backend-Feature-Delta.md]**.
 
 ### 1.2 Admin Auth
 
@@ -30,12 +35,13 @@ Auth/authorization model, data protection, rate limiting, scalability, performan
 
 | Role | Permitted actions |
 |---|---|
-| Athlete/Parent | Browse all directories, save items, register for trials/tournaments, apply to sponsorships, enquire with coaches/academies, report listings, manage own profile |
-| Coach | Above (browse like any user) + create/edit own listing, view/reply to enquiry inbox |
-| Academy | Above + create/edit academy listing, post/manage trials, view/verify/reject registrants, view/reply to enquiry inbox |
-| Organizer | Above + post/manage trials and tournaments, manage registrations + capacity + payment status (manual), publish results |
-| Sponsor | Above + post/manage sponsorships, discover athlete profiles, review/shortlist/reject applications, shortlist with notes |
-| Admin | All CRUD on all content types, moderation actions, expiry rule management, category management; accessed via admin portal with 2FA |
+| Athlete | Browse all directories, save items, register for trials/tournaments, **apply to opportunities**, enquire with coaches/academies/programs, post/comment/like in the feed, follow/connect, 1:1 chat (connections/enquiries only), report & block, manage own profile; **minors gated by guardian consent** |
+| Coach | Above + create/edit own listing, post programs/opportunities, view/reply to enquiry inbox, manage program/trial registrations |
+| Academy | Above + create/edit academy listing, post/manage trials/programs/facilities/opportunities, view/verify/reject registrants, view/reply to enquiry inbox |
+| Organizer | Above + post/manage events (trials/tournaments/camps) + venues (P1), manage registrations + capacity + manual payment flag, publish results, post opportunities |
+| Scout | Above (browse) + discover athletes, manage **owner-only** shortlists/observations/reports (status/tags/private notes), contact athletes/parents; post opportunities |
+| Admin | All CRUD on all content types, **user management (suspend/ban)**, **verification queue approve/reject**, moderation actions (incl. suspend), expiry rule management, category/positions management, leaderboard config (P1), broadcasts (P1); accessed via admin portal with 2FA |
+| ~~Sponsor~~ | **[REMOVED — see Backend-Feature-Delta.md]** Sponsorship is now an `opportunities.type` posted by academy/organizer/coach/scout. |
 
 ### 1.4 Ownership Checks
 
@@ -43,11 +49,15 @@ All mutation endpoints verify ownership via Laravel Policies:
 
 - **Coach listing:** only the coach user who owns the `coach_profile` can edit.
 - **Academy:** only the user whose `academy.owner_user_id` matches.
-- **Trial:** owned by academy owner or organizer user who created it.
+- **Trial/event:** owned by academy owner or organizer user who created it.
 - **Tournament:** owned by the organizer profile user.
-- **Sponsorship:** owned by the sponsor profile user.
-- **Enquiry inbox:** only the subject's owner (coach user / academy owner user).
+- **Opportunity:** owned by the provider (academy/organizer/coach/scout) that created it; `posted_by_admin` for admin-exclusive schemes.
+- **Program / Facility:** owned by the coach/academy that created it.
+- **Scout data:** shortlists, observations, reports and private notes are **owner-only** (scout-data-privacy policy) — never exposed on public scout views.
+- **Post/Comment:** edit/delete only by the author (or admin moderation).
+- **Enquiry inbox:** only the subject's owner (coach user / academy owner user / organizer / scout).
 - **Registrant management:** only the trial/tournament owner.
+- **Conversation/Messaging:** open only to accepted connections or enquiry-thread participants; **no cold DMs**; blocks sever access both ways; minors restricted to guardian-allowed connections.
 
 ---
 
@@ -62,25 +72,30 @@ All mutation endpoints verify ownership via Laravel Policies:
 | Google OAuth tokens | Not stored; only `google_id` retained for account linking |
 | Verification documents | Stored in private object storage bucket; served via signed URLs with expiry |
 | Trial registration documents | Same as verification documents |
+| Guardian consent data | `guardian_consents` — guardian name/phone stored; consent OTP hashed like all OTPs |
+| Scout data (shortlists/notes/observations/reports) | Owner-only; never exposed on public scout views or search resources |
 | Admin 2FA secrets | Laravel `encrypt()` (AES-256-CBC with app key) |
 | Sanctum tokens | SHA-256 hashed in `personal_access_tokens` table |
 
 ### 2.2 Minors' Data (Critical — India Context)
 
-> The platform's **primary consumer** is athletes, including minors (age groups: Under-10 through Under-18). Parents operate accounts on behalf of minor athletes (MVP Overview: "Athlete / Parent" role).
+> The platform's **primary consumer** is athletes, including minors (age groups Under-10 through Under-18). **v3 decision (D4): AS-34 is CLOSED** by the guardian-consent design — the old "open legal question" is **[SUPERSEDED — see Backend-Feature-Delta.md]**. Guardian consent is mandatory < 18.
 
 | Concern | Approach |
 |---|---|
-| Account ownership | The account is registered to the parent's email; the athlete profile represents the minor. No PII of minors beyond what parents provide. |
-| Sponsor discovery of minors | **Sponsors can discover all athlete profiles regardless of age group** (SP5 allows any age_group_id filter). **Before launch, a review is required:** should minors be excluded from sponsor discovery by default? Flagged as **AS-34** — requires legal/compliance review. |
-| Profile visibility | Athlete profiles are public to logged-in users (sponsors, other athletes). Consider: are minor profiles visible to all authenticated users, or should there be privacy controls? **AS-34.** |
-| Data retention | Minor data should not be retained longer than necessary. Deletion at account delete (`softDeletes`); hard purge schedule is an assumption (AS-35 — default: 90 days after account deletion). |
+| Account ownership | The account is registered by/for the guardian; the athlete profile represents the minor. No PII of minors beyond what guardians provide. |
+| Guardian consent (mandatory < 18) | `guardian_consents` (guardian name/phone/relationship + consent OTP). DOB < 18 → profile stays `pending` until verified (`POST /guardian/consent` → `/guardian/verify-otp`). |
+| Parent controls | `GET/PUT /me/guardian-controls`: `allow_messages`, `allow_public_profile`, `leaderboard_name_mode`. |
+| Discovery by others | Minor profiles restricted by default; scout/provider contact routes to the **guardian** (SC.13); no cold DMs. |
+| Leaderboard | Minors anonymized — first name + initial (or hidden) per `leaderboard_name_mode`. |
+| Profile visibility | Enforced via `profile_visibility`/`who_can_message`/`who_can_connect` (S.22/AT.10). |
+| Data retention | Minor data not retained longer than necessary. Deletion at account delete (`softDeletes`); hard purge schedule is an assumption (AS-35 — default: 90 days after account deletion). |
 
 ### 2.3 India Data Protection — DPDP Act 2023
 
 | Requirement | Status |
 |---|---|
-| Consent for data collection | Terms & privacy checkbox at sign-up (S3) — captures consent. |
+| Consent for data collection | Terms & privacy checkbox at sign-up (S3) — captures consent. Minors additionally require verified **guardian consent** (A.9). |
 | Right to access | Account holder can view their data via profile endpoints. Full data export not in MVP — **AS-36** (could-priority). |
 | Right to erasure | `Delete Account` in Settings (S11) → soft-delete; hard purge scheduled. |
 | Data localization | Not explicitly required for the MVP scope, but server should be in India (or region where data subjects are). **AS-37** — deployment region unspecified. |
@@ -93,10 +108,14 @@ All mutation endpoints verify ownership via Laravel Policies:
 | Endpoint / Context | Limit | Rationale |
 |---|---|---|
 | `POST /auth/register` | 5/hour per IP | Prevent mass account creation |
-| `POST /auth/verify-otp` | 10/minute per IP + per email | Prevent brute-force OTP guessing |
-| `POST /auth/resend-otp` | 1/minute per email | Wireframe S4 resend timer enforced server-side |
+| `POST /auth/send-otp` | 5/hour per destination · 60s cooldown | Prevent SMS/email abuse + cost |
+| `POST /auth/verify-otp` | 10/minute per IP + per destination | Prevent brute-force OTP guessing (max 5 attempts/code) |
+| `POST /auth/resend-otp` | 1/minute per destination | Server-side resend timer enforced |
+| `POST /guardian/consent` · `/guardian/verify-otp` | 5/hour per minor + per guardian phone | Prevent consent abuse |
 | `POST /auth/login` | 10/minute per IP | Brute-force prevention |
-| `POST /reports` | 5/hour per user | Prevent spam reporting |
+| `POST /reports` · `/blocks` | 5/hour per user | Prevent spam reporting/blocking |
+| `POST /posts` · `/posts/{id}/comments` | 30/hour per user | Feed abuse prevention (v3) |
+| `POST /conversations/{id}/messages` | 60/minute per user | Chat spam prevention (v3) |
 | All other API endpoints | 60/minute per token | General abuse prevention |
 | `POST /media/upload` | 10/minute per token | Resource abuse prevention |
 
@@ -116,7 +135,8 @@ Implementation: Laravel `RateLimiter` facade + `ThrottleRequests` middleware. He
 | SQL | Eloquent ORM (parameterized queries) — no raw SQL with user input. |
 | XSS | All user text stored raw; sanitized on output via `htmlspecialchars` / Blade `{{ }}` when rendered (if web admin ever built). API returns JSON — Flutter handles rendering safely. |
 | File uploads | Type whitelist (extension + MIME), size limit (`config/sportx.php`), sanitized filename. No server-side execution of uploaded files. |
-| URLs | `external_link` on scholarships validated as a URL (not `javascript:` protocol). |
+| URLs | Any external URL (e.g. `opportunities.registration_link`, program links) validated as a URL (not `javascript:` protocol). |
+| Chat/feed content | Messages/posts/comments stored raw, sanitized on output; report/block entry points; text purge default 90 days (align AS-35). |
 
 ---
 
@@ -211,7 +231,7 @@ Implementation: Laravel `RateLimiter` facade + `ThrottleRequests` middleware. He
 | SEC-1 | All endpoints require authentication (except public auth/meta/search endpoints). | Pending |
 | SEC-2 | Role-based middleware on all role-specific routes. | Pending |
 | SEC-3 | Ownership checks on all mutation endpoints (policies). | Pending |
-| SEC-4 | OTP codes hashed, rate-limited, and time-expired. | Pending |
+| SEC-4 | OTP codes hashed, rate-limited, and time-expired (phone + email channels). | Pending |
 | SEC-5 | Passwords hashed (bcrypt). | Pending |
 | SEC-6 | Admin portal requires 2FA. | Pending |
 | SEC-7 | File upload validation (type + size). | Pending |
@@ -219,7 +239,9 @@ Implementation: Laravel `RateLimiter` facade + `ThrottleRequests` middleware. He
 | SEC-9 | Rate limiting on auth endpoints. | Pending |
 | SEC-10 | No raw SQL with user input. | Pending |
 | SEC-11 | Verification documents served via signed URLs. | Pending |
-| SEC-12 | Minors' data review completed (sponsor discovery, profile visibility). | AS-34 — Pending |
+| SEC-12 | Minors' data protected: mandatory guardian consent < 18, restricted defaults, leaderboard anonymization. **AS-34 CLOSED by guardian-consent design.** | Pending |
 | SEC-13 | HTTPS enforced on all endpoints. | Pending |
 | SEC-14 | No secrets/config exposed in API responses. | Pending |
 | SEC-15 | Soft-delete + hard-purge for account deletion. | Pending |
+| SEC-16 | Scout data (shortlists/notes/observations/reports) is owner-only; never leaked on public views/search. | Pending |
+| SEC-17 | Chat/messaging rules enforced: no cold DMs; block severs both ways; report user/post targetable. | Pending |

@@ -1,131 +1,131 @@
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
 # Talent Scout Feature — AI Implementation Guide
 
-This document provides step-by-step instructions for implementing the **Talent Scout** role in SportX India. It covers all changes required across Flutter frontend, Laravel backend, database, and API.
+This document provides step-by-step instructions for implementing the **Talent Scout** role in SportX India.
+
+> **⚠️ v3 UPDATE:** Transactions changed — read first:
+> - The scout role is now **first-class** (not a side-guide): enum value **`scout`** (not `talent_scout`), and the canonical profile table is **`talent_scout_profiles`** with **30 fields** (`SportX_Mandatory_Fields.md` §4, `Database-Design.md` §4).
+> - `sponsor`/`Sponsor-Brand` is **REMOVED**; sponsorship is now an `opportunities.type` (delta D2).
+> - Shortlist gains **status (under_review/good/high/final) + tags + private notes** (BE-M10.1); **observations** are new (BE-M10.2); contact to a **U-18 athlete routes to the guardian** (BE-M10.3).
+> - The draft `scout_connections` table is **superseded** by the shared `connection_requests` table (BE-M7.3/BE-M10.3).
 
 ---
 
 ## Overview
 
-Talent Scout is the **6th role** in the platform (alongside Athlete/Parent, Coach, Academy, Organizer, Sponsor/Brand). Talent Scouts discover athletes, shortlist promising profiles, and send connection requests.
+Talent Scout is a **first-class role** in the platform alongside Athlete, Coach, Academy, Organizer and Admin (`athlete, coach, academy, organizer, scout, admin`). Talent Scouts discover athletes, shortlist promising profiles with a pipeline status, record observations, and contact athletes/parents.
 
 ### Feature Summary
 
 | Capability | Description |
 |-----------|-------------|
-| Scout Profile | Professional profile with organization, sports specialization, experience, location |
-| Athlete Discovery | Search athletes with advanced filters (sport, age, location, skill, achievements) |
+| Scout Profile | Professional profile (`talent_scout_profiles`, 30 fields): scout type, sports specialization, experience, location, availability |
+| Athlete Discovery | Search athletes with advanced filters (sport, age, location, skill, position, achievements) |
 | Athlete Profile View | View sports history, achievements, media gallery |
-| Shortlist | Save promising athletes for later review |
-| Connection Request | Contact athlete/parent through the platform |
+| Shortlist | Save promising athletes with pipeline **status** + **tags** + private notes |
+| Observations | Quick note + rating + optional media (SC.10) |
+| Connection Request | Contact athlete/**guardian** through the platform (shared connection-request flow) |
+| Scout Reports (P1) | 5-dimension assessment + conclusion (SC.8/SC.9) |
 
 ---
 
 ## 1. Database Changes
 
-### 1.1 New Tables Required
+> **Canonical schema:** `Database-Design.md` §4 (`talent_scout_profiles`), §10 (`scout_shortlists`, `observations`, `scout_reports`), §9 (`connection_requests`). The drafts below are **[SUPERSEDED — see Backend-Feature-Delta.md]** and kept for history only.
 
-Create the following tables in Laravel:
+### 1.1 Tables — canonical (build these)
 
-```php
-// database/migrations/xxxx_create_talent_scout_profiles_table.php
-Schema::create('talent_scout_profiles', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-    $table->string('organization')->nullable();
-    $table->string('affiliation')->nullable();
-    $table->json('sports_specialization'); // array of sport_ids
-    $table->integer('experience_years')->nullable();
-    $table->foreignId('city_id')->nullable()->constrained();
-    $table->text('bio')->nullable();
-    $table->string('photo_media_id')->nullable();
-    $table->boolean('listing_status')->default(true);
-    $table->timestamps();
-    $table->softDeletes();
-});
-```
+**`talent_scout_profiles`** (30 fields — `SportX_Mandatory_Fields.md` §4). Mandatory: `full_name`, `photo_media_id`, `cover_media_id`, `scout_type`, `specializations`, `city_id`, `bio`. Optional: `experience_years`, `scouting_level`, `age_groups_scouted`, `organization_name`, `previous_organizations`, `certifications`, `scouting_methods`, `evaluation_areas`, `athletes_scouted`, `discoveries`, `scouting_achievements`, `regions`, `events_covered`, `services`, `recruitment_focus`, `affiliations`, `availability`, `fee_structure`, `website`, `social_links`, `verification_status`, `listing_status`, `profile_completeness`. Downstream: `talent_scout_sports` pivot (Field 4); `scout_reports` (Field 23); `media_items` (Field 24); `reviews` (Field 25).
 
-```php
-// database/migrations/xxxx_create_scout_shortlists_table.php
-Schema::create('scout_shortlists', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('talent_scout_profile_id')->constrained()->cascadeOnDelete();
-    $table->foreignId('athlete_profile_id')->constrained()->cascadeOnDelete();
-    $table->text('notes')->nullable();
-    $table->timestamps();
-    
-    $table->unique(['talent_scout_profile_id', 'athlete_profile_id']);
-});
-```
+**`scout_shortlists`** (BE-M10.1): `scout_user_id` (FK users), `athlete_id` (FK athlete_profiles), `status` enum(`under_review`,`good`,`high`,`final`) default `under_review`, `tags` json nullable, `notes` text (private). Unique `(scout_user_id, athlete_id)`.
 
-```php
-// database/migrations/xxxx_create_scout_connections_table.php
-Schema::create('scout_connections', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('talent_scout_profile_id')->constrained()->cascadeOnDelete();
-    $table->foreignId('athlete_profile_id')->constrained()->cascadeOnDelete();
-    $table->enum('status', ['pending', 'accepted', 'rejected'])->default('pending');
-    $table->text('message')->nullable();
-    $table->timestamps();
-    
-    $table->unique(['talent_scout_profile_id', 'athlete_profile_id']);
-});
-```
+**`observations`** (BE-M10.2): `scout_user_id`, `athlete_id`, `rating` tinyint nullable, `note` text, `media` json nullable. Index `(scout_user_id, athlete_id)`.
+
+**`scout_reports`** (P1, BE-P1.6): `scout_user_id`, `athlete_id`, `scores` json (5-dimension), `conclusion` enum(`recommend`,`watch`,`pass`), `notes`, `status` enum(`draft`,`final`).
+
+**Contact/connections:** use the shared **`connection_requests`** table (`Database-Design.md` §9) — **not** a scout-specific table. U-18 contact routes to the guardian (BE-M10.3).
 
 ### 1.2 User Role Update
 
-Update the `users` table role enum:
+> **v3:** use the enum value **`scout`** (not `talent_scout`). Remove `sponsor`.
 
 ```php
-// In existing users table migration
-$table->enum('role', ['athlete', 'coach', 'academy', 'organizer', 'sponsor', 'talent_scout']);
+// In the users table migration
+$table->enum('role', ['athlete', 'coach', 'academy', 'organizer', 'scout', 'admin']);
 ```
 
----
+### 1.3 Superseded drafts (history)
+
+> The three migrations below (`talent_scout_profiles` with `organization`/`affiliation`, `scout_shortlists` keyed by `talent_scout_profile_id` with notes-only, and `scout_connections`) are **[SUPERSEDED — see Backend-Feature-Delta.md]**. Do not build as-is; use §1.1.
+
+```php
+// [SUPERSEDED] draft talent_scout_profiles (was organization/affiliation, no 30 fields)
+// [SUPERSEDED] draft scout_shortlists (was notes-only, no status/tags)
+// [SUPERSEDED] draft scout_connections (replace with connection_requests)
+```
 
 ## 2. Backend API Endpoints
 
+> Conventions per `API-Specification.md`: base `/api/v1`, `{data, meta}` envelope, Bearer Sanctum. Status tags: `EXISTS`/`NEW`/`CHANGED`/`P1`.
+
 ### 2.1 Auth & Onboarding
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/v1/onboarding/talent-scout` | Create talent scout profile |
-| GET | `/api/v1/me/scout-profile` | Get current scout's profile |
-| PUT | `/api/v1/me/scout-profile` | Update scout profile |
+| Method | Endpoint | Status | Description |
+|--------|----------|--------|-------------|
+| POST | `/api/v1/onboarding/scout` | NEW | Create talent scout profile (30 fields) |
+| GET | `/api/v1/me/scout-profile` | NEW | Get current scout's profile |
+| PUT | `/api/v1/me/scout-profile` | NEW | Update scout profile |
+
+> The old path `/onboarding/talent-scout` is **[SUPERSEDED — see Backend-Feature-Delta.md]** — use `/onboarding/scout` (delta §11.2).
 
 ### 2.2 Athlete Discovery
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/athletes` | List athletes with filters |
-| GET | `/api/v1/athletes/{id}` | Get athlete public profile |
+| Method | Endpoint | Status | Description |
+|--------|----------|--------|-------------|
+| GET | `/api/v1/athletes` | CHANGED | List athletes with filters (open to scout; add `position_id`, `level`, `has_achievements`) |
+| GET | `/api/v1/athletes/{id}` | CHANGED | Athlete public profile (minors restricted — AT.10) |
+| GET | `/api/v1/me/scout-dashboard` | NEW | Dashboard aggregates (or fold into `/me/home`) |
 
 **Query Parameters for `/api/v1/athletes`:**
-- `sport_id` - Filter by sport
-- `age_group_id` - Filter by age group
-- `city_id` - Filter by city
-- `skill_level` - Filter by skill level
-- `has_achievements` - Boolean
-- `search` - Text search on name
-- `page`, `per_page` - Pagination
+- `sport_id`, `age_group_id`, `city_id`, `skill_level`, `position_id`, `level`
+- `has_achievements` (boolean), `search`, `page`, `per_page`
 
-### 2.3 Shortlist
+### 2.3 Shortlist (status + tags + private notes)
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/me/shortlist` | Get scout's shortlist |
-| POST | `/api/v1/me/shortlist/{athlete_id}` | Add athlete to shortlist |
-| DELETE | `/api/v1/me/shortlist/{athlete_id}` | Remove from shortlist |
-| PATCH | `/api/v1/me/shortlist/{athlete_id}` | Update notes |
+| Method | Endpoint | Status | Description |
+|--------|----------|--------|-------------|
+| GET | `/api/v1/me/shortlist` | CHANGED | Get scout's shortlist (pipeline tabs All/Under Review/Final) |
+| POST | `/api/v1/me/shortlist` | CHANGED | Add athlete (`athlete_id`, `status`, `tags`, `notes`) |
+| PATCH | `/api/v1/me/shortlist/{athlete_id}` | CHANGED | Update `status`/`tags`/`notes` |
+| DELETE | `/api/v1/me/shortlist/{athlete_id}` | CHANGED | Remove from shortlist |
 
-### 2.4 Connections
+> Shortlist/notes/reports are **owner-only** (scout-data-privacy policy). `status` ∈ `under_review`/`good`/`high`/`final` (BE-M10.1).
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/me/connections` | List scout's connections |
-| POST | `/api/v1/athletes/{id}/connect` | Send connection request |
-| PATCH | `/api/v1/me/connections/{id}` | Accept/reject connection |
+### 2.4 Observations
 
----
+| Method | Endpoint | Status | Description |
+|--------|----------|--------|-------------|
+| POST | `/api/v1/observations` | NEW | Quick note + rating + optional media (SC.10) |
+| GET | `/api/v1/observations` | NEW | List observations (owner-only) |
+
+### 2.5 Connections & Contact
+
+| Method | Endpoint | Status | Description |
+|--------|----------|--------|-------------|
+| GET | `/api/v1/me/connections` | NEW | List scout's connections (shared table, tabs Connections/Requests/Sent) |
+| POST | `/api/v1/athletes/{id}/contact` | NEW | Send contact/connection request with `purpose` (trial invite/enquiry) |
+| PATCH | `/api/v1/connections/{id}` | NEW | Accept/decline |
+| DELETE | `/api/v1/connections/{id}` | NEW | Cancel/remove |
+
+> **Minors (BE-M10.3):** for a U-18 athlete, `/athletes/{id}/contact` notifies the **guardian**; guardian consent is required before chat unlocks. The old `/athletes/{id}/connect` + `scout_connections` design is **[SUPERSEDED — see Backend-Feature-Delta.md]**. Chat opens only after an accepted connection (no cold DMs).
+
+### 2.6 Scout Reports (P1)
+
+| Method | Endpoint | Status | Description |
+|--------|----------|--------|-------------|
+| POST/GET | `/api/v1/scout-reports` | P1 | 5-dimension assessment + conclusion (SC.8/SC.9) |
+| GET | `/api/v1/scout/compare?ids=` | P1 | Side-by-side scores (SC.7) |
 
 ## 3. Laravel Backend Implementation
 
@@ -135,37 +135,47 @@ $table->enum('role', ['athlete', 'coach', 'academy', 'organizer', 'sponsor', 'ta
 # Create TalentScoutController
 php artisan make:controller Api/V1/TalentScoutController
 php artisan make:controller Api/V1/ScoutShortlistController
-php artisan make:controller Api/V1/ScoutConnectionController
+php artisan make:controller Api/V1/ScoutObservationController
 php artisan make:controller Api/V1/AthleteDiscoveryController
+php artisan make:controller Api/V1/ConnectionController
 ```
 
 ### 3.2 Routes (routes/api/v1.php)
 
 ```php
-// Talent Scout routes
-Route::middleware(['auth:sanctum', 'role:talent_scout'])->group(function () {
+// Talent Scout routes (role = scout)
+Route::middleware(['auth:sanctum', 'role:scout'])->group(function () {
     // Scout Profile
     Route::get('/me/scout-profile', [TalentScoutController::class, 'show']);
     Route::put('/me/scout-profile', [TalentScoutController::class, 'update']);
-    
-    // Shortlist
+    Route::get('/me/scout-dashboard', [TalentScoutController::class, 'dashboard']);
+
+    // Shortlist (status + tags + notes)
     Route::get('/me/shortlist', [ScoutShortlistController::class, 'index']);
-    Route::post('/me/shortlist/{athlete}', [ScoutShortlistController::class, 'store']);
-    Route::delete('/me/shortlist/{athlete}', [ScoutShortlistController::class, 'destroy']);
+    Route::post('/me/shortlist', [ScoutShortlistController::class, 'store']);
     Route::patch('/me/shortlist/{athlete}', [ScoutShortlistController::class, 'update']);
-    
-    // Connections
-    Route::get('/me/connections', [ScoutConnectionController::class, 'index']);
-    Route::patch('/me/connections/{connection}', [ScoutConnectionController::class, 'update']);
+    Route::delete('/me/shortlist/{athlete}', [ScoutShortlistController::class, 'destroy']);
+
+    // Observations
+    Route::get('/observations', [ScoutObservationController::class, 'index']);
+    Route::post('/observations', [ScoutObservationController::class, 'store']);
+
+    // Connections (shared connection_requests)
+    Route::get('/me/connections', [ConnectionController::class, 'index']);
+    Route::patch('/connections/{connection}', [ConnectionController::class, 'update']);
+    Route::delete('/connections/{connection}', [ConnectionController::class, 'destroy']);
 });
 
-// Public athlete discovery (authenticated users)
+// Athlete discovery (authenticated users)
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/athletes', [AthleteDiscoveryController::class, 'index']);
     Route::get('/athletes/{athlete}', [AthleteDiscoveryController::class, 'show']);
-    Route::post('/athletes/{athlete}/connect', [ScoutConnectionController::class, 'store']);
+    // Contact: guardian-routed for U-18
+    Route::post('/athletes/{athlete}/contact', [ConnectionController::class, 'store']);
 });
 ```
+
+> The old `role:talent_scout` middleware name and `/athletes/{athlete}/connect` route are **[SUPERSEDED — see Backend-Feature-Delta.md]** (BE-M1.2/BE-M10.3).
 
 ### 3.3 Models
 
@@ -174,41 +184,50 @@ Route::middleware(['auth:sanctum'])->group(function () {
 class TalentScoutProfile extends Model
 {
     use HasFactory, SoftDeletes;
-    
+
     protected $fillable = [
-        'user_id', 'organization', 'affiliation', 
-        'sports_specialization', 'experience_years', 
-        'city_id', 'bio', 'photo_media_id', 'listing_status'
+        'user_id', 'full_name', 'photo_media_id', 'cover_media_id',
+        'scout_type', 'specializations', 'city_id', 'bio',
+        'experience_years', 'scouting_level', 'age_groups_scouted',
+        'organization_name', 'previous_organizations', 'certifications',
+        'scouting_methods', 'evaluation_areas', 'athletes_scouted',
+        'discoveries', 'scouting_achievements', 'regions', 'events_covered',
+        'services', 'recruitment_focus', 'affiliations', 'availability',
+        'fee_structure', 'website', 'social_links', 'verification_status',
+        'listing_status', 'profile_completeness',
     ];
-    
+
     protected $casts = [
-        'sports_specialization' => 'array',
+        'specializations' => 'array',
+        'age_groups_scouted' => 'array',
+        'previous_organizations' => 'array',
+        'certifications' => 'array',
+        'scouting_methods' => 'array',
+        'evaluation_areas' => 'array',
+        'scouting_achievements' => 'array',
+        'regions' => 'array',
+        'events_covered' => 'array',
+        'services' => 'array',
+        'recruitment_focus' => 'array',
+        'affiliations' => 'array',
+        'social_links' => 'array',
     ];
-    
-    public function user(): BelongsTo { ... }
-    public function shortlists(): HasMany { ... }
-    public function connections(): HasMany { ... }
 }
 
-// app/Models/AthleteProfile.php - Add relationships
-public function scoutShortlists(): HasMany
-{
-    return $this->hasMany(ScoutShortlist::class, 'athlete_profile_id');
-}
-
-public function scoutConnections(): HasMany
-{
-    return $this->hasMany(ScoutConnection::class, 'athlete_profile_id');
-}
+// app/Models/ScoutShortlist.php — status/tags/notes, unique (scout_user_id, athlete_id)
+// app/Models/Observation.php — scout_user_id, athlete_id, rating, note, media
+// Connections use app/Models/ConnectionRequest.php (shared)
 ```
 
 ### 3.4 Middleware
 
 ```php
 // app/Http/Middleware/CheckRole.php
-case 'talent_scout':
-    return $user->role === 'talent_scout';
+case 'scout':
+    return $user->role === 'scout';
 ```
+
+> `talent_scout` is **REMOVED** as an enum value; use `scout` (BE-M1.2).
 
 ---
 
@@ -244,16 +263,21 @@ sportx_app/lib/features/talent_scout/
 ### 4.2 Models
 
 ```dart
-// talent_scout_profile.dart
+// talent_scout_profile.dart (30 fields — see SportX_Mandatory_Fields.md §4)
 class TalentScoutProfile {
   final String id;
-  final String? organization;
-  final String? affiliation;
-  final List<int> sportsSpecialization;
-  final int? experienceYears;
+  final String fullName;
+  final String? photoMediaId;
+  final String scoutingType;          // scout_type
+  final List<int> primarySportIds;
+  final List<String> specializations;
   final int? cityId;
   final String? bio;
-  final String? photoMediaId;
+  final int? experienceYears;
+  final String? scoutingLevel;
+  final String? organizationName;
+  final String? availability;
+  // ...remaining optional fields per Mandatory Fields
 }
 
 // athlete_discovery_model.dart
@@ -269,10 +293,14 @@ class AthleteDiscovery {
 }
 
 // scout_shortlist_model.dart
+enum ShortlistStatus { underReview, good, high, final }
+
 class ScoutShortlistItem {
   final String id;
   final AthleteDiscovery athlete;
-  final String? notes;
+  final ShortlistStatus status;   // pipeline tab
+  final List<String> tags;
+  final String? notes;            // private
 }
 ```
 
@@ -298,10 +326,20 @@ class AthleteDiscoveryNotifier extends StateNotifier<AsyncValue<PaginatedResult<
 // scout_shortlist_provider.dart
 class ScoutShortlistNotifier extends StateNotifier<AsyncValue<List<ScoutShortlistItem>>> {
   final Dio _dio;
-  
+
   Future<void> addToShortlist(String athleteId) async { ... }
   Future<void> removeFromShortlist(String athleteId) async { ... }
+  Future<void> updateStatus(String athleteId, ShortlistStatus status) async { ... }
+  Future<void> updateTags(String athleteId, List<String> tags) async { ... }
   Future<void> updateNotes(String athleteId, String notes) async { ... }
+}
+
+// scout_observation_provider.dart
+class ScoutObservationNotifier extends StateNotifier<AsyncValue<List<Observation>>> {
+  final Dio _dio;
+
+  Future<void> load() async { ... }
+  Future<void> create(String athleteId, int rating, String note) async { ... }
 }
 ```
 
@@ -309,17 +347,19 @@ class ScoutShortlistNotifier extends StateNotifier<AsyncValue<List<ScoutShortlis
 
 #### 4.4.1 Onboarding Screen (`/scout-onboarding`)
 
-Fields:
-- Organization name (text)
-- Affiliation (text, optional)
-- Sports specialization (multi-select chips)
-- Years of experience (dropdown)
-- City (autocomplete)
-- Bio (text area, optional)
+Fields (30-field schema, `SportX_Mandatory_Fields.md` §4 — mandatory marked 🔴):
+- 🔴 Full name (text)
+- 🔴 Profile photo (+ cover)
+- 🔴 Scout type (Independent / Club / Academy / Federation)
+- 🔴 Primary sport(s) (multi-select chips)
+- 🔴 Scouting specialization(s) (Batting, Bowling, Wicketkeeping…)
+- 🔴 City / State (autocomplete)
+- 🔴 Short bio (text area)
+- 🟠/🟢 Experience years, scouting level, age groups scouted, organization, previous organizations, certifications, methods, evaluation areas, achievements, regions, services, recruitment focus, availability, fees, social links
 
 Flow:
 1. User fills form
-2. POST to `/api/v1/onboarding/talent-scout`
+2. POST to `/api/v1/onboarding/scout`
 3. On success: mark onboarding complete, navigate to `/scout-dashboard`
 
 #### 4.4.2 Dashboard Screen (`/scout-dashboard`)
@@ -367,22 +407,33 @@ Sections:
 #### 4.4.5 Shortlist Screen (`/scout-shortlist`)
 
 Features:
+- Pipeline **tabs**: All / Under Review / Good / High / Final (status)
 - List of shortlisted athlete cards
-- Each card: photo, name, sport, city, remove button
+- Each card: photo, name, sport, city, **status chip**, **tags**, remove button
 - Tap card → Athlete Profile View
-- Edit notes via long-press or swipe
+- Edit **status / tags / private notes** via long-press or swipe
+- "Compare" input (P1)
 
-#### 4.4.6 Connection Screen (`/scout-connect/{athleteId}`)
+#### 4.4.6 Observations Screen (`/scout-observations`)
+
+Features:
+- Quick note + rating (1–5) + optional media against an athlete
+- POST to `/api/v1/observations`
+- Owner-only list
+
+#### 4.4.7 Connection Screen (`/scout-connect/{athleteId}`)
 
 Form:
 - Athlete name (display only)
+- **Purpose** (trial invite / enquiry)
 - Message text area
 - Submit button
 
 Flow:
-1. User fills message
-2. POST to `/api/v1/athletes/{id}/connect`
-3. On success: show confirmation, navigate back
+1. User fills message + purpose
+2. POST to `/api/v1/athletes/{id}/contact`
+3. **U-18:** request is routed to the guardian; chat unlocks only after acceptance + guardian consent
+4. On success: show confirmation, navigate back
 
 ### 4.5 Navigation Routes
 
@@ -394,12 +445,13 @@ Add to `lib/core/router.dart`:
 '/scout-discovery': (context) => const TalentScoutAthleteDiscoveryScreen(),
 '/scout-athlete/:id': (context) => TalentScoutAthleteProfileViewScreen(athleteId: id),
 '/scout-shortlist': (context) => const TalentScoutShortlistScreen(),
+'/scout-observations': (context) => const TalentScoutObservationsScreen(),
 '/scout-connect/:athleteId': (context) => TalentScoutConnectionScreen(athleteId: athleteId),
 ```
 
 ### 4.6 Role Selection Update
 
-In `role_selection_screen.dart`, add 6th role card:
+In `role_selection_screen.dart`, add the Scout role card (`scout` is now first-class; `sponsor` card removed):
 
 ```dart
 RoleCard(
@@ -419,7 +471,7 @@ RoleCard(
 Add Talent Scout quick links:
 
 ```dart
-if (user.role == 'talent_scout') ...[
+if (user.role == 'scout') ...[
   QuickLinkTile(
     icon: Icons.dashboard,
     title: 'Scout Dashboard',
@@ -434,6 +486,11 @@ if (user.role == 'talent_scout') ...[
     icon: Icons.favorite,
     title: 'My Shortlist',
     onTap: () => context.go('/scout-shortlist'),
+  ),
+  QuickLinkTile(
+    icon: Icons.visibility,
+    title: 'Observations',
+    onTap: () => context.go('/scout-observations'),
   ),
 ]
 ```
@@ -465,18 +522,21 @@ public function run()
         'name' => 'Kiran Patel',
         'email' => 'kiran@scout.test',
         'password' => Hash::make('password'),
-        'role' => 'talent_scout',
+        'role' => 'scout',                 // v3 enum value
         'email_verified_at' => now(),
     ]);
-    
+
     TalentScoutProfile::create([
         'user_id' => $user->id,
-        'organization' => 'Elite Talent Agency',
-        'affiliation' => 'Gujarat Cricket Association',
-        'sports_specialization' => [1, 3], // cricket, kabaddi
-        'experience_years' => 12,
+        'full_name' => 'Kiran Patel',
+        'scout_type' => 'club',
+        'specializations' => ['Batting', 'Bowling'],
         'city_id' => 1,
+        'bio' => 'Talent scout with 12 years experience',
+        'experience_years' => 12,
+        'organization_name' => 'Elite Talent Agency',
     ]);
+    // sports via talent_scout_sports pivot
 }
 ```
 
@@ -485,20 +545,23 @@ public function run()
 ## 7. Screen-to-Screen Navigation Map
 
 ```
-Scout Onboarding (TS1)
+Scout Onboarding (SC.1)
     ↓
-Scout Dashboard (TS2)
-    ├── Discover Athletes (TS3)
+Scout Dashboard (SC.2 / /me/home)
+    ├── Discover Athletes (SC.4)
     │       ↓
-    │   Athlete Profile View (TS4)
-    │       ├── Shortlist (TS5) → confirmation
-    │       └── Connect (TS6) → confirmation
+    │   Athlete Profile View
+    │       ├── Shortlist (SC.5/SC.6) → status/tags/notes
+    │       ├── Observations (SC.10)
+    │       └── Contact (SC.13) → guardian if U-18
     │
-    └── My Shortlist (TS5)
-            ↓
-        Athlete Profile View (TS4)
-                ↓
-            Remove / Update Notes
+    ├── My Shortlist (SC.5/SC.6) — pipeline tabs
+    │       ↓
+    │   Athlete Profile View
+    │           ↓
+    │       Remove / Update status/tags/notes
+    │
+    └── Scout Reports (SC.8/SC.9) — P1
 ```
 
 ---
@@ -520,44 +583,50 @@ Scout Dashboard (TS2)
 | `lib/features/talent_scout/presentation/screens/talent_scout_dashboard_screen.dart` | Dashboard |
 | `lib/features/talent_scout/presentation/screens/talent_scout_athlete_discovery_screen.dart` | Discovery |
 | `lib/features/talent_scout/presentation/screens/talent_scout_athlete_profile_view_screen.dart` | Profile view |
-| `lib/features/talent_scout/presentation/screens/talent_scout_shortlist_screen.dart` | Shortlist |
-| `lib/features/talent_scout/presentation/screens/talent_scout_connection_screen.dart` | Connection form |
+| `lib/features/talent_scout/presentation/screens/talent_scout_shortlist_screen.dart` | Shortlist (pipeline tabs) |
+| `lib/features/talent_scout/presentation/screens/talent_scout_observations_screen.dart` | Observations |
+| `lib/features/talent_scout/presentation/screens/talent_scout_connection_screen.dart` | Contact form (guardian-routed) |
 
 ### Laravel
 
 | File | Purpose |
 |------|---------|
-| `app/Http/Controllers/Api/V1/TalentScoutController.php` | Scout profile CRUD |
-| `app/Http/Controllers/Api/V1/ScoutShortlistController.php` | Shortlist management |
-| `app/Http/Controllers/Api/V1/ScoutConnectionController.php` | Connection requests |
+| `app/Http/Controllers/Api/V1/TalentScoutController.php` | Scout profile CRUD + dashboard |
+| `app/Http/Controllers/Api/V1/ScoutShortlistController.php` | Shortlist management (status/tags/notes) |
+| `app/Http/Controllers/Api/V1/ScoutObservationController.php` | Observations |
 | `app/Http/Controllers/Api/V1/AthleteDiscoveryController.php` | Athlete search |
-| `app/Models/TalentScoutProfile.php` | Scout profile model |
+| `app/Http/Controllers/Api/V1/ConnectionController.php` | Shared connection requests (guardian routing) |
+| `app/Models/TalentScoutProfile.php` | Scout profile model (30 fields) |
 | `app/Models/ScoutShortlist.php` | Shortlist model |
-| `app/Models/ScoutConnection.php` | Connection model |
-| `database/migrations/xxxx_create_talent_scout_profiles_table.php` | Migration |
-| `database/migrations/xxxx_create_scout_shortlists_table.php` | Migration |
-| `database/migrations/xxxx_create_scout_connections_table.php` | Migration |
+| `app/Models/Observation.php` | Observation model |
+| `database/migrations/xxxx_create_talent_scout_profiles_table.php` | Migration (30 fields) |
+| `database/migrations/xxxx_create_talent_scout_sports_table.php` | Sport pivot |
+| `database/migrations/xxxx_create_scout_shortlists_table.php` | Migration (status/tags/notes) |
+| `database/migrations/xxxx_create_observations_table.php` | Migration |
 | `database/seeders/TalentScoutSeeder.php` | Test data |
+
+> `scout_connections` migration/model are **[SUPERSEDED — see Backend-Feature-Delta.md]** (use shared `connection_requests`).
 
 ---
 
 ## 9. Implementation Order
 
-1. **Database migrations** — Create tables
-2. **Laravel models** — Set up relationships
-3. **API routes** — Define endpoints
-4. **Laravel controllers** — Implement business logic
+1. **Database migrations** — `talent_scout_profiles` (30 fields), `talent_scout_sports`, `scout_shortlists` (status/tags/notes), `observations`
+2. **Laravel models** — set up relationships (shared `connection_requests` for contact)
+3. **API routes** — `/onboarding/scout`, `/me/scout-profile`, `/me/shortlist`, `/observations`, `/athletes/{id}/contact`
+4. **Laravel controllers** — implement business logic (owner-only scout data)
 5. **Repository** — Flutter data layer
-6. **Providers** — State management
-7. **Onboarding screen** — First screen
-8. **Dashboard screen** — Hub screen
-9. **Athlete discovery** — Core feature
-10. **Athlete profile view** — Detail screen
-11. **Shortlist** — Save functionality
-12. **Connection** — Contact feature
-13. **Role selection** — Add 6th card
-14. **Seeding** — Test data
-15. **Testing** — End-to-end flows
+6. **Providers** — state management
+7. **Onboarding screen** — first screen
+8. **Dashboard screen** — hub screen
+9. **Athlete discovery** — core feature
+10. **Athlete profile view** — detail screen
+11. **Shortlist** — pipeline status/tags/notes
+12. **Observations** — record + list
+13. **Contact** — connection request (guardian routing for U-18)
+14. **Role selection** — Scout card (sponsor removed)
+15. **Seeding** — test data
+16. **Testing** — end-to-end flows
 
 ---
 
@@ -577,12 +646,15 @@ php artisan db:seed --class=TalentScoutSeeder
 
 | Document | Description |
 |----------|-------------|
-| `docs/SportX_India_Updated_Screen_Inventory_MVP_with_talent_scout.md` | Screen specifications |
-| `docs/SportX_India_Updated_MVP_Feature_List_with_talent_scout.pdf` | Feature list |
+| `docs/Backend-Feature-Delta.md` | **v3 source of truth** — §1 M10 scouting (BE-M10.x), §11.12 scouting endpoints |
+| `sportsx-design-v3/new_design_docs/SportX_Mandatory_Fields.md` | Scout 30 fields (§4) |
+| `docs/Database-Design.md` | Canonical v3 schema (`talent_scout_profiles`, `scout_shortlists`, `observations`, `scout_reports`) |
+| `docs/API-Specification.md` | §16E Scouting endpoints |
+| `docs/SportX_India_Updated_Screen_Inventory_MVP_with_talent_scout.md` | Legacy screen specifications |
 | `docs/Functional-Requirements.md` | FR-TS-1 through FR-TS-8 |
 | `docs/Jira-Tickets.md` | Epic P1-E5 and P2-E7 |
 | `docs/Phased-Roadmap.md` | Phase 1 P1-6, Phase 2 P2-21 to P2-25 |
 
 ---
 
-*Last Updated: 2026-09-04*
+*Last Updated: 2026-09-04 (v3 sync — scout first-class, 30 fields, shortlist status/tags/notes, observations, guardian contact)*

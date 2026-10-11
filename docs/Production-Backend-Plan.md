@@ -1,14 +1,49 @@
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
 # SportX India — Production Backend Plan
 
 **Date:** 2026-08-09
-**Current Status:** ~130/141 endpoints implemented
-**Target:** Production Ready (100% coverage)
+**Current Status:** old spec ~130/141 endpoints implemented — **superseded by the v3 delta** (≈70 new P0 + ≈25 changed + ≈10 verify-first; `Backend-Feature-Delta.md` §11)
+**Target:** Production Ready — ship the v3 P0 delta first, then P1 (`Backend-Feature-Delta.md` §9)
+
+> **⚠️ v3 READ FIRST:** the biggest old decisions are now reversed. See §0 below.
+
+---
+
+## 0. v3 Delta Overlay (supersedes parts of this plan)
+
+| Old decision in this doc | v3 status | Where |
+|---|---|---|
+| "Auth System Redesign (Email/Password)" and **`Schema::dropIfExists('otp_codes')`** (§2) | **[SUPERSEDED — see Backend-Feature-Delta.md]** OTP is **P0 again** (phone **or** email). `otp_codes` is **re-created**; password login is **kept**. | delta D1/D5, BE-M1.1 |
+| ~141-endpoint old catalog | **~230 endpoints** under the new design; `sponsor` role routes (~12) removed; unified `opportunities`. | delta §11 |
+| Admin console "built later" | Verification queue (AD.4) + user management (AD.3) are **P0**. | delta D6, BE-M1.5/BE-M11.3 |
+| Social feed / chat "excluded" | Feed + posts + likes/comments + follow/connect + 1:1 chat are **P0**. | delta D7, BE-M7.x |
+| Ratings/reviews/leaderboard "non-goals" | Leaderboard points engine **P0**; reviews P1. | delta D8, BE-M8.1 |
+
+### 0.1 New P0 build blocks (must ship)
+
+| Block | Delta IDs | Summary |
+|---|---|---|
+| Roles & auth | BE-M1.1, BE-M1.2 | `UserRole`: remove `sponsor`, add `scout`; OTP stack (`/auth/send-otp`, `/auth/verify-otp`, `/auth/resend-otp`); keep password login. |
+| Guardian consent (minors) | BE-M1.4 | `guardian_consents` + enforcement (chat/discovery/leaderboard). Closes AS-34. |
+| Verification queue | BE-M1.5, BE-M11.3 | `verification_requests` + admin approve/reject; admin user management. |
+| Profiles (30 fields) | BE-M1.3, BE-M2.1/2.2 | Per-role 30 fields; scout onboarding; per-sport role/level; typed achievements. |
+| Opportunities | BE-M5.1 | Unified `opportunities` (scholarship/sponsorship/tryout/camp) + applications; migrate scholarships/sponsorships. |
+| Programs & facilities | BE-M6.1/6.3 | `programs` + `facilities` tables/CRUD + program enquiry thread. |
+| Social core | BE-M7.1–7.5 | posts/feed/likes/comments, follows, connections, 1:1 chat, blocks. **Verify partial builds first.** |
+| Leaderboard | BE-M8.1 | `leaderboard_scores` + points engine + `/leaderboard` + `/leaderboard/strip`. |
+| Discovery/search | BE-M3.1/3.2, M2 | `/me/home`, `/explore`, athlete group in search, enriched cards, distance sort. |
+| Safety & notifications | BE-M11.1/11.2/11.4, notifications enum | report user/post, block, suspend; extended notification types. |
+
+> Build order: `Backend-Feature-Delta.md` §9. P1 wave: delta §2.
 
 ---
 
 ## 1. Current Backend Status
 
 ### 1.1 Endpoint Coverage
+
+> **[SUPERSEDED — see Backend-Feature-Delta.md]** The table below is the **old-spec** coverage snapshot. Under the v3 design the catalog grows to ~230 endpoints; the "Sponsor Engagement" module (10 endpoints) is **REMOVED** and its function migrates to Opportunities.
 
 | Module | Total | Implemented | Missing |
 |--------|-------|-------------|---------|
@@ -41,22 +76,48 @@
 | Admin Categories | 12 | 12 | 0 |
 | **Total** | **141** | **~130** | **~11** |
 
-### 1.2 Missing Endpoints
+### 1.2 Missing Endpoints (old spec) + v3 P0 additions
 
 | Module | Missing Endpoint | Priority |
 |--------|------------------|----------|
-| Auth | Email verification (`/auth/verify-email`) | HIGH |
-| Auth | Password reset email link | HIGH |
+| Auth | Email verification (`/auth/verify-email`) | ~~HIGH~~ SUPERSEDED by OTP |
+| Auth | Password reset email link | HIGH (P1 OTP variant) |
+| Auth (v3) | `/auth/send-otp`, `/auth/verify-otp`, `/auth/resend-otp` (phone + email) | **P0** |
+| Auth (v3) | `/guardian/consent`, `/guardian/verify-otp`, `/me/guardian-controls` | **P0** |
+| Auth (v3) | `/me/completion-checklist`, `/me/change-password` | P0 |
+| Onboarding (v3) | `/onboarding/scout` | **P0** |
+| Profiles (v3) | `/me/achievements`, `/me/media`, `/me/verification`, `/me/privacy` | **P0** |
+| Discovery (v3) | `/me/home`, `/explore`, `/leaderboard`, `/leaderboard/strip`, `/me/recent-searches` | **P0** |
+| Opportunities (v3) | `/opportunities*`, `/me/opportunities*` (unified) | **P0** |
+| Programs/Facilities (v3) | `/me/programs`, `/me/facilities`, `/programs/{id}`, `/facilities/{id}` | **P0** |
+| Social (v3) | `/feed`, `/posts*`, `/follow*`, `/connections*`, `/conversations*`, `/blocks*` | **P0** (verify partial first) |
+| Scouting (v3) | `/me/shortlist` (status/tags), `/observations`, `/athletes/{id}/contact` | **P0** |
+| Admin (v3) | `/admin/users`, `/admin/verification`, registrant export CSV | **P0** |
 | Admin | 2FA session enforcement middleware | HIGH |
 | Media | Signed URL generation | MEDIUM |
 | System | Health check endpoint | MEDIUM |
 | System | Exception tracking (Sentry) | MEDIUM |
 | Calendar | .ics export for registrations | LOW |
-| OAuth | Google Socialite integration | LOW (Phase 4) |
+| OAuth | Google Socialite integration | LOW (P1 / confirm D9) |
 
 ---
 
-## 2. Auth System Redesign (Email/Password)
+## 2. Auth System Redesign (Email/Password) — [SUPERSEDED — see Backend-Feature-Delta.md]
+
+> **⚠️ SUPERSEDED (v3, D1/D5):** this section describes the **old** "email-only, no OTP" redesign and includes `Schema::dropIfExists('otp_codes')`. Under the new design **OTP is restored to P0** (phone **or** email) and `otp_codes` is **re-created**. Keep the **email/password** parts of this section (password login, reset-link, mailables) — **do NOT drop `otp_codes`** and **do NOT drop password auth**. The OTP stack is specified in §2.6 below and in `Backend-Feature-Delta.md` BE-M1.1.
+
+### 2.6 OTP Stack (v3 P0 — replaces the "no OTP" decision)
+
+| Item | Spec |
+|---|---|
+| Table | `otp_codes` (re-created): `purpose`, `channel`, `destination`, `code_hash`, `expires_at`, `attempts` (max 5), `resend_available_at` (60s), `consumed_at` (`Database-Design.md` §1). |
+| Endpoints | `POST /auth/send-otp`, `POST /auth/verify-otp`, `POST /auth/resend-otp`. |
+| Channels | `email` **and** `phone` (SMS). **Vendor selection (AS-03) becomes blocking** (delta §8 D1). |
+| Purposes | `signup`, `login`, `reset_password`, `guardian_consent`, `verify_contact`. |
+| Verification | Hashed 6-digit code; sets `email_verified_at`/`phone_verified_at`; returns Sanctum token + `needs_onboarding`. |
+| Rate limit | `RateLimitOtp`: 60s resend cooldown, max 5 attempts, per-destination + per-IP. |
+| Guardian | `guardian_consents` + `POST /guardian/consent` / `/guardian/verify-otp`; minor profiles stay `pending` until verified (BE-M1.4). |
+| Kept | Email/password login **stays**; reset via OTP (P1) alongside the token-link flow (BE-P1.12). |
 
 ### 2.1 Current Flow vs Target Flow
 
@@ -91,7 +152,9 @@ Schema::table('users', function (Blueprint $table) {
     $table->timestamp('reset_password_sent_at')->nullable();
 });
 
-Schema::dropIfExists('otp_codes');
+// [SUPERSEDED — see Backend-Feature-Delta.md] DO NOT drop otp_codes.
+// v3 restores OTP to P0: re-create otp_codes (see §2.6 / Database-Design.md §1).
+// Schema::dropIfExists('otp_codes');
 ```
 
 ### 2.3 New AuthController Methods
@@ -607,7 +670,9 @@ Route::get('/registrations/tournaments/{registration}/ics', [RegistrationControl
 
 ---
 
-## 7. OAuth (Google Sign-In) - Phase 4
+## 7. OAuth (Google Sign-In) — Phase 4 / confirm D9
+
+> **v3 note (D9):** the Sign Up wireframe (A.3) shows Google sign-in. Old spec defers it to Phase 4. **Recommendation: keep deferred** unless a stakeholder overrides — it is not part of the P0 delta. Confirm per `Backend-Feature-Delta.md` §8 D9.
 
 ### 7.1 Laravel Socialite Setup
 
@@ -820,17 +885,24 @@ server {
 
 ## 10. Implementation Timeline
 
+> **[SUPERSEDED — see Backend-Feature-Delta.md §9]** The timeline below covered the old spec's remaining work. The v3 build order is:
+> 1. Roles & auth (enum change, OTP stack, scout onboarding, guardian consent) · 2. Verification + admin queue · 3. Opportunities + migration + applications · 4. Programs + facilities · 5. Social core (posts/feed/chat/follows/blocks — verify partial first) · 6. Leaderboard engine · 7. Scout extensions · 8. Admin P0 (users, verification, content types, export) · 9. Notifications matrix + reminders + policies · 10. Search/discovery enrichment + saved morphs + completion checklist + share. Then the P1 wave (delta §2).
+
 | Phase | Task | Duration | Priority |
 |-------|------|----------|----------|
-| 1 | Email/Password Auth | 2-3 days | CRITICAL |
-| 2 | Admin 2FA Middleware | 1 day | CRITICAL |
-| 3 | Signed URLs | 1 day | HIGH |
-| 4 | Health Check + Monitoring | 1 day | HIGH |
-| 5 | ICS Calendar Export | 1 day | MEDIUM |
-| 6 | Google OAuth | 2 days | MEDIUM (Phase 4) |
-| 7 | Auto Waitlist | 1 day | LOW |
-| 8 | Load Testing | 2 days | LOW |
-| 9 | Production Deployment | 2 days | ONGOING |
+| 1 | Roles + OTP stack + guardian consent (replaces "Email/Password Auth") | 3-4 days | CRITICAL |
+| 2 | Opportunities + migration (scholarships/sponsorships) | 3 days | CRITICAL |
+| 3 | Verification queue + admin user mgmt | 2 days | CRITICAL |
+| 4 | Social core + chat (verify first) | 4-5 days | CRITICAL |
+| 5 | Leaderboard engine + discovery (`/me/home`, `/explore`) | 3 days | CRITICAL |
+| 6 | Programs/facilities + scout extensions | 3 days | HIGH |
+| 7 | Admin 2FA Middleware | 1 day | HIGH |
+| 8 | Signed URLs + Health Check + Monitoring | 2 days | HIGH |
+| 9 | Notifications matrix + reminders + policies | 2 days | HIGH |
+| 10 | ICS Calendar Export | 1 day | MEDIUM |
+| 11 | Google OAuth | 2 days | LOW (P1 / confirm D9) |
+| 12 | P1 wave (reviews, schedule/gallery, analytics, reports, broadcast) | — | P1 |
+| 13 | Load Testing + Production Deployment | 3 days | ONGOING |
 
 ---
 
@@ -838,10 +910,12 @@ server {
 
 ### 11.1 API Testing Checklist
 
-- [ ] Register with email verification
-- [ ] Login with email/password
-- [ ] Forgot/reset password flow
-- [ ] Admin 2FA verification
+- [ ] Register with phone **and** email; OTP send/verify/resend (v3 P0)
+- [ ] Guardian consent flow for minors (v3 P0)
+- [ ] Login with email/password **and** phone/email OTP
+- [ ] Forgot/reset password flow (token link + OTP variant)
+- [ ] Admin 2FA verification; admin user suspend/ban; verification queue approve/reject
+- [ ] Opportunities create/apply/review; program/facility CRUD; feed/posts/chat/follows; leaderboard
 - [ ] All CRUD operations
 - [ ] File upload with signed URLs
 - [ ] ICS calendar download

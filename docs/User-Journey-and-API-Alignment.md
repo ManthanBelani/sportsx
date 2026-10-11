@@ -1,5 +1,21 @@
 # SportX India — User Journey & API Alignment Document
 
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
+## Part 0: v3 Delta (read first)
+
+The sections below were written against the **v1 five-role design**. The new design changes the journeys, routes, and bindings as follows:
+
+- **Roles:** 6 login roles — Athlete, Coach, Academy, Organizer, **Talent Scout**, Admin. **Sponsor is removed** as a login role; sponsorship is now an **opportunity type**.
+- **Generalized Providers** (doctor, physio, NGO, store, agency, federation, media, etc.) are **directory profiles, not login roles**.
+- **Auth:** OTP via **phone OR email** (both P0) with resend timer; guardian consent required for athletes <18 before activation.
+- **Navigation shell:** `Home / Explore / (+) Create / Community / More` (replaces `Home / Search / Saved / Activity / Profile`).
+- **New feature areas (P0):** Social feed & posts (like/comment/save), Follow + Connect + 1:1 Chat, Leaderboard, unified Opportunities (scholarship/sponsorship/tryout/camp), Programs, Facilities, Verification requests, Admin user management, Blocks/Reports.
+- **Parked (P2):** payments, boosts, groups, polls, live streaming, map view, multi-role, teams, staff recruiting.
+- **Profiles:** 30 fields per role (8–9 mandatory) per `SportX_Mandatory_Fields.md`.
+
+Sections that describe superseded v1 behavior are annotated **[SUPERSEDED — see Backend-Feature-Delta.md]** rather than deleted.
+
 ## Executive Summary
 
 This document provides:
@@ -24,15 +40,15 @@ This document provides:
 | Resend OTP | `POST /auth/resend-otp` | NOT IMPLEMENTED | ⚠️ Note |
 | Trial Registration | `POST /trials/{id}/registrations` | `POST /trials/{trial}/register` | ✅ Fixed |
 | Tournament Registration | `POST /tournaments/{id}/registrations` | `POST /tournaments/{tournament}/register` | ✅ Fixed |
-| Sponsorship Apply | `POST /sponsorships/{id}/applications` | `POST /sponsorships/{sponsorship}/apply` | ✅ Fixed |
-| Application Update | Various | `PATCH /sponsorships/{sponsorship}/applications/{application}` | ✅ Fixed |
+| Sponsorship Apply **[SUPERSEDED — see Backend-Feature-Delta.md]** | `POST /sponsorships/{id}/applications` | `POST /opportunities/{opportunity}/apply` | ✅ Fixed → v3 |
+| Application Update **[SUPERSEDED — see Backend-Feature-Delta.md]** | Various | `PATCH /opportunities/{opportunity}/applications/{application}` | ✅ Fixed → v3 |
 
 ### 1.3 Code vs Backend Verification
 
 | Item | Location | Finding |
 |------|---------|---------|
 | Trial Registration | `trial_registration_screen.dart:33` | ✅ CORRECT - uses `/trials/${widget.trialId}/register` |
-| Sponsor Pitch | `sponsor_pitch_screen.dart:32` | ✅ CORRECT - uses `/sponsorships/${widget.sponsorId}/apply` |
+| Sponsor Pitch **[SUPERSEDED — see Backend-Feature-Delta.md]** | `sponsor_pitch_screen.dart:32` | ✅ CORRECT (v1) — now an opportunity application |
 | Auth Register | `auth_provider.dart:83` | ✅ CORRECT - uses `/auth/register` |
 | Auth Login | `auth_provider.dart:125` | ✅ CORRECT - uses `/auth/login` |
 | Auth Verify | `auth_provider.dart:98` | ✅ CORRECT - uses `/auth/verify-email` |
@@ -86,13 +102,18 @@ Status: ✅ FIXED - Now navigates to /scholarship-detail/:id
 | Coach | `/coach-onboarding` | ✅ Correct |
 | Academy | `/academy-onboarding` | ✅ Correct |
 | Organizer | `/organizer-onboarding` | ✅ Correct |
-| Sponsor | `/sponsor-onboarding` | ✅ Correct |
+| Talent Scout | `/scout-onboarding` | ✅ Correct (was Sponsor) |
+| Admin | internal (no self-serve route) | ✅ Correct |
+
+> **[SUPERSEDED — see Backend-Feature-Delta.md]** v1 `Sponsor → /sponsor-onboarding` is replaced by `Talent Scout → /scout-onboarding`. Generalized Providers use a shared provider directory profile, not onboarding.
 
 ---
 
 ## Part 2: Complete User Journeys by Role
 
 ### 2.1 ATHLETE / PARENT Journey
+
+> **v3 addenda (this diagram predates v3):** OTP is phone-or-email; minors require guardian consent (`/guardian-consent`) before activation; the shell is `Home / Explore / (+) Create / Community / More`; Scholarship/Sponsorship entries are unified under **Opportunities** (`/opportunities`); new P0 destinations include **Feed, Leaderboard, Connections/Chat, My Opportunities**, and **verification**.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -519,7 +540,12 @@ Status: ✅ FIXED - Now navigates to /scholarship-detail/:id
 
 ---
 
-### 2.5 SPONSOR Journey
+### 2.5 SPONSOR Journey — **[SUPERSEDED — see Backend-Feature-Delta.md]**
+
+> **v3 replacement:** there is no Sponsor journey. The flow below is preserved as history. In v3:
+> - **Talent Scout journey:** `/role-selection` (Talent Scout) → `/scout-onboarding` → **Scout Dashboard** (landing) → Discover Athletes → Athlete Profile → **Shortlist (status/notes)** → **Observation** → **Connect** (guardian-routed for minors) → **Post Scouting Opportunity** / **Scout Report** (P1).
+> - **Provider journeys:** Coach/Academy/Organizer/Scout post **Opportunities** (`/opportunities`, types scholarship/sponsorship/tryout/camp) and review applications in their existing inboxes.
+> - **Generalized Providers** appear as directory profiles only.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -714,7 +740,7 @@ Status: ✅ FIXED - Now navigates to /scholarship-detail/:id
 | Role Selection | `/role-selection` | None |
 | Sign Up | `/sign-up` | `POST /auth/register` |
 | Login | `/login` | `POST /auth/login` |
-| OTP (if needed) | `/otp` | `POST /auth/verify-otp` |
+| OTP (phone or email) | `/otp` | `POST /auth/verify-email` · `POST /auth/verify-phone` (resend: `POST /auth/resend-otp`) |
 
 ### 3.2 Onboarding Screens
 
@@ -725,7 +751,8 @@ Status: ✅ FIXED - Now navigates to /scholarship-detail/:id
 | Coach Onboarding | `/coach-onboarding` | `GET /meta/sports` |
 | Academy Onboarding | `/academy-onboarding` | `GET /meta/sports`, `GET /meta/cities` |
 | Organizer Onboarding | `/organizer-onboarding` | `POST /media/upload` (docs) |
-| Sponsor Onboarding | `/sponsor-onboarding` | `POST /media/upload` (docs) |
+| Talent Scout Onboarding | `/scout-onboarding` | `GET /meta/sports`, `POST /media/upload` (docs) |
+| Guardian Consent (minor) | `/guardian-consent` | `POST /guardian/consent`, `POST /guardian/verify-otp` |
 
 **OnComplete**: All onboarding screens call `authProvider.notifier.markOnboardingComplete()` then navigate to landing.
 
@@ -745,10 +772,16 @@ Status: ✅ FIXED - Now navigates to /scholarship-detail/:id
 | Trial Detail | `/trial-detail/:id` | `GET /trials/:id` |
 | Tournament Directory | `/tournaments` | `GET /tournaments` |
 | Tournament Detail | `/tournament-detail/:id` | `GET /tournaments/:id` |
-| Scholarship List | `/scholarships` | `GET /scholarships` |
-| Scholarship Detail | `/scholarship-detail/:id` | `GET /scholarships/:id` |
+| Scholarship List **[SUPERSEDED — see Backend-Feature-Delta.md]** | `/scholarships` | `GET /opportunities?type=scholarship` |
+| Scholarship Detail **[SUPERSEDED — see Backend-Feature-Delta.md]** | `/scholarship-detail/:id` | `GET /opportunities/:id` |
 | Sports Venue List | `/sports-venues` | `GET /sports-venues` |
-| Sponsorship List | `/sponsorships` | `GET /sponsorships` |
+| Sponsorship List **[SUPERSEDED — see Backend-Feature-Delta.md]** | `/sponsorships` | `GET /opportunities?type=sponsorship` |
+| Opportunities | `/opportunities` | `GET /opportunities` |
+| Opportunity Detail | `/opportunity-detail/:id` | `GET /opportunities/:id` |
+| Programs | `/programs` | `GET /programs` |
+| Facilities | `/facilities` | `GET /facilities` |
+| Leaderboard | `/leaderboard` | `GET /leaderboard` |
+| Feed | `/feed` | `GET /feed` |
 
 ### 3.4 Registration & Action Screens
 
@@ -758,7 +791,7 @@ Status: ✅ FIXED - Now navigates to /scholarship-detail/:id
 | Trial Registration | `/trial-registration/:id` | `POST /media/upload`, `POST /trials/:id/registrations` |
 | Tournament Registration | `/tournament-registration/:id` | `POST /tournaments/:id/registrations` |
 | Registration Confirmation | `/registration-confirmation` | None |
-| Sponsor Pitch | `/sponsor-pitch/:id` | `POST /sponsorships/:id/applications` |
+| Sponsor Pitch **[SUPERSEDED — see Backend-Feature-Delta.md]** | `/opportunity-apply/:id` | `POST /opportunities/:id/apply` |
 
 ### 3.5 Profile & Management Screens
 
@@ -777,7 +810,7 @@ Status: ✅ FIXED - Now navigates to /scholarship-detail/:id
 | Coach Dashboard | `/coach-dashboard` | `GET /me/coach-profile`, `GET /me/enquiries` |
 | Academy Dashboard | `/academy-dashboard` | `GET /me/academy`, `GET /me/enquiries` |
 | Organizer Dashboard | `/organizer-dashboard` | `GET /me/tournaments` |
-| Sponsor Dashboard | `/sponsor-dashboard` | `GET /me/sponsorships`, `GET /me/applications` |
+| Talent Scout Dashboard **[was Sponsor]** | `/scout-dashboard` | `GET /me/shortlist`, `GET /me/observations` |
 
 ### 3.7 Management Screens
 
@@ -795,13 +828,17 @@ Status: ✅ FIXED - Now navigates to /scholarship-detail/:id
 | Results View | `/results-view` | `GET /tournaments/:id/results` |
 | Enquiry Inbox | `/enquiry-inbox` | `GET /me/enquiries` |
 | Enquiry Detail | `/enquiry-detail` | `GET /enquiries/:id`, `POST /enquiries/:id/messages` |
-| Sponsor Posting | `/sponsor-posting` | `POST /me/sponsorships` |
-| My Sponsorships | `/my-sponsorships` | `GET /me/sponsorships` |
+| Post Opportunity | `/opportunity-posting` | `POST /opportunities` |
+| My Opportunities | `/my-opportunities` | `GET /me/opportunities` |
 | Athlete Discovery | `/athlete-discovery` | `GET /athletes` |
 | Athlete Profile View | `/athlete-profile-view` | `GET /athletes/:id`, `POST /me/shortlist` |
 | Applications Inbox | `/applications-inbox` | `GET /me/applications` |
 | Application Detail | `/application-detail` | `GET /me/applications/:id`, `POST /me/applications/:id/shortlist`, `POST /me/applications/:id/reject` |
 | Shortlist | `/shortlist` | `GET /me/shortlist`, `PUT /me/shortlist/:id` |
+| Observations | `/observations` | `GET /me/observations`, `POST /me/observations` |
+| Scout Reports (P1) | `/scout-reports` | `GET /me/reports`, `POST /me/reports` |
+| Manage Programs | `/my-programs` | `GET /me/programs`, `POST /me/programs` |
+| Manage Facilities | `/my-facilities` | `GET /me/facilities`, `POST /me/facilities` |
 | My Connections | `/my-connections` | `GET /me/connections` |
 | Connection Requests | `/connection-requests` | `GET /me/connections/requests` |
 
@@ -815,9 +852,12 @@ Status: ✅ FIXED - Now navigates to /scholarship-detail/:id
 | Settings | `/settings` | `GET /me/settings`, `PUT /me/settings` |
 | Help & Support | `/help-support` | None (external link likely) |
 | Create Post | `/create-post` | `POST /posts` |
-| Post Detail | `/post-detail/:id` | `GET /posts/:id`, `POST /posts/:id/like` |
+| Post Detail | `/post-detail/:id` | `GET /posts/:id`, `POST /posts/:id/like`, `POST /posts/:id/comments`, `POST /me/saved` |
 | Chat List | `/chat-list` | `GET /me/conversations` |
 | Chat Screen | `/chat-screen` | `GET /conversations/:id`, `POST /conversations/:id/messages` |
+| Leaderboard | `/leaderboard` | `GET /leaderboard` |
+| Verification Request | `/verification-request` | `POST /me/verification`, `GET /me/verification` |
+| Blocked Users | `/settings/blocked` | `GET /me/blocks`, `POST /me/blocks`, `DELETE /me/blocks/:id` |
 
 ### 3.9 Admin Screens
 
@@ -825,8 +865,9 @@ Status: ✅ FIXED - Now navigates to /scholarship-detail/:id
 |--------|-------|-----------|
 | Admin Login | `/admin/login` | `POST /admin/login`, `POST /admin/verify-2fa` |
 | Admin Dashboard | `/admin/dashboard` | `GET /admin/dashboard` |
-| Manage Users | `/admin/users` | `GET /admin/users` |
+| Manage Users | `/admin/users` | `GET /admin/users`, `POST /admin/users/:id/suspend`, `POST /admin/users/:id/ban` |
 | User Verify | `/admin/users/:id/verify` | `POST /admin/users/:id/verify` |
+| Verification Queue | `/admin/verification` | `GET /admin/verification`, `POST /admin/verification/:id/approve`, `POST /admin/verification/:id/reject` |
 | Pending Approvals | `/admin/approvals` | `GET /admin/approvals` |
 | Moderation Queue | `/admin/moderation` | `GET /admin/moderation/queue` |
 | Report Detail | `/admin/reports/:id` | `GET /admin/moderation/reports/:id`, `POST /admin/moderation/reports/:id/approve` |
@@ -922,13 +963,13 @@ import 'package:sportx_app/features/search/presentation/screens/search_filter_sc
 │                                                                      │
 │   All authenticated users (any role) share this shell:              │
 │                                                                      │
-│   ┌────────┬────────┬────────┬────────┬────────┐                    │
-│   │  Home  │ Search │ Saved  │Activity│Profile │                    │
-│   │  /home │/search │ /saved │/activ- │/profile│                    │
-│   │        │        │        │  ity   │        │                    │
-│   └────────┴────────┴────────┴────────┴────────┘                    │
+│   ┌────────┬────────┬────────┬────────────┬────────┐                │
+│   │  Home  │Explore │(+) Cre-│ Community  │  More  │                │
+│   │  /home │/explore│  ate   │ /community │ /more  │                │
+│   │        │        │ /create│            │        │                │
+│   └────────┴────────┴────────┴────────────┴────────┘                │
 │                                                                      │
-│   • Role-specific tools accessed via Profile tab "Quick Links"        │
+│   • Role-specific tools accessed via More menu                        │
 │   • Admin has SEPARATE navigation (not in this shell)                 │
 │   • Shell persists during all role-specific flows                     │
 │                                                                      │
@@ -948,8 +989,9 @@ import 'package:sportx_app/features/search/presentation/screens/search_filter_sc
 | Athlete | Home | `/home` | Bottom nav shell |
 | Coach | Coach Dashboard | `/coach-dashboard` | From Profile tab |
 | Academy | Academy Dashboard | `/academy-dashboard` | From Profile tab |
-| Organizer | Organizer Dashboard | `/organizer-dashboard` | From Profile tab |
-| Sponsor | Sponsor Dashboard | `/sponsor-dashboard` | From Profile tab |
+| Organizer | Organizer Dashboard | `/organizer-dashboard` | From More menu |
+| Talent Scout | Scout Dashboard | `/scout-dashboard` | From More menu |
+| Generalized Provider | Provider directory profile | `/provider-detail/:id` | Not a login role |
 | Admin | Admin Dashboard | `/admin/dashboard` | Separate portal, no bottom nav |
 
 ---

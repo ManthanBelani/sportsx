@@ -1,6 +1,8 @@
 # SportX India — User Personas
 
-One primary persona per role, grounded in the platform's MVP scope (India-first launch, Gujarat metro focus, cricket-led multi-sport). Each persona maps to the real app flows documented in `Mobile-App-Flow.md`.
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
+One primary persona per role across the **six login roles** (Athlete, Coach, Academy, Organizer, Talent Scout, Admin), plus a **Generalized Provider** directory profile (not a login role), grounded in the platform's MVP scope (India-first launch, Gujarat metro focus, cricket-led multi-sport). Each persona maps to the real app flows documented in `Mobile-App-Flow.md`.
 
 ---
 
@@ -93,19 +95,21 @@ One primary persona per role, grounded in the platform's MVP scope (India-first 
 
 ---
 
-# 5. Sponsor / Brand
+# 5. Generalized Provider
 
-## 💰 Primary: Anita — brand marketing lead
+> **[SUPERSEDED — see Backend-Feature-Delta.md]** The v1 **Sponsor / Brand** persona (Anita) is retired (D2). Sponsorship is now an *opportunity type* posted by Coach/Academy/Organizer/Scout; this slot now holds the **Generalized Provider** directory persona.
+
+## 🩺 Primary: Dr. Meera — sports physiotherapist (generalized provider)
 | | |
 |---|---|
-| **Profile** | Anita Rao, 31, Brand Manager at a sportswear company (mid-size Indian brand), Mumbai. |
-| **Background** | Allocates a grassroots sports budget to sponsor promising young athletes and local events. Needs to find the right athletes efficiently and justify spend with outcomes. |
-| **Goals** | Discover promising athletes by sport/age/city; shortlist candidates; post sponsorship opportunities; review and accept pitches without drowning in email. |
-| **Frustrations** | No structured way to find grassroots talent; applications come in every format; hard to compare athletes side by side; can't track who she's already shortlisted. |
-| **Tech comfort** | High. Power user of dashboards, filters, and CRM tools. Expects search, filters, and lists. |
-| **Key tasks** | Onboard (brand, category) → post a Sponsorship → use Athlete Discovery (filters) → Shortlist candidates → review Applications Inbox → accept/reject pitches → manage My Sponsorships. |
-| **Success looks like** | Shortlists 10 athletes, sponsors 3, with a clean applications trail to report internally. |
-| **Quote** | _"Let me filter, shortlist, and decide — then show my boss exactly who and why."_ |
+| **Profile** | Meera Joshi, 39, sports physiotherapist running a clinic in Ahmedabad. Listed under the "Physiotherapist" category. |
+| **Background** | Works with young athletes on injury prevention and rehab. Gets clients via referrals; wants a credible discoverable presence alongside academies and coaches. |
+| **Goals** | Appear in search/directories for athletes and parents; publish credentials and contact details; receive enquiries and connection requests. |
+| **Frustrations** | No professional directory for allied sports services; parents can't easily verify credentials; enquiries arrive over scattered channels. |
+| **Tech comfort** | Medium. Uses a smartphone and basic dashboards; values clear, trustworthy profiles. |
+| **Key tasks** | Onboard as a generalized provider (30 fields, 9 mandatory) → get verified (blue check) → appear in search → answer enquiries/chats (UC22) → be found by athletes and scouts. |
+| **Success looks like** | Discoverable, verified profile; a steady stream of enquiries from athletes/parents this month. |
+| **Quote** | _"Athletes should be able to find and trust a qualified professional — not just anyone with a clinic."_ |
 
 ---
 
@@ -119,8 +123,8 @@ One primary persona per role, grounded in the platform's MVP scope (India-first 
 | **Goals** | Discover promising athletes by sport, age, location, and achievements; build a shortlist of prospects; efficiently share athlete profiles with academy contacts. |
 | **Frustrations** | No systematic way to discover athletes outside his immediate network; WhatsApp forwards get lost; can't easily share athlete media with coaches. |
 | **Tech comfort** | Medium. Uses WhatsApp and spreadsheets; values simple, fast interfaces. |
-| **Key tasks** | Onboard (org, sports, experience) → Scout Dashboard → Discover Athletes (filters: sport, age, location, skill) → View Athlete Profile → Shortlist → Send Connection Request. |
-| **Success looks like** | Shortlists 15 promising athletes, sends 5 connection requests, shares 3 profiles with academy contacts this month. |
+| **Key tasks** | Onboard (org, sports, experience) → Scout Dashboard → Discover Athletes (filters: sport, age, location, skill) → View Athlete Profile → Shortlist (with status/notes) → add Observation → send Connect (guardian-routed for minors) → post scouting Opportunities / write Scout Reports (P1). |
+| **Success looks like** | Shortlists 15 promising athletes, logs observations, sends 5 connection requests, and posts a scouting opportunity this month. |
 | **Quote** | _"I know talent when I see it — I just need a better way to track and share what I find."_ |
 
 ---
@@ -131,11 +135,11 @@ One primary persona per role, grounded in the platform's MVP scope (India-first 
 | | |
 |---|---|
 | **Profile** | Vikram Shah, 29, SportX India operations team, works remotely (Bengaluru). |
-| **Background** | First line of platform trust & safety. Reviews new provider accounts, moderates reports, approves sponsorship opportunities, and keeps category master data (sports/cities/age-groups) accurate. |
-| **Goals** | Keep the platform clean and trustworthy; act on reports fast; ensure provider listings and sponsorships meet guidelines; configure expiry rules so stale content auto-archives. |
-| **Frustrations** | Can't see platform health at a glance; reports and approvals pile up across tools; no control over auto-expiry so dead listings linger. |
+| **Background** | First line of platform trust & safety. Manages users (suspend/ban), reviews the verification queue, moderates reports, curates admin-posted opportunities, sends broadcasts, and keeps category master data (sports/cities/age-groups/positions) accurate. |
+| **Goals** | Keep the platform clean and trustworthy; act on reports and verification requests fast; manage users; configure expiry rules so stale content auto-archives. |
+| **Frustrations** | Can't see platform health at a glance; reports, verification requests, and approvals pile up across tools; no control over auto-expiry so dead listings linger. |
 | **Tech comfort** | High. Internal-tools native; wants counts, queues, and bulk-friendly actions. |
-| **Key tasks** | Admin login (email + 2FA) → Dashboard stats → Pending Approvals → Moderation Queue (approve/remove/warn) → Opportunities approval → broadcast Notifications → manage Categories & Expiry. |
+| **Key tasks** | Admin login (email + 2FA) → Dashboard stats → User Management (suspend/ban) → Verification Queue (approve/reject with reason) → Moderation Queue (approve/remove/warn/suspend) → admin-posted Opportunities → broadcast Notifications → manage Categories & Expiry. |
 | **Success looks like** | Reports cleared daily, zero unverified providers live, expired content auto-archived. |
 | **Quote** | _"Give me the queues and the numbers — I'll keep the platform trustworthy."_ |
 
@@ -145,20 +149,21 @@ One primary persona per role, grounded in the platform's MVP scope (India-first 
 
 | Role | Persona | One-line job-to-be-done |
 |------|---------|-------------------------|
-| Athlete/Parent | Aarav (14) + Mrs. Mehta (parent) | "Discover and register for opportunities; build a profile that gets me noticed." |
-| Coach | Rajesh (38) | "Showcase my coaching and turn enquiries into students." |
-| Academy | Priya (34) | "Run trials and manage admissions without chaos." |
+| Athlete/Parent | Aarav (14) + Mrs. Mehta (guardian) | "Discover and register for opportunities; build a profile that gets me noticed — safely." |
+| Coach | Rajesh (38) | "Showcase my coaching, run programs, and turn enquiries into students." |
+| Academy | Priya (34) | "Run trials, facilities, and programs without chaos." |
 | Organizer | Sameer (45) | "Run tournaments with capacity, registration, and published results." |
-| Sponsor/Brand | Anita (31) | "Find and sponsor the right athletes, with a clean audit trail." |
-| Talent Scout | Kiran (42) | "Discover and shortlist promising athletes to share with my contacts." |
+| Generalized Provider | Dr. Meera (39) | "Be discoverable and trusted in the sports directory." |
+| Talent Scout | Kiran (42) | "Discover, track, and shortlist promising athletes; make contact properly." |
 | Admin | Vikram (29) | "Keep the platform trustworthy, clean, and up to date." |
 
 ---
 
 ## Design implications (what these personas tell us)
 
-- **Trust signals are critical** for Aarav/Mrs. Mehta and Anita → verified badges, contact info, documents, reviews.
-- **Discovery + filters** drive value for Athletes and Sponsors → strong universal search and Athlete Discovery.
-- **Provider dashboards are "back-office" tools** for Priya/Sameer/Rajesh → tables, statuses, bulk actions, clear counts.
+- **Trust signals are critical** for Aarav/Mrs. Mehta and Dr. Meera → verified badges, contact info, documents, reviews.
+- **Guardian consent & minor-safety** dominate the athlete experience → consent gate, restricted visibility/messaging, anonymised leaderboard, guardian-routed contact by scouts.
+- **Discovery + social** drive value for Athletes and Scouts → universal search, feed, follow/connect, and Athlete Discovery.
+- **Provider dashboards are "back-office" tools** for Priya/Sameer/Rajesh/Kiran → tables, statuses, bulk actions, clear counts.
 - **Reminders & expiry** matter most to Mrs. Mehta (deadlines) and Vikram (stale content).
-- **Onboarding must be role-tailored** → each persona lands on a different first-run form (see `Mobile-App-Flow.md`).
+- **Onboarding must be role-tailored** → each persona lands on a different first-run form with a 30-field profile checklist (see `Mobile-App-Flow.md`).

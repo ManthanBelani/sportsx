@@ -1,11 +1,15 @@
 # Backend Architecture — SportX India (Laravel)
 
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
 Laravel API architecture: folder structure, layers (controllers → services → models), queues/jobs, auth strategy. Consistent with `Database-Design.md` and `Class-Diagram.md`.
+
+> **New-design deltas applied here:** `sponsor` role removed (→ `opportunities`), `scout` added; OTP (phone + email) restored to P0; guardian consent; social feed/network/messaging; leaderboard engine; 30-field profiles; verification queue + admin user management.
 
 > **Assumptions**
 > - Laravel 11.x (latest stable as of spec authoring — AS-23). Folder structure follows the Laravel 11 default (`app/`, `routes/`, `database/`).
 > - PHP 8.2+ (AS-24).
-> - **Auth:** Laravel Sanctum for API token management — AS-16.
+> - **Auth:** Laravel Sanctum for API token management — AS-16. OTP (phone or email) is the primary signup/login path.
 > - **Queue driver:** database (synchronous-capable for local dev); production recommendation: Redis (AS-25).
 > - **Storage:** local disk for dev; S3-compatible (e.g. AWS S3, Cloudflare R2) for production with CDN (NFR-4, AS-07).
 > - **Testing:** PHPUnit feature tests + Pest (optional) at developer discretion.
@@ -19,39 +23,59 @@ app/
 ├── Http/
 │   ├── Controllers/
 │   │   ├── Api/
-│   │   │   ├── AuthController.php
-│   │   │   ├── OnboardingController.php
-│   │   │   ├── MetaController.php                    # sports, cities, age-groups
-│   │   │   ├── ProfileController.php
-│   │   │   ├── DirectoryController.php              # academies, coaches (list + detail)
+│   │   │   ├── AuthController.php                    # register/login OTP (phone/email) + password + Google
+│   │   │   ├── GuardianController.php                # guardian consent + parent controls (minors)
+│   │   │   ├── OnboardingController.php              # athlete/coach/academy/organizer/scout/generalized
+│   │   │   ├── MetaController.php                    # sports, cities, age-groups, positions, facilities, faqs
+│   │   │   ├── ProfileController.php                 # own/public profile, privacy, completion checklist
+│   │   │   ├── AchievementController.php             # typed achievements CRUD (athlete/coach)
+│   │   │   ├── VerificationController.php            # request blue check (A.10)
+│   │   │   ├── DirectoryController.php              # academies, coaches, organizers, scouts (list + detail)
 │   │   │   ├── TrialController.php                  # trials (list + detail)
 │   │   │   ├── TournamentController.php              # tournaments (list + detail)
-│   │   │   ├── ScholarshipController.php             # scholarships (list + detail)
-│   │   │   ├── SponsorshipController.php             # sponsorships (list + detail)
-│   │   │   ├── SportsVenueController.php             # sports venues (list + detail) — new from PDF
+│   │   │   ├── OpportunityController.php             # unified scholarships/sponsorships/tryouts/camps + apply
+│   │   │   ├── ProgramController.php                 # training programs + enquiry
+│   │   │   ├── FacilityController.php                # academy facilities CRUD
+│   │   │   ├── SportsVenueController.php             # sports venues (list + detail)
+│   │   │   ├── FeedController.php                    # social feed tabs
+│   │   │   ├── PostController.php                    # posts + likes + comments
+│   │   │   ├── NetworkController.php                 # follow + connection requests
+│   │   │   ├── ConversationController.php            # 1:1 chat threads + messages
+│   │   │   ├── BlockController.php                   # block/unblock
+│   │   │   ├── LeaderboardController.php             # ranks + home strip
 │   │   │   ├── SearchController.php
+│   │   │   ├── HomeController.php                    # role-aware dashboard
+│   │   │   ├── ExploreController.php                 # grouped explore sections
 │   │   │   ├── EnquiryController.php
 │   │   │   ├── RegistrationController.php           # trial + tournament registrations
-│   │   │   ├── SponsorEngagementController.php       # sponsor apply/discover/shortlist
+│   │   │   ├── ScoutController.php                   # scout dashboard/shortlist/observations/reports/contact
 │   │   │   ├── ProviderTrialController.php           # coach/academy/organizer trial CRUD
 │   │   │   ├── ProviderTournamentController.php       # organizer tournament CRUD
+│   │   │   ├── ProviderEventController.php            # unified /me/events + registrant export
 │   │   │   ├── RegistrantController.php              # registrant management
 │   │   │   ├── CapacityController.php                # capacity management
 │   │   │   ├── ResultsController.php                 # results publish/view
 │   │   │   ├── SavedItemController.php
-│   │   │   ├── ReportController.php
-│   │   │   ├── NotificationController.php
+│   │   │   ├── ReportController.php                  # reports (user/post/listing morphs)
+│   │   │   ├── NotificationController.php            # tabs + device tokens
 │   │   │   ├── SettingsController.php
+│   │   │   ├── AnalyticsController.php               # product/funnel event log
+│   │   │   ├── ShareController.php                   # public deep-link resolver (P1)
+│   │   │   ├── SupportController.php                 # report-a-problem / contact
 │   │   │   ├── CoachProfileController.php            # coach self-service
 │   │   │   ├── AcademyListingController.php          # academy self-service
-│   │   │   └── AthleteDiscoveryController.php       # sponsor athlete search
+│   │   │   └── AthleteDiscoveryController.php       # scout / universal athlete search
 │   │   └── Admin/
 │   │       ├── AdminAuthController.php
 │   │       ├── AdminDashboardController.php
-│   │       ├── AdminContentController.php
+│   │       ├── AdminUserController.php               # AD.3 users + suspend/ban/verify
+│   │       ├── AdminVerificationController.php       # AD.4 verification queue
+│   │       ├── AdminContentController.php            # + opportunities/programs/facilities/posts
 │   │       ├── AdminModerationController.php
+│   │       ├── AdminBroadcastController.php          # AD.12 (P1)
 │   │       ├── AdminExpiryController.php
-│   │       └── AdminCategoryController.php
+│   │       ├── AdminLeaderboardController.php        # AD.11 config + reset (P1)
+│   │       └── AdminCategoryController.php           # sports/cities/age-groups/positions
 │   ├── Middleware/
 │   │   ├── EnsureJsonResponse.php
 │   │   ├── SetUserLocale.php                         # future: i18n
@@ -59,28 +83,57 @@ app/
 │   ├── Requests/
 │   │   ├── Auth/
 │   │   │   ├── RegisterRequest.php
+│   │   │   ├── SendOtpRequest.php
 │   │   │   ├── VerifyOtpRequest.php
+│   │   │   ├── ResendOtpRequest.php
 │   │   │   ├── LoginRequest.php
 │   │   │   └── ForgotPasswordRequest.php
+│   │   ├── Guardian/
+│   │   │   ├── GuardianConsentRequest.php
+│   │   │   ├── VerifyGuardianOtpRequest.php
+│   │   │   └── UpdateGuardianControlsRequest.php
 │   │   ├── Onboarding/
 │   │   │   ├── AthleteOnboardingRequest.php
 │   │   │   ├── CoachOnboardingRequest.php
 │   │   │   ├── AcademyOnboardingRequest.php
 │   │   │   ├── OrganizerOnboardingRequest.php
-│   │   │   └── SponsorOnboardingRequest.php
+│   │   │   ├── ScoutOnboardingRequest.php
+│   │   │   └── GeneralizedOnboardingRequest.php
 │   │   ├── Profile/
 │   │   │   ├── UpdateAthleteProfileRequest.php
-│   │   │   └── UpdateCoachProfileRequest.php
+│   │   │   ├── UpdateCoachProfileRequest.php
+│   │   │   ├── UpdateScoutProfileRequest.php
+│   │   │   ├── UpdateOrgProfileRequest.php
+│   │   │   ├── UpdatePrivacyRequest.php
+│   │   │   └── StoreVerificationRequest.php
 │   │   ├── Listing/
 │   │   │   ├── StoreTrialRequest.php
 │   │   │   ├── UpdateTrialRequest.php
 │   │   │   ├── StoreTournamentRequest.php
-│   │   │   ├── StoreSponsorshipRequest.php
+│   │   │   ├── StoreEventRequest.php
+│   │   │   ├── StoreOpportunityRequest.php
+│   │   │   ├── StoreProgramRequest.php
+│   │   │   ├── StoreFacilityRequest.php
 │   │   │   ├── StoreEnquiryRequest.php
 │   │   │   ├── StoreTrialRegistrationRequest.php
 │   │   │   └── ...
+│   │   ├── Social/
+│   │   │   ├── StorePostRequest.php
+│   │   │   ├── StoreCommentRequest.php
+│   │   │   ├── StoreConnectionRequest.php
+│   │   │   ├── StoreConversationRequest.php
+│   │   │   ├── SendMessageRequest.php
+│   │   │   └── StoreBlockRequest.php
+│   │   ├── Scout/
+│   │   │   ├── ShortlistRequest.php
+│   │   │   ├── StoreObservationRequest.php
+│   │   │   ├── StoreScoutReportRequest.php
+│   │   │   └── StoreContactRequest.php
 │   │   ├── Admin/
 │   │   │   ├── UpdateExpiryRulesRequest.php
+│   │   │   ├── RejectVerificationRequest.php
+│   │   │   ├── StoreBroadcastRequest.php
+│   │   │   ├── UpdateLeaderboardConfigRequest.php
 │   │   │   └── ...
 │   │   └── Media/
 │   │       └── UploadMediaRequest.php
@@ -94,12 +147,24 @@ app/
 ├── Models/
 │   ├── User.php
 │   ├── OtpCode.php
+│   ├── GuardianConsent.php
+│   ├── VerificationRequest.php
 │   ├── AdminProfile.php
 │   ├── AthleteProfile.php
+│   ├── AthleteSport.php
 │   ├── CoachProfile.php
+│   ├── CoachSport.php
 │   ├── Academy.php
+│   ├── AcademySport.php
+│   ├── AcademyCoach.php
+│   ├── Facility.php
 │   ├── OrganizerProfile.php
-│   ├── SponsorProfile.php
+│   ├── OrganizerSport.php
+│   ├── TalentScoutProfile.php
+│   ├── TalentScoutSport.php
+│   ├── GeneralizedProfile.php
+│   ├── Position.php
+│   ├── Program.php
 │   ├── Trial.php
 │   ├── TrialRegistration.php
 │   ├── TrialRegistrationDocument.php
@@ -107,10 +172,29 @@ app/
 │   ├── TournamentCategory.php
 │   ├── TournamentRegistration.php
 │   ├── TournamentResult.php
-│   ├── Scholarship.php
-│   ├── Sponsorship.php
-│   ├── SponsorshipApplication.php
-│   ├── ShortlistEntry.php
+│   ├── EventSchedule.php
+│   ├── EventView.php
+│   ├── Opportunity.php
+│   ├── OpportunityApplication.php
+│   ├── Post.php
+│   ├── PostLike.php
+│   ├── PostComment.php
+│   ├── Follow.php
+│   ├── ConnectionRequest.php
+│   ├── Conversation.php
+│   ├── ConversationParticipant.php
+│   ├── Message.php
+│   ├── Block.php
+│   ├── ScoutShortlist.php
+│   ├── Observation.php
+│   ├── ScoutReport.php
+│   ├── Review.php
+│   ├── LeaderboardSeason.php
+│   ├── LeaderboardScore.php
+│   ├── LeaderboardConfig.php
+│   ├── Broadcast.php
+│   ├── AnalyticsEvent.php
+│   ├── AcademyAthleteInvite.php
 │   ├── SportsVenue.php                     # New from PDF (AS-47)
 │   ├── Enquiry.php
 │   ├── EnquiryMessage.php
@@ -123,24 +207,35 @@ app/
 │   ├── Sport.php
 │   ├── City.php
 │   ├── AgeGroup.php
-│   ├── Achievement.php
-│   ├── MediaItem.php
-│   ├── AthleteSport.php
-│   ├── AcademySport.php
-│   └── AcademyCoach.php
+│   ├── Achievement.php                     # typed records (owner morph athlete/coach)
+│   └── MediaItem.php
+│
+│   # [REMOVED] SponsorProfile, Scholarship, Sponsorship, SponsorshipApplication, ShortlistEntry
 │
 ├── Services/
 │   ├── AuthService.php
 │   ├── OtpService.php
+│   ├── GuardianConsentService.php
 │   ├── ProfileService.php
+│   ├── VerificationService.php
 │   ├── SearchService.php
 │   ├── FilterService.php
+│   ├── FeedService.php
+│   ├── PostService.php
+│   ├── OpportunityService.php
+│   ├── ProgramService.php
+│   ├── FacilityService.php
 │   ├── EnquiryService.php
+│   ├── ConnectionService.php
+│   ├── ChatService.php
 │   ├── RegistrationService.php
-│   ├── SponsorshipService.php
+│   ├── ScoutService.php
+│   ├── LeaderboardService.php
+│   ├── ReviewService.php
 │   ├── ExpiryService.php
 │   ├── ReminderService.php
 │   ├── ModerationService.php
+│   ├── AnalyticsService.php
 │   └── NotificationService.php
 │
 ├── Policies/
@@ -149,32 +244,61 @@ app/
 │   ├── TrialPolicy.php
 │   ├── TournamentPolicy.php
 │   ├── RegistrantPolicy.php
-│   ├── SponsorshipPolicy.php
-│   ├── ApplicationPolicy.php
-│   ├── ShortlistPolicy.php
+│   ├── OpportunityPolicy.php
+│   ├── OpportunityApplicationPolicy.php
+│   ├── ProgramPolicy.php
+│   ├── FacilityPolicy.php
+│   ├── PostPolicy.php
+│   ├── ConnectionPolicy.php
+│   ├── ConversationPolicy.php
+│   ├── BlockPolicy.php
+│   ├── ScoutDataPolicy.php
+│   ├── ReviewPolicy.php
+│   ├── VerificationPolicy.php
+│   ├── GuardianConsentPolicy.php
+│   ├── LeaderboardPolicy.php
 │   ├── ReportPolicy.php
 │   ├── SavedItemPolicy.php
 │   └── AdminPolicy.php
 │
 ├── Enums/
-│   ├── UserRole.php
+│   ├── UserRole.php                          # athlete|coach|academy|organizer|scout|admin (sponsor removed)
 │   ├── UserStatus.php
 │   ├── SkillLevel.php
 │   ├── ListingStatus.php
 │   ├── DocumentStatus.php
 │   ├── VerificationStatus.php
+│   ├── VerificationRequestStatus.php
+│   ├── ConsentStatus.php
 │   ├── RegistrationStatus.php
 │   ├── ManualPaymentStatus.php
+│   ├── OpportunityType.php                  # scholarship|sponsorship|tryout|camp
 │   ├── ApplicationStatus.php
+│   ├── ConnectionStatus.php
+│   ├── ConversationStatus.php
+│   ├── ShortlistStatus.php                  # under_review|good|high|final
+│   ├── ReportConclusion.php
+│   ├── ReviewStatus.php
+│   ├── ProgramStatus.php
+│   ├── FacilityType.php
+│   ├── BroadcastStatus.php
+│   ├── LeaderboardNameMode.php
+│   ├── Audience.php
 │   ├── ExpiryStatus.php
-│   ├── ReportReason.php
+│   ├── ReportReason.php                     # + misleading|spam
 │   ├── ReportStatus.php
-│   ├── NotificationType.php
-│   └── OtpChannel.php
+│   ├── NotificationType.php                 # + follow|connection|message|registration_decision|verification_result|mention|broadcast
+│   ├── OtpChannel.php                       # email|phone
+│   └── OtpPurpose.php
 │
 ├── Events/
 │   ├── EnquiryReplied.php
 │   ├── RegistrationConfirmed.php
+│   ├── RegistrationDecided.php
+│   ├── VerificationDecided.php
+│   ├── ConnectionAccepted.php
+│   ├── MentionCreated.php
+│   ├── ContentReported.php
 │   ├── ContentExpired.php
 │   ├── ListingRemoved.php
 │   └── ListingWarned.php
@@ -182,19 +306,35 @@ app/
 ├── Listeners/
 │   ├── SendEnquiryReplyNotification.php
 │   ├── ArmRegistrationReminder.php
+│   ├── NotifyRegistrationDecision.php
+│   ├── NotifyVerificationResult.php
+│   ├── UnlockChatOnConnection.php
+│   ├── SendMentionNotification.php
+│   ├── RouteContentReport.php
 │   └── NotifyListingOwnerOnModeration.php
 │
 ├── Jobs/
 │   ├── SendOtpJob.php
 │   ├── SweepExpiredContentJob.php
 │   ├── SendDueRemindersJob.php
-│   └── PurgeExpiredOtpsJob.php
+│   ├── PurgeExpiredOtpsJob.php
+│   ├── RecalculateLeaderboardJob.php         # on triggers + nightly rebuild
+│   ├── ResetLeaderboardSeasonJob.php
+│   └── BroadcastNotificationJob.php          # P1
 │
 ├── Notifications/                    # Laravel notification classes (in-app DB channel)
 │   ├── OtpNotification.php
 │   ├── EnquiryReplyNotification.php
 │   ├── RegistrationReminderNotification.php
+│   ├── RegistrationDecisionNotification.php
+│   ├── VerificationResultNotification.php
+│   ├── ConnectionRequestNotification.php
+│   ├── MessageNotification.php
+│   ├── FollowNotification.php
+│   ├── MentionNotification.php
+│   ├── LeaderboardMilestoneNotification.php
 │   ├── DeadlineReminderNotification.php
+│   ├── BroadcastNotification.php
 │   ├── ListingRemovedNotification.php
 │   └── ListingWarnedNotification.php
 │
@@ -224,8 +364,9 @@ database/
 │   ├── SportSeeder.php
 │   ├── CitySeeder.php
 │   ├── AgeGroupSeeder.php
+│   ├── PositionSeeder.php              # sport-scoped positions (S.4)
 │   ├── ExpiryRuleSeeder.php
-│   └── ScholarshipSeeder.php           # admin-maintained initial set
+│   └── LeaderboardConfigSeeder.php     # default weights + season
 └── factories/                           # per model
 
 routes/
@@ -235,12 +376,18 @@ routes/
 tests/
 ├── Feature/
 │   ├── Auth/
+│   ├── Guardian/
 │   ├── Onboarding/
 │   ├── Directory/
 │   ├── Trials/
 │   ├── Tournaments/
+│   ├── Opportunities/
+│   ├── Programs/
+│   ├── Social/
 │   ├── Enquiries/
-│   ├── Sponsorship/
+│   ├── Scout/
+│   ├── Leaderboard/
+│   ├── Verification/
 │   ├── Admin/
 │   └── Jobs/
 └── Unit/
@@ -366,7 +513,9 @@ class TrialPolicy
 
 | Flow | Mechanism |
 |---|---|
-| **Token issuance** | `POST /auth/verify-otp` or `POST /auth/login` → ` Sanctum::createTokenFor()` → plain token in response |
+| **OTP (P0)** | `POST /auth/register` triggers OTP; `POST /auth/send-otp` / `resend-otp` (rate-limited 60s, max 5 attempts via `RateLimitOtp`); `POST /auth/verify-otp` over **email or phone** sets `email_verified_at`/`phone_verified_at`. |
+| **Token issuance** | `POST /auth/verify-otp` or `POST /auth/login` → `Sanctum::createTokenFor()` → plain token in response |
+| **Guardian consent** | `POST /guardian/consent` → `POST /guardian/verify-otp` gates minor profile activation (DOB < 18). |
 | **Client sends** | `Authorization: Bearer <token>` |
 | **Middleware** | `auth:sanctum` on all authenticated routes; custom middleware for role checks |
 | **Admin 2FA** | `POST /admin/verify-2fa` validates TOTP; session flag `admin_2fa_verified_at` stored on the token or user model (AS-26 — implementation detail) |
@@ -379,10 +528,13 @@ class TrialPolicy
 
 | Job | Trigger | Queue | Description |
 |---|---|---|---|
-| `SendOtpJob` | Auth register / resend OTP | `notifications` | Sends OTP via `OtpProvider` interface. Rate-limited to 1 per minute per user. |
-| `SweepExpiredContentJob` | Scheduler (hourly) | `default` | Scans published listings against `expiry_events` table; executes pending expirations. |
-| `SendDueRemindersJob` | Scheduler (every 15 min) | `notifications` | Dispatches `ReminderSubscription` entries where `remind_at <= now` and `sent_at IS NULL`. |
+| `SendOtpJob` | Auth register / resend OTP | `notifications` | Sends OTP via `OtpProvider` interface (email or phone). Rate-limited to 1 per minute per destination. |
+| `SweepExpiredContentJob` | Scheduler (hourly) | `default` | Scans published listings against `expiry_events` table; executes pending expirations (trial/tournament/opportunity/program/facility). |
+| `SendDueRemindersJob` | Scheduler (every 15 min) | `notifications` | Dispatches `ReminderSubscription` entries where `remind_at <= now` and `sent_at IS NULL`; includes opportunity deadlines + nearby trials. |
 | `PurgeExpiredOtpsJob` | Scheduler (daily) | `default` | Deletes OTP rows where `expires_at < now - 24h`. |
+| `RecalculateLeaderboardJob` | Points triggers + nightly | `default` | Rebuilds `leaderboard_scores` from verified achievements, completion milestones and activity. |
+| `ResetLeaderboardSeasonJob` | Scheduler / admin | `default` | Closes the active season and opens the next (AD.11). |
+| `BroadcastNotificationJob` | Admin broadcast (P1) | `notifications` | FCM fan-out for `broadcasts` audience filter. |
 
 ### Scheduler (`routes/console.php`)
 
@@ -400,6 +552,11 @@ Schedule::job(new SendDueRemindersJob)->everyFifteenMinutes();
 |---|---|---|
 | `EnquiryReplied` | `SendEnquiryReplyNotification` | In-app notification to athlete (via `NotificationService`) |
 | `RegistrationConfirmed` | `ArmRegistrationReminder` | Creates `reminder_subscription` rows (T-2d, T-1d offsets — AS-05) |
+| `RegistrationDecided` | `NotifyRegistrationDecision` | Push + in-app decision notification to athlete (approve/reject) |
+| `VerificationDecided` | `NotifyVerificationResult` | Notifies requester of blue-check approval/rejection (+reason) |
+| `ConnectionAccepted` | `UnlockChatOnConnection` | Notifies both parties; unlocks 1:1 chat |
+| `MentionCreated` | `SendMentionNotification` | P1 — mention notification in posts/comments |
+| `ContentReported` | `RouteContentReport` | Routes user/post/listing reports to the moderation queue |
 | `ContentExpired` | (no auto-listener) | Logged; admin can restore via monitor |
 | `ListingRemoved` | `NotifyListingOwnerOnModeration` | In-app notification to listing owner |
 | `ListingWarned` | `NotifyListingOwnerOnModeration` | In-app notification to listing owner |
@@ -433,7 +590,7 @@ return [
         'expiry_minutes' => 5,
         'max_attempts' => 5,
         'resend_cooldown_seconds' => 60,
-        'channel' => 'email',
+        'channels' => ['email', 'phone'],   // P0: phone OR email (D1/D5)
     ],
     'reminder' => [
         'offsets' => [    // AS-05 — offsets before the event date
@@ -477,11 +634,18 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('academies', DirectoryController::class)->only(['index', 'show']);
         // ... directories, enquiries, registrations, saved, notifications, settings, profile
 
+        // Social / network / messaging (P0)
+        Route::get('feed', [FeedController::class, 'index']);
+        Route::apiResource('posts', PostController::class);
+        Route::prefix('connections')->group(...);
+        Route::prefix('conversations')->group(...);
+        Route::get('leaderboard', [LeaderboardController::class, 'index']);
+
         // Role-scoped
         Route::middleware('role:coach')->prefix('coach')->group(...);
         Route::middleware('role:academy')->prefix('academy')->group(...);
         Route::middleware('role:organizer')->prefix('organizer')->group(...);
-        Route::middleware('role:sponsor')->prefix('sponsor')->group(...);
+        Route::middleware('role:scout')->prefix('scout')->group(...);
     });
 
     // Admin
@@ -490,10 +654,14 @@ Route::prefix('v1')->group(function () {
         Route::post('verify-2fa', [AdminAuthController::class, 'verify2fa']);
         Route::middleware(['auth:sanctum', 'role:admin', 'admin.2fa'])->group(function () {
             Route::get('dashboard', ...);
+            Route::prefix('users')->group(...);           // AD.3 user management
+            Route::prefix('verification')->group(...);    // AD.4 queue
             Route::prefix('content')->group(...);
             Route::prefix('moderation')->group(...);
+            Route::prefix('broadcasts')->group(...);      // AD.12 (P1)
             Route::prefix('expiry')->group(...);
-            Route::prefix('categories')->group(...);
+            Route::prefix('leaderboard')->group(...);     // AD.11 (P1)
+            Route::prefix('categories')->group(...);      // + positions
         });
     });
 });
@@ -507,10 +675,10 @@ Route::prefix('v1')->group(function () {
 
 | Layer | Tool | Coverage target |
 |---|---|---|
-| Unit — Services | PHPUnit | Business rules: registration constraints, expiry logic, capacity enforcement |
-| Unit — Policies | PHPUnit | Role + ownership assertions |
-| Feature — API | PHPUnit/Pest | Full request → response cycle per endpoint, edge cases (duplicate registration, closed trial) |
-| Jobs | PHPUnit | Sweep job creates expiry events correctly |
+| Unit — Services | PHPUnit | Business rules: registration constraints, expiry logic, capacity enforcement, leaderboard points, chat unlock rules |
+| Unit — Policies | PHPUnit | Role + ownership assertions (incl. minors/guardian gating, no cold DMs) |
+| Feature — API | PHPUnit/Pest | Full request → response cycle per endpoint, edge cases (duplicate registration, closed trial, duplicate application, blocked user) |
+| Jobs | PHPUnit | `SweepExpiredContentJob` creates expiry events; `RecalculateLeaderboardJob` scores correctly |
 | Integration | — | No third-party integration tests until vendor selected |
 
 > Test environment uses `database` queue driver and `LogOtpProvider` to avoid external dependencies.

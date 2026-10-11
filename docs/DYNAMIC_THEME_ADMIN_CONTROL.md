@@ -1,5 +1,7 @@
 # Dynamic Theme Controlled by Admin Panel — Full Analysis & Implementation Approaches
 
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
 > **Project:** SportX India — `sportx_app` (Flutter + Riverpod) + `sportx-api` (Laravel)  
 > **Date:** 2026-09-12  
 > **Author:** Automated Codebase Audit (OpenCode / Muse Spark)  
@@ -492,7 +494,7 @@ Laravel still validates and can keep DB history; CDN is just delivery. Or skip D
 
 ### Extends A1/A4
 
-- Add columns: `tenant_id` (nullable → global), `scheduled_at` (publish at future time via scheduler), `applies_to` JSON (`{"roles":["athlete","sponsor"],"regions":["MH"]}`), `priority`.
+- Add columns: `tenant_id` (nullable → global), `scheduled_at` (publish at future time via scheduler), `applies_to` JSON (`{"roles":["athlete","scout"],"regions":["MH"]}`), `priority`.
 - Scheduler job every minute: `ThemeConfig::where('scheduled_at','<=',now())->where('is_published',false)->each->publish()`.
 - App sends `X-Tenant` / `region` header or query `?tenant=sportx_pune`; backend resolves `activeFor(tenant, role, region)`.
 - Admin UI: calendar picker “Activate on 2026-10-26 00:00 (Diwali theme)”, auto-revert date, preview by tenant.

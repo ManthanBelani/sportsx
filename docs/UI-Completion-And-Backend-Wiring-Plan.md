@@ -1,5 +1,14 @@
 # SportX India — UI Completion & Backend Wiring Plan
 
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
+> **HISTORICAL (pre-v3):** describes the old state; see Backend-Feature-Delta.md for the current plan.
+
+> **v3 annotation (details below preserved as-is):**
+> - **Social/chat may be partially implemented:** this plan reports `ConversationController`, `ConnectionController`, and `PostController` (with `conversations`/`messages`/`connections`/`posts`/`post_likes`/`post_comments` tables and `/posts` routes) as built. `Backend-Feature-Delta.md` §9 **does not trust these** — verify the existing tables/endpoints before building, and reconcile with the v3 schema (`follows`, `connection_requests`, `conversation_participants`, `blocks`).
+> - **Role drift:** the `sponsor` screens/controller listed here are superseded — `sponsor` is **removed** and `scout` added; sponsorship becomes `opportunities`.
+> - **New P0 not covered here:** opportunities, programs, facilities, follow/connect, 1:1 chat, leaderboard, blocks/reports, verification queue, user management.
+
 **Last verified:** 2026-08-14 (all phases complete — verification run)
 **Source of truth:** `sportsx-design-v1/` (78 HTML design screens) ↔ `sportx_app/` (Flutter) ↔ `sportx-api/` (Laravel)
 **Status:** UI ✅ · API ✅ · **Data wiring ✅ (85/90 screens live)** · **All phases ✅ COMPLETE**

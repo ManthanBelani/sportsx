@@ -1,5 +1,7 @@
 # Jira Tickets — SportX India
 
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
 Ticket backlog broken down by **Phase → Epic → Story/Task**. Each ticket includes description and acceptance criteria, formatted CSV-friendly for bulk import into Jira.
 
 > **CSV format:** The tables below are structured as Jira-compatible columns: `Phase`, `Epic`, `Issue Type`, `Summary`, `Description`, `Acceptance Criteria`, `Priority`, `Story Points`. Copy any table and save as `.csv` for bulk import.
@@ -25,7 +27,8 @@ P0,P0-E1: Project Setup,Task,"Set up CI/CD pipeline","GitHub Actions: lint + tes
 Phase,Epic,Issue Type,Summary,Description,Acceptance Criteria,Priority,Story Points
 P0,P0-E2: Auth API,Story,"Implement email OTP registration","POST /auth/register creates user (unverified) + POST /auth/verify-otp validates code + issues token. OTP stored hashed, 5-min expiry, resend rate-limited.","Register with email → 202; verify valid OTP → 200 with token; wrong OTP → 422; expired OTP → 422; resend within 60s → 429.",Must,5
 P0,P0-E2: Auth API,Story,"Implement login (password + OTP)","POST /auth/login with password OR OTP code. Token issued. Logout revokes token.","Password login works; OTP login sends code then verifies; invalid credentials → 401; logout deletes token → 401 on next request.",Must,5
-P0,P0-E2: Auth API,Story,"Implement role onboarding for all 6 roles","POST /auth/register sets role; POST /onboarding/{role} creates the role profile. Athlete: sports + age group + skill + city. Coach: sports + certs + experience. Academy: name + sports + city. Organizer: org name + type + docs. Sponsor: brand + logo + category + docs. Talent Scout: organization, sports specialization, experience, location.","Each role onboarding creates correct profile; athlete profile links sports; academy profile created with listing_status=draft; verification docs stored as media_items.",Must,5
+P0,P0-E2: Auth API,Story,"Implement role onboarding for all roles","POST /auth/register sets role; POST /onboarding/{role} creates the role profile. Athlete: sports + age group + skill + city. Coach: sports + certs + experience. Academy: name + sports + city. Organizer: org name + type + docs. Scout: organization, sports specialization, experience, location. (v3: Sponsor role removed; scout replaces talent_scout.)","Each role onboarding creates correct profile; athlete profile links sports; academy profile created with listing_status=draft; verification docs stored as media_items.",Must,5
+P0,P0-E2: Auth API,Story,"Implement phone-or-email OTP + guardian consent","v3 P0: OTP for signup/login via SMS or email; otp_codes table, issue/verify/resend, 5-min expiry, rate limits. Guardian consent flow (guardian_consents) for minors.","Register via phone or email → OTP; verify → token; resend rate-limited; minor signup requires guardian consent record.",Must,5
 P0,P0-E2: Auth API,Task,"Implement auth middleware and role middleware","auth:sanctum on all authenticated routes; role:xxx middleware checking user->role.","Unauthenticated request → 401; wrong-role request → 403.",Must,2
 ```
 
@@ -37,7 +40,7 @@ P0,P0-E2: Auth API,Task,"Implement auth middleware and role middleware","auth:sa
 
 ```csv
 Phase,Epic,Issue Type,Summary,Description,Acceptance Criteria,Priority,Story Points
-P1,P1-E1: Auth UI,Story,"Build splash + role selection screens","S1 Splash with logo/loading + S2 Role Selection with 5 cards (Athlete/Parent, Coach, Academy, Organizer, Sponsor).","Splash renders 2s then transitions; role selection shows all 5 cards; tapping a card navigates to sign-up with role pre-selected.",Must,2
+P1,P1-E1: Auth UI,Story,"Build splash + role selection screens","S1 Splash with logo/loading + S2 Role Selection with 6 cards (Athlete/Parent, Coach, Academy, Organizer, Scout, Admin).","Splash renders 2s then transitions; role selection shows all 6 cards; tapping a card navigates to sign-up with role pre-selected.",Must,2
 P1,P1-E1: Auth UI,Story,"Build sign-up screen","S3: phone/email toggle (+91 input), terms checkbox, Continue button, Google sign-in button.","User can type email, accept terms, tap Continue → OTP screen. Google button present (non-functional at P1).",Must,2
 P1,P1-E1: Auth UI,Story,"Build OTP verification screen","S4: masked destination, 6-digit code input fields, resend timer, Verify button.","Code entered → Verify calls API; success → onboarding; resend timer counts down from 60s; resend re-calls API.",Must,2
 P1,P1-E1: Auth UI,Story,"Build login screen","S5: email/phone input, password/OTP toggle, login button, forgot password link, sign-up link.","Login with valid credentials → home. Forgot password visible (non-functional at P1). Toggle switches between password and OTP fields.",Must,2
@@ -65,8 +68,8 @@ P1,P1-E3: Search & Directories,Story,"Implement academy directory & detail","A7 
 P1,P1-E3: Search & Directories,Story,"Implement coach directory & detail","A9 list + A10 detail using T1/T2 templates. Fields: full_name, sport, city, contact_number, experience, qualification, certifications, academy, languages, email, personal_coaching, fees (mandatory fields per PDF).","Coach list shows correct cards; detail shows all sections; Enquire CTA visible.",Must,2
 P1,P1-E3: Search & Directories,Story,"Implement trial listings & detail","A12 list + A13 detail. Fields: organization_name, google_maps_url, registration_deadline, vacancies, benefits (mandatory per PDF).","Trial list sorted by event_datetime; detail shows all fields including org name, map, registration deadline; Register CTA visible but non-functional at P1.",Must,2
 P1,P1-E3: Search & Directories,Story,"Implement tournament calendar & detail","A16: calendar/list toggle + A17 detail. Fields: registration_deadline, google_maps_url, contact_number, registration_link (mandatory per PDF), rules, gender, banner.","Calendar shows dates with dots for events; list view shows cards; detail shows all fields including external registration link.",Must,3
-P1,P1-E3: Search & Directories,Story,"Implement scholarship feed & detail","A19 list + A20 detail. Fields: organization_name, name, eligibility, deadline, application_link, contact_email, contact_phone (mandatory per PDF).","Scholarship list shows correct cards; detail shows Apply button that opens external URL.",Must,2
-P1,P1-E3: Search & Directories,Story,"Implement sponsorship listings & detail","A21 list + A22 detail. Fields: eligibility, benefits, deadline, application_link, contact (mandatory per PDF).","List and detail render correctly; Apply/Pitch CTA visible but non-functional at P1.",Must,2
+P1,P1-E3: Search & Directories,Story,"Implement opportunities feed & detail (scholarship type)","A19 list + A20 detail for unified `opportunities` (type=scholarship). v3: provider-posted, in-app apply. Fields: organization_name, name, eligibility, deadline, benefits, contact.","Opportunity list shows correct cards; detail shows Apply button (in-app application at P2).",Must,2
+P1,P1-E3: Search & Directories,Story,"Implement opportunities feed & detail (sponsorship type)","A21 list + A22 detail for `opportunities` (type=sponsorship). Unified with scholarships in v3. Fields: eligibility, benefits, deadline, contact.","List and detail render correctly; Apply/Pitch CTA visible but non-functional at P1.",Must,2
 P1,P1-E3: Search & Directories,Story,"Implement sports venue directory & detail (new)","Sports venue list + detail using T1/T2 templates. Fields: name, sport, address, google_maps_url, contact_number, booking_available, pricing, facilities, working_hours (all from Mandatory Fields PDF).","Venue list shows correct cards filtered by sport/city; detail shows map, contact, facilities; report/save work.",Must,2
 ```
 
@@ -74,7 +77,7 @@ P1,P1-E3: Search & Directories,Story,"Implement sports venue directory & detail 
 
 ```csv
 Phase,Epic,Issue Type,Summary,Description,Acceptance Criteria,Priority,Story Points
-P1,P1-E4: Save & Report,Story,"Implement saved/bookmarked items","Save from detail page (♡), saved items list (A25) grouped by type with tabs (All/Academies/Coaches/Trials/Tournaments/Scholarships/Sponsorships/Venues).","Save toggles; unsave removes; saved list shows correct items; tabs filter by type; empty state shown.",Must,3
+P1,P1-E4: Save & Report,Story,"Implement saved/bookmarked items","Save from detail page (♡), saved items list (A25) grouped by type with tabs (All/Academies/Coaches/Trials/Tournaments/Opportunities/Programs/Facilities/Venues).","Save toggles; unsave removes; saved list shows correct items; tabs filter by type; empty state shown.",Must,3
 P1,P1-E4: Save & Report,Story,"Implement report-a-listing modal","S10: reason radio (Fake/Scam, Outdated, Inappropriate, Other) + optional comment + Cancel/Submit.","Modal opens from detail page; submit calls API; success shows confirmation.",Must,2
 P1,P1-E4: Save & Report,Task,"Implement bottom navigation bar","Persistent bottom nav: Home, Search, Saved, Profile — renders on all primary athlete screens per T1.","Bar visible on all 4 primary tabs; active tab highlighted; tapping switches screen.",Must,1
 ```
@@ -106,14 +109,14 @@ P2,P2-E1: Enquiries,Story,"Build academy enquiry inbox","AC8/AC9: reuse T4/T4b t
 Phase,Epic,Issue Type,Summary,Description,Acceptance Criteria,Priority,Story Points
 P2,P2-E2: Registrations,Story,"Build trial registration form + confirmation","A14: form with auto-filled profile, document upload, payment note (info only). A15: confirmation screen with reg ID, add-to-calendar, reminder toggle.","Form validates required docs; upload works; submit creates registration; confirmation shows ref ID; reminder toggle persists.",Must,5
 P2,P2-E2: Registrations,Story,"Build tournament registration form","A18: category selection, team/individual toggle, team name input, personal details.","Category selector shows available categories with capacity info; submit creates registration; capacity enforced.",Must,5
-P2,P2-E2: Registrations,Story,"Build My Activity Hub","A24: tabs (Trials/Tournaments/Sponsorships) with status per item (Confirmed/Pending Review/Waitlisted).","Activity hub shows all registrations + applications; status badges correct; tapping item opens detail.",Must,3
+P2,P2-E2: Registrations,Story,"Build My Activity Hub","A24: tabs (Trials/Tournaments/Opportunities) with status per item (Confirmed/Pending Review/Waitlisted).","Activity hub shows all registrations + applications; status badges correct; tapping item opens detail.",Must,3
 ```
 
-### Epic P2-E3: Sponsorship Applications
+### Epic P2-E3: Opportunity Applications
 
 ```csv
 Phase,Epic,Issue Type,Summary,Description,Acceptance Criteria,Priority,Story Points
-P2,P2-E3: Sponsorship,Story,"Build apply/pitch to sponsor form","A23/T3: pitch note text box + profile auto-attach confirmation.","Pitch form on sponsorship detail; note required; submit creates application; visible in My Activity.",Must,3
+P2,P2-E3: Opportunities,Story,"Build apply/pitch to opportunity form","A23/T3: pitch note text box + profile auto-attach confirmation. Posts to /opportunities/{id}/applications.","Pitch form on opportunity detail; note required; submit creates opportunity_application; visible in My Activity.",Must,3
 ```
 
 ### Epic P2-E4: Academy Trial Management
@@ -137,15 +140,16 @@ P2,P2-E5: Organizer,Story,"Build capacity/spot management","O8: per-category cap
 P2,P2-E5: Organizer,Story,"Build results publishing + public view","O9: per-category winner/runner-up/3rd + bracket image upload. O10: public bracket/results view.","Results published; public view shows bracket image and podium list; results grouped by category.",Must,5
 ```
 
-### Epic P2-E6: Sponsor Management
+### Epic P2-E6: Opportunity & Provider Management (was Sponsor Management)
+
+> **[REMOVED in v3]** Sponsor onboarding/dashboard (SP1/SP2) retired — `sponsor` is no longer a role. The SP3–SP9 screens are reused by academy/organizer/coach/scout for unified `opportunities`.
 
 ```csv
 Phase,Epic,Issue Type,Summary,Description,Acceptance Criteria,Priority,Story Points
-P2,P2-E6: Sponsor,Story,"Build sponsor onboarding + dashboard","SP1: brand name, logo, category, verification docs. SP2: dashboard with listings count, new apps, post action.","Profile created; dashboard shows counts and recent applications.",Must,3
-P2,P2-E6: Sponsor,Story,"Build sponsorship listing CRUD + management list","SP3: create sponsorship listing. SP4: management list with status + applications count.","CRUD works; list shows all sponsorships; status badges correct.",Must,5
-P2,P2-E6: Sponsor,Story,"Build athlete discovery search + profile view","SP5: search athletes by sport, age, city, level. SP6: athlete profile view with achievements, media, shortlist/message actions.","Search returns matching athletes; profile view shows all info; Shortlist and Message buttons visible.",Must,5
-P2,P2-E6: Sponsor,Story,"Build sponsor applications inbox + detail","SP7: inbox list. SP8: application detail with pitch note, view full profile, shortlist/reject/reply actions.","Inbox shows applications; detail shows pitch; shortlist/reject updates status; reply opens thread.",Must,5
-P2,P2-E6: Sponsor,Story,"Build sponsor shortlist","SP9: shortlisted athletes with editable notes per entry.","Shortlist shows all shortlisted athletes; note can be added/edited; athletes can be removed.",Must,3
+P2,P2-E6: Provider Ops,Story,"Build opportunity CRUD + management list","SP3/SP4 reused: provider (academy/organizer/coach/scout) creates/edits/publishes unified `opportunities`; management list with status + applications count.","CRUD works for each provider role; list shows all opportunities; status badges correct.",Must,5
+P2,P2-E6: Provider Ops,Story,"Build athlete discovery search + profile view","SP5/SP6 reused: search athletes by sport, age, city, level; profile view with achievements, media, shortlist/connect actions.","Search returns matching athletes; profile view shows all info; Shortlist and Connect buttons visible.",Must,5
+P2,P2-E6: Provider Ops,Story,"Build opportunity applications inbox + detail","SP7/SP8 reused: inbox list; application detail with pitch, full profile, shortlist/decline/reply.","Inbox shows applications; shortlist/decline updates status; reply opens thread.",Must,5
+P2,P2-E6: Provider Ops,Story,"Build shortlist with notes","SP9 reused: shortlisted athletes with editable notes; scout/owner-keyed shortlist.","Shortlist shows all entries; note editable; entries removable.",Must,3
 ```
 
 ### Epic P2-E7: Talent Scout — Discovery & Connections
@@ -161,6 +165,45 @@ P2,P2-E7: Talent Scout,Story,"Build talent scout connection/enquiry","TS6: conne
 
 ---
 
+## Phase 2b — New v3 P0 Modules
+
+> New modules introduced by the v3 design delta. Sequence per `Backend-Feature-Delta.md` §9.
+
+### Epic P2-E8: Opportunities (unified)
+
+```csv
+Phase,Epic,Issue Type,Summary,Description,Acceptance Criteria,Priority,Story Points
+P2,P2-E8: Opportunities,Story,"Build unified opportunities backend + migration","New `opportunities` table (provider morph, type enum scholarship/sponsorship/tryout/camp, eligibility, benefits/amount, deadline, docs, status) + CRUD per role + public list/detail. Migrate `scholarships`/`sponsorships` rows.","Endpoints work for all providers; old rows migrated with legacy_type; `/me/opportunities` returns Applied/Saved/Created.",Must,8
+P2,P2-E8: Opportunities,Story,"Build opportunity applications + review","`opportunity_applications` (pitch, docs, profile snapshot, status machine). `GET /opportunities/{id}/applications`, `PATCH .../applications/{app}` (shortlist/decline + note).","Apply creates application with status; provider can shortlist/decline; athlete sees status in My Activity.",Must,5
+```
+
+### Epic P2-E9: Programs & Facilities
+
+```csv
+Phase,Epic,Issue Type,Summary,Description,Acceptance Criteria,Priority,Story Points
+P2,P2-E9: Programs & Facilities,Story,"Build programs (backend + screens)","Provider program CRUD + public listing + program enquiry (thread).","Program created/edited; listed publicly; enquiry opens chat thread.",Must,5
+P2,P2-E9: Programs & Facilities,Story,"Build facilities (backend + screens)","Academy facility CRUD + public listing.","Facility created/edited; listed on academy detail.",Must,3
+```
+
+### Epic P2-E10: Social, Network & Messaging
+
+```csv
+Phase,Epic,Issue Type,Summary,Description,Acceptance Criteria,Priority,Story Points
+P2,P2-E10: Social,Story,"Verify/build social core (posts/feed/likes/comments)","v3 P0. Verify existing posts/post_likes/post_comments tables first (see UI-Completion-And-Backend-Wiring-Plan.md). Feed, create post, like, comment.","Feed loads; post create works; like/comment persist; author resolved via user role.",Must,5
+P2,P2-E10: Social,Story,"Build follow / connect (network)","`follows` + `connection_requests`. Follow any profile; send/accept/decline connection.","Follow toggles; connection request/accept/decline works; counts update.",Must,5
+P2,P2-E10: Social,Story,"Build 1:1 chat (conversations + messages)","`conversations`, `conversation_participants`, `messages` (text P0; media P1). Inbox + thread + read receipts; 90-day purge default.","Conversation created from profile/opportunity; messages send/receive; unread counts; thread marks read.",Must,5
+P2,P2-E10: Social,Story,"Build blocks & reports","`blocks` + extended reports for posts/comments/users.","User can block another; blocked users cannot message/follow; report creates moderation entry.",Must,3
+```
+
+### Epic P2-E11: Leaderboard
+
+```csv
+Phase,Epic,Issue Type,Summary,Description,Acceptance Criteria,Priority,Story Points
+P2,P2-E11: Leaderboard,Story,"Build leaderboard points engine + API","`leaderboard_scores` (athlete, sport, points, season) + `leaderboard_seasons` + recalculation job on verified achievement / completion milestones / participation. `GET /leaderboard` with sport/location/age filters, podium + ranks 4-10.","Scores recalc on triggers; API returns podium + ranks; minors anonymized (first name + initial); season reset job works.",Must,8
+```
+
+---
+
 ## Phase 3 — Admin & Reminders
 
 ### Epic P3-E1: Admin Console
@@ -171,9 +214,12 @@ P3,P3-E1: Admin Console,Story,"Build admin login with 2FA","AD1: email + passwor
 P3,P3-E1: Admin Console,Story,"Build admin dashboard","AD2: counters for active listings, flagged items, pending expirations, new signups.","Dashboard shows correct counts from DB; counts update in real-time on refresh.",Must,2
 P3,P3-E1: Admin Console,Story,"Build content management (category picker + list + CRUD)","AD3: category picker with counts. AD4: content list with search/sort/filter. AD5: dynamic create/edit/delete form matching owner schema.","Picker shows 6 categories with counts; list paginates and filters; form changes all applicable fields; delete soft-removes.",Must,8
 P3,P3-E1: Admin Console,Story,"Build moderation queue + actions","AD6: reported listings queue (listing, reason, report count, time). AD7: moderation detail with approve/edit/remove/warn actions.","Queue shows pending reports; detail shows report info + listing; each action updates report + listing appropriately; owner notified on remove/warn.",Must,8
-P3,P3-E1: Admin Console,Story,"Build expiry rules configuration","AD8: per-content-type auto-expiry timing (trials after event date, tournaments after final date, sponsorships on deadline).","Rules saved; applied to listings on publish.",Must,3
+P3,P3-E1: Admin Console,Story,"Build expiry rules configuration","AD8: per-content-type auto-expiry timing (trials after event date, tournaments after final date, opportunities on deadline).","Rules saved; applied to listings on publish.",Must,3
 P3,P3-E1: Admin Console,Story,"Build expiry monitor","AD9: Pending/Expired/Overridden tabs; Override and Restore actions per event.","Monitor shows correct events per tab; Override keeps listing published; Restore re-activates expired listing.",Must,5
 P3,P3-E1: Admin Console,Story,"Build category management (sports/cities/age groups)","AD10/AD11/AD12: editable lists with add/edit/remove per master data type.","CRUD works for all 3 types; is_active toggle for soft removal; additions appear in filters.",Must,3
+P3,P3-E1: Admin Console,Story,"Build verification queue (AD.4)","v3 P0: list pending verification submissions by content type; approve grants verified badge, reject records reason.","Queue filters by type/status; approve sets badge; reject stores reason; applicant notified.",Must,5
+P3,P3-E1: Admin Console,Story,"Build user management (AD.3)","v3 P0: GET /admin/users (search + role/status filters), detail, suspend/ban (uses users.status), audit columns.","Search/filters work; suspend and ban update status; audit trail recorded.",Must,5
+P3,P3-E1: Admin Console,Story,"Extend admin content types + positions master + opportunity expiry","Add opportunities/programs/facilities/posts to content types; positions master (sport→position) CRUD; opportunity content type in expiry_rules + sweep.","New content types manageable; positions CRUD; opportunity expiry rules apply and appear in monitor.",Must,5
 ```
 
 ### Epic P3-E2: Reminders & Notifications
@@ -206,13 +252,13 @@ P4,P4-E1: Polish,Task,"Load testing","Simulate 1000+ concurrent users on key end
 
 | Phase | Stories | Tasks | Total |
 |---|---|---|---|
-| P0 Foundation | 7 | 1 | 8 |
+| P0 Foundation | 8 | 1 | 9 |
 | P1 Discovery | 20 | 2 | 22 |
-| P2 Actions | 23 | 0 | 23 |
-| P3 Admin + Reminders | 11 | 0 | 11 |
+| P2 Actions + v3 modules | 31 | 0 | 31 |
+| P3 Admin + Reminders | 14 | 0 | 14 |
 | P4 Polish | 3 | 4 | 7 |
-| **Total** | **64** | **7** | **71** |
+| **Total** | **76** | **7** | **83** |
 
 > Story points are directional estimates (1=trivial, 2=small, 3=medium, 5=large, 8=complex). Adjust based on team velocity.
 >
-> **Note:** Phase 1 and Phase 2 include Talent Scout (6th role) with 4 new stories in Phase 1 and 5 new stories in Phase 2.
+> **Note (v3):** `sponsor` role removed; `scout` added. Sponsor epic P2-E6 is repurposed to provider/opportunity management. New v3 P0 modules (opportunities, programs, facilities, social, follow/connect, chat, leaderboard, blocks/reports, verification queue, user management, positions) are tracked in P2-E8–E11 and P3-E1. See `Backend-Feature-Delta.md` §9 for build order.

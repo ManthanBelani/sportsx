@@ -1,12 +1,14 @@
 # System Flow — SportX India
 
+> **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
+
 End-to-end flows for the core user journeys. Sequence diagrams show actor ↔ Flutter app ↔ Laravel API ↔ DB/queue interactions; activity diagrams cover branching logic. All flows trace to screens in `SportX-India-Wireframes.md` and use cases in `Use-Cases.md`.
 
 ---
 
 ## 1. Auth & Onboarding
 
-### 1.1 Sign-Up with Email OTP (S2 → S3 → S4 → A1/A2 → A3)
+### 1.1 Sign-Up with Phone **or** Email OTP (S2 → S3 → S4 → A1/A2 → A3) — v3 P0
 
 ```mermaid
 sequenceDiagram
@@ -40,31 +42,33 @@ sequenceDiagram
 
 **Alternate paths**
 - Wrong/expired OTP → `POST /auth/resend-otp` re-issues (resend timer honored client-side per S4).
-- "Continue with Google" bypasses OTP; account verified at OAuth; `needs_onboarding=true` if no role profile exists yet.
-- Phone entered at sign-up → stored unverified; verification deferred (decision).
+- "Continue with Google" bypasses OTP; account verified at OAuth; `needs_onboarding=true` if no role profile exists yet. (v3: still deferred unless stakeholder promotes — see delta §8 D9.)
+- **v3:** Phone **or** email OTP is **P0** — SMS channel required at MVP (`otp_codes` re-added, rate-limited). Phone is no longer "deferred".
+- **v3 guardian consent:** minor sign-up requires a `guardian_consents` record before onboarding completes.
 
-### 1.2 Provider Onboarding (AC1 / C1 / O1 / SP1)
+### 1.2 Provider Onboarding (AC1 / C1 / O1 / SC1) — v3 (Sponsor removed, Scout added)
 
 ```mermaid
 sequenceDiagram
-    actor P as Provider (Coach/Academy/Organizer/Sponsor)
+    actor P as Provider (Coach/Academy/Organizer/Scout)
     participant F as Flutter App
     participant API as Laravel API
     participant DB as Database
     participant OBJ as Object Storage
 
-    Note over P,OBJ: Post OTP-verify; role screens C1/AC1/O1/SP1
+    Note over P,OBJ: Post OTP-verify; role screens C1/AC1/O1/SC1
     P->>F: Complete role onboarding form
-    alt Organizer or Sponsor
+    alt Organizer / Academy / Scout (verification docs)
         P->>F: Upload verification document(s)
         F->>API: POST /media/upload (multipart)
         API->>OBJ: Store file (disk=s3)
         API->>DB: media_items row (owner=profile placeholder)
+        API->>DB: verification_requests row (status=pending) — feeds admin AD.4 queue
     end
-    F->>API: POST /onboarding/{coach|academy|organizer|sponsor}
+    F->>API: POST /onboarding/{coach|academy|organizer|scout}
     API->>DB: Create role profile (listing_status=draft; verification_status=pending)
     API-->>F: 201 {profile}
-    F->>P: Role dashboard (C3/AC3/O2/SP2)
+    F->>P: Role dashboard (C3/AC3/O2/SC2)
 ```
 
 ---
@@ -197,46 +201,48 @@ sequenceDiagram
     N-->>A: Notifications Center entry (S9)
 ```
 
-> Sponsor flows (SP8 Reply, SP6 Message) reuse the same `enquiries`/`enquiry_messages` infrastructure with `subject_type = sponsorship_application` — see AS-04.
+> Provider flows (SP8 Reply, SP6 Message) reuse the same `enquiries`/`enquiry_messages` infrastructure with `subject_type = opportunity` / `opportunity_application` (**v3:** `sponsorship_application` → `opportunity`) — see AS-04.
 
 ---
 
-## 6. Sponsorship Application & Shortlist (A21–A23 + SP2–SP9)
+## 6. Opportunity Application & Provider Review (A19–A23 + SP2–SP9) — v3
+
+> **v3:** `sponsorships`/`scholarships` collapse into unified `opportunities`; applications become `opportunity_applications`. The reviewing actor is any **provider** (academy/organizer/coach/scout), not a `sponsor` role.
 
 ```mermaid
 sequenceDiagram
     actor A as Athlete
-    actor S as Sponsor
+    actor P as Provider (Academy/Organizer/Coach/Scout)
     participant F as Flutter App
     participant API as Laravel API
     participant DB as Database
 
-    A->>F: Sponsorship detail (A22) → Apply
+    A->>F: Opportunity detail (A20/A22) → Apply
     F->>A: Pitch form: note + profile auto-attach confirmed (T3)
     A->>F: Submit
-    F->>API: POST /sponsorships/{id}/applications {pitch_note}
-    API->>DB: sponsorship_applications (status=submitted; unique per sponsorship+athlete)
-    API-->>F: 201 → visible in My Activity (A24, Sponsorships tab)
+    F->>API: POST /opportunities/{id}/applications {pitch_note}
+    API->>DB: opportunity_applications (status=submitted; unique per opportunity+athlete)
+    API-->>F: 201 → visible in My Activity (A24, Opportunities tab)
 
-    S->>F: Dashboard (SP2) → Applications inbox (SP7)
-    F->>API: GET /me/applications
-    S->>F: Open application (SP8)
-    F->>API: GET /applications/{id}
+    P->>F: Dashboard (SP2) → Applications inbox (SP7)
+    F->>API: GET /me/opportunities?tab=created
+    P->>F: Open application (SP8)
+    F->>API: GET /opportunities/{id}/applications
     alt Shortlist
-        S->>F: Shortlist
-        F->>API: POST /applications/{id}/shortlist
-        API->>DB: application.status=shortlisted + upsert shortlist_entries
-    else Reject
-        S->>F: Reject
-        F->>API: POST /applications/{id}/reject
-        API->>DB: application.status=rejected
+        P->>F: Shortlist
+        F->>API: PATCH /opportunities/{id}/applications/{app} {status: shortlisted}
+        API->>DB: application.status=shortlisted + upsert shortlist entries
+    else Decline
+        P->>F: Decline
+        F->>API: PATCH /opportunities/{id}/applications/{app} {status: declined, note}
+        API->>DB: application.status=declined
     else Reply
-        S->>F: Reply → opens enquiry thread on this application
-        F->>API: POST /applications/{id}/reply {message}
-        API->>DB: enquiries(subject_type=sponsorship_application) + message
+        P->>F: Reply → opens chat/enquiry thread on this application
+        F->>API: POST /conversations (subject=opportunity_application) {message}
+        API->>DB: conversation + message
     end
 
-    S->>F: Shortlist screen (SP9) — grouped list + per-athlete note
+    P->>F: Shortlist screen (SP9) — grouped list + per-athlete note
     F->>API: PUT /me/shortlist/{entry} {note}
 ```
 
@@ -355,7 +361,7 @@ sequenceDiagram
 ```mermaid
 flowchart TD
     Sched([Scheduler — hourly, cadence TBD]) --> Rules[Load active expiry_rules per content_type]
-    Rules --> Find[Find published trials/tournaments/sponsorships/scholarships<br/>where expires_at <= now and no pending event]
+    Rules -->     Find[Find published trials/tournaments/opportunities<br/>where expires_at <= now and no pending event]
     Find --> CreateEv[Create expiry_events rows status=pending]
     CreateEv --> Execute[Execute due events: content.status = expired]
     Execute --> Mark[expiry_events.status=expired, executed_at=now]
@@ -381,7 +387,7 @@ sequenceDiagram
     participant NP as NotificationProvider (TBD)
     actor U as User
 
-    Note over DB: reminder_subscriptions created by:<br/>- Save action on trial/tournament/scholarship<br/>- Reminder toggle on A15 confirmation
+    Note over DB: reminder_subscriptions created by:<br/>- Save action on trial/tournament/opportunity<br/>- Reminder toggle on A15 confirmation
     S->>RS: dispatchDue() (scheduled)
     RS->>DB: SELECT * FROM reminder_subscriptions WHERE remind_at <= now AND sent_at IS NULL
     loop each subscription
@@ -393,3 +399,105 @@ sequenceDiagram
 ```
 
 *Reminder offset (how many days/hours before the date to remind) is unspecified in sources — **AS-05**; default candidate: T-2 days and T-1 day per S9 example copy ("in 2 days", "tomorrow").*
+
+---
+
+## 12. Social, Network, Messaging & Leaderboard — v3 P0
+
+> New in v3 (`Backend-Feature-Delta.md` §9 D7/M7/M8). Verify whether posts/chat tables already exist before building (see `UI-Completion-And-Backend-Wiring-Plan.md`).
+
+### 12.1 Post → Feed → Engagement (S.8, S.9)
+
+```mermaid
+sequenceDiagram
+    actor U as User (any role)
+    participant F as Flutter App
+    participant API as Laravel API
+    participant DB as Database
+    participant Q as Queue
+
+    U->>F: Create post (media optional)
+    F->>API: POST /posts {body, media_ids[]}
+    API->>DB: posts row (author_user_id; author morph via user role)
+    API->>Q: Fan-out to followers' feeds (if applicable)
+    API-->>F: 201
+
+    U->>F: Open feed (S.8)
+    F->>API: GET /feed
+    API->>DB: posts (followed authors + own) ordered by recency
+    API-->>F: paginated posts
+
+    U->>F: Like / comment
+    F->>API: POST /posts/{id}/like ; POST /posts/{id}/comments {body}
+    API->>DB: post_likes (unique user+post) ; post_comments row
+    API-->>F: 200
+```
+
+### 12.2 Follow / Connect (S.3, S.12–S.14)
+
+```mermaid
+sequenceDiagram
+    actor U as User
+    participant API as Laravel API
+    participant DB as Database
+    participant N as NotificationService
+
+    U->>API: POST /follows {followable_type, followable_id}
+    API->>DB: follows row (follower_user_id + followable morph: athlete/coach/academy/organizer/scout)
+    U->>API: POST /me/connections/request {user_id}
+    API->>DB: connection_requests (status=pending)
+    API->>N: notify recipient
+    N-->>U: connection accepted → connections row
+```
+
+### 12.3 1:1 Chat (S.17, S.18)
+
+```mermaid
+sequenceDiagram
+    actor A as User A
+    actor B as User B
+    participant API as Laravel API
+    participant DB as Database
+    participant N as NotificationService
+
+    A->>API: POST /conversations {recipient_id | subject}
+    API->>DB: conversations + conversation_participants rows
+    A->>API: POST /conversations/{id}/messages {body}
+    API->>DB: messages row (text P0; 90-day retention default)
+    API->>N: notify participant B
+    N-->>B: unread badge / push
+    B->>API: GET /conversations/{id}/messages
+    B->>API: PUT /conversations/{id}/read
+    Note over A,B: Blocked users cannot message (see 12.4)
+```
+
+### 12.4 Leaderboard (S.6, AT.1)
+
+```mermaid
+flowchart TD
+    Trig([Trigger: verified achievement / profile-completion milestone / event or post participation]) --> Recalc[Recalculate leaderboard_scores for athlete+sport+season]
+    Recalc --> API[GET /leaderboard?sport=&location=&age=]
+    API --> Podium[Podium + ranks 4-10]
+    API --> Anon[Minors anonymized: first name + initial]
+    Season[Scheduled season reset → new leaderboard_seasons row]
+```
+
+### 12.5 Blocks, Reports & Verification (S.23, S.26, AD.3/AD.4)
+
+```mermaid
+sequenceDiagram
+    actor U as User
+    actor Ad as Admin
+    participant API as Laravel API
+    participant DB as Database
+
+    U->>API: POST /blocks {user_id}
+    API->>DB: blocks row (enforced in messaging/follow)
+    U->>API: POST /reports {reportable_type, reportable_id, reason}
+    API->>DB: reports row (status=pending; feeds admin moderation)
+    Ad->>API: GET /admin/verification?type=&status=
+    Ad->>API: POST /admin/verification/{id}/approve  (or /reject)
+    API->>DB: verification_requests.status = approved (grants badge) | rejected (reason)
+    Ad->>API: POST /admin/users/{id}/suspend  (or /ban)
+    API->>DB: users.status = suspended | banned
+```
