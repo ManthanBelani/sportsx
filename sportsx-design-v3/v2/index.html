@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SportX v3.2 — New Design Review · 129 screens · 6 roles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css" />
+<style>
+.wrap{max-width:1200px;margin:0 auto;padding:28px 22px 60px}
+.hero{background:radial-gradient(circle at 85% 0%,#fff0aa 0,transparent 30%),#111;color:#fff;border-radius:22px;padding:38px 30px}
+.hero h1{font:800 clamp(26px,4vw,46px)/1.08 "Sora";letter-spacing:-1.5px;margin:12px 0}
+.hero h1 em{color:var(--yellow);font-style:normal}
+.hero p{color:#bbb;font-size:13px;max-width:640px;line-height:1.7}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.badges span{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:11px;font-weight:700;border-radius:99px;padding:7px 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:18px}
+.role-card{background:#fff;border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
+.role-card h2{font:800 17px "Sora";margin:0 0 2px}
+.role-card>p{font-size:11px;color:var(--secondary);margin:0 0 10px}
+.journey{font-size:11px;background:var(--yellow-soft);border:1px solid #f0e3b2;border-radius:10px;padding:8px 10px;margin-bottom:10px}
+.links{display:flex;flex-wrap:wrap;gap:6px}
+.links a{font-size:10px;font-weight:700;text-decoration:none;color:#2b2b2b;border:1px solid var(--border);border-radius:9px;padding:6px 9px;background:#fff}
+.links a:hover{border-color:var(--yellow-deep);background:var(--yellow-light)}
+.links a small{font-weight:500;color:var(--secondary)}
+.pri{font-size:8px;font-weight:800;border-radius:99px;padding:2px 6px;margin-left:4px}
+.p0{background:#dcfce7;color:#15803d}.p1{background:#e3efff;color:#1d4ed8}.p2{background:#f3f4f6;color:#6b7280}
+.sys{background:#fff;border:1px solid var(--border);border-radius:18px;padding:18px;margin-top:14px}
+.sys code{background:var(--surface);padding:2px 6px;border-radius:6px;font-size:11px}
+.mx{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px}
+.mx th,.mx td{border:1px solid var(--border);padding:7px 8px;text-align:left;vertical-align:top}
+.mx th{background:var(--surface);font-size:10px}
+.mx td.c{text-align:center;font-weight:800}
+.mx .y{color:#15803d}.mx .n{color:#ccc;font-weight:400}
+.mx small{color:var(--secondary)}
+</style>
+</head>
+<body style="background:#f4f5f7">
+<div class="wrap">
+<div class="hero">
+<div class="logo" style="color:#fff">Sport<span>X</span><i></i></div>
+<h1>New design, full MVP.<br><em>129 screens · 6 roles · one system.</em></h1>
+<p>Built from <code>new_design_docs/</code> (wireframes 01–06 + inventory + MVP list), styled with the v3 design system (<code>../styles.css</code> tokens: yellow gradient CTA, Sora + Inter, 430px phone, bottom nav, toasts). Click any screen to open it live in the <b>clickable prototype</b>.</p>
+<div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
+<a class="primary" style="text-decoration:none;color:#111" href="app.html">Open clickable prototype →</a>
+<a class="primary" style="text-decoration:none;color:#111;background:#fff" href="../index.html">← Back to v3 Phase-1</a>
+</div>
+<div class="badges"><span>94 × P0 MVP</span><span>25 × P1 MVP+</span><span>10 × P2 post-MVP</span><span>6 roles</span><span>12 user flows</span></div>
+</div>
+
+<div class="sys"><b>How to review (5 min):</b> ① pick a role below → ② open its <b>Home</b> → ③ follow the journey chips (onboard → discover → register/enquire → chat). Role switcher inside the prototype remembers your role. <b>Design system:</b> <code>--yellow #FFC107</code>, gradient <code>#FFD54A → #FFC107 → #F5B400</code>, <code>--ink #111</code>, radius 8–18/99, Sora + Inter, 430px <code>.phone</code>. No new colors introduced.</div>
+
+<div class="sys"><b>Common modules — build once, reuse everywhere.</b> <small style="color:var(--secondary)">In the prototype every screen carries a chip: <b>SHARED · ALL ROLES</b>, <b>EVENT MODULE</b>, or <b>ROLE ONLY</b>, so you can see reuse while clicking.</small>
+<table class="mx">
+<tr><th>Module</th><th>Screens</th><th class="c">Ath</th><th class="c">Coa</th><th class="c">Acd</th><th class="c">Org</th><th class="c">Sct</th><th>Reuse rule</th></tr>
+<tr><td><b>Auth core</b></td><td>A.1–A.5, A.10</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td><small>Identical for all. A.9 guardian only for U-18 athletes.</small></td></tr>
+<tr><td><b>Discovery</b></td><td>S.2–S.7</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td><small>Same shell; category tab pre-selected per role.</small></td></tr>
+<tr><td><b>Social + messaging</b></td><td>S.8–S.10, S.12, S.16–S.20, S.26–S.30</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td><small>S.8 tiles + S.15 rows adapt per role (adaptive, not identical).</small></td></tr>
+<tr><td><b>Profiles</b></td><td>D.1–D.5</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td><small>Own profile editable; Shortlist CTA on D.1 for scouts only.</small></td></tr>
+<tr><td><b>Transactions</b></td><td>D.6–D.13</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td><small>Same screens; primary CTA varies (Register / Enquire / Manage / Apply).</small></td></tr>
+<tr><td><b>Event module</b></td><td>OR.5–OR.8</td><td class="c n">–</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c n">–</td><td><small>One module, three owners. Coach use is P1.</small></td></tr>
+<tr><td><b>Program form</b></td><td>CO.5 + D.11</td><td class="c n">–</td><td class="c y">✓</td><td class="c y">✓</td><td class="c n">–</td><td class="c n">–</td><td><small>One form, two owners; athletes enquire via D.12.</small></td></tr>
+<tr><td><b>Trust & safety</b></td><td>A.10, S.22–S.26, AT.10</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td><small>Identical; minors get stricter defaults (AT.10).</small></td></tr>
+</table>
+<div style="font-size:11px;margin-top:10px"><b>Role-only (build per role):</b> <code>AT.*</code> athlete portfolio · <code>CO.*</code> coach workspace · <code>AC.*</code> academy ops · <code>OR.*</code> organizer lifecycle · <code>SC.*</code> scouting pipeline · <code>AD.*</code> admin console. <b>Flow additions in this pass:</b> wizard step pills (CO.1, AC.1, OR.5), empty states (S.5, S.20), user-detail actions (AD.3), labeled coach stats (D.2), tab deep-links (D.1–D.6, OR.6).</div></div>
+
+<div class="grid" id="roles"></div>
+
+<div class="sys"><b>Flows covered (§12 inventory):</b> 12.1 onboarding (A.1→A.2→A.3→A.4→guardian→wizard→home) · 12.2 discovery (S.2→S.5/S.4→S.3→D.x) · 12.3 trial registration (D.6→D.7→D.8→AT.9) · 12.4 scholarship apply (D.9→D.10→AT.8) · 12.5 portfolio (D.1→AT.6→AT.3/AT.4/S.11/S.10→A.10) · 12.7 connections &amp; chat (S.19→S.18, S.26/S.23) · 12.9 programs + enquiries (CO.4→CO.5→D.12→S.18) · 12.10 academy trials (AC.6→OR.5→OR.6→OR.7→OR.8) · 12.12 organizer lifecycle (OR.2→OR.5→OR.6→OR.7→OR.9→OR.11→OR.12) · 12.13 scouting (SC.4→SC.6/SC.10→SC.8→SC.5→SC.7→SC.13) · 12.14 report &amp; moderation · 12.15 admin verification &amp; content · 12.16 notification routing.</div>
+</div>
+<script>
+const G=(ids)=>ids.map(([id,t,p])=>'<a href="app.html#'+id.toLowerCase().replace(".","")+'">'+id+' <small>'+t+'</small><span class="pri '+p.toLowerCase()+'">'+p+'</span></a>').join("");
+const ROLES=[
+{t:"Athlete / Parent",s:"66 screens · P0 52",j:"Onboard (guardian if U-18) → profile → discover → register / apply / enquire → chat.",g:[["A.1","Splash","P0"],["A.2","Role select","P0"],["A.3","Sign up","P0"],["A.4","OTP","P0"],["A.9","Guardian consent","P0"],["AT.2","Preferences","P0"],["A.5","Login","P0"],["AT.1","Home","P0"],["D.1","Profile","P0"],["AT.6","Checklist","P0"],["AT.3","Edit profile","P0"],["AT.4","Sports","P0"],["AT.5","Achievements","P0"],["S.2","Explore","P0"],["S.3","Category list","P0"],["S.4","Filters","P0"],["D.6","Event detail","P0"],["D.7","Register","P0"],["D.9","Opportunity","P0"],["D.10","Apply","P0"],["D.3","Academy","P0"],["D.2","Coach","P0"],["D.11","Program","P0"],["D.12","Enquire","P0"],["S.8","Create","P0"],["S.9","Post","P0"],["S.17","Inbox","P0"],["S.18","Chat","P0"],["S.16","Notifications","P0"],["S.15","More","P0"],["S.22","Settings","P0"],["A.10","Verification","P0"]]},
+{t:"Coach",s:"59 screens · P0 47",j:"Onboard with credentials → publish programs → enquiries → chat → posts, events (P1).",g:[["CO.1","Setup","P0"],["CO.2","Home","P0"],["D.2","Profile","P0"],["CO.3","Edit","P0"],["CO.4","Programs","P0"],["CO.5","Program form","P0"],["D.11","Program detail","P0"],["OR.5","Event form","P0"],["OR.6","Manage","P0"],["OR.7","Registrations","P0"],["OR.8","Registrant","P0"],["CO.6","My events","P1"],["CO.7","Opportunities","P1"],["CO.8","Go live","P2"],["S.6","Leaderboard","P0"]]},
+{t:"Academy",s:"66 screens · P0 51",j:"Onboard listing → programs + facilities → trials → registrants → scholarships → enquiries.",g:[["AC.1","Setup","P0"],["AC.2","Home","P0"],["D.3","Profile","P0"],["AC.3","Edit","P0"],["AC.4","Programs","P0"],["D.11","Program","P0"],["AC.6","Events/Trials","P0"],["OR.5","Event form","P0"],["OR.6","Manage","P0"],["OR.7","Registrations","P0"],["OR.8","Registrant","P0"],["AC.7","Facilities","P0"],["AC.8","Facility form","P0"],["AC.9","Scholarships","P0"],["AC.5","Our athletes","P1"],["AC.10","Invite","P1"],["AC.11","Staff","P2"],["AC.12","Collabs","P2"]]},
+{t:"Event Organizer",s:"63 screens · P0 45",j:"Onboard → create event → publish → approve registrants → schedule → results → analytics.",g:[["OR.1","Setup","P0"],["OR.2","Home","P0"],["D.4","Profile","P0"],["OR.3","Edit","P0"],["OR.4","My events","P0"],["OR.5","Event form","P0"],["D.6","Detail","P0"],["OR.6","Manage","P0"],["OR.7","Registrations","P0"],["OR.8","Registrant","P0"],["OR.9","Schedule","P1"],["OR.10","Gallery","P1"],["OR.11","Results","P1"],["OR.14","Announce","P1"],["OR.12","Analytics","P1"],["OR.13","Venues","P1"],["OR.15","Promote","P2"],["OR.16","Team","P2"],["OR.17","Collabs","P2"]]},
+{t:"Talent Scout",s:"57 screens · P0 45",j:"Onboard → discover → shortlist + note → report → contact (guardian for minors) → scouting calls.",g:[["SC.1","Setup","P0"],["SC.2","Home","P0"],["D.5","Profile","P0"],["SC.3","Edit","P0"],["SC.4","Discover","P0"],["SC.6","Shortlist sheet","P0"],["SC.5","Shortlisted","P0"],["SC.10","Observation","P0"],["SC.13","Contact","P0"],["SC.11","Opportunities","P0"],["SC.12","Scouting call","P0"],["SC.8","Talent report","P1"],["SC.9","My reports","P1"],["SC.7","Compare","P1"]]},
+{t:"Admin (web)",s:"12 screens · P0 10",j:"Login 2FA → dashboard → verification → moderation → users → content → master + expiry.",g:[["AD.1","Login","P0"],["AD.2","Dashboard","P0"],["AD.4","Verification","P0"],["AD.7","Moderation","P0"],["AD.8","Mod. detail","P0"],["AD.3","Users","P0"],["AD.5","Content","P0"],["AD.6","Record edit","P0"],["AD.9","Master","P0"],["AD.10","Expiry","P0"],["AD.11","Points","P1"],["AD.12","Broadcast","P1"]]},
+{t:"Shared shell (all roles)",s:"S.1–S.30 · D.1–D.17",j:"Bottom nav Home/Explore/Create/Community/More · header search + bell + avatar · toasts + sticky CTAs.",g:[["S.2","Explore all","P0"],["S.3","Category","P0"],["S.4","Filter sheet","P0"],["S.5","Search","P0"],["S.6","Leaderboard","P0"],["S.7","Points info","P1"],["S.8","Create","P0"],["S.9","New post","P0"],["S.10","Upload media","P0"],["S.11","Achievement form","P0"],["S.27","Post detail","P0"],["S.28","Media viewer","P0"],["S.12","Network","P1"],["S.13","Groups","P2"],["S.19","Connections","P0"],["S.17","Inbox","P0"],["S.18","Chat","P0"],["S.16","Notifications","P0"],["S.20","Saved","P0"],["S.21","Activity","P1"],["S.26","Report sheet","P0"],["S.23","Blocked","P0"],["S.24","Help","P0"],["S.25","About","P0"],["S.29","Logout","P0"],["S.30","Share","P1"],["D.13","Facility","P0"],["D.14","Reviews","P1"],["D.15","Write review","P1"],["D.16","Map","P2"],["D.17","Team","P2"]]}
+];
+document.getElementById("roles").innerHTML=ROLES.map(r=>'<div class="role-card"><h2>'+r.t+'</h2><p>'+r.s+'</p><div class="journey">'+r.j+'</div><div class="links">'+G(r.g)+'</div></div>').join("");
+</script>
+</body>
+</html>
