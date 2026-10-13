@@ -185,6 +185,115 @@ Trackable checklist organized by phase and module. Maps to Jira ticket IDs in `J
 
 ---
 
+## Phase 3E — Platform Integrations (2026-10)
+
+> Three vendor decisions closed. Detailed specs: `Email-Provider-Architecture.md`, `Google-Authentication.md`, `FCM-Notification-System.md`.
+> **Closes:** AS-03a (email), AS-03c (push), D9 (Google sign-in). **Still open:** AS-60 (SMS vendor) — blocks `channel=phone` OTP only.
+
+### Email — dual SMTP + Gmail (`Email-Provider-Architecture.md`)
+
+**Backend**
+
+- [x] `MailProviderService` — provider resolution, `configuredChain()`, `status()`, `diagnostics()`, `testConnection()`
+- [x] `GmailApiTransport` — Gmail REST v1 `messages:send`; `user` + `service_account` auth modes; token cache with 60s margin
+- [x] Register `gmail-api` transport via `Mail::extend()`; resolve `mail.default` per request from `MailProviderService`
+- [x] `sportx_failover` mailer — chain filtered to configured providers
+- [x] `SportXMail` base mailable — `ShouldQueue`, `$tries = 3`, `$backoff = [10,30,90]`, deep-link helper, `failed()` logging
+- [x] Mailables: `EmailOtpMail`, `VerifyEmail` (**was never sent — now wired**), `PasswordResetMail`, `AccountApprovedMail`, `AccountRejectedMail`, `WelcomeMail`, `NotificationFallbackMail`
+- [x] Email views — `emails/layout.blade.php` (table-based, inline-styled) + 7 templates
+- [x] `admin/email-settings` controller — status / diagnostics / runtime switch / test / clear-token-cache
+- [x] Config `config/sportx.php → 'mail'`; `config/mail.php` gains the `gmail` mailer
+- [x] `.env.example` — `MAIL_PROVIDER`, `GMAIL_*`, `FRONTEND_URL`
+
+**Migration**
+
+- [ ] `php artisan migrate` — `2026_10_01_000002` (restore `otp_codes`)
+- [x] `OtpCode::$fillable` corrected — it listed legacy columns, so every write was silently discarded
+- [ ] Wire an **SMS driver** for `channel=phone` (AS-60) — **blocks phone signup**
+
+**Verification**
+
+- [ ] SPF / DKIM / DMARC published for the sending domain (SEC-26)
+- [ ] Both providers configured so failover has somewhere to fail over **to**
+- [ ] `POST /admin/email-settings/test` returns `ok: true` for **each** provider
+- [ ] OTP round-trip: `send-otp` → email received → `verify-otp` succeeds
+- [ ] Admin approve/reject each produce an email (previously silent)
+- [ ] Runtime switch: `POST /admin/email-settings/provider` takes effect without a redeploy
+
+### Google sign-in (`Google-Authentication.md`)
+
+**Backend**
+
+- [x] `social_accounts` migration — unique `(provider, provider_user_id)`; encrypted tokens; drops `users.google_id`
+- [x] `SocialAccount` model — `encrypted` casts, `$hidden` tokens, morph-map registration
+- [x] `GoogleAuthService::verifyIdToken()` — six checks: structure, `alg` pinned to RS256, JWKS signature (24h cache, refetch on unknown `kid`), `aud`, `exp` + 60s skew, `email_verified`
+- [x] Account resolution — known identity → sign in; verified email match → link; else create
+- [x] `pending` accounts linked but refused login (403 `PENDING_APPROVAL`) — the approval gate cannot be bypassed
+- [x] `role` on signup validated against `GOOGLE_ALLOWED_ROLES`
+- [x] `User` model — `google_id` removed from `$fillable` / `$hidden`
+- [x] Domain error codes documented in `API-Specification.md` §21
+
+**Migration**
+
+- [ ] `php artisan migrate` — `2026_10_01_000001`
+- [ ] Back-fill existing `users.google_id` values into `social_accounts` in production **before** dropping the column
+
+**Flutter**
+
+- [ ] Add `google_sign_in` to `pubspec.yaml` (**pin explicitly** — `^6.2.1`; v7 changes the API surface)
+- [ ] **Populate `oauth_client` in `google-services.json`** — it is currently empty, so Android gets no `serverClientId` and sign-in fails with `DEVELOPER_ERROR`
+- [ ] `serverClientId` in `android/app/build.gradle.kts`; `REVERSED_CLIENT_ID` + URL scheme in `Info.plist`
+- [ ] `AuthNotifier.signInWithGoogle()` — on success run the **same** post-login sequence as password login (persist token → `checkAuth()` → `_registerFcmToken()`)
+- [ ] "Continue with Google" button on Login + Sign Up, below the primary action with an "or" rule
+- [ ] Sign-up captures the **role** before the Google button (role drives approval routing)
+
+### FCM notifications (`FCM-Notification-System.md`)
+
+**Backend — correctness fixes (all previously broken)**
+
+- [x] `FCMService` — **`messages:send` per token**. The old code called `messages:sendMulticast`, which **does not exist in HTTP v1**; it 404'd and `responses[0]` was null, so every push silently reported success while delivering nothing
+- [x] Android `channel_id` per notification type — **without it Android 8+ silently drops every notification**
+- [x] APNs headers — `apns-priority`, `apns-push-type`, `apns-sound` (iOS alerts were silent in the background)
+- [x] `notification_prefs` honoured before dispatch (the column existed but **nothing ever read it**)
+- [x] `NotificationController::sendPushNotification()` read `$notification->message` — a column that does not exist — producing **empty push bodies**; now uses `toPushPayload()`
+- [x] Invalid-token handling — `UNREGISTERED` retires immediately; transient errors increment `failure_count` and retire only after 3 strikes (**never retire on the first transient failure**)
+- [x] `user_device_tokens` — unique `token` (de-dupe first), `last_seen_at`, `failure_count`
+- [x] `notifications` — `channel`, `category`, `image_url`, `priority`, `metadata`, `pushed_at`, `push_status`; `type` widened to `VARCHAR(40)`
+- [x] `NotificationService` — row first (source of truth), preference gate, hard overrides, email fallback on `no_devices`/`failed`
+- [x] `SendPushNotification` job — chunked (`FCM_BATCH_SIZE` 500), retries, backoff
+- [x] `PruneStaleDeviceTokensJob` + `PruneNotificationRowsJob` — scheduled daily
+- [x] New notification types wired to admin approve/reject (previously produced **no notification of any kind**)
+
+**API**
+
+- [x] `GET/PUT /me/notification-preferences`; `POST /me/device-tokens/subscribe`; `POST /me/device-tokens/test`
+- [x] `GET /admin/notifications/stats`
+
+**Flutter**
+
+- [ ] Add `flutter_local_notifications` (AS-72) — **without it, background delivery produces nothing visible**
+- [ ] Fix `main.dart` — `Firebase.initializeApp()` is called with **no `options:`**, so `DefaultFirebaseOptions` is unused and web/tests will fail
+- [ ] Android `POST_NOTIFICATIONS` declared in `AndroidManifest.xml` — `requestPermission()` is a silent no-op on Android 13+ without it
+- [ ] Android channel IDs must match the backend exactly (`sportx_default`, `sportx_enquiries`, `sportx_reminders`, `sportx_updates`, `sportx_announcements`)
+- [ ] Darwin settings — `presentAlert: true` for foreground
+- [ ] `getInitialMessage()` / `onMessageOpenedApp` → deep link via `action_url` + `category`
+
+**Launch blockers**
+
+- [ ] **Raise FCM quota** (AS-67) — default ≈ 10,000 sends/day
+- [ ] **Upload APNs auth key** (AS-68) — iOS release builds otherwise get no push
+
+**Verification**
+
+- [ ] Push reaches a real device on both platforms, foreground **and** background
+- [ ] Tapping a push deep-links to the right screen and re-authorizes server-side
+- [ ] `push_status` records `sent` in the admin stats after a test push
+- [ ] A user with no device token receives the **email fallback**
+- [ ] Disabling a category in Settings actually suppresses that push
+- [ ] Logout deactivates all of the user's device tokens
+
+---
+
 ## Phase 4 — Polish (Completed Items)
 
 - [x] Password change in Settings
@@ -384,7 +493,7 @@ Trackable checklist organized by phase and module. Maps to Jira ticket IDs in `J
 ### Deferred to Phase 7
 | Item | Status |
 |------|--------|
-| Google OAuth | Pending (P1 / confirm D9) |
+| ~~Google OAuth~~ | **✅ DONE (P0)** — `Google-Authentication.md`; AS-64 / D9 CLOSED. Remaining: Flutter `google_sign_in` wiring + `oauth_client` |
 | Auto waitlist promotion | Pending |
 | Load testing | Pending |
 
@@ -402,6 +511,9 @@ Trackable checklist organized by phase and module. Maps to Jira ticket IDs in `J
 | Discovery (`/me/home`, `/explore`) + athlete search | Pending |
 | Profiles 30 fields + scout onboarding | Pending |
 | Notifications matrix + jobs + policies | Pending |
+| **Email — dual SMTP + Gmail** | **✅ DONE (backend)** — `Email-Provider-Architecture.md`; AS-59/AS-03a CLOSED |
+| **Google sign-in** | **✅ DONE (backend)** — `Google-Authentication.md`; AS-64/D9 CLOSED. Flutter wiring pending |
+| **FCM push + in-app + email fallback** | **✅ DONE (backend)** — `FCM-Notification-System.md`; AS-03c CLOSED. Local-notification display + quota/APNs pending |
 
 ---
 
@@ -417,4 +529,7 @@ Trackable checklist organized by phase and module. Maps to Jira ticket IDs in `J
 | `docs/Production-Backend-Plan.md` | Production hardening, OAuth, monitoring |
 | `sportsx-design-v1/` | Legacy 78 HTML design files (mobile + admin) |
 | `docs/Admin-Panel-Implementation-Prompt.md` | Admin web panel specs |
+| `docs/Email-Provider-Architecture.md` | **Dual transactional email (SMTP + Gmail API), runtime switchable** |
+| `docs/Google-Authentication.md` | **"Continue with Google" — ID-token sign-in, verification and account linking** |
+| `docs/FCM-Notification-System.md` | **Notification system — in-app + FCM push + email fallback, device tokens, preferences** |
 | `docs/Mobile-Architecture.md` | Flutter architecture |

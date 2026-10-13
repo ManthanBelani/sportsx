@@ -4,7 +4,17 @@
 
 How the Flutter mobile app and Laravel backend connect: API contracts, auth flow, error handling, third-party integrations.
 
-> **Scope:** Payments are **excluded** from MVP (stakeholder decision). Third-party integrations are limited to: OTP delivery (**phone + email — P0**, vendor TBD), push notifications (vendor TBD), Google OAuth, object storage, and a map preview embed. All undecided vendors are abstracted behind interfaces.
+> **Scope:** Payments are **excluded** from MVP (stakeholder decision). Third-party integrations are limited to: OTP delivery (**phone + email — P0**), transactional email, push notifications, Google sign-in, object storage, and a map preview embed.
+>
+> **✅ Three vendor decisions now CLOSED (2026-10).** §6.1–6.3 and §7 below are superseded by dedicated documents:
+>
+> | Concern | Was | Now |
+> |---|---|---|
+> | Email delivery | abstract `OtpProvider`, vendor TBD | **`Email-Provider-Architecture.md`** — dual SMTP + Gmail API, runtime switchable (AS-03a closed) |
+> | Google sign-in | Socialite, deferred P1 | **`Google-Authentication.md`** — ID-token verification, P0 (D9 closed) |
+> | Push notifications | abstract `NotificationProvider`, vendor TBD | **`FCM-Notification-System.md`** — FCM HTTP v1 + in-app + email fallback (AS-03c closed) |
+>
+> **Still open:** the **SMS/phone OTP vendor** (AS-03b) remains unselected, which blocks `channel=phone` on `POST /auth/send-otp`.
 >
 > **Role model:** `athlete`, `coach`, `academy`, `organizer`, `scout`, `admin`. The `sponsor` role is **REMOVED** (sponsorship is now an `opportunities.type`); `scout` is added.
 
@@ -210,34 +220,41 @@ Flutter                                    Laravel API                    Object
 
 ## 6. Third-Party Integrations (Current & Placeholder)
 
-### 6.1 Google OAuth (S3 — "Continue with Google")
+### 6.1 Google OAuth (S3 — "Continue with Google") — **[SUPERSEDED by `Google-Authentication.md`]**
 
 | Aspect | Detail |
 |---|---|
-| SDK | `google_sign_in` Flutter plugin + Laravel Socialite |
-| Flow | Flutter gets Google ID token → sends to backend → backend verifies via Socialite → finds/creates user |
+| SDK | `google_sign_in` Flutter plugin + `google/auth` on the backend. **Socialite is not used** — the flow is native-mobile → backend, so a server-side OAuth redirect would add a browser hop the app does not need |
+| Flow | Flutter gets a Google **ID token** → `POST /auth/google` → backend verifies signature (JWKS), `aud`, `exp`, `email_verified` → finds/creates/links the user |
 | Scope | `email`, `profile` (read-only) |
-| Data stored | `google_id` on `users` table; email and name from Google account |
+| Data stored | **`social_accounts` join table** (replaces the prototype `users.google_id`) — see `Database-Design.md` §1 |
+| Status | **P0 — D9 CLOSED.** Full contract, account-resolution rules and the six verification checks are in `Google-Authentication.md`. |
 
-### 6.2 OTP Provider (abstract) — phone + email, P0
-
-| Aspect | Detail |
-|---|---|
-| Interface | `App\Services\OtpProvider` — `send(destination, code, channel): bool` |
-| Channels | **email and phone (SMS)** — OTP for both is P0 (D1/D5) |
-| Dev default | `LogOtpProvider` — writes to Laravel log |
-| Production swap | Bind implementation in `AppServiceProvider` when vendor chosen |
-| Candidates | MSG91, Twilio (SMS); Amazon SES, SendGrid, Postmark (email) — **SMS vendor selection is now blocking (AS-03)** |
-
-### 6.3 Push Notification Provider (abstract)
+### 6.2 OTP Provider — phone + email, P0 — **[EMAIL BUILT, SMS OPEN]**
 
 | Aspect | Detail |
 |---|---|
-| Interface | `App\Services\NotificationProvider` — `push(user, payload): void` |
-| Dev default | `DatabaseNotificationProvider` — writes to `notifications` table only |
-| Production swap | Bind implementation when vendor chosen |
-| Candidates | Firebase Cloud Messaging, OneSignal, Pusher Beams (none committed — AS-03) |
-| Flutter side | `flutter_local_notifications` for in-app display; FCM plugin when vendor selected |
+| Interface | `App\Services\OtpService` — `generateAndSend()`, `verify()`, `resend()` |
+| Channels | **email** ✅ built · **phone (SMS)** ⚠️ blocked on **AS-03b** |
+| Email transport | Active provider from **`Email-Provider-Architecture.md`** — SMTP **or** Gmail API, switchable at runtime. A user is never locked to one vendor |
+| Phone transport | Not selected. `otp_codes.channel` is already an enum admitting `phone`, so adding it is config-only |
+| Cooldown / attempts | 60s resend cooldown, 5 attempts max, 10-minute expiry — enforced at the endpoint **and** at the mailable |
+| Storage | bcrypt `code_hash`; plaintext exists only in the outbound message |
+| Dev default | `MAIL_MAILER=log` renders the mail to the log, so OTP is inspectable without a provider |
+| Candidates (SMS) | MSG91, Twilio — selection still blocking |
+
+### 6.3 Push Notification Provider — **[SUPERSEDED by `FCM-Notification-System.md`]**
+
+| Aspect | Detail |
+|---|---|
+| Provider | **Firebase Cloud Messaging HTTP v1** — committed. AS-03c CLOSED |
+| Interface | `App\Services\FCMService` — `sendPushNotification()`, `sendToTopic()`, `deactivateTokens()` |
+| Channels | in-app (DB row, source of truth) + FCM push + email fallback |
+| Auth | `google/auth` service account → `firebase.messaging` scope; access token cached |
+| Device registry | `user_device_tokens`, **`token` UNIQUE**; TTL pruning; invalid-token retirement |
+| Preferences | `users.notification_prefs` honoured before dispatch; account/registration decisions are hard overrides |
+| Flutter side | `firebase_messaging` (present) + `flutter_local_notifications` (**to add**) for system-tray display |
+| Quota | ≈ 10,000 `messages.send`/day on the default quota — **a large broadcast needs a quota increase (AS-67)** |
 
 ### 6.4 Object Storage (media files)
 
@@ -259,23 +276,68 @@ Flutter                                    Laravel API                    Object
 
 ---
 
-## 7. Notification Delivery Pipeline
+## 7. Notification Delivery Pipeline — **[SUPERSEDED by `FCM-Notification-System.md`]**
+
+> The abstract-provider pipeline below has been replaced by a concrete three-channel system. The **database row is written first and is the source of truth**; the FCM payload and the email fallback are both derived from it, which is what guarantees the notification centre and the push tray cannot disagree.
 
 ```
-Trigger (event/listener)
+Trigger (event / listener / controller)
   │
   ▼
-NotificationService::send(user, NotificationDto)
+NotificationService::send(user, type, title, body, …)
   │
-  ├─► INSERT notifications row (DB channel — always)
+  ├─► 1. INSERT notifications row            ← ALWAYS, transactionally
+  │        push_status = 'queued'
   │
-  └─► NotificationProvider::push(user, payload)  (vendor — when selected)
-        │
-        ▼
-      FCM / other → user's device
+  ├─► 2. dispatch NotificationCreated
+  │        └─► SendPushNotificationListener
+  │              ├─ read users.notification_prefs   ← honour opt-outs
+  │              ├─ hard overrides (account_action,
+  │              │   registration_*) always deliver
+  │              ├─ load active device tokens
+  │              └─► SendPushNotification job
+  │                    ├─ FCM messages:send per token
+  │                    ├─ Android channel_id by type
+  │                    ├─ APNs headers (priority/push-type/sound)
+  │                    └─ retire tokens FCM reports dead
+  │
+  └─► 3. on push_status ∈ { no_devices, failed }
+           └─► NotificationFallbackMail
+                 (delivered via SMTP or Gmail — see
+                  Email-Provider-Architecture.md)
 ```
 
-**Deep linking:** Notifications carry `notifiable_type` + `notifiable_id`. Flutter uses these to navigate to the relevant screen (e.g. tap enquiry reply notification → open thread). The `notifications.type` enum is extended for the new design: `reminder`, `enquiry_reply`, `status_update`, `follow`, `connection_request`, `connection_accepted`, `message`, `enquiry`, `registration_decision`, `verification_result`, `mention`, `broadcast`, `opportunity_deadline`.
+**Deep linking:** notifications carry `notifiable_type` + `notifiable_id`, plus `action_url` and `category`. Flutter uses these to route to the relevant screen (tap an enquiry reply → open the thread).
+
+> **A push payload is routing metadata, never an authorization grant.** `action_url: /registrations/9` in a push body grants no access; the tapped screen re-checks ownership server-side.
+
+**Full detail** — type vocabulary, channel mapping, Android channel IDs, token lifecycle, preference resolution, API contract, Flutter setup, monitoring and the list of gaps closed: **`FCM-Notification-System.md`**.
+
+---
+
+## 7A. Email Delivery Pipeline — **[NEW — `Email-Provider-Architecture.md`]**
+
+```
+Trigger (OTP / verify-email / approval / rejection / push fallback)
+  │
+  ▼
+Mail::to(...)->queue(new SomeSportXMail(...))        [ 'mail' queue ]
+  │
+  ▼
+MailProviderService::activeMailer()        ← resolved at SEND time,
+  │                                          so a runtime switch
+  │                                          affects queued mail too
+  ├─► sportx_failover (default ON)  ──►  [1] gmail  → Gmail REST API
+  │                                   [2] smtp   → ESMTP/STARTTLS
+  │                                   [3] log    → never drop silently
+  └─► direct provider (failover OFF)
+```
+
+**Provider selection order:** `platform_settings.json` override (admin panel) → `MAIL_PROVIDER` env → `smtp`.
+
+**Why two providers:** Google Workspace accounts with enforced 2FA reject app-password logins over SMTP, so the Gmail REST API (OAuth2) is the only option for them. Consumer Gmail SMTP is capped at 500 sends/day, far below what a national broadcast needs. Having both configured means an ops team is never locked into one vendor.
+
+**Failure handling:** every mailable implements `ShouldQueue` with `$tries = 3` and `$backoff = [10, 30, 90]`; terminal failures are logged with the mailable, provider and recipients. Full catalogue, template rules and a troubleshooting runbook: **`Email-Provider-Architecture.md`**.
 
 ---
 
@@ -299,14 +361,48 @@ This is documented as **AS-33** in `Glossary-and-Assumptions.md`.
 | Env | Flutter `.env` | Laravel `.env` |
 |---|---|---|
 | `API_BASE_URL` | `https://api.sportx.dev/api/v1` | — |
-| `GOOGLE_CLIENT_ID` | iOS/Android OAuth client ID | — |
-| `GOOGLE_CLIENT_SECRET` | — | Laravel Socialite |
 | `DB_*` | — | MySQL credentials |
 | `AWS_*` / `S3_*` | — | Object storage |
-| `OTP_PROVIDER` | — | `log` (dev) / `sms91` (prod) |
-| `PUSH_PROVIDER` | — | `database` (dev) / `fcm` (prod) |
-| `FCM_SERVER_KEY` | — | FCM push (when selected) |
+| `FRONTEND_URL` | — | Root for deep links inside every email |
 | `SANCTUM_TOKEN_LIFETIME` | — | Minutes (default 525600 = 1 year) |
+
+**Google sign-in** — `Google-Authentication.md` §12
+
+| Env | Where | Purpose |
+|---|---|---|
+| `GOOGLE_CLIENT_ID` | both | Android/iOS/Web client ID; also the `aud` the backend pins to |
+| `GOOGLE_CLIENT_SECRET` | Laravel | Web client secret (device clients have none) |
+| `GOOGLE_REDIRECT_URI` | Laravel | OAuth consent redirect |
+| `GOOGLE_WORKSPACE_HD` | Laravel | *(optional)* restrict sign-in to one Workspace domain |
+| `GOOGLE_ALLOW_SIGNUP` | Laravel | `true` (default) = unknown identity creates an account |
+| `GOOGLE_DEFAULT_ROLE` | Laravel | Role used when signup does not specify one (`athlete`) |
+| `GOOGLE_ALLOWED_ROLES` | Laravel | **Allow-list** that `role` on signup is validated against |
+
+**Email delivery** — `Email-Provider-Architecture.md` §8
+
+| Env | Purpose |
+|---|---|
+| `MAIL_PROVIDER` | `smtp` (default) or `gmail` |
+| `MAIL_FAILOVER_ENABLED` | Wrap the provider chain in a failover transport (default `true`) |
+| `MAIL_HOST` / `MAIL_PORT` / `MAIL_SCHEME` / `MAIL_USERNAME` / `MAIL_PASSWORD` | SMTP relay |
+| `MAIL_FROM_ADDRESS` / `MAIL_FROM_NAME` | Global sender |
+| `GMAIL_AUTH_MODE` | `user` (refresh token) or `service_account` (domain-wide delegation) |
+| `GMAIL_CLIENT_ID` / `GMAIL_CLIENT_SECRET` / `GMAIL_REFRESH_TOKEN` | Gmail API — user mode |
+| `GMAIL_SERVICE_ACCOUNT_EMAIL` / `GMAIL_PRIVATE_KEY` / `GMAIL_IMPERSONATE_USER` | Gmail API — service-account mode |
+| `MAIL_TEST_RECIPIENT` | Default recipient for admin connection tests |
+
+**Push notifications** — `FCM-Notification-System.md` §4
+
+| Env | Purpose |
+|---|---|
+| `FCM_PROJECT_ID` | Firebase project |
+| `FCM_CREDENTIALS_PATH` | Path to the service-account JSON key |
+| `FCM_ENABLED` / `FCM_DRY_RUN` / `FCM_TIMEOUT` | Feature flags |
+| `FCM_BATCH_SIZE` / `FCM_MAX_RETRIES` | Tokens per queued job (500) / failures before retirement (3) |
+| `FCM_DEFAULT_CHANNEL_ID` | Android fallback channel (`sportx_default`) |
+| `FCM_TOPIC_BROADCAST` | Broadcast topic name (`sportx_broadcast`) |
+| `DEVICE_TOKEN_TTL_DAYS` | Days of inactivity before a token is pruned (120) |
+| `NOTIFICATION_RETENTION_DAYS` | Inbox retention (180) |
 
 ---
 
@@ -314,7 +410,11 @@ This is documented as **AS-33** in `Glossary-and-Assumptions.md`.
 
 - All API communication over HTTPS (TLS 1.2+).
 - Sanctum tokens hashed in DB (Laravel default — SHA-256).
-- OTP codes stored hashed (never plaintext) — `code_hash` column.
+- OTP codes stored hashed (never plaintext, **bcrypt**) — `code_hash` column.
+- Google ID tokens verified server-side (RS256 pinned, `aud` checked, `email_verified` required) — `Google-Authentication.md` §5.
+- Google OAuth tokens encrypted at rest (`encrypted` cast) and excluded from every API response.
+- Email provider credentials are environment-only; no secret is reachable through any API response.
+- FCM device tokens are per-user and never accepted as an addressable identifier; a push payload is routing metadata, not an authorization grant.
 - Passwords: bcrypt with Laravel default cost (10 rounds).
 - Media files: server-side validation (type + size); storage ACL per sensitivity.
 - 2FA secrets: encrypted at rest (Laravel's encrypt()).

@@ -8,6 +8,8 @@ Backend class/model structure for the **Laravel** application: Eloquent models, 
 >
 > **New-design deltas applied here:** `sponsor` role removed (→ `opportunities`); `scout` role + `TalentScoutProfile` added; OTP + guardian consent; social feed / network / messaging classes; leaderboard classes; profiles extended to 30 fields. Removed classes are marked **[REMOVED]**.
 
+> **Platform integrations (2026-10):** `MailProviderService`, `GmailApiTransport`, `SportXMail`, `GoogleAuthService`, `SocialAccount`, `FCMService`, `SendPushNotification`, `SendPushNotificationListener`, `NotificationCreated`, `PruneStaleDeviceTokensJob`, `PruneNotificationRowsJob` added; `Notification` extended with FCM columns. See `Email-Provider-Architecture.md`, `Google-Authentication.md`, `FCM-Notification-System.md`.
+
 ---
 
 ## 1. High-Level Layer Diagram
@@ -797,6 +799,43 @@ classDiagram
         +verify(user, code, purpose): bool
         +resend(user, purpose): void
     }
+    class MailProviderService {
+        <<EMAIL-PROVIDER-ARCHITECTURE.md>>
+        +activeProvider(): string
+        +activeMailer(): string
+        +configuredChain(): array
+        +isConfigured(provider): bool
+        +setActiveProvider(provider): string
+        +status(): array
+        +diagnostics(): array
+        +testConnection(provider, recipient): array
+        +clearTokenCache(): void
+    }
+    class GoogleAuthService {
+        <<GOOGLE-AUTHENTICATION.md>>
+        +verifyIdToken(idToken): GoogleProfile
+        +resolveAccount(profile, requestedRole): User
+        +linkIdentity(user, profile): SocialAccount
+    }
+    class FCMService {
+        <<FCM-NOTIFICATION-SYSTEM.md>>
+        +isEnabled(): bool
+        +sendPushNotification(tokens, title, body, data): array
+        +sendToTopic(topic, title, body, data): array
+        +deactivateTokens(invalidTokens): int
+        -getAccessToken(): string
+    }
+    class GmailApiTransport {
+        <<Symfony AbstractTransport>>
+        +send(RawMessage): SentMessage
+        +probe(): array
+        +accessToken(): string
+    }
+    class SportXMail {
+        <<abstract Mailable, ShouldQueue>>
+        +failed(Throwable): void
+        -deepLink(path, query): string
+    }
     class GuardianConsentService {
         +request(athlete, guardian): GuardianConsent
         +verify(consent, otp): void
@@ -922,6 +961,23 @@ classDiagram
     }
     class SendOtpJob { +handle(OtpService) }
     class PurgeExpiredOtpsJob { +handle() }
+    class SendPushNotification {
+        <<queue: push>>
+        -deviceTokens: array
+        -title: string
+        -body: string
+        -data: array
+        +handle(FCMService): void
+        +failed(Throwable): void
+    }
+    class PruneStaleDeviceTokensJob { <<scheduled daily>> +handle() }
+    class PruneNotificationRowsJob { <<scheduled daily>> +handle() }
+    class NotificationCreated { <<event>> +notification: Notification }
+    class SendPushNotificationListener {
+        +handle(NotificationCreated): void
+        <<reads notification_prefs; honours hard overrides;
+          loads active device tokens; dispatches SendPushNotification>>
+    }
     class RecalculateLeaderboardJob { <<on triggers + nightly rebuild>> +handle(LeaderboardService) }
     class ResetLeaderboardSeasonJob { <<scheduled / admin>> +handle(LeaderboardService) }
     class BroadcastNotificationJob { <<P1>> +handle(NotificationService) }
@@ -951,10 +1007,33 @@ classDiagram
     class SmsOtpProvider { +send() }
     class DatabaseNotificationProvider { +push() }
 
+    class SocialAccount {
+        <<NEW — Google-Authentication.md>>
+        +user(): BelongsTo
+        +isGoogle(): bool
+        +scopeGoogle(q)
+        -accessToken: encrypted
+        -refreshToken: encrypted
+    }
+    class Notification {
+        <<EXTENDED — FCM-Notification-System.md>>
+        +channel: string
+        +category: string
+        +priority: string
+        +push_status: string
+        +pushed_at: datetime
+        +markAsRead(): bool
+        +toPushPayload(): array
+    }
+
     OtpProvider <|.. LogOtpProvider : default dev driver
-    OtpProvider <|.. SmsOtpProvider : prod (vendor TBD — AS-03)
+    OtpProvider <|.. SmsOtpProvider : prod (vendor TBD — AS-60 OPEN)
 ```
-- Provider interfaces are injected via Laravel container; vendor selection (SMS/push) is deferred (decision → AS-03), but **phone + email OTP is P0** so an SMS driver must be selected.
+
+- **Email** (`MailProviderService`) resolves to one of two concrete transports at runtime: the framework's `smtp` driver, or `GmailApiTransport` (the Gmail REST API). Wrapped in a `sportx_failover` mailer by default. Selection order: `platform_settings.json` override → `MAIL_PROVIDER` env → `smtp`.
+- **Push** has exactly one provider (FCM HTTP v1) and therefore no interface — `FCMService` is the single seam, and it is the only place the FCM REST call is made. An interface over a single implementation would be indirection without benefit.
+- **`Notification` is the source of truth.** The in-app inbox reads the row directly; the FCM payload is derived from it via `toPushPayload()`. That is what prevents the notification centre and the push tray from disagreeing.
+- **Still open:** the **SMS** driver for `channel=phone` OTP (AS-60). `OtpCode::$fillable` already accommodates it, so this is config-only.
 
 ---
 

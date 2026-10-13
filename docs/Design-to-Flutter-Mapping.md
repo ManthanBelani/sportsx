@@ -2,6 +2,8 @@
 
 > **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
 
+> **Platform integrations (2026-10):** A.3/A.5 gain a "Continue with Google" button; A.4's OTP is currently a stub; two rows added for the notification-preferences screen and the shared Google button. See `Google-Authentication.md` §10 (Flutter) and `FCM-Notification-System.md` §8.
+
 Maps each design screen to the equivalent Flutter screen in `sportx_app/lib/`.
 
 > **⚠️ [SUPERSEDED — see Backend-Feature-Delta.md].** The old mapping below referenced `sportsx/src/screens/` (TypeScript prototype, **90 screens incl. Sponsor**). The v3 source of truth is `sportsx-design-v3/new_design_docs/SCREEN_INVENTORY.md` (**129 screens, 6 roles; sponsor removed**), with new modules for feed/posts, follow/connect, chat, leaderboard, opportunities, programs, facilities, verification and guardian consent. **§v3 (below) is authoritative**; old tables are kept for history.
@@ -16,9 +18,9 @@ Maps each design screen to the equivalent Flutter screen in `sportx_app/lib/`.
 |---|---|---|---|
 | A.1 Splash | splash | `auth/.../splash_screen.dart` | ✅ |
 | A.2 Role Selection | 5 roles | `auth/.../role_selection_screen.dart` | ⚠️ (remove Sponsor card) |
-| A.3 Sign Up | phone/email | `auth/.../sign_up_screen.dart` | ⚠️ (add OTP channel) |
-| A.4 OTP Verification | OTP + resend | `auth/.../otp_screen.dart` | 🆕 (wire `/auth/send-otp`,`/verify-otp`,`/resend-otp`) |
-| A.5 Login | password/OTP | `auth/.../login_screen.dart` | ⚠️ |
+| A.3 Sign Up | phone/email | `auth/.../sign_up_screen.dart` | ⚠️ (add OTP channel; **+ "Continue with Google"**) |
+| A.4 OTP Verification | OTP + resend | `auth/.../otp_screen.dart` | 🆕 (wire `/auth/send-otp`,`/verify-otp`,`/resend-otp`; `verifyOtp`/`resendOtp` are currently **stubs that only set an error**) |
+| A.5 Login | password/OTP | `auth/.../login_screen.dart` | ⚠️ (**+ "Continue with Google"**; "Forgot Password?" currently has an **empty `onPressed`**) |
 | A.6 Forgot/Reset | OTP reset | `auth/.../forgot_password_screen.dart` | 🆕 |
 | A.7 Language · A.8 Permissions | locale/permissions | `settings/...`, `onboarding/...` | 🆕 |
 | A.9 Guardian Consent | minors | `guardian/.../guardian_consent_screen.dart` | 🆕 |
@@ -39,6 +41,8 @@ Maps each design screen to the equivalent Flutter screen in `sportx_app/lib/`.
 | S.20 Saved | bookmarks | `saved/.../saved_screen.dart` | ✅/⚠️ |
 | S.21 My Activity | own feed | `activity/.../activity_hub_screen.dart` | ✅ |
 | S.22–S.26 Settings/Safety/Help/About/Report | settings+safety | `settings/...`, `reports/.../report_sheet.dart` | 🆕/⚠️ |
+| — Notification Preferences | push/email per category | `settings/.../notification_preferences_screen.dart` | 🆕 (`GET/PUT /me/notification-preferences`) |
+| — Google Sign-In Button | "Continue with Google" | shared `auth/.../widgets/google_sign_in_button.dart` | 🆕 (add `google_sign_in`, wire `signInWithGoogle()`) |
 | S.27 Post Detail · S.28 Media Viewer | post/media | `feed/.../post_detail_screen.dart`, `.../media_viewer_screen.dart` | 🆕 |
 | S.29 Logout · S.30 Share/Deep link | share | `settings/...`, `share/.../share_sheet.dart` | 🆕 |
 | D.1–D.5 Athlete/Coach/Academy/Organizer/Scout profiles | profiles | `directory/.../detail_page_template.dart` + per-role | ⚠️ partial (Organizer/Scout new) |

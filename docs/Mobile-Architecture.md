@@ -6,6 +6,8 @@ Flutter app architecture: folder structure, state management, navigation, key pa
 
 > **⚠️ [SUPERSEDED screen reference — see Backend-Feature-Delta.md].** The v1.1 inventory (**63 screens**) referenced below is replaced by `sportsx-design-v3/new_design_docs/SCREEN_INVENTORY.md` (**129 screens, 6 roles: Athlete/Parent, Coach, Academy, Organizer, Talent Scout, Admin**; sponsor removed). New modules — social feed, network/messaging, opportunities, programs, leaderboard — are added in §6.
 
+> **Platform integrations (2026-10):** §4A (Google sign-in), §4B (FCM services + known bugs) and §4C (notification preferences) added. See `Google-Authentication.md`, `FCM-Notification-System.md`.
+
 > **Design System Reference:** All UI must follow `SportX_India_Design_System.md` from the Figma HTML reference (`/sportsx/src/imports/SportX_Design_System.md`).
 >
 > **Key Design Rules:**
@@ -284,6 +286,110 @@ Auth redirect logic: authenticated → redirect to `/home`, unauthenticated → 
 | `share_plus` | Share listing |
 | `shimmer` | Loading skeleton placeholders |
 | `intl` | Date formatting |
+| **`firebase_core`** | Firebase bootstrap (already present) |
+| **`firebase_messaging`** | FCM push — token registration, foreground/background handlers, deep-link routing |
+| **`google_sign_in`** ␂ | "Continue with Google" — native account picker → ID token (`Google-Authentication.md`) |
+| **`flutter_local_notifications`** ␂ | System-tray display for background push — **without it, background delivery is invisible** (AS-72) |
+
+> **Platform-integration packages.** ␂ = add. `firebase_core` and `firebase_messaging` are already in `pubspec.yaml`; `google_sign_in` and `flutter_local_notifications` are not.
+
+---
+
+## 4A. Auth Services (Google sign-in) — **[NEW]**
+
+> Full contract: `Google-Authentication.md`. This section covers the Flutter side only.
+
+```dart
+// auth/.../providers/auth_provider.dart — alongside login() and register()
+class AuthNotifier {
+  Future<void> signInWithGoogle({String? role}) async {
+    // 1. Native account picker
+    final account = await GoogleSignIn(
+      clientId: Platform.isIOS
+          ? DefaultFirebaseOptions.currentPlatform.iosClientId
+          : null,
+      scopes: ['email', 'profile'],
+    ).signIn();
+
+    final idToken = account.authentication.idToken;
+    if (idToken == null) throw ApiException('Google sign-in returned no token');
+
+    // 2. Exchange with the backend — the backend verifies, never the client
+    final res = await dio.post('/auth/google', data: {
+      'id_token': idToken,
+      if (role != null) 'role': role,
+    });
+
+    // 3. SAME post-login sequence as password login — persist the token,
+    //    call checkAuth(), and register the FCM token so push attaches
+    //    to the new session.
+    await storage.saveToken(res.data['token']);
+    await checkAuth();
+    await _registerFcmToken();
+  }
+}
+```
+
+| Platform | Requirement |
+|---|---|
+| Android | `serverClientId` in `build.gradle.kts`. **Requires a populated `oauth_client` in `google-services.json`** — it is currently empty, so Android sign-in fails with `DEVELOPER_ERROR` even though the app otherwise works |
+| iOS | `REVERSED_CLIENT_ID` in `Info.plist` + the URL scheme from `CFBundleURLSchemes` |
+| Both | Package name / bundle ID must match the OAuth client's authorised application exactly |
+
+> **Pin `google_sign_in` explicitly.** `^7+` changes the API surface; do not rely on a caret range spanning the major bump.
+>
+> **Web caveat.** The plugin does not support the Firebase Auth path on web; Flutter web falls back to the password flow. The API is provider-agnostic, so enabling Google on web later needs no backend change.
+
+---
+
+## 4B. Notification Services (FCM) — **[NEW]**
+
+> Full contract: `FCM-Notification-System.md`. `PushNotificationService` already exists and registers tokens; this section lists what is still missing.
+
+| Scenario | Behaviour |
+|---|---|
+| Cold start | `getInitialMessage()` → deep link to the referenced screen |
+| Foreground | `onMessage` → `flutter_local_notifications` + provider refresh + SnackBar |
+| Background | `@pragma('vm:entry-point')` handler → `LocalNotifications` in the system tray |
+| Tap (background) | `getInitialMessage()` → deep link |
+| Tap (foreground) | `onMessageOpenedApp` → deep link |
+| Token refresh | `onTokenRefresh` → `POST /me/device-tokens` (idempotent upsert) |
+
+**Registration** runs post-frame from `main.dart`: `requestPermission(alert: true, badge: true, sound: true)` then register the token. `AuthNotifier` re-registers after login and unregisters on logout, so a token always belongs to the current session.
+
+### Known bugs to fix
+
+| # | Bug | Impact |
+|---|---|---|
+| 1 | `main.dart` calls `Firebase.initializeApp()` with **no `options:`** | `DefaultFirebaseOptions` is never used; web and tests fail |
+| 2 | Foreground handler shows a SnackBar but **no system notification** | A backgrounded-but-not-terminated app produces nothing visible |
+| 3 | `POST_NOTIFICATIONS` not declared in `AndroidManifest.xml` | `requestPermission()` is a **silent no-op on Android 13+** — the single most common cause of "works on 12, not 13" |
+| 4 | Android channel IDs not aligned with the backend | A mismatch means the notification is silently dropped |
+
+Android channel IDs **must match** the backend exactly: `sportx_default`, `sportx_enquiries`, `sportx_reminders`, `sportx_updates`, `sportx_announcements`.
+
+### Deep links
+
+The push payload carries `action_url` and `category`. A tap routes through `go_router` using the app's `navigatorKey`.
+
+> **A push payload is routing metadata, never an authorization grant.** The tapped screen must re-fetch the resource and let the API re-check ownership — never assume the payload proved access.
+
+---
+
+## 4C. Notification Preferences UI
+
+Backed by `GET/PUT /me/notification-preferences`. Toggles map to `users.notification_prefs`:
+
+| Toggle | Effect |
+|---|---|
+| Push notifications (master) | All FCM |
+| Enquiries | `category=enquiry` |
+| Reminders | `category=reminder` |
+| Updates & approvals | `category=status_update`, `registrations` |
+| Announcements | `category=broadcast` |
+| Email fallback | `email.default` — **off by default** |
+
+Account actions and registration decisions are **hard overrides**: they always deliver in-app and cannot be switched off. The UI should mark those rows as non-disableable rather than showing a toggle that silently does nothing.
 
 ---
 

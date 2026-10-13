@@ -2,6 +2,8 @@
 
 > **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
 
+> **Platform integrations (2026-10):** **AS-59 … AS-72** register the email-provider, Google sign-in and FCM notification decisions, and supersede **AS-03** (vendor selection) and **D9** (Google sign-in scope). Detailed rationale: `Email-Provider-Architecture.md`, `Google-Authentication.md`, `FCM-Notification-System.md`.
+
 Domain-specific definitions and a consolidated list of every assumption made across the documentation set. If something is not explicitly stated in the source documents but is treated as settled in the docs, it appears here with an ID for traceability.
 
 ---
@@ -37,6 +39,20 @@ Domain-specific definitions and a consolidated list of every assumption made acr
 | **Verification Request** | A user/provider request for a blue-check badge (ID + organisation proof), approved or rejected by an admin. |
 | **Expiry** | Automatic status change (published → expired) triggered by configurable rules after an event date, final date, or deadline passes. Admin can override or restore. |
 | **Reminder** | A notification sent to a user as a saved trial/tournament/opportunity date or deadline approaches. Triggered by a scheduled job based on reminder subscriptions. |
+| **Transactional Email** | Any account-critical email SportX sends: OTP, email verification, password reset, account approval/rejection, welcome, and push-failure fallback. Delivered over one of **two providers** — `smtp` (any relay) or `gmail` (Gmail REST API over OAuth2) — chosen at runtime. See `Email-Provider-Architecture.md`. |
+| **Email Provider** | The transport used to deliver transactional email. Two are configured in parallel and one is active; failover moves to the next on failure. **Independent** of Google *sign-in* — the two share no credentials and can fail separately. |
+| **Gmail API Transport** | A custom Laravel mail transport (`gmail-api`) that sends via the Gmail REST v1 `messages.send` endpoint using an OAuth2 access token. Auth modes: `user` (refresh token) and `service_account` (domain-wide delegation). Required for Google Workspace accounts that enforce 2FA. |
+| **Failover Chain** | The ordered list of providers tried when a send fails — default `gmail → smtp → log`. Filtered at runtime to providers that actually have credentials, so a half-configured provider is skipped rather than tried. |
+| **Google Sign-In** | Signing in with a Google **ID token** issued to the mobile app and verified server-side (RS256 signature, `aud`, `exp`, `email_verified`) against Google's published JWKS. Does not use Socialite and never involves a browser redirect. See `Google-Authentication.md`. |
+| **ID Token** | A signed JWT from Google asserting a user's identity, issued for a specific `audience`. Self-verifying — it carries a verified email with no need to call a userinfo endpoint. Preferred over an access token for authentication. |
+| **Social Account** | A row in `social_accounts` linking a SportX user to a third-party identity, keyed on `(provider, provider_user_id)`. Replaces the prototype `users.google_id` column and makes Apple Sign In a no-migration addition. |
+| **`sub` claim** | Google's stable opaque per-account identifier. Used as the identity key rather than email, because consumer Gmail addresses are not unique (`a.b@gmail.com` ≠ `ab@gmail.com`) and addresses are mutable. |
+| **FCM** | Firebase Cloud Messaging — the push transport. SportX uses the **HTTP v1** API, which authenticates with a service account and sends one HTTP request per token (there is **no multicast endpoint** in v1). See `FCM-Notification-System.md`. |
+| **Device Token** | An FCM registration token identifying one installed app instance. Stored in `user_device_tokens` under a **unique** constraint. Retired on `UNREGISTERED`, after repeated transient failures, on logout, or after a TTL of inactivity. |
+| **`push_status`** | Per-notification delivery state: `queued`, `sent`, `partial`, `failed`, `no_devices`. This is what makes the email fallback safe — without it, a retry would send a duplicate fallback to users who already got the push. |
+| **Notification Channel (Android)** | An Android 8+ `NotificationChannel` grouping notifications the user can tune independently. SportX maps notification *types* to channels (`sportx_enquiries`, `sportx_reminders`, `sportx_updates`, `sportx_announcements`). Omitting `channel_id` causes Android to silently drop the notification. |
+| **Notification Preferences** | Per-user, per-channel and per-category opt-outs stored in `users.notification_prefs` and honoured before any push is dispatched. **Hard overrides** (account actions, registration decisions) always deliver in-app regardless. |
+| **Push Fallback (email)** | A `NotificationFallbackMail` sent when push cannot be delivered at all (`push_status` of `no_devices` or `failed`), so a user with no FCM registration still receives the news. |
 | **Report** | A user's flag on a listing, post, profile, or chat (reason: fake, outdated, inappropriate, spam, harassment, other) that enters the admin moderation queue. |
 | **Block** | A user action that hides content both ways and disables chat between the two accounts. |
 | **Master Data** | Admin-managed reference lists: sports, cities/states, age groups, positions. Used across all filters and forms. |
@@ -60,7 +76,10 @@ Every assumption across the documentation set is listed here with an ID, descrip
 |---|---|---|---|---|
 | **AS-01** | One role per account; there are **6 login roles** (athlete, coach, academy, organizer, scout, admin). A person who is both a coach and an athlete needs two separate accounts. Multi-role accounts are **parked (P2)**. Generalized Providers are directory profiles, not roles. | ER-Diagram.md | **Superseded** (v3: 6 roles) | ER, DB, API, Auth |
 | **AS-02** | Database engine: MySQL 8 / MariaDB 10.6+ (PostgreSQL compatible with minor type changes). | Database-Design.md | Derived | DB, Backend |
-| **AS-03** | OTP/email delivery provider and push notification provider are **undecided**. Abstract `OtpProvider` and `NotificationProvider` interfaces used. Default dev implementations: LogOtpProvider, DatabaseNotificationProvider. | Stakeholder decision | Open | Backend, Integration, Security, Class |
+| **AS-03** | OTP/email delivery provider and push notification provider are **undecided**. Abstract `OtpProvider` and `NotificationProvider` interfaces used. Default dev implementations: LogOtpProvider, DatabaseNotificationProvider. | Stakeholder decision | **Partially closed** — see sub-items below | Backend, Integration, Security, Class |
+|  └─ AS-03a | ↳ *email* delivery provider | Stakeholder decision | **CLOSED** → **AS-59** (dual SMTP + Gmail API) |
+|  └─ AS-03b | ↳ *SMS/phone* OTP provider | Stakeholder decision | **OPEN** → tracked as **AS-60** |
+|  ├─ AS-03c | ↳ *push* notification provider | Stakeholder decision | **CLOSED** — FCM HTTP v1 (see `FCM-Notification-System.md`) |
 | **AS-04** | **[SUPERSEDED — see Backend-Feature-Delta.md]** Sponsor "Message" (SP6) and application "Reply" (SP8) reused the enquiry/thread infrastructure. In v3, provider↔athlete messaging uses the unified **conversation/chat** system, and opportunity applications use the opportunity application model. | Functional-Requirements.md FR-ENQ-3 | **Superseded** | ER, DB, API, System-Flow |
 | **AS-05** | Reminder offset (how many days before the event to remind) is unspecified. Default: T-2 days and T-1 day (matching S9 wireframe copy "in 2 days" and "tomorrow"). Configurable in `config/sportx.php`. | System-Flow.md | Derived | Backend, Integration |
 | **AS-06** | Multi-value attributes (e.g. `facilities`, `required_documents`, `certifications`) stored as JSON arrays on the parent table for MVP simplicity. Not normalized into separate tables. | ER-Diagram.md conventions | Derived | ER, DB |
@@ -117,6 +136,27 @@ Every assumption across the documentation set is listed here with an ID, descrip
 | **AS-57** | **New P0 areas** added: social feed/posts/likes/comments, follow/connect, 1:1 chat, leaderboard, unified opportunities, programs, facilities, verification queue, admin user management, blocks/reports. | Backend-Feature-Delta.md §9 | Accepted | All docs |
 | **AS-58** | **Parked (P2):** payments, boosts, groups, polls, live streaming, map view, multi-role, teams, staff recruiting. | Backend-Feature-Delta.md §10 | Accepted | Roadmap, All docs |
 
+### Platform-integration assumptions (2026-10 — email, Google sign-in, FCM)
+
+> Three vendor decisions that were open under **AS-03** are now **CLOSED**. IDs continue from AS-58. See `Email-Provider-Architecture.md`, `Google-Authentication.md`, `FCM-Notification-System.md`.
+
+| ID | Assumption | Source / Raised In | Status | Affected Documents |
+|---|---|---|---|---|
+| **AS-59** | **Transactional email is delivered over one of two providers — `smtp` or `gmail` (Gmail REST API, OAuth2) — configured in parallel and switchable at runtime from the admin panel.** Both are always available; the active one is chosen by `platform_settings.json` → `MAIL_PROVIDER` env → `smtp`. | `Email-Provider-Architecture.md` §1 | **Accepted** (closes AS-03a) | Backend, API, Security, Mobile |
+| **AS-60** | **The SMS/phone OTP vendor is still unselected**, so `POST /auth/send-otp` with `channel=phone` is blocked. `channel=email` is fully built. `otp_codes.channel` already admits `phone`, so selecting a vendor is config-only. | `Email-Provider-Architecture.md` §14 | **Open** — launch blocker for phone signup | Backend, API, Roadmap |
+| **AS-61** | **Admin broadcast currently shares the transactional mail pool.** A dedicated bulk sender should be split out before large campaigns. | `Email-Provider-Architecture.md` §14 | Open | Backend, Admin |
+| **AS-62** | **Bounce / complaint webhooks** (SES, Mailgun, Postmark) are not integrated. Would feed suppression lists into `users.notification_prefs`. | `Email-Provider-Architecture.md` §14 | Open | Backend |
+| **AS-63** | **Scheduled email campaigns are out of MVP scope.** Instant broadcasts only. | `Email-Provider-Architecture.md` §14 | Parked (P2) | Admin |
+| **AS-64** | **"Continue with Google" is P0**, using a server-verified **ID token**. **`users.google_id` is replaced by the `social_accounts` join table**, keyed on Google's stable `sub` claim rather than email. Socialite is **not** used. | `Google-Authentication.md` §1 | **Accepted** (closes D9 / AS-03) | All docs |
+| **AS-65** | **Cross-provider linking is out of scope.** An unknown Google identity auto-links only to an account whose matching email is *already verified*; explicit linking with password re-confirmation would be safer but adds a step. | `Google-Authentication.md` §13 | Open | API, Mobile |
+| **AS-66** | **Google People API / contact import is out of scope** — consent-heavy with no MVP requirement. | `Google-Authentication.md` §13 | Parked (P2) | Mobile |
+| **AS-67** | **FCM quota is the default ≈ 10,000 `messages.send`/day.** A broadcast to more users than the quota allows will fail; a quota increase must be requested before launch. | `FCM-Notification-System.md` §4.4 | **Open — launch blocker for large broadcasts** | Security, Backend |
+| **AS-68** | **APNs provisioning is outstanding** — iOS dev builds receive push; production/release builds need an APNs auth key uploaded to Firebase. | `FCM-Notification-System.md` §13 | **Open — blocks iOS release push** | Mobile |
+| **AS-69** | **The legacy `device_tokens` table and `DeviceToken` model should be removed.** They have no readers; `user_device_tokens` / `UserDeviceToken` is authoritative. Removing them ends a standing ambiguity. | `FCM-Notification-System.md` §13 | Open | DB, Backend |
+| **AS-70** | **Per-sport FCM topics are schema-supported but not built.** Subscription UX not designed. | `FCM-Notification-System.md` §13 | Partial | Backend, Mobile |
+| **AS-71** | **Notification digest ("3 new updates today") instead of per-event pushes** would reduce fatigue and quota burn on low-priority types. | `FCM-Notification-System.md` §13 | Open | Backend, Mobile |
+| **AS-72** | **`flutter_local_notifications` system-tray display is outstanding.** Without it, background delivery produces nothing visible on the device. | `FCM-Notification-System.md` §8 | **Open — blocks visible background push** | Mobile |
+
 ### Assumptions from PRD (decisions confirmed by stakeholder)
 
 | PRD ID | Description | Status |
@@ -136,7 +176,7 @@ Every assumption across the documentation set is listed here with an ID, descrip
 | Decision | Options Considered | Chosen | Reason |
 |---|---|---|---|
 | Payments in MVP | Razorpay UPI/cards, External link only, Generic gateway placeholder | **Excluded entirely** | Stakeholder wants to defer payment complexity |
-| Notification/OTP vendor | Firebase FCM + MSG91, FCM only + email OTP, Undecided placeholders | **Undecided placeholders** | Stakeholder wants to defer vendor selection |
+| Notification/OTP vendor | Firebase FCM + MSG91, FCM only + email OTP, Undecided placeholders | **✅ CLOSED (2026-10):** push = FCM HTTP v1; email = SMTP **or** Gmail API (switchable). **⚠️ SMS vendor still open (AS-60)** | Three of four vendors resolved. FCM chosen for push because both mobile platforms ship first-party FCM SDKs. Email kept two providers because Workspace 2FA makes SMTP unusable and consumer Gmail caps at 500/day. SMS still open. See `Email-Provider-Architecture.md`, `FCM-Notification-System.md`. |
 | Admin build phase | Full docs later phase, Phase 1, Exclude from MVP | **Full docs; P0 slice (users + verification) in MVP** | Stakeholder wants admin documented but not blocking core flows |
 | Primary auth channel | Phone SMS OTP, Email OTP first, Both equally supported | **Phone OR Email OTP (both P0)** | v3 decision (D1); user chooses at signup |
 | Sponsor role | Keep Sponsor, Replace with Scout, Fold into opportunities | **Remove Sponsor; Talent Scout first-class** | v3 decision (D2) |
@@ -144,6 +184,8 @@ Every assumption across the documentation set is listed here with an ID, descrip
 | Flutter state management | Riverpod, BLoC, Provider, GetX | **Riverpod** (recommended) | Best fit for the project's complexity and code-gen approach |
 | Flutter navigation | go_router, auto_route, Navigator 2.0 | **go_router** (recommended) | Declarative, deep link support |
 | Flutter HTTP client | Dio, http, chopper | **Dio** (recommended) | Interceptor ecosystem, mature |
+| Google sign-in implementation | Socialite (server redirect), `google/auth` direct ID-token verification, Firebase Auth on the client | **`google/auth` direct ID-token verification** | The flow is native-mobile → backend, so a server-side OAuth redirect adds a browser hop the app does not need. Direct verification keeps the `aud` check explicit and auditable, and lets `pending` accounts be refused login rather than silently signed in. See `Google-Authentication.md`. |
+| Email transport | SMTP only, Gmail API only, Both configured with a runtime switch | **Both, switchable at runtime** | Workspace accounts with enforced 2FA reject app-password logins, so SMTP alone can be unusable; consumer Gmail SMTP caps at 500/day. Having both means an ops team is never locked into one vendor. See `Email-Provider-Architecture.md`. |
 
 ---
 
@@ -151,8 +193,12 @@ Every assumption across the documentation set is listed here with an ID, descrip
 
 | # | Item | Urgency | Relevant Assumption(s) |
 |---|---|---|---|
-| 1 | **Select SMS/OTP vendor** (MSG91, Twilio, etc.) for production | Before Phase 3 (reminders need delivery) | AS-03 |
-| 2 | **Select push notification vendor** (FCM, OneSignal, etc.) | Before Phase 3 | AS-03 |
+| 1 | **Select SMS/OTP vendor** (MSG91, Twilio, etc.) for production — **email OTP is done; only `channel=phone` is blocked** | **Before launch** (blocks phone signup) | AS-60 |
+| 2 | ~~Select push notification vendor~~ **RESOLVED: Firebase Cloud Messaging HTTP v1** | — | AS-67, AS-68 |
+| 2a | **Raise FCM quota** above the expected broadcast volume | **Before launch — blocker** | AS-67 |
+| 2b | **Upload APNs auth key to Firebase** for iOS release builds | **Before iOS release** | AS-68 |
+| 2c | **Configure Gmail OAuth credentials** (SMTP *and* Gmail both configured so failover works) | Before launch | AS-59 |
+| 2d | **Add `google_sign_in` + populate `oauth_client` in `google-services.json`** | Before release | AS-64 |
 | 3 | ~~**Confirm minors' data handling**~~ **RESOLVED (v3):** guardian consent + restricted defaults + leaderboard anonymisation. Remaining legal sign-off on consent copy. | Before launch (legal review) | AS-34 |
 | 4 | **Select map preview implementation** — static image vs interactive map SDK | Before Phase 1 (affects detail page template) | AS-31, AS-32 |
 | 5 | **Specify launch cities** for initial seed data | Before Phase 1 (data seeding) | AS-14 |

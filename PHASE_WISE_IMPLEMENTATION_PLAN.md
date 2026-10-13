@@ -4,14 +4,25 @@
 > `PRD.md` §8 · `Phased-Roadmap.md` (v3 delta) · `Backend-Feature-Delta.md` §9 build order + §11 endpoint catalog ·
 > `Functional-Requirements.md` · `Database-Design.md` · `API-Specification.md` ·
 > `Implementation-Execution-Plan.md` · `Development-Checklist.md` Phase 8 · `Jira-Tickets.md` ·
-> `Talent-Scout-Implementation-Guide.md` · `UI-Completion-And-Backend-Wiring-Plan.md`
+> `Talent-Scout-Implementation-Guide.md` · `UI-Completion-And-Backend-Wiring-Plan.md` ·
+> **`Email-Provider-Architecture.md` · `Google-Authentication.md` · `FCM-Notification-System.md`**
 >
-> **Canonical rules (v3):**
+> **Canonical rules (v3 + platform integrations):**
 > - Roles = `athlete, coach, academy, organizer, scout, admin`. `sponsor` REMOVED (sponsorship = `opportunities.type`).
-> - Auth = phone **OR** email + 6-digit OTP (P0, resend timer) + password login kept. Google = deferred (P1).
+> - Auth = phone **OR** email + 6-digit OTP (P0, resend timer) + password login kept. **Google sign-in = P0 and built** (D9 CLOSED, AS-64).
+> - **Email = delivered over one of two providers — `smtp` or `gmail` (Gmail REST API, OAuth2)** — both configured, switchable at runtime from the admin panel (AS-59).
+> - **Push = FCM HTTP v1**, with in-app as the source of truth and **email as the push-failure fallback channel** (AS-03c closed).
 > - Guardian consent mandatory for <18 (P0). Verification request + admin queue + user mgmt = P0.
 > - No in-app payments (parked P2). Map view parked. Multi-role accounts parked.
 > - New P0 modules: opportunities, programs, facilities, social feed, follow/connect, 1-to-1 chat, blocks/reports, leaderboard, positions master, opportunity expiry.
+
+**Status legend:** `[ ]` not started · `[x]` implemented in the working tree. Items marked `[x]` for the platform integrations are **backend code only** — the four `2026_10_01_*` migrations, the Flutter wiring, and the credential/config steps have **not** been done. See Phase 3E.
+
+> **⚠️ Launch blockers introduced by Phase 3E** — none of these are code tasks, and all of them block a production release:
+> 1. **FCM quota** — default ≈ 10,000 `messages.send`/day; a broadcast larger than that fails silently (AS-67).
+> 2. **APNs auth key** — iOS release builds receive no push without it (AS-68).
+> 3. **`php artisan migrate`** — the OTP restore and the `notifications.type` widening both require it.
+> 4. **SMS vendor still unselected** — blocks `channel=phone` OTP, and therefore phone signup entirely (AS-60).
 
 **How to use:** build phases in order. Each phase lists Backend (Laravel `sportx-api`), Mobile (Flutter `sportx_app`), Admin, and ✅ Exit criteria (demo/test). Check boxes as you go.
 
@@ -25,10 +36,18 @@
 ### Backend (`sportx-api`)
 - [ ] Laravel 11 scaffold: `composer create-project`, `.env`, `config/sportx.php`, CORS (Flutter origin), Sanctum, `/api/v1` prefix
 - [ ] Migrations (all tables per `Database-Design.md` order): users, all profile tables, sports/cities/age_groups/positions, trials/tournaments/categories/registrations/results, opportunities, programs/facilities, posts/likes/comments, follows/connection_requests, conversations/messages, blocks, saved, reports, verification_requests, guardian_consents, leaderboard, notifications/reminders, expiry rules, media
+- [ ] **Platform-integration migrations (`Database-Design.md` §17 step 18 — run in this order):**
+  - [ ] `2026_10_01_000001` `social_accounts` (unique `(provider, provider_user_id)`, encrypted tokens) + **drops `users.google_id`** → *back-fill existing Google links first in production*
+  - [ ] `2026_10_01_000002` **restores `otp_codes`** (a prior migration dropped it while `OtpService`/`OtpCode`/`PurgeExpiredOtpsJob` still targeted it)
+  - [ ] `2026_10_01_000003` `notifications` push columns (`channel`, `category`, `image_url`, `priority`, `metadata`, `pushed_at`, `push_status`) + **widens `type` from `enum(3)` to `VARCHAR(40)`**
+  - [ ] `2026_10_01_000004` `user_device_tokens` — **unique `token`** (de-dupe existing rows first) + `last_seen_at` + `failure_count`
+- [ ] `.env.example`: `MAIL_PROVIDER`, `MAIL_FAILOVER_ENABLED`, `MAIL_*`, `GMAIL_*`, `FRONTEND_URL`, `GOOGLE_*`, `FCM_*`, `DEVICE_TOKEN_TTL_DAYS`, `NOTIFICATION_RETENTION_DAYS`
 - [ ] Seeders: sports (5+), cities (10+, 3+ states), age_groups (6), positions, expiry rules, dev data (sample academies/coaches/trials/athletes)
 - [ ] Middleware: `auth:sanctum`, `role:{athlete,coach,academy,organizer,scout,admin}`, `EnsureAdmin2FAVerified`
 - [ ] CI skeleton: lint + test on push, staging deploy on merge
 - [ ] Health endpoint `GET /system/health`
+
+> **`composer.lock` must be in sync with `composer.json`.** `google/auth` is required by the Gmail transport, the FCM client and Google ID-token verification, but was missing from the lock file — `composer install` fails outright until it is reconciled.
 
 ### Mobile (`sportx_app`)
 - [ ] `flutter create`, feature-first folders, `Dio` + `AuthInterceptor` (`core/utils/api_client.dart`), Riverpod, `go_router` shell
@@ -43,23 +62,59 @@
 ## Phase 1 — Roles, Auth, Guardian, Verification (P0 core trust)
 
 **Goal:** any role can sign up → OTP → onboarding → token.
-**Docs:** Delta `BE-M1.x` · FR-AUTH-1…16 · FR-GUARD-1…3 · FR-VERIF-1 · Screens `A.1–A.10`
+**Docs:** Delta `BE-M1.x` · FR-AUTH-1…16 · FR-GUARD-1…3 · FR-VERIF-1 · Screens `A.1–A.10` · **`Email-Provider-Architecture.md` · `Google-Authentication.md`**
 
 ### Backend
 - [ ] `UserRole` enum: drop `sponsor`, add `scout`; update policies/seeders/admin filters; migrate any sponsor rows → opportunities (delta §4/§6)
-- [ ] OTP stack: `otp_codes` (hash, expiry 5min, attempts≤5, channel), `POST /auth/send-otp`, `/auth/verify-otp`, `/auth/resend-otp` (60s cooldown), `RateLimitOtp`; support SMS **+** email (SMS vendor = blocking, AS-03)
+- [ ] OTP stack: `otp_codes` (hash, expiry 5min, attempts≤5, channel), `POST /auth/send-otp`, `/auth/verify-otp`, `/auth/resend-otp` (60s cooldown), `RateLimitOtp`
+  - [x] `otp_codes` table **restored** — a prior migration dropped it while the service, model and purge job still targeted it, so OTP was structurally dead *(migrated on MySQL 8 ✓)*
+  - [x] `OtpCode::$fillable` **corrected** — it listed legacy columns (`phone`, `code`), so every write was silently discarded by mass-assignment protection
+  - [x] `channel=email` delivery via `EmailOtpMail` on the **active provider** (SMTP **or** Gmail — see Phase 3E)
+  - [x] `OtpService` supports **pre-registration** codes (`user_id` nullable) — sign-in/sign-up both need a code before an account exists
+  - [x] Issuing a new code **burns** any prior live code; codes are scoped by `purpose`
+  - [x] Per-destination throttles: 5 sends/hour, 10 verifies/5min, on top of the per-code attempt cap
+  - [x] `POST /auth/send-otp` · `/auth/verify-otp` · `/auth/resend-otp` wired *(18 tests ✓)*
+  - [ ] `channel=phone` / SMS driver — **BLOCKING, AS-60.** The vendor is unselected; `otp_codes.channel` already admits `phone`, so this is config-only once chosen
 - [ ] Keep password auth: `POST /auth/register`, `/auth/login` (password **or** OTP branch), `/auth/logout`, `GET /auth/me`, `POST /me/change-password`, `POST /me/delete-account` (soft, 90-day purge)
+- [ ] **Google sign-in (P0 — D9 CLOSED, was P1.14):**
+  - [x] `social_accounts` join table; **dropped `users.google_id`** and removed it from `User::$fillable`/`$hidden` *(migrated on MySQL 8 ✓)*
+  - [x] `SocialAccount` model — `encrypted` casts on `access_token`/`refresh_token`, both in `$hidden`, registered in the morph map
+  - [x] `GoogleAuthService::verifyIdToken()` — **six checks**: structure · `alg` pinned to **RS256** (never trusted from the header) · JWKS signature (24h cache, refetch on unknown `kid`) · `aud` == `GOOGLE_CLIENT_ID` · `exp` + 60s skew · `email_verified == true`. **Fails closed** — no "skip if JWKS unreachable" path
+    - *Implementation note:* verification uses `firebase/php-jwt` (`App\Services\Support\GoogleKeySet`), **not** `google/auth`, which mints access tokens and has no ID-token verifier. This php-jwt version performs **no `aud` check**, so audience and issuer are validated inside `GoogleAuthService`.
+    - *Covered by genuine RS256 signatures against a locally generated key pair and a stubbed JWKS — forged, `alg=none`, HS256, wrong-audience, expired and JWKS-unreachable tokens are all rejected* *(18 tests ✓)*
+  - [x] Account resolution — known `sub` → sign in; verified email match → link; else create. **Keyed on `sub`, never email** (consumer Gmail addresses are not unique). Linking is refused when the SportX account's own email is still unverified, so an address squatter gains nothing
+  - [x] `pending` accounts: a **new** signup gets a token with `pending_approval: true` (matching `/auth/register`, so the applicant can see the pending screen); a **returning** sign-in is refused with 403 `PENDING_APPROVAL`. Google is never a way around the gate
+  - [x] `role` on signup validated against `GOOGLE_ALLOWED_ROLES` — an unvalidated role is a privilege-escalation hole
+  - [x] Domain error codes in `API-Specification.md` §21 — `INVALID_ID_TOKEN` · `EMAIL_NOT_VERIFIED` · `ACCOUNT_DISABLED` · `PENDING_APPROVAL` · `SIGNUP_DISABLED` · `INVALID_ROLE` · `EMAIL_UNVERIFIED` · `GOOGLE_UNAVAILABLE`
+  - [x] `POST /auth/google` + `GET/DELETE /me/social-accounts` wired *(19 tests ✓)*. Unlinking the **last** credential is refused when no password is set, otherwise the user locks themselves out
+  - [ ] Back-fill existing `users.google_id` values into `social_accounts` **before** dropping the column (production only)
 - [ ] Onboarding: `GET /onboarding/{role}`, `POST /onboarding/athlete|coach|academy|organizer|scout` (❌ no `/onboarding/sponsor`); 30 fields/role per Mandatory Fields
-- [ ] Guardian: `guardian_consents` table, `POST /guardian/consent` (OTP to guardian), `POST /guardian/verify-otp`, `GET/PUT /me/guardian-controls`; gate: DOB<18 → `pending` until verified; restricted visibility/messaging defaults
-- [ ] Verification: `verification_requests` (morph, ID+org proof via signed URLs, notes, status, reviewer, reason), `POST/GET /me/verification`, `GET /admin/verification` + approve/reject+reason, badge on profile/card/search, `VerificationDecided` notification
-- [ ] Checklist: `GET /me/completion-checklist` (per-role missing items + deep links, %)
+- [x] Guardian: `guardian_consents` + `GuardianConsentService` + `POST /guardian/consent`, `/guardian/verify-otp`, `GET/PUT /me/guardian-controls`, `DELETE /me/guardian-consent` *(migrated ✓, 15 tests ✓)*
+  - [ ] **SMS vendor (AS-60)** — the code goes to the guardian's *phone*, so `POST /guardian/consent` returns **503 `CHANNEL_UNAVAILABLE`** until a vendor exists. The verify path is implemented and tested; only delivery is blocked
+- [x] Verification: `verification_requests` (morph, proof media ids, reviewer, reason) + `POST/GET /me/verification`, `GET /admin/verification`, `PATCH …/approve|reject` *(migrated ✓, 12 tests ✓)*. Approve/reject emit an `account_action` notification (hard override)
+  - [ ] **Badge on profile card / search results** — the flag is written to the entity but is not yet surfaced in listings or search
+- [x] Checklist: `GET /me/completion-checklist` (per-role missing items + deep links, %) *(7 tests ✓)*
 
 ### Mobile
-- [ ] Screens: S1 Splash (3-dot pulse) → S2 Role Selection (5 cards, no sponsor) → S3 Sign Up (name first, phone/email, T&C, Google button placeholder) → S4 OTP Verify (6-digit + timer) → S5 Login (password/OTP toggle, forgot link)
+- [ ] Screens: S1 Splash (3-dot pulse) → S2 Role Selection (5 cards, no sponsor) → S3 Sign Up (name first, phone/email, T&C) → S4 OTP Verify (6-digit + timer) → S5 Login (password/OTP toggle, forgot link)
+  - [ ] **Wire the OTP screen** — `verifyOtp`/`resendOtp` are currently **stubs that only set an error string**
+  - [ ] **Wire "Forgot Password?"** — `onPressed` is currently an **empty closure**
+- [ ] **"Continue with Google"** on S3 Sign Up **and** S5 Login, below the primary action with an "or" rule
+  - [ ] Add `google_sign_in` to `pubspec.yaml` — **pin explicitly** (`^6.2.1`); `^7+` changes the API surface
+  - [ ] **Populate `oauth_client` in `google-services.json`** — it is currently an empty array, so Android gets no `serverClientId` and sign-in fails with `DEVELOPER_ERROR` even though the app otherwise works
+  - [ ] `serverClientId` in `android/app/build.gradle.kts`; `REVERSED_CLIENT_ID` + URL scheme in `Info.plist`; package name / bundle ID must match the OAuth client exactly
+  - [ ] `AuthNotifier.signInWithGoogle()` — on success run the **same** post-login sequence as password login: persist token → `checkAuth()` → `_registerFcmToken()`
+  - [ ] Sign-up must capture the **role** *before* the Google button (role drives approval routing)
 - [ ] Onboarding wizards: A1/A2 athlete, C1 coach, AC1 academy, O1 organizer (+docs upload), TS1/SC.1 scout (30 fields each)
 - [ ] Guardian screens `A.9` + Parental Controls `AT.10`; Verification Request `A.10` (upload, status Pending/Verified/Rejected+reason)
 
-✅ **Exit:** sign up as each of 5 roles via phone AND email OTP; minor signup blocked until guardian OTP; verification request → admin approve → blue check shows.
+✅ **Exit:** sign up as each of 5 roles via phone AND email OTP; minor signup blocked until guardian OTP; verification request → admin approve → blue check shows. **Additionally:** "Continue with Google" signs in on Android **and** iOS, and a Google login for a `pending` account returns 403 rather than bypassing the gate.
+
+> **Backend status:** complete and covered by **89 passing feature tests** (OTP 18 · Google endpoints 19 · Google crypto verification 18 · guardian 15 · verification 12 · checklist 7), with **zero regressions** against the pre-existing suite. Verified against real MySQL 8.
+>
+> **Blocked on AS-60 (SMS vendor):** `channel=phone` OTP and `POST /guardian/consent` return `503 CHANNEL_UNAVAILABLE`. Both are implemented — only the SMS transport is missing.
+>
+> **Remaining in this phase:** Flutter wiring (`google_sign_in`, the OTP screen, forgot-password), the verified badge in listings/search, and the `scout` role rename noted below.
 
 ---
 
@@ -101,6 +156,106 @@
 - [ ] Saved screen `S.20` (tabs by type); Settings `S.22`, Help `S.24` (FAQ + contact)
 
 ✅ **Exit:** search "cricket ahmedabad" → tabbed results incl. athletes; filter → detail → save → appears in Saved; report works.
+
+---
+
+## Phase 3E — Platform Integrations: Email, Google Sign-in, FCM (1 week)
+
+**Goal:** three vendor decisions closed and made operable. Backend is largely built; what remains is migrations, Flutter wiring, and credentials.
+**Docs:** **`Email-Provider-Architecture.md` · `Google-Authentication.md` · `FCM-Notification-System.md`** · `Backend-Architecture.md` §3–§7 · `Security-and-NonFunctional.md` §2.4–2.6
+
+> **Why this sits here:** Phase 1 (auth) depends on email OTP and Google sign-in; Phase 9 (notifications) depends on FCM. Both are already specified, so this phase consolidates the shared infrastructure — mailer resolution, the `social_accounts` table, the device-token registry — rather than scattering it across two later phases.
+>
+> **Backend items below are marked `[x]`:** the code exists in the working tree but is **not migrated, not committed, and not configured**. Treat every `[x]` here as "written, not proven". Phase 3E is **not done** until the exit criteria pass.
+
+### A. Email — dual SMTP + Gmail
+
+**Backend — `[x]` written, `[ ]` verified**
+
+- [x] `MailProviderService` — provider resolution (`platform_settings.json` → `MAIL_PROVIDER` → `smtp`), `configuredChain()`, `isConfigured()`, `status()`, `diagnostics()`, `testConnection()`, `setActiveProvider()`, `clearTokenCache()`
+- [x] `GmailApiTransport` — Gmail REST v1 `messages:send`; auth modes `user` (refresh token) and `service_account` (domain-wide delegation); access token cached with a 60s expiry margin; **fails closed** on incomplete credentials
+- [x] Register the `gmail-api` transport via `Mail::extend()`; resolve `mail.default` **per request** so a runtime switch needs no deploy and no config-cache rebuild
+- [x] `sportx_failover` mailer — chain filtered to providers that actually have credentials, so a half-configured provider is skipped rather than tried and failed
+- [x] `SportXMail` base mailable — `ShouldQueue`, `$tries = 3`, `$backoff = [10,30,90]`, `onQueue('mail')`, deep-link helper, `failed()` logging
+- [x] Mailables: `EmailOtpMail`, `VerifyEmail`, `PasswordResetMail`, `AccountApprovedMail`, `AccountRejectedMail`, `WelcomeMail`, `NotificationFallbackMail`
+- [x] Email views — `emails/layout.blade.php` (table-based, inline-styled; Gmail/Outlook strip `<style>`) + 7 templates, each with a "we will never ask for this" line
+- [x] `config/sportx.php → 'mail'`; `config/mail.php` gains the `gmail` mailer and a failover chain
+- [x] `admin/email-settings` controller — status / diagnostics / runtime switch / test / clear-token-cache (no secret is ever returned by any endpoint)
+
+**Verify**
+
+- [ ] **Configure BOTH providers** so failover has somewhere to fail over *to* — a single-provider setup defeats the point
+- [ ] `POST /admin/email-settings/test` returns `ok: true` for **each** provider independently
+- [ ] Runtime switch takes effect on mail **already sitting in the queue** (resolution happens at send time, not at boot)
+- [ ] OTP round-trip: `send-otp` → email received → `verify-otp` succeeds
+- [ ] Admin approve/reject each produce an email (both endpoints previously returned silently)
+- [ ] `FRONTEND_URL` is set in production — leaving it at `APP_URL` produces dead deep links
+- [ ] **SPF, DKIM and DMARC** published for the sending domain (SEC-26)
+- [ ] Gmail sender: Workspace **"Publish → Gmail API → Send mail as your users"** verified, and domain-wide delegation granted if using `service_account` mode (SEC-27)
+
+### B. Google sign-in
+
+Backend items are covered in detail under **Phase 1**. Config and credential steps only:
+
+- [ ] OAuth consent screen configured (External + test users for dev)
+- [ ] Three OAuth clients created: **Android** (package name + SHA-1), **iOS** (bundle ID), **Web**
+- [ ] `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_ALLOW_SIGNUP=true`, `GOOGLE_DEFAULT_ROLE=athlete` set
+- [ ] `GOOGLE_WORKSPACE_HD` set if the deployment is single-tenant
+- [ ] Flutter items tracked under **Phase 1** (`google_sign_in` package, `oauth_client`, `signInWithGoogle()`)
+
+### C. FCM notifications
+
+**Backend correctness fixes — `[x]` written, `[ ]` verified**
+
+> Every item below was a **live defect**, not an enhancement.
+
+- [x] `FCMService` — **`messages:send` per token.** The previous code called `messages:sendMulticast`, which **does not exist in FCM HTTP v1**; it returned 404 and `responses[0]` was null, so the method reported success while delivering nothing
+- [x] Android `channel_id` mapped per notification type (`sportx_default`, `sportx_enquiries`, `sportx_reminders`, `sportx_updates`, `sportx_announcements`) — **without it Android 8+ silently drops every notification**
+- [x] APNs headers — `apns-priority`, `apns-push-type`, `apns-sound` (iOS alerts were arriving silently in the background)
+- [x] `notification_prefs` honoured before dispatch — the column existed and was cast, but **no service or controller ever read it**, so every user was pushed unconditionally
+- [x] `NotificationController::sendPushNotification()` read `$notification->message`, a **column that does not exist** — producing empty push bodies. Now uses `Notification::toPushPayload()`
+- [x] Token lifecycle — `UNREGISTERED` retires immediately; transient errors (`QUOTA_EXHAUSTED`) increment `failure_count` and retire only after 3 strikes. **Never retire on the first transient failure**: a device in aeroplane mode would otherwise permanently lose a valid registration
+- [x] `NotificationService` — row written **first** (source of truth), preference gate, hard overrides for account/registration decisions, email fallback on `no_devices`/`failed`
+- [x] `SendPushNotification` job — chunked (`FCM_BATCH_SIZE` 500), retries, backoff
+- [x] `PruneStaleDeviceTokensJob` + `PruneNotificationRowsJob` — scheduled daily
+- [x] `push_status` recorded (`queued`/`sent`/`partial`/`failed`/`no_devices`) — this is what makes the email fallback safe; without it a retry sends a duplicate fallback to users who already got the push
+- [x] Admin approve/reject now emit notifications at all — previously **no notification of any kind**
+
+**API**
+
+- [x] `GET/PUT /me/notification-preferences`; `POST /me/device-tokens/subscribe`; `POST /me/device-tokens/test`; `GET /admin/notifications/stats`
+
+**Flutter**
+
+- [ ] Add `flutter_local_notifications` (AS-72) — **without it, background delivery produces nothing visible on the device**
+- [ ] Fix `main.dart` — `Firebase.initializeApp()` is called with **no `options:`**, so `DefaultFirebaseOptions` is never used and web/tests fail
+- [ ] Declare `POST_NOTIFICATIONS` in `AndroidManifest.xml` — `requestPermission()` is a **silent no-op on Android 13+** without it (the most common cause of "works on 12, not 13")
+- [ ] Android channel IDs must match the backend **exactly**, or notifications are silently dropped
+- [ ] Darwin settings — `presentAlert: true` for foreground display
+- [ ] `getInitialMessage()` / `onMessageOpenedApp` → deep link via `action_url` + `category`
+
+**Launch blockers**
+
+- [ ] **Raise FCM quota** (AS-67) — default ≈ 10,000 `messages.send`/day
+- [ ] **Upload APNs auth key to Firebase** (AS-68) — iOS release builds otherwise get no push
+
+### D. Admin (web panel)
+
+- [ ] Email settings screen — provider status, runtime SMTP ⇄ Gmail switch, connection test, diagnostics
+- [ ] Notification broadcast — `channels: ["in_app","push"]`, with the email fallback visible in results
+- [ ] Delivery stats by type / `push_status`
+
+✅ **Exit:**
+- [ ] `php artisan migrate` runs clean; `social_accounts` exists and `users.google_id` is gone
+- [ ] A test email is delivered through **each** provider, and the runtime switch flips the active one without a redeploy
+- [ ] Email OTP round-trip succeeds end to end
+- [ ] "Continue with Google" signs in on **both** Android and iOS
+- [ ] Push reaches a **real device** in foreground **and** background on both platforms
+- [ ] Tapping a push deep-links correctly **and** re-authorizes server-side
+- [ ] `push_status` reads `sent` in admin stats after a test push
+- [ ] A user with **no device token** receives the email fallback
+- [ ] Disabling a category in Settings actually suppresses that push
+- [ ] Logout deactivates all of that user's device tokens
 
 ---
 
@@ -200,35 +355,62 @@
 ## Phase 9 — Admin P0, Expiry, Notifications, Search Polish
 
 **Goal:** moderated, self-cleaning, reminded platform.
-**Docs:** Delta `BE-M11.x` · FR-ADMIN-1…13 · FR-NOTIF-1…5 · FR-DISC-6/7 · Screens `AD.1–AD.12`, `S.16`
+**Docs:** Delta `BE-M11.x` · FR-ADMIN-1…13 · FR-NOTIF-1…5 · FR-DISC-6/7 · Screens `AD.1–AD.12`, `S.16` · **`FCM-Notification-System.md`** (transport, types, preferences and monitoring are built in **Phase 3E** — this phase wires the *domain events*)
 
 ### Backend
 - [ ] Admin: `POST /admin/login`, `/admin/verify-2fa` (enforced); `GET /admin/dashboard` (listings/flags/expirations/signups/verifications/users-by-role); `GET /admin/users` (+role/status filters), detail, suspend/ban + audit; verification queue approve/reject; content CRUD `/admin/content/{type}` (+opportunities/programs/facilities/posts); moderation (`…/moderation/**` + suspend action, reporter+reported notify); masters (+`positions`); expiry (`/admin/expiry*` + opportunity type)
 - [ ] Expiry engine: `expires_at` on publish, `SweepExpiredContentJob`, events, Override/Restore
-- [ ] Notifications: enum extend (follow, connection, message, enquiry, registration decision, verification result, mention, broadcast); events/listeners (`RegistrationDecided`, `VerificationDecided`, `ConnectionAccepted`, `ContentReported`); reminder subs on save/confirm (T-2d/T-1d defaults) + `SendDueRemindersJob`; `GET /me/notifications?tab=` (All/People/Opps/Events/Mentions, Today/Yesterday/Week), read/read-all, `POST /me/device-tokens` (FCM)
+- [ ] Notifications (transport + device registry + preferences: **done in Phase 3E**):
+  - [ ] Emit the **domain events** that produce notifications — `RegistrationDecided`, `VerificationDecided`, `ConnectionAccepted`, `ContentReported`, plus follow / mention / message types
+  - [ ] **Admin approve/reject must notify** — `AdminUserController` and `AdminPanelController` previously flipped a DB column and told nobody. Emit `account_action` (hard override: always in-app + email)
+  - [ ] Reminder subscriptions on save/confirm (T-2d/T-1d) + `SendDueRemindersJob`
+  - [ ] `GET /me/notifications?tab=` (All/People/Opps/Events/Mentions, Today/Yesterday/Week) returning `meta.unread_count`; read / read-all / delete
+  - [ ] `POST /admin/notifications/broadcast` — `channels: ["in_app","push"]`; chunked FCM fan-out; email fallback only where push is impossible
 - [ ] Analytics log `POST /analytics/events` (signup/registration/enquiry/shortlist funnel); search polish (trending, recents, relevance, enriched cards)
 
 ### Mobile
 - [ ] Notifications Center `S.16` (tabs + grouping + unread + mark-all-read); reminder toggles; Admin web panel views (`admin/*.blade.php`: login/dashboard/content/moderation/expiry/categories/users/verification)
+- [ ] **Notification preferences screen** — `GET/PUT /me/notification-preferences`. Mark account-action and registration rows as **non-disableable** rather than showing toggles that silently do nothing (they are hard overrides)
 
-✅ **Exit:** report → admin queue → remove → both parties notified; expired trial auto-expires + restorable; saved-item reminder fires; admin adds sport/city → appears in filters.
+✅ **Exit:** report → admin queue → remove → both parties notified; expired trial auto-expires + restorable; saved-item reminder fires; admin adds sport/city → appears in filters. **Additionally:** admin approves a registration → applicant receives an in-app notification, a push **and** an email.
 
 ---
 
 ## Phase 10 — Hardening & Polish (production-ready)
 
 **Goal:** secure, fast, observable.
-**Docs:** `Security-and-NonFunctional.md` · `Production-Backend-Plan.md` · `Phased-Roadmap.md` P4 · `Development-Checklist.md` P6–P7
+**Docs:** `Security-and-NonFunctional.md` · `Production-Backend-Plan.md` · `Phased-Roadmap.md` P4 · `Development-Checklist.md` P6–P7 · **`Email-Provider-Architecture.md` §10 · `FCM-Notification-System.md` §10**
 
-- [ ] Auth hardening: rate limits + 429/Retry-After, OTP expiry/attempts, CORS review, audit log (moderation/status/override)
+- [ ] Auth hardening: rate limits + 429/Retry-After, OTP expiry/attempts, CORS review, audit log (moderation/status/override/provider switch)
 - [ ] Media: MIME validation, signed URLs (60-min), private docs access-controlled
-- [ ] Queues: Horizon; email/media/push jobs queued; FCM (`FCMService`, `SendPushNotification`, device tokens)
+- [ ] Queues: Horizon; `mail` / `push` / `notifications` queues split with independent worker pools so a slow SMTP handshake cannot starve push delivery
 - [ ] Observability: Sentry (Flutter + Laravel), APM, Telescope (dev), health check
 - [ ] Perf: index review, N+1/eager-load pass, pagination everywhere, P95 <2.5s lists / <500ms admin
+
+**Email operations**
+
+- [ ] Hourly `MailProviderService::testConnection()` probe, so a provider outage surfaces **before** users report a missing OTP
+- [ ] Alert on `SportX mail failed permanently` — non-zero in any 15-minute window is a page
+- [ ] Monitor `mail` queue depth: sustained depth means workers are wedged, not that delivery is failing
+- [ ] Monitor Gmail `messages.send` quota headroom and SMTP bounce/complaint rate
+
+**Push operations**
+
+- [ ] Monitor `push_status = 'failed'` rate and the `no_devices` rate — a rising `no_devices` share means the Flutter token-registration flow is broken
+- [ ] Monitor `failure_count` climbing on `user_device_tokens` — systematic rejection, usually `SENDER_ID_MISMATCH`
+- [ ] Alert on `NotificationFallbackMail` volume: high volume means push is silently failing
+
+**Pre-launch credential gates** *(not code tasks — all four block release)*
+
+- [ ] FCM quota raised above expected broadcast volume (AS-67)
+- [ ] APNs auth key uploaded (AS-68)
+- [ ] SPF/DKIM/DMARC published; Gmail "Send mail as your users" verified (SEC-26, SEC-27)
+- [ ] SMS vendor selected for `channel=phone` OTP (AS-60)
+
 - [ ] Account: forgot-password (token-link exists; OTP variant P1), `POST /me/change-password`, language shell (English-only), ICS export (trials/tournaments) + `.ics` download, bracket viz polish
 - [ ] QA: `flutter analyze` clean; load test 1000+ concurrent; manual smoke per role (athlete/coach/academy/organizer/scout/admin) on staging
 
-✅ **Exit:** DoD — `grep dummyItems` = 0; ≥85 screens use `ref.watch/read/dioProvider`; every P0 feature has backend + wired screen + integration test; admin behind 2FA; media behind signed URLs.
+✅ **Exit:** DoD — `grep dummyItems` = 0; ≥85 screens use `ref.watch/read/dioProvider`; every P0 feature has backend + wired screen + integration test; admin behind 2FA; media behind signed URLs; **all four pre-launch credential gates signed off**.
 
 ---
 
@@ -251,11 +433,22 @@
 | P1.11 | Extra reminders | opportunity deadlines + nearby-trial detection | toggles |
 | P1.12 | Forgot-password via OTP | OTP reset (alongside link) | `A.6` |
 | P1.13 | Language infra | selection stored (content English-only) | `A.7` |
-| P1.14 | Google sign-in | Socialite + `POST /auth/google` | `google_sign_in` on S3 |
 | P1.15 | Waitlist auto-promote | `PromoteWaitlistedRegistrations` job + notify | status update |
 | P1.16 | Share/deep links | `GET /share/{type}/{slug}` resolver | `S.30` share sheets |
+| P1.17 | Notification digest | "3 new updates today" instead of per-event pushes (AS-71) — cuts fatigue and quota burn | `S.16` grouping |
+| P1.18 | Per-sport FCM topics | `sportx_sport_{id}` subscribe/unsubscribe (AS-70) — schema supports it, subscription UX not built | topic picker |
+| P1.19 | Explicit cross-provider account linking | `POST /me/social-accounts/google/link` with password re-confirmation (AS-65) | account settings |
+| P1.20 | Apple Sign In | `social_accounts.provider` is a string, so **no migration needed** (AS-64) | `A.3`/`A.5` button |
+| P1.21 | Bounce/complaint webhooks | SES/Mailgun/Postmark → suppression lists feeding `notification_prefs` (AS-62) | — |
+| P1.22 | Scheduled email campaigns | admin surface beyond instant broadcast (AS-63) | — |
 
-**Parked (P2 — do not build):** online payments, map view, groups/polls, live/streaming, boosted placement, multi-role accounts, teams, staff recruiting, stories, group chat/cold DMs, email/SMS as notify channels.
+> **Moved out of P1 — Google sign-in (was P1.14).** **Promoted to P0 and built**; see **Phase 1** and **Phase 3E-B**. D9 is CLOSED.
+
+> **Still blocked, not deferred — SMS OTP vendor (AS-60).** Selecting MSG91 / Twilio etc. is a stakeholder decision, not a build task. It blocks `POST /auth/send-otp` with `channel=phone`, and therefore **phone signup entirely**. `otp_codes.channel` already admits `phone`, so this is config-only once chosen.
+
+**Parked (P2 — do not build):** online payments, map view, groups/polls, live/streaming, boosted placement, multi-role accounts, teams, staff recruiting, stories, group chat/cold DMs.
+
+> **Amended from the previous list:** "email/SMS as notify channels" is **no longer parked wholesale**. Email is now a first-class notification channel (OTP, verification, approval/rejection, and the **push-failure fallback**). **SMS as a notify channel remains parked** — SMS is only needed for OTP, and that is AS-60.
 
 ---
 
@@ -263,9 +456,25 @@
 
 ### Endpoint count (Delta §11)
 ~70 new + ~25 changed + ~10 verify-first (social/chat/admin-users) in P0; ~30 new in P1; ~12 sponsor routes removed.
+**Platform integrations add ~12** (auth +1, notifications +7, admin email-settings +5) → **≈242 total**.
+
+### Assumption movements (2026-10)
+| ID | Movement |
+|---|---|
+| **AS-03a** (email provider) | **CLOSED** → AS-59 (dual SMTP + Gmail) |
+| **AS-03c** (push provider) | **CLOSED** — FCM HTTP v1 |
+| **AS-03b** (SMS provider) | **OPEN** → AS-60 — still blocking phone OTP |
+| **D9** (Google sign-in scope) | **CLOSED** — promoted P1 → P0, built → AS-64 |
+| **AS-60** | NEW — SMS vendor selection — **launch blocker** |
+| **AS-67** | NEW — FCM quota — **launch blocker** |
+| **AS-68** | NEW — APNs key — blocks iOS release push |
+| **AS-69** | NEW — remove legacy `device_tokens` table |
+| **AS-72** | NEW — `flutter_local_notifications` — blocks visible background push |
 
 ### Screen count (v3 `SCREEN_INVENTORY.md`)
 **129 total (94 P0 / 25 P1 / 10 P2):** Auth 10 · Shared shell 30 · Shared detail/forms 17 · Athlete 10 · Coach 8 · Academy 12 · Organizer 17 · Scout 13 · Admin 12.
+**+2 added:** Notification Preferences (`settings/…/notification_preferences_screen.dart`) and the shared Google Sign-In button.
 
 ### Jira import
 `docs/Jira-Tickets.md` has CSV-ready tables per Phase→Epic (83 tickets, story points 1/2/3/5/8) — copy each table to CSV for bulk import. Map new v3 work to epics P2-E8 (opportunities), P2-E9 (programs/facilities), P2-E10 (social/chat), P2-E11 (leaderboard), P3-E1 (verification queue + user mgmt).
+**Add a new epic for Phase 3E** — email providers, Google sign-in and FCM notifications are not yet represented in `Jira-Tickets.md` and need tickets covering the migration, Flutter wiring and the four pre-launch credential gates.

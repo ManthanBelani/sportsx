@@ -20,7 +20,7 @@
 | D6 | Admin console **fully documented, built later** (PRD A4). | Verification queue (AD.4) + user management (AD.3) are **P0**. | Build admin users + verification-review endpoints in MVP, not later. |
 | D7 | Social feed/posts/chat **explicitly excluded**; enquiry threads only. | Lightweight feed + posts + likes/comments + follow/connect + 1-to-1 chat are **P0**. | New social + messaging backend (partly stubbed — verify, see §2 G). |
 | D8 | Ratings/reviews, analytics dashboards **non-goals**. | Reviews P1, event analytics P1, leaderboard P0, broadcast P1. | New points engine (P0) + reviews/analytics/broadcast (P1). |
-| D9 | Google sign-in deferred (Could/Phase 4). | Shown on Sign Up (A.3). | **Confirm:** keep deferred, or promote to P0 per wireframe. |
+| D9 | Google sign-in deferred (Could/Phase 4). | Shown on Sign Up (A.3). | **✅ CLOSED (2026-10): promoted to P0 and built** — ID-token verification, `social_accounts` join table. See `Google-Authentication.md`, AS-64. |
 
 ---
 
@@ -294,7 +294,7 @@ Online payments · promoted/boosted placement · groups · polls · live/webinar
 | GET | `/auth/me` | any | shell | ✅ | Session check (already used by app) |
 | POST | `/auth/forgot-password` | public | A.6 | 🔁 | Token-link exists; add OTP variant (P1 per wireframe) |
 | POST | `/auth/reset-password` | public | A.6 | 🔁 | Same as above |
-| POST | `/auth/google` | public | A.3 | ❓ | Wireframe shows Google P0; old spec defers — confirm per §8 D9 |
+| POST | `/auth/google` | public | A.3 | ✅ **BUILT (P0)** | **§8 D9 CLOSED.** ID-token verification; creates or links a `social_accounts` row. See `Google-Authentication.md`. |
 | POST | `/guardian/consent` | public | A.9 | 🆕 | Guardian name/phone/relationship → OTP to guardian |
 | POST | `/guardian/verify-otp` | public | A.9 | 🆕 | Verifies consent; unlocks minor's profile |
 | GET/PUT | `/me/guardian-controls` | athlete | AT.10 | 🆕 | Consent status, message/visibility prefs, leaderboard name mode |

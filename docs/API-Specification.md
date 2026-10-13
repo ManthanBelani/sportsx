@@ -6,6 +6,13 @@ Full endpoint listing for the Laravel REST API. Every endpoint maps to a feature
 
 > **v3 additions:** the endpoint catalog now follows `Backend-Feature-Delta.md` §11. Each row carries a **Status** tag: `EXISTS` (old backend, keep) · `NEW` (build) · `CHANGED` (modify) · `VERIFY` (partially built — check `sportx-api` first) · `P1` (MVP+ wave) · `REMOVED`. **Role model:** `athlete, coach, academy, organizer, scout, admin` — the old `sponsor` role is **REMOVED** (sponsorship is now an `opportunity` type).
 
+> **Platform-integration docs (added 2026-10):** three subsystems are now fully specified in dedicated documents and are referenced from the sections below rather than duplicated here —
+> - `Email-Provider-Architecture.md` — dual transactional email over **SMTP or Gmail API**, switchable at runtime. Covers `POST /auth/send-otp` (`channel=email`), email verification, password reset, account approval/rejection, and the notification **email fallback**.
+> - `Google-Authentication.md` — **"Continue with Google"** sign-in and account linking via verified ID tokens (§1, `POST /auth/google`).
+> - `FCM-Notification-System.md` — the full notification system: in-app + FCM push + email fallback, device-token lifecycle, per-user preferences (§14).
+>
+> **Admin:** `GET/POST /admin/email-settings/*` exposes provider status and a runtime SMTP ⇄ Gmail switch (§20).
+
 > **Conventions & assumptions**
 > - **Base URL:** `/api/v1` — AS-15.
 > - **Auth:** Laravel Sanctum bearer tokens (header: `Authorization: Bearer <token>`). Issue at login/verify-OTP; invalidate at logout — AS-16.
@@ -36,7 +43,8 @@ Full endpoint listing for the Laravel REST API. Every endpoint maps to a feature
 | GET | `/auth/me` | Any | EXISTS | Session check (already used by app). | — |
 | POST | `/auth/forgot-password` | — | P1 | Token-link exists; add OTP variant. | A.6; BE-P1.12 |
 | POST | `/auth/reset-password` | — | P1 | Same as above. | A.6; BE-P1.12 |
-| POST | `/auth/google` | — | P1 | Google sign-in shown on Sign Up wireframe; old spec deferred (confirm §8 D9). | A.3 |
+| POST | `/auth/google` | — | **BUILT (was P1)** | Google sign-in / account linking. Accepts an ID token, verifies against Google's JWKS, creates or links an account. See `Google-Authentication.md`. | A.3; D9 **CLOSED** |
+| POST | `/auth/google/link` | Any | NEW | Link a Google identity to the current account (explicit linking, password re-confirmation). | AS-65 |
 | POST | `/guardian/consent` | — | NEW | Guardian name/phone/relationship → OTP to guardian (minors). | A.9; BE-M1.4 |
 | POST | `/guardian/verify-otp` | — | NEW | Verify guardian consent; unlocks minor's profile. | A.9; BE-M1.4 |
 | GET/PUT | `/me/guardian-controls` | Athlete | NEW | Consent status, message/visibility prefs, leaderboard name mode. | AT.10; BE-M1.4 |
@@ -63,8 +71,11 @@ Full endpoint listing for the Laravel REST API. Every endpoint maps to a feature
 
 **Request:** `{ "channel": "phone", "destination": "+9198XXXXXXXX", "purpose": "signup" }`
 > `channel`: `email`|`phone`. `purpose`: `signup`|`login`|`reset_password`|`guardian_consent`|`verify_contact`. **429** if within 60s cooldown or attempts exhausted.
+> **Delivery:** `channel=email` is delivered by the active provider in `Email-Provider-Architecture.md` (SMTP **or** Gmail API — switchable at runtime). `channel=phone` remains **blocked on AS-60** (SMS vendor unselected).
 
 **Response 200:** `{ "data": { "sent": true, "expires_at": "...", "resend_available_at": "..." } }`
+
+> Codes are bcrypt-hashed in `otp_codes.code_hash`; the plaintext exists only in the outbound message. Codes expire per `sportx.otp.expiry_minutes` (10) and are limited to `sportx.otp.max_attempts` (5).
 
 ### POST `/auth/verify-otp`
 
@@ -78,6 +89,28 @@ Full endpoint listing for the Laravel REST API. Every endpoint maps to a feature
 ### POST `/auth/resend-otp`
 
 **Request:** same as `/auth/send-otp`. **Response 200** or **429** (cooldown).
+
+### POST `/auth/google`
+
+> Full contract, verification rules and account-resolution logic: **`Google-Authentication.md`**.
+
+**Request:** `{ "id_token": "eyJhbGciOiJSUzI1NiIs...", "role": "athlete" }`
+> `id_token` — the `credential` from `GoogleSignIn.authentication.idToken`. `role` is optional, used only when creating a new account, and is **validated against `GOOGLE_ALLOWED_ROLES`**.
+
+**Response 200:**
+```json
+{
+  "token": "1|abc...",
+  "user": { "id": 42, "role": "athlete", "name": "Kiran Patel", "email": "kiran@example.com", "email_verified_at": "...", "status": "active" },
+  "needs_onboarding": true,
+  "linked": false,
+  "created": true
+}
+```
+
+**Errors:** 401 `INVALID_ID_TOKEN` · 401 `EMAIL_NOT_VERIFIED` · 403 `ACCOUNT_DISABLED` · 403 `PENDING_APPROVAL` · 403 `SIGNUP_DISABLED` · 422 `INVALID_ROLE` · 429 throttle.
+
+> **Account linking:** an identity with no `social_accounts` row but a **verified** matching SportX email is linked automatically. `pending` accounts are linked but refused login (403) so Google cannot bypass the approval gate. See `Google-Authentication.md` §6.
 
 ### POST `/auth/login`
 
@@ -475,14 +508,26 @@ All listing types share the same pattern: paginated card-list with consistent fi
 
 ## 14. Notifications
 
+> **Expanded by `FCM-Notification-System.md`** — the notification system now spans in-app + FCM push + email fallback, with device-token lifecycle management and per-user preference controls.
+
 | Method | Path | Auth | Status | Purpose | Source |
 |---|---|---|---|---|---|
-| GET | `/me/notifications?tab=` | Any | CHANGED | Tabs All/People/Opps/Events/Mentions; Today/Yesterday/Week grouping (S.16). | FR-NOTIF-1 |
+| GET | `/me/notifications?tab=` | Any | CHANGED | Tabs All/People/Opps/Events/Mentions; Today/Yesterday/Week grouping (S.16). Returns `meta.unread_count`. | FR-NOTIF-1 |
 | PATCH | `/me/notifications/{id}/read` | Any | EXISTS | Mark single notification read. | — |
 | POST | `/me/notifications/read-all` | Any | EXISTS | Mark all read. | — |
-| POST | `/me/device-tokens` | Any | EXISTS | Register FCM device token. | delta §11.14 |
+| DELETE | `/me/notifications/{id}` | Any | EXISTS | Delete single notification. | — |
+| POST | `/me/device-tokens` | Any | CHANGED | Register FCM device token. Upsert on the now-**unique** `token`; a token re-registered by another user transfers to that user. Sets `last_seen_at`. | `FCM-Notification-System.md` §3 |
+| DELETE | `/me/device-tokens` | Any | EXISTS | Unregister (called on logout). | — |
+| POST | `/me/device-tokens/subscribe` | P1 | NEW | Subscribe the caller's tokens to an FCM topic (`sportx_broadcast`, `sportx_sport_{id}`). | §7 of the FCM doc |
+| POST | `/me/device-tokens/test` | P1 | NEW | Send a test push to the caller's devices. | FCM doc §7 |
+| GET | `/me/notification-preferences` | Any | NEW | Resolved preferences (hard overrides → type defaults → user overrides). | FCM doc §5 |
+| PUT | `/me/notification-preferences` | Any | NEW | Update per-channel / per-category preferences. | FCM doc §5 |
+| GET | `/admin/notifications/stats` | Admin | NEW | Delivery counts by type / `push_status` / provider. | FCM doc §10 |
+| POST | `/admin/notifications/broadcast` | Admin | CHANGED | Broadcast. `channels: ["in_app","push"]`; email fallback enabled only when push is impossible. | delta §11.14 |
 
-> **Notification `type` enum extends** to: `reminder`, `enquiry_reply`, `status_update`, `follow`, `connection_request`, `connection_accepted`, `message`, `enquiry`, `registration_decision`, `verification_result`, `mention`, `broadcast`, `opportunity_deadline` (`Database-Design.md` §12).
+> **Notification `type` extends** to: `reminder`, `enquiry_reply`, `status_update`, `registration_approved`, `registration_rejected`, `trial_approved`, `trial_rejected`, `tournament_approved`, `tournament_rejected`, `account_action`, `follow`, `connection_request`, `connection_accepted`, `message`, `mention`, `broadcast`, `opportunity_deadline` (`Database-Design.md` §12). The column is **`VARCHAR(40)`**, not a MySQL enum — the original three-value enum could not represent this vocabulary. Each row also carries `channel`, `category`, `image_url`, `priority`, `metadata`, `pushed_at` and `push_status`.
+>
+> **Notification delivery is preference-aware:** `users.notification_prefs` is read before any push is dispatched. `account_action`, `registration_approved` and `registration_rejected` are hard overrides and always deliver in-app. See `FCM-Notification-System.md` §5.
 
 ---
 
@@ -726,6 +771,18 @@ All routes prefixed `/api/v1/admin`. Require `role=admin` + 2FA-verified session
 | GET | `/admin/verification` | Admin | NEW | Verification queue (AD.4). | BE-M1.5 |
 | POST | `/admin/verification/{id}/approve` · `/reject` | Admin | NEW | Approve / reject + reason (queues result notification). | BE-M1.5 |
 
+### Admin — Email Provider Settings **[NEW — `Email-Provider-Architecture.md`]**
+
+> Credentials live in the environment and are never returned by any endpoint. These routes expose the **resolved status** so operators can see which provider is live and verify it end to end.
+
+| Method | Path | Auth | Status | Purpose | Source |
+|---|---|---|---|---|---|
+| GET | `/admin/email-settings` | Admin | NEW | Active provider, failover chain, per-provider `configured` flags (host/port/client-id only — never secrets). | Email doc §6 |
+| GET | `/admin/email-settings/diagnostics` | Admin | NEW | Gmail OAuth probe + SMTP socket reachability + resolved chain. | Email doc §10 |
+| POST | `/admin/email-settings/provider` | Admin | NEW | Switch the active provider (`smtp` \| `gmail`) at runtime. Persists to `platform_settings.json`; no deploy. | Email doc §6.3 |
+| POST | `/admin/email-settings/test` | Admin | NEW | Send a real test message through the chosen provider. | Email doc §13 |
+| POST | `/admin/email-settings/clear-token-cache` | Admin | NEW | Drop the cached Gmail OAuth2 access token after a credential rotation. | Email doc §5.4 |
+
 ### Admin — Leaderboard Config (P1)
 
 | Method | Path | Auth | Status | Purpose | Source |
@@ -776,6 +833,17 @@ All routes prefixed `/api/v1/admin`. Require `role=admin` + 2FA-verified session
 | 422 | `VALIDATION_FAILED` | Field validation errors. | Missing required field, invalid enum. |
 | 429 | `TOO_MANY_REQUESTS` | Rate limit exceeded. | OTP resend too frequently. |
 
+### Domain Error Codes (`Google-Authentication.md`)
+
+| HTTP | Code | When | Client behaviour |
+|---|---|---|---|
+| 401 | `INVALID_ID_TOKEN` | Google ID token malformed, bad signature, wrong `aud`, expired | Clear error; do not retry |
+| 401 | `EMAIL_NOT_VERIFIED` | `email_verified` claim not true | Prompt to verify with Google |
+| 403 | `ACCOUNT_DISABLED` | Identity matched a `suspended` / `deleted` account | Show support contact |
+| 403 | `PENDING_APPROVAL` | Identity matched a `pending` account | Show pending-approval screen |
+| 403 | `SIGNUP_DISABLED` | Unknown identity while `GOOGLE_ALLOW_SIGNUP=false` | Fall back to password registration |
+| 422 | `INVALID_ROLE` | `role` outside `GOOGLE_ALLOWED_ROLES` | Field error on `role` |
+
 ### 422 Validation Error Shape
 
 ```json
@@ -790,7 +858,7 @@ All routes prefixed `/api/v1/admin`. Require `role=admin` + 2FA-verified session
 
 | Module | Endpoints | Notes |
 |---|---|---|
-| Auth & OTP | 17 | + send/verify/resend OTP, guardian consent, completion checklist, change-password |
+| Auth & OTP | 19 | + send/verify/resend OTP, Google sign-in + linking, guardian consent, completion checklist, change-password |
 | Onboarding | 6 | scout added, sponsor removed |
 | Meta/Master Data | 7 | + positions, facilities, faqs |
 | Athlete Profile, Achievements & Media | 12 | + achievements CRUD, media gallery, verification, privacy |
@@ -807,7 +875,7 @@ All routes prefixed `/api/v1/admin`. Require `role=admin` + 2FA-verified session
 | Messaging | 5 | verify-first |
 | Scouting | 8 | shortlist/observations/reports/contact |
 | Activity & Saved | 4 | extended morphs |
-| Notifications | 4 | extended types |
+| Notifications | 11 | extended types, device-token lifecycle, topic subscribe, preference read/update, test push |
 | Trust & Safety (reports/blocks) | 9 | extended morphs + blocks |
 | Settings/Support | 4 | + privacy, support contact |
 | Provider (coach/academy/organizer) | 20 | + venues, facilities |
@@ -817,9 +885,10 @@ All routes prefixed `/api/v1/admin`. Require `role=admin` + 2FA-verified session
 | Admin Moderation | 8 | + suspend |
 | Admin Expiry | 5 | + opportunity type |
 | Admin Categories | 14 | + positions |
+| Admin Email Provider Settings | 5 | new — SMTP/Gmail status, diagnostics, runtime switch, test |
 | Admin Leaderboard/Broadcasts (P1) | 4 | |
 | Analytics/Share | 2 | |
 | Media Upload | 3 | |
-| **Approx. total** | **~230** | Includes ~110 new/changed v3 endpoints |
+| **Approx. total** | **~242** | Includes ~110 new/changed v3 endpoints, +12 for email/Google/FCM |
 
 > Approximate: some endpoints share paths under the same method; exact count finalized during implementation. **REMOVED:** `sponsor` onboarding/routes, `/scholarships*`, `/sponsorships*`, `/auth/verify-email` (superseded by OTP).

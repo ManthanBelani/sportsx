@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
@@ -14,13 +15,13 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable, Auditable;
 
     protected $fillable = [
-        'role', 'name', 'email', 'phone', 'password', 'google_id',
+        'role', 'name', 'email', 'phone', 'password',
         'status', 'email_verified_at', 'admin_2fa_verified_at',
         'notification_prefs', 'social_links', 'language',
         'verification_token', 'reset_password_token', 'reset_password_sent_at',
     ];
 
-    protected $hidden = ['password', 'remember_token', 'google_id'];
+    protected $hidden = ['password', 'remember_token'];
 
     protected function casts(): array
     {
@@ -66,6 +67,26 @@ class User extends Authenticatable
     public function talentScoutProfile(): HasOne
     {
         return $this->hasOne(TalentScoutProfile::class);
+    }
+
+    /**
+     * Third-party identities ("Continue with Google").
+     *
+     * @see \App\Models\SocialAccount
+     */
+    public function socialAccounts(): HasMany
+    {
+        return $this->hasMany(SocialAccount::class);
+    }
+
+    /**
+     * Guardian consents recorded for this athlete (minors only).
+     *
+     * @see \App\Models\GuardianConsent
+     */
+    public function guardianConsents(): HasMany
+    {
+        return $this->hasMany(GuardianConsent::class, 'athlete_user_id');
     }
 
     public function isAdmin(): bool

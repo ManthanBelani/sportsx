@@ -6,6 +6,8 @@ Laravel API architecture: folder structure, layers (controllers → services →
 
 > **New-design deltas applied here:** `sponsor` role removed (→ `opportunities`), `scout` added; OTP (phone + email) restored to P0; guardian consent; social feed/network/messaging; leaderboard engine; 30-field profiles; verification queue + admin user management.
 
+> **Platform integrations (2026-10):** §3 (Google sign-in), §4 (push/mail jobs), §5 (event wiring), §6 (provider interfaces) and §7 (config) now reflect three closed vendor decisions — dual SMTP + Gmail email, Google ID-token sign-in, and FCM HTTP v1 push. See `Email-Provider-Architecture.md`, `Google-Authentication.md`, `FCM-Notification-System.md`.
+
 > **Assumptions**
 > - Laravel 11.x (latest stable as of spec authoring — AS-23). Folder structure follows the Laravel 11 default (`app/`, `routes/`, `database/`).
 > - PHP 8.2+ (AS-24).
@@ -515,6 +517,7 @@ class TrialPolicy
 |---|---|
 | **OTP (P0)** | `POST /auth/register` triggers OTP; `POST /auth/send-otp` / `resend-otp` (rate-limited 60s, max 5 attempts via `RateLimitOtp`); `POST /auth/verify-otp` over **email or phone** sets `email_verified_at`/`phone_verified_at`. |
 | **Token issuance** | `POST /auth/verify-otp` or `POST /auth/login` → `Sanctum::createTokenFor()` → plain token in response |
+| **Google sign-in (P0)** | `POST /auth/google` accepts a Google **ID token**, verifies it server-side (JWKS signature, `aud` pinned to `GOOGLE_CLIENT_ID`, `exp`, `email_verified`) and creates or links a `social_accounts` row. Identity is keyed on Google's stable `sub` claim, not email. **Socialite is not used** — see `Google-Authentication.md`. |
 | **Guardian consent** | `POST /guardian/consent` → `POST /guardian/verify-otp` gates minor profile activation (DOB < 18). |
 | **Client sends** | `Authorization: Bearer <token>` |
 | **Middleware** | `auth:sanctum` on all authenticated routes; custom middleware for role checks |
@@ -535,6 +538,11 @@ class TrialPolicy
 | `RecalculateLeaderboardJob` | Points triggers + nightly | `default` | Rebuilds `leaderboard_scores` from verified achievements, completion milestones and activity. |
 | `ResetLeaderboardSeasonJob` | Scheduler / admin | `default` | Closes the active season and opens the next (AD.11). |
 | `BroadcastNotificationJob` | Admin broadcast (P1) | `notifications` | FCM fan-out for `broadcasts` audience filter. |
+| `SendPushNotification` | `NotificationCreated` event | `push` | Fans an FCM payload out across a chunk of device tokens. Updates `pushed_at` / `push_status`; retires tokens FCM reports permanently invalid. |
+| `PruneStaleDeviceTokensJob` | Scheduler (daily) | `default` | Retires tokens with no activity for `DEVICE_TOKEN_TTL_DAYS` (120). |
+| `PruneNotificationRowsJob` | Scheduler (daily) | `default` | Deletes `notifications` rows older than `NOTIFICATION_RETENTION_DAYS` (180). |
+| `SendQueuedMailable` | Any `SportXMail` | `mail` | Laravel's own queued mailable job. `$tries = 3`, `$backoff = [10, 30, 90]`, `$timeout = 60`. |
+| `GoogleAuthService` | *(not a job — a service)* | — | Synchronous ID-token verification with a 24h JWKS cache. |
 
 ### Scheduler (`routes/console.php`)
 
@@ -542,6 +550,12 @@ class TrialPolicy
 Schedule::command('otp:purge')->dailyAt('02:00');
 Schedule::job(new SweepExpiredContentJob)->hourly();
 Schedule::job(new SendDueRemindersJob)->everyFifteenMinutes();
+Schedule::job(new PruneStaleDeviceTokensJob)->daily();
+Schedule::job(new PruneNotificationRowsJob)->daily();
+
+// Health probe — surfaces a provider outage BEFORE users report a missing OTP.
+Schedule::call(fn () => app(\App\Services\MailProviderService::class)
+    ->testConnection())->hourly();
 ```
 
 ---
@@ -560,24 +574,56 @@ Schedule::job(new SendDueRemindersJob)->everyFifteenMinutes();
 | `ContentExpired` | (no auto-listener) | Logged; admin can restore via monitor |
 | `ListingRemoved` | `NotifyListingOwnerOnModeration` | In-app notification to listing owner |
 | `ListingWarned` | `NotifyListingOwnerOnModeration` | In-app notification to listing owner |
+| `NotificationCreated` | `SendPushNotificationListener` | **Central push fan-out.** Reads `notification_prefs`, honours hard overrides, loads active device tokens and dispatches `SendPushNotification`. |
+| `RegistrationApproved` / `RegistrationRejected` | *(via `NotificationService`)* | `registration_approved` / `registration_rejected` — in-app + push + email (hard overrides, always delivered). |
+| `UserApproved` / `UserRejected` / `UserSuspended` | *(via `NotificationService`)* | `account_action` — in-app + push + `AccountApprovedMail` / `AccountRejectedMail`. |
 
 ---
 
-## 6. Provider Interfaces (vendor-abstraction)
+## 6. Provider Interfaces (vendor-abstraction) — **[MOSTLY RESOLVED]**
+
+> **Status:** the SMS vendor remains unselected (**AS-60**); everything else is now concrete. The table below records what was decided.
+
+| Concern | Abstraction | Resolved implementation | Status |
+|---|---|---|---|
+| Email delivery | `OtpProvider` | `App\Services\MailProviderService` → **`smtp`** or **`gmail`** (GmailApiTransport), with a runtime failover chain | ✅ `Email-Provider-Architecture.md` |
+| OTP (email) | `OtpService::generateAndSend()` | Queues `EmailOtpMail` on the active provider | ✅ built |
+| OTP (phone/SMS) | `OtpProvider` | — | ⚠️ **AS-60 OPEN** — `otp_codes.channel` already admits `phone` |
+| Push | `NotificationProvider` | `App\Services\FCMService` (FCM HTTP v1) + `SendPushNotification` job + `SendPushNotificationListener` | ✅ `FCM-Notification-System.md` |
+| In-app | — | `notifications` table — the **source of truth** | ✅ always on |
+| Push fallback | — | `NotificationFallbackMail` when `push_status ∈ {no_devices, failed}` | ✅ |
+| Google sign-in | — | `App\Services\GoogleAuthService` (direct JWKS verification, no Socialite) | ✅ `Google-Authentication.md` |
+| Object storage | `Storage::disk()` | `s3` driver | ✅ |
+| Map preview | — | *(unchanged — `Integration-Architecture.md` §6.5)* | P1 |
+
+### Why email keeps an interface but push does not
+
+Email genuinely needs the seam: **two providers ship, either can fail, and ops must be able to switch between them without a deploy.** Push has exactly one provider with no near-term alternative, so a `NotificationProvider` interface over a single implementation would be indirection without a benefit. If OneSignal or Beams is ever adopted, `FCMService` is the seam to abstract behind — and it already is the only place the FCM REST call is made.
+
+### Mail transport registration
 
 ```php
-interface OtpProvider {
-    public function send(string $destination, string $code): bool;
-}
+// app/Providers/AppServiceProvider.php
 
-interface NotificationProvider {
-    public function push(User $user, array $payload): void;
-}
+// The Gmail REST API transport. "smtp" needs no registration — it is
+// handled natively by Symfony Mailer via config/mail.php.
+Mail::extend('gmail-api', fn (array $config = []) => new GmailApiTransport($config));
+
+// Resolve the active mailer on EVERY request, so an admin switching
+// SMTP <-> Gmail in the panel takes effect without a redeploy. Both the
+// synchronous and the queued send paths resolve mail.default at the moment
+// they execute, so queued mail picks up the change too.
+$mail = app(MailProviderService::class);
+
+config([
+    'mail.default' => $mail->activeMailer(),
+    'mail.mailers.sportx_failover' => [
+        'transport' => 'failover',
+        'mailers'   => $mail->configuredChain() ?: ['log'],  // filtered to configured providers
+        'retry_after' => 60,
+    ],
+]);
 ```
-
-Registered in `AppServiceProvider`:
-- Default dev implementation: `LogOtpProvider`, `DatabaseNotificationProvider` (writes to `notifications` table only).
-- Production swap: bind to `SmsOtpProvider`, `FcmPushProvider` (or vendor of choice) when selected — no code changes beyond config (AS-03).
 
 ---
 
@@ -610,6 +656,57 @@ return [
         'allowed_image_types' => ['jpg', 'jpeg', 'png', 'webp'],
         'allowed_video_types' => ['mp4'],
         'allowed_document_types' => ['pdf', 'jpg', 'jpeg', 'png'],
+    ],
+
+    // — Email delivery (Email-Provider-Architecture.md §8) —
+    'mail' => [
+        'provider' => env('MAIL_PROVIDER', 'smtp'),      // smtp | gmail
+        'failover' => [
+            'enabled' => env('MAIL_FAILOVER_ENABLED', true),
+            'chain'   => ['gmail', 'smtp', 'log'],        // filtered to configured providers
+        ],
+        'retry_after' => 60,
+        'test_recipient' => env('MAIL_TEST_RECIPIENT'),
+    ],
+
+    // — Google sign-in (Google-Authentication.md §12) —
+    'google' => [
+        'client_id'     => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect_uri'  => env('GOOGLE_REDIRECT_URI'),
+        'hd'            => env('GOOGLE_WORKSPACE_HD'),    // optional single-tenant lock
+        'allow_signup'  => env('GOOGLE_ALLOW_SIGNUP', true),
+        'default_role'  => env('GOOGLE_DEFAULT_ROLE', 'athlete'),
+        // `role` on signup is validated against this allow-list — an
+        // unvalidated role would be a privilege-escalation hole.
+        'restrict_roles' => array_filter(explode(',', env('GOOGLE_ALLOWED_ROLES',
+            'athlete,coach,academy,organizer,sponsor,talent_scout'))),
+    ],
+
+    // — Push notifications (FCM-Notification-System.md §4/§5) —
+    'notifications' => [
+        'channels' => ['in_app', 'push', 'email'],
+        'defaults' => ['in_app' => true, 'push' => true, 'email' => false],
+        // Per-type channel defaults; unlisted types fall back to `defaults`.
+        // Hard overrides (account_action, registration_*) always deliver
+        // in-app regardless of user preference.
+        'type_channels' => [
+            'enquiry_reply'         => ['in_app' => true, 'push' => true, 'email' => true],
+            'registration_approved' => ['in_app' => true, 'push' => true, 'email' => true],
+            'registration_rejected' => ['in_app' => true, 'push' => true, 'email' => true],
+            'account_action'        => ['in_app' => true, 'push' => true, 'email' => true],
+            'broadcast'             => ['in_app' => true, 'push' => true, 'email' => false],
+        ],
+        'fcm' => [
+            'enabled' => env('FCM_ENABLED', true),
+            'project_id' => env('FCM_PROJECT_ID'),
+            'credentials_path' => env('FCM_CREDENTIALS_PATH'),
+            'batch_size' => 500,        // FCM HTTP v1 has NO multicast endpoint
+            'max_retries' => 3,         // failures before a token is retired
+            'default_android_channel_id' => 'sportx_default',
+        ],
+        'retention_days' => 180,
+        'device_token_ttl_days' => 120,
     ],
 ];
 ```

@@ -3,31 +3,18 @@
 namespace App\Mail;
 
 use App\Models\User;
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Queue\SerializesModels;
 
-class VerifyEmail extends Mailable
+class VerifyEmail extends SportXMail
 {
-    use Queueable, SerializesModels;
-
-    public $user;
-    public $token;
-
-    /**
-     * Create a new message instance.
-     */
-    public function __construct(User $user, string $token)
-    {
-        $this->user = $user;
-        $this->token = $token;
+    public function __construct(
+        public User $user,
+        public string $token,
+    ) {
+        parent::__construct();
     }
 
-    /**
-     * Get the message envelope.
-     */
     public function envelope(): Envelope
     {
         return new Envelope(
@@ -35,25 +22,18 @@ class VerifyEmail extends Mailable
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
     public function content(): Content
     {
         return new Content(
             view: 'emails.verify-email',
             with: [
                 'name' => $this->user->name,
-                'verifyUrl' => config('app.frontend_url') . '/verify-email?token=' . $this->token,
+                'verifyUrl' => $this->deepLink('/verify-email', ['token' => $this->token]),
+                'appUrl' => $this->deepLink('/'),
             ],
         );
     }
 
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
     public function attachments(): array
     {
         return [];

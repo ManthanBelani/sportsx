@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\UserDeviceToken;
 use App\Mail\VerifyEmail;
 use App\Mail\PasswordResetMail;
+use App\Mail\WelcomeMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -78,11 +79,49 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        // Verified users get the welcome mail; accounts still awaiting approval
+        // are told so in the template rather than discovering it by silence.
+        if ($user->email) {
+            Mail::to($user->email)->queue(new WelcomeMail($user));
+        }
+
         return response()->json([
             'message' => 'Email verified successfully',
             'token' => $token,
             'user' => $this->userResource($user),
             'needs_onboarding' => ! $user->hasRoleProfile(),
+        ]);
+    }
+
+    /**
+     * POST /auth/resend-verification
+     *
+     * `register()` marks the address verified up front, so this only has work
+     * to do for accounts whose address is still unverified.
+     */
+    public function resendVerification(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $user = User::where('email', strtolower($validated['email']))->first();
+
+        // Uniform response: never disclose whether an account exists.
+        if (!$user || $user->email_verified_at !== null) {
+            return response()->json([
+                'message' => 'If an account exists and needs verification, a link has been sent',
+            ]);
+        }
+
+        $token = Str::random(64);
+        $user->verification_token = $token;
+        $user->save();
+
+        Mail::to($user->email)->queue(new VerifyEmail($user, $token));
+
+        return response()->json([
+            'message' => 'If an account exists and needs verification, a link has been sent',
         ]);
     }
 

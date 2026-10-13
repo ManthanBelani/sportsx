@@ -2,6 +2,12 @@
 
 Physical schema matching **Laravel migration structure** (Blueprint-style definitions). Logical model: see `ER-Diagram.md`.
 
+> **Platform integrations (2026-10):** three new tables and two schema extensions back the email, Google sign-in and FCM notification work —
+> - **`social_accounts`** **[NEW]** — Google (and future) identities. Replaces `users.google_id`. → `Google-Authentication.md` §4
+> - **`notifications`** **[EXTENDED]** — `channel`, `category`, `image_url`, `priority`, `metadata`, `pushed_at`, `push_status`; `type` widened from an enum to `VARCHAR(40)`. → `FCM-Notification-System.md` §3
+> - **`user_device_tokens`** **[HARDENED]** — `token` made **unique**, plus `last_seen_at` and `failure_count`. → `FCM-Notification-System.md` §3
+> - **`otp_codes`** **[RESTORED]** — the table had been dropped while the service, model and purge job still targeted it. → `Email-Provider-Architecture.md` §12
+>
 > **⚠️ SYNCED TO THE NEW DESIGN (v3).** This document reflects `sportsx-design-v3/new_design_docs/SportX_Mandatory_Fields.md` (30 profile fields per role) and `docs/Backend-Feature-Delta.md` (the change delta vs the old spec). Where the old schema was superseded it is marked **[CHANGED]** / **[NEW]** / **[REMOVED]** / **[P1]**.
 >
 > **Conventions & global decisions**
@@ -28,8 +34,8 @@ Physical schema matching **Laravel migration structure** (Blueprint-style defini
 | email_verified_at | timestamp | nullable | Set by OTP verify (A.4) |
 | phone | string(20) | nullable, unique, index | Set when signup uses phone channel |
 | phone_verified_at | timestamp | nullable | Set by OTP verify (A.4) **[NEW]** |
-| password | string(255) | nullable | bcrypt/argon hash; nullable for OTP/Google-only accounts |
-| google_id | string(64) | nullable, unique | "Continue with Google" (A.3) — **confirm P0 (D9)** |
+| password | string(255) | nullable | bcrypt/argon hash. **Nullable for Google-only accounts** — which is why `DELETE /me/social-accounts/{provider}` must refuse to unlink the only credential when this is null. |
+| ~~google_id~~ | ~~string(64)~~ | — | **[REMOVED]** — superseded by the `social_accounts` join table. D9 is CLOSED; Google sign-in is P0. See `Google-Authentication.md` §4. |
 | status | enum('pending','active','suspended','banned','deleted') | default 'active' | 'pending' for OTP/guardian gated; banned for admin (AD.3) |
 | profile_visibility | enum('public','connections','private') | default 'public' | **[NEW]** privacy enforcement (AT.10/S.22) |
 | who_can_message | enum('everyone','connections','nobody') | default 'connections' | **[NEW]** |
@@ -45,6 +51,10 @@ Physical schema matching **Laravel migration structure** (Blueprint-style defini
 ### `otp_codes` **[CHANGED — re-enabled for P0]**
 
 > The OTP stack is restored to MVP (D1). Supports both **email** and **phone** channels.
+>
+> **⚠️ Previously broken.** Migration `2026_08_09_000003` dropped this table while `OtpService`, the `OtpCode` model and `PurgeExpiredOtpsJob` still targeted it — OTP was structurally dead, and the model's `$fillable` listed legacy columns (`phone`, `code`) that did not exist, so every write was silently discarded. Restored by `2026_10_01_000002` with the schema the service actually writes. See `Email-Provider-Architecture.md` §12.
+>
+> **Delivery:** `channel=email` goes through the active provider (SMTP **or** Gmail API — `Email-Provider-Architecture.md`). `channel=phone` remains blocked on **AS-60** (SMS vendor unselected).
 
 | Column | Type | Constraints |
 |---|---|---|
@@ -60,6 +70,30 @@ Physical schema matching **Laravel migration structure** (Blueprint-style defini
 | consumed_at | timestamp | nullable |
 
 **Index:** `(destination, purpose, created_at)`, `(user_id, channel, created_at)`.
+
+### `social_accounts` **[NEW — Google sign-in]**
+
+> Replaces the prototype `users.google_id` column. See `Google-Authentication.md` §4. A join table rather than a column, so Apple Sign In can be added later with no migration.
+
+| Column | Type | Constraints | Notes |
+|---|---|---|---|
+| id | bigint PK | | |
+| user_id | FK → users | cascade, index | |
+| provider | string(32) | index | `google` today; a string so new providers need no migration |
+| provider_user_id | string(191) | **unique with `provider`** | Google's `sub` claim — stable for the life of the Google account |
+| email | string(191) | nullable | snapshot at link time; used for conflict detection |
+| name | string(191) | nullable | |
+| avatar_url | varchar(500) | nullable | |
+| access_token | text | nullable | **`encrypted` cast** — AES-256-GCM |
+| refresh_token | text | nullable | **`encrypted` cast** |
+| token_expires_at | timestamp | nullable | |
+| scopes | string | nullable | |
+
+**Indexes:** `social_accounts_provider_user_unique (provider, provider_user_id)`, `(user_id, provider)`.
+
+> **Why `sub` and not `email`.** Consumer `@gmail.com` addresses are not unique (`a.b@gmail.com` and `ab@gmail.com` are distinct mailboxes), and addresses are mutable. Keying on email would permit duplicate accounts and, worse, account takeover if a provider ever allowed address reassignment.
+
+> **`users.google_id` is dropped** in the same migration. Two columns storing the same fact inevitably drift, and dropping the column is the only way to guarantee the composite unique constraint is enforced.
 
 ### `guardian_consents` **[NEW]**
 
@@ -826,21 +860,51 @@ Physical schema matching **Laravel migration structure** (Blueprint-style defini
 
 **Indexes:** `(reportable_type, reportable_id, status)`, `(status, created_at)`.
 
-### `notifications` **[CHANGED]**
+### `notifications` **[CHANGED — FCM-enabled]**
 
-| Column | Type | Constraints |
-|---|---|---|
-| id | bigint PK | |
-| user_id | FK → users | cascade |
-| type | enum('reminder','enquiry_reply','status_update','follow','connection_request','connection_accepted','message','enquiry','registration_decision','verification_result','mention','broadcast','opportunity_deadline') | index **[CHANGED]** |
-| title | string(190) | |
-| body | string(255) | |
-| notifiable_type | string | nullable |
-| notifiable_id | bigint | nullable |
-| action_url | string(255) | nullable |
-| read_at | timestamp | nullable, index |
+> Extended for the push system in `FCM-Notification-System.md`. The row is the **source of truth**: the in-app inbox reads it directly, and the FCM payload is derived from it, so the notification centre and the push tray can never disagree.
 
-**Index:** `(user_id, read_at, created_at)`.
+| Column | Type | Constraints | Notes |
+|---|---|---|---|
+| id | bigint PK | | |
+| user_id | FK → users | cascade | |
+| type | **varchar(40)** | index | **[CHANGED]** — was an enum of 13 values. Widened because adding a type was a migration every time, and the enum could not represent the full v3 vocabulary. Default `status_update`. |
+| channel | varchar(16) | default `'in_app'` | **[NEW]** `in_app` \| `push` \| `email` \| `sms` |
+| title | string(190) | | |
+| body | string(255) | | |
+| category | varchar(40) | nullable | **[NEW]** client routing key (`enquiry`, `reminder`, `registrations`, …) — see FCM doc §2 |
+| image_url | varchar(500) | nullable | **[NEW]** large image for rich push notifications |
+| priority | enum('normal','high') | default `'normal'` | **[NEW]** FCM `android.priority` / APNs push priority |
+| notifiable_type | string | nullable | |
+| notifiable_id | bigint | nullable | |
+| action_url | string(500) | nullable | deep link |
+| metadata | json | nullable | **[NEW]** extra payload for deep linking |
+| read_at | timestamp | nullable, index | |
+| pushed_at | timestamp | nullable | **[NEW]** when FCM accepted the message |
+| push_status | varchar(16) | nullable | **[NEW]** `queued` \| `sent` \| `partial` \| `failed` \| `no_devices` — drives the email fallback |
+
+**Indexes:** `(user_id, read_at, created_at)` (inbox + `unread_count`) and `(type, created_at)` (reminder sweeper).
+
+> **`push_status` is what makes the email fallback safe.** Without it, a retry or a partial failure would send a duplicate fallback email to users who already received the push.
+
+### `user_device_tokens` **[CHANGED — FCM device registry]**
+
+> See `FCM-Notification-System.md` §3. One row per installed app instance.
+
+| Column | Type | Constraints | Notes |
+|---|---|---|---|
+| id | bigint PK | | |
+| user_id | FK → users | cascade, index | |
+| token | string(500) | **UNIQUE** | **[CHANGED]** — was a non-unique index. FCM tokens identify exactly one app installation; duplicates let one user's token steal another user's notifications after a reinstall. |
+| device_type | enum('ios','android','web') | | |
+| device_id | string | nullable | |
+| is_active | boolean | default `true`, index | |
+| last_seen_at | timestamp | nullable | **[NEW]** TTL pruning (`DEVICE_TOKEN_TTL_DAYS`, default 120) |
+| failure_count | unsignedSmallInteger | default `0` | **[NEW]** transient-failure counter; retires at `FCM_MAX_RETRIES` (default 3) |
+
+**Indexes:** `(user_id, is_active)`, unique `token`.
+
+> The migration collapses existing duplicate rows (keeping the most recent) **before** adding the unique constraint.
 
 ### `broadcasts` **[NEW — P1]**
 
@@ -949,12 +1013,14 @@ Physical schema matching **Laravel migration structure** (Blueprint-style defini
 | `sponsorship_applications` | `opportunity_applications` | migrate rows, then drop |
 | `shortlist_entries` (sponsor) | `scout_shortlists` / `saved_items` | migrate or drop if unused |
 | `academies.facilities` JSON column | `facilities` table | back-fill rows then drop column |
+| `users.google_id` column | `social_accounts` join table | drop directly — no rows to migrate in dev; back-fill existing links in production before dropping (`Google-Authentication.md` §12) |
+| `device_tokens` table + `DeviceToken` model | `user_device_tokens` + `UserDeviceToken` | **AS-69** — unused, no readers; drop to remove ambiguity about which table is authoritative |
 
 ---
 
 ## 17. Migration Order (build sequence)
 
-1. `users`, `otp_codes`, `guardian_consents`, `admin_profiles`
+1. `users`, `otp_codes`, `guardian_consents`, `admin_profiles`, **`social_accounts` (drops `users.google_id`)**
 2. `sports`, `cities`, `age_groups`, `positions`
 3. `media_items` (no FKs to profiles)
 4. `athlete_profiles`, `athlete_sports`, `achievements`
@@ -968,9 +1034,14 @@ Physical schema matching **Laravel migration structure** (Blueprint-style defini
 12. `posts`, `post_likes`, `post_comments`
 13. `follows`, `connection_requests`, `conversations`, `conversation_participants`, `messages`, `blocks`
 14. `scout_shortlists`, `observations`, `scout_reports`
-15. `saved_items`, `listing_reports`, `notifications`, `broadcasts`, `verification_requests`
+15. `saved_items`, `listing_reports`, `notifications`, **`user_device_tokens`**, `broadcasts`, `verification_requests`
 16. `leaderboard_seasons`, `leaderboard_scores`, `leaderboard_config`, `reviews`
 17. `expiry_rules`, `expiry_events`, `reminder_subscriptions`, `analytics_events`, `academy_athlete_invites`
+18. **Schema extensions for the platform integrations** (order matters — see below)
+    - `2026_10_01_000001` `social_accounts` + drop `users.google_id`
+    - `2026_10_01_000002` restore `otp_codes`
+    - `2026_10_01_000003` `notifications` push columns (`channel`, `category`, `image_url`, `priority`, `metadata`, `pushed_at`, `push_status`) + widen `type`
+    - `2026_10_01_000004` `user_device_tokens` unique token + `last_seen_at` + `failure_count`
 
 > FK note: `media_items` must precede all profile/event tables (step 3).
 
@@ -990,6 +1061,10 @@ Physical schema matching **Laravel migration structure** (Blueprint-style defini
 | Moderation queue (AD.6) | `listing_reports(status, created_at)` |
 | Expiry sweep | `*(status, expires_at)` + `expiry_events(status, scheduled_at)` |
 | Universal search (S.5) | Per-type queries incl. athletes; merged at service layer (AS-11) |
+| Notification inbox + unread badge (S.16) | `notifications(user_id, read_at, created_at)` — also serves the `unread_count` aggregate |
+| FCM fan-out to a user's devices | `user_device_tokens(user_id, is_active)` + unique `token` for upsert |
+| Google sign-in lookup | `social_accounts(provider, provider_user_id)` unique lookup |
+| Reminder sweeper (AS-05) | `notifications(type, created_at)` |
 
 ---
 

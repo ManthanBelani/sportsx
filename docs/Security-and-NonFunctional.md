@@ -1,5 +1,7 @@
 > **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
 
+> **Platform integrations (2026-10):** §2.4 Google sign-in verification, §2.5 push-notification security, §2.6 email-delivery security, and checklist items SEC-18…SEC-28 were added alongside `Google-Authentication.md`, `FCM-Notification-System.md` and `Email-Provider-Architecture.md`.
+
 # Security and Non-Functional Requirements — SportX India
 
 Auth/authorization model, data protection, rate limiting, scalability, performance targets, and compliance considerations relevant to a sports discovery platform in India.
@@ -14,7 +16,7 @@ Auth/authorization model, data protection, rate limiting, scalability, performan
 |---|---|---|
 | Primary channel | **OTP (phone OR email)**, 6-digit, hashed, 5-min expiry, 60s resend cooldown, max 5 attempts | FR-AUTH-4; BE-M1.1 |
 | Secondary channel | Email/password login (bcrypt) — **kept alongside OTP** | FR-AUTH-5 |
-| Social auth | Google OAuth 2.0 (deferred — confirm D9) | S3 |
+| Social auth | **Google OAuth 2.0 / OIDC** — ID-token sign-in and account linking, **P0 (D9 CLOSED)**. Verified server-side against Google's JWKS with `aud` pinned to `GOOGLE_CLIENT_ID`. Identities stored in `social_accounts`. | S3; `Google-Authentication.md` |
 | Token mechanism | Laravel Sanctum API tokens (SHA-256 hashed in DB) | AS-16 |
 | Token lifetime | Configurable; default 1 year for MVP | AS-28 |
 | Logout | Token revocation on `POST /auth/logout` | — |
@@ -68,8 +70,11 @@ All mutation endpoints verify ownership via Laravel Policies:
 | Data | Protection |
 |---|---|
 | Passwords | bcrypt (cost 10+) — never stored/recovered in plaintext |
-| OTP codes | Hashed before storage; plaintext exists only in transit (email/phone) and memory during validation |
-| Google OAuth tokens | Not stored; only `google_id` retained for account linking |
+| OTP codes | **bcrypt**-hashed in `otp_codes.code_hash`; plaintext exists only in transit (email/phone) and memory during validation |
+| Email provider credentials | SMTP password / Gmail OAuth tokens — environment only. `GET /admin/email-settings` returns host, port, username and client ID but **never** secrets. |
+| Google OAuth tokens | **`social_accounts.access_token` / `refresh_token`** — stored with Laravel's `encrypted` cast (AES-256-GCM). Excluded from `$hidden`, so they never appear in any API response. `GOOGLE_CLIENT_SECRET` and `GMAIL_*` live only in the deployment secret store. |
+| Gmail service-account key | `GMAIL_PRIVATE_KEY` — environment only, never persisted to the database |
+| FCM service-account credentials | `FCM_CREDENTIALS_PATH` — a JSON key on the server filesystem only; the project ID is the sole non-secret |
 | Verification documents | Stored in private object storage bucket; served via signed URLs with expiry |
 | Trial registration documents | Same as verification documents |
 | Guardian consent data | `guardian_consents` — guardian name/phone stored; consent OTP hashed like all OTPs |
@@ -101,6 +106,47 @@ All mutation endpoints verify ownership via Laravel Policies:
 | Data localization | Not explicitly required for the MVP scope, but server should be in India (or region where data subjects are). **AS-37** — deployment region unspecified. |
 | Grievance officer | Not in MVP scope — **AS-36**. |
 
+### 2.4 Google Sign-in Verification (`Google-Authentication.md` §5)
+
+Six checks, any one of which aborts the request. The full threat/control matrix is in that document; the security-critical rules are:
+
+| # | Rule | Why it matters |
+|---|---|---|
+| 1 | **`alg` pinned to RS256** — never trusted from the token header | Accepting the header's `alg` enables the classic HMAC-confusion attack (re-signing with the public key as the secret) |
+| 2 | Signature verified against Google's JWKS (cached 24h, refetched on unknown `kid`) | Proves the token was issued by Google |
+| 3 | **`aud` pinned to `GOOGLE_CLIENT_ID`** | Stops a token minted for another app being replayed at SportX |
+| 4 | `exp` enforced, 60s clock-skew allowance | Replay window bounded |
+| 5 | **`email_verified` must be `true`** | The foundation of auto-linking — an unverified email cannot be trusted to identify a person |
+| 6 | Fail closed on network error | No "skip verification if JWKS is unreachable" path |
+
+**Account-linking rule:** an unknown Google identity is linked to an existing SportX account only when the Google email is verified **and** the SportX account has already verified that same email. `pending` accounts are linked but refused login (`403 PENDING_APPROVAL`), so Google sign-in cannot bypass the coach/scout approval gate. `role` on signup is validated against `GOOGLE_ALLOWED_ROLES` — an unvalidated role would be a privilege-escalation hole.
+
+> **`SocialLinksController` is not an auth path.** `PUT /me/social-links` stores display URLs a user pastes in. Those are never used for authentication. Keeping the two separate prevents a future refactor from treating a display field as a credential.
+
+### 2.5 Push Notification Security (`FCM-Notification-System.md` §9)
+
+| Threat | Control |
+|---|---|
+| Push delivered to the wrong user | Tokens are only ever read via `user_id`; a token is never accepted as an addressable identifier by any endpoint |
+| Token enumeration | Device-token endpoints require Sanctum auth and are scoped to the caller |
+| Reading another user's notifications | `abort_unless($notification->user_id === $request->user()->id)` on every per-item route |
+| **Privilege escalation via payload** | **A push payload is routing metadata only.** `action_url: /registrations/9` grants no access — the tapped screen re-authorizes server-side |
+| Payload injection | `toPushPayload()` coerces every value to a non-empty string (FCM rejects empty `data` values) |
+| Persistent channel after logout | Logout sets `is_active = false` and unsubscribes from topics |
+| Lock-screen content leakage | Per-Android-channel user control; `sportx_updates` is tunable independently of `sportx_enquiries` |
+| Broadcast abuse | Admin-only, `role:admin` + 2FA, audited |
+
+### 2.6 Email Delivery Security (`Email-Provider-Architecture.md` §9)
+
+| Threat | Control |
+|---|---|
+| Credential exposure via API | `MailProviderService::status()` returns host/port/username/client-id only — never a password or token |
+| Token leakage in logs | `GmailApiTransport` logs HTTP status and Gmail error messages, never payloads or credentials |
+| OAuth token theft at rest | `SocialAccount` tokens use the `encrypted` cast; `GMAIL_PRIVATE_KEY` is environment-only |
+| Mailbox abuse via replayed OTP request | Send-once-per-cooldown enforced **twice** — at the endpoint (`throttle`) *and* at the mailable (`EmailOtpMail::throttle`) |
+| Phishing of the OTP/reset mail | Every template carries an explicit "we will never ask for this" line |
+| Provider misconfiguration in prod | Failover chain filters to configured providers; `MAIL_FAILOVER_ENABLED=false` fails loudly instead of silently logging |
+
 ---
 
 ## 3. Rate Limiting
@@ -113,6 +159,10 @@ All mutation endpoints verify ownership via Laravel Policies:
 | `POST /auth/resend-otp` | 1/minute per destination | Server-side resend timer enforced |
 | `POST /guardian/consent` · `/guardian/verify-otp` | 5/hour per minor + per guardian phone | Prevent consent abuse |
 | `POST /auth/login` | 10/minute per IP | Brute-force prevention |
+| `POST /auth/google` | 10/minute per IP (shared with the credential group) | Brute-force / token-replay prevention |
+| `POST /me/device-tokens` | 60/minute per token | A client refreshing its FCM token must not be throttled into losing registration |
+| `POST /admin/email-settings/test` | 5/hour per admin | Each call sends a real email; prevents quota abuse |
+| `POST /admin/notifications/broadcast` | 10/hour per admin | Push fan-out is quota-bounded and costly |
 | `POST /reports` · `/blocks` | 5/hour per user | Prevent spam reporting/blocking |
 | `POST /posts` · `/posts/{id}/comments` | 30/hour per user | Feed abuse prevention (v3) |
 | `POST /conversations/{id}/messages` | 60/minute per user | Chat spam prevention (v3) |
@@ -209,6 +259,9 @@ Implementation: Laravel `RateLimiter` facade + `ThrottleRequests` middleware. He
 | Media backups | Object storage has built-in durability (e.g. S3 99.999999999%) | — |
 | Monitoring | Application logs + APM (Sentry, Laravel Telescope in dev) | AS-44 — tooling unspecified |
 | Error tracking | Exception tracking (Sentry or similar) in production | AS-44 |
+| Email provider health | Hourly `MailProviderService::testConnection()` probe; alert on `SportX mail failed permanently` | `Email-Provider-Architecture.md` §10 |
+| Push delivery health | Monitor `push_status='failed'` rate and `no_devices` rate | `FCM-Notification-System.md` §10 |
+| **FCM quota** | Default quota ≈ 10,000 `messages.send`/day. **A broadcast larger than the quota will fail** — raise quota before launch | AS-67 |
 
 ---
 
@@ -221,6 +274,10 @@ Implementation: Laravel `RateLimiter` facade + `ThrottleRequests` middleware. He
 | Listing status changes (published → closed, published → expired) | Model observers + `Log` |
 | API errors (5xx, 429) | Application log |
 | Job failures | Failed jobs table (`queue:failed-table`) |
+| Email provider switch (admin) | Audit log + `platform_settings.json` change |
+| Permanent mail failures | `SportXMail::failed()` → mailable, provider, recipients, error |
+| Google sign-in | `sub` + `aud` + outcome only — **no raw ID token, no PII beyond email** |
+| Push delivery outcome | `notifications.push_status` + `pushed_at` |
 
 ---
 
@@ -245,3 +302,14 @@ Implementation: Laravel `RateLimiter` facade + `ThrottleRequests` middleware. He
 | SEC-15 | Soft-delete + hard-purge for account deletion. | Pending |
 | SEC-16 | Scout data (shortlists/notes/observations/reports) is owner-only; never leaked on public views/search. | Pending |
 | SEC-17 | Chat/messaging rules enforced: no cold DMs; block severs both ways; report user/post targetable. | Pending |
+| SEC-18 | Google ID tokens verified server-side: RS256 pinned, `aud` checked, `email_verified` required. | Pending |
+| SEC-19 | Google OAuth tokens encrypted at rest and excluded from every API response. | Pending |
+| SEC-20 | Auto-linking only to an account with an already-verified matching email; `pending` accounts cannot log in via Google. | Pending |
+| SEC-21 | `role` on Google signup validated against an allow-list. | Pending |
+| SEC-22 | Email provider credentials are environment-only; no secret is reachable through any API response. | Pending |
+| SEC-23 | `user_device_tokens.token` is unique; stale tokens pruned; invalid tokens retired. | Pending |
+| SEC-24 | Push payloads treated as routing metadata — every screen re-authorizes server-side. | Pending |
+| SEC-25 | `notification_prefs` honoured before dispatch; account/registration decisions are hard overrides. | Pending |
+| SEC-26 | SPF, DKIM and DMARC published for the sending domain. | Pending |
+| SEC-27 | Google Workspace “Send mail as your users” verified for the Gmail API sender. | Pending |
+| SEC-28 | FCM quota raised above the expected broadcast volume. | Pending |

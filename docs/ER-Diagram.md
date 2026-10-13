@@ -8,6 +8,8 @@ Logical ERD (Mermaid) with entity and attribute descriptions. Physical schema (t
 >
 > **New-design deltas applied here:** `sponsor` role removed (→ `opportunities`); `scout` role added; OTP restored (P0); guardian consent added; social feed / network / messaging added; leaderboard engine added; profiles extended to 30 fields per role. Removed entities are marked **[REMOVED]**.
 
+> **Platform integrations (2026-10):** `social_accounts` **[NEW]** (Google sign-in — `Google-Authentication.md`), `notifications` **[EXTENDED]** with FCM columns, and `user_device_tokens` **[HARDENED]** with a unique token + `last_seen_at` + `failure_count` (`FCM-Notification-System.md`). `users.google_id` is **REMOVED**.
+
 ---
 
 ## 1. ERD
@@ -111,6 +113,8 @@ erDiagram
     USERS ||--o{ LISTING_REPORTS : "files"
     USERS ||--o{ NOTIFICATIONS : "receives"
     USERS ||--o{ OTP_CODES : "verifies with"
+    USERS ||--o{ USER_DEVICE_TOKENS : "registers devices for FCM push"
+    USERS ||--o{ SOCIAL_ACCOUNTS : "links identities (Google)"
 
     SPORTS }o--o{ TRIALS : "classifies"
     SPORTS }o--o{ TOURNAMENTS : "classifies"
@@ -130,7 +134,7 @@ erDiagram
         timestamp email_verified_at "set by OTP verify (A.4)"
         timestamp phone_verified_at "set by OTP verify (A.4)"
         string password_hash "nullable — OTP/Google-only accounts"
-        string google_id "nullable, confirm P0 (D9)"
+        -- google_id REMOVED -> SOCIAL_ACCOUNTS join table (Google-Authentication.md §4)
         string status "pending|active|suspended|banned|deleted"
         string profile_visibility "public|connections|private"
         string who_can_message "everyone|connections|nobody"
@@ -150,6 +154,20 @@ erDiagram
         int attempts "default 0, max 5"
         datetime resend_available_at "60s cooldown"
         timestamp consumed_at
+    }
+
+    SOCIAL_ACCOUNTS {
+        bigint id PK
+        bigint user_id FK "-> USERS, cascadeOnDelete"
+        string provider "google (string, not enum — extensible)"
+        string provider_user_id "UK with provider — Google `sub` claim"
+        string email "nullable — snapshot at link time"
+        string name "nullable"
+        string avatar_url "nullable"
+        text access_token "nullable — ENCRYPTED at rest"
+        text refresh_token "nullable — ENCRYPTED at rest"
+        datetime token_expires_at "nullable"
+        string scopes "nullable"
     }
 
     GUARDIAN_CONSENTS {
@@ -803,12 +821,31 @@ erDiagram
     NOTIFICATIONS {
         bigint id PK
         bigint user_id FK
-        string type "reminder|enquiry_reply|status_update|follow|connection_request|connection_accepted|message|enquiry|registration_decision|verification_result|mention|broadcast|opportunity_deadline"
+        string type "varchar(40) — widened from enum; see FCM doc §2"
+        string channel "in_app|push|email|sms"
         string title
         string body
+        string category "nullable — client routing key"
+        string image_url "nullable — rich push image"
+        string priority "normal|high"
         string notifiable_type "nullable polymorphic link"
         bigint notifiable_id
+        string action_url "nullable — deep link"
+        json metadata "nullable"
         timestamp read_at
+        datetime pushed_at "nullable — FCM accepted"
+        string push_status "queued|sent|partial|failed|no_devices"
+    }
+
+    USER_DEVICE_TOKENS {
+        bigint id PK
+        bigint user_id FK "-> USERS, cascadeOnDelete"
+        string token UK "FCM registration token — UNIQUE per app install"
+        string device_type "ios|android|web"
+        string device_id "nullable"
+        boolean is_active "default true"
+        datetime last_seen_at "nullable — TTL pruning"
+        int failure_count "default 0 — transient failures before retirement"
     }
 
     EXPIRY_RULES {
@@ -847,7 +884,7 @@ erDiagram
     }
 ```
 
-> **Removed entities [REMOVED]:** `sponsor_profiles`, `sponsorships`, `sponsorship_applications`, `scholarships`, and `shortlist_entries` (sponsor-owned). They collapse into `opportunities` + `opportunity_applications`; the sponsor-owned shortlist becomes the scout-owned `scout_shortlists`. Migration actions are listed in `Database-Design.md` §16.
+> **Removed entities [REMOVED]:** `sponsor_profiles`, `sponsorships`, `sponsorship_applications`, `scholarships`, and `shortlist_entries` (sponsor-owned). They collapse into `opportunities` + `opportunity_applications`; the sponsor-owned shortlist becomes the scout-owned `scout_shortlists`. Additionally **`users.google_id`** is removed (superseded by `social_accounts`) and the legacy **`device_tokens`** table is scheduled for removal (**AS-69**). Migration actions are listed in `Database-Design.md` §16.
 
 ---
 
@@ -857,8 +894,9 @@ erDiagram
 
 | Entity | Description | Key attributes |
 |---|---|---|
-| `users` | One account per person/organization; a single `role` column determines which profile table applies (`athlete`, `coach`, `academy`, `organizer`, `scout`, `admin`). **`sponsor` REMOVED, `scout` ADDED.** **Assumption (AS-01):** one role per account — a person who is both coach and athlete needs two accounts. Profile privacy/messaging prefs live here. | role, name, email (nullable unique), phone (nullable unique), password_hash (nullable), google_id, status, profile_visibility, who_can_message, who_can_connect, social_links |
+| `users` | One account per person/organization; a single `role` column determines which profile table applies (`athlete`, `coach`, `academy`, `organizer`, `scout`, `admin`). **`sponsor` REMOVED, `scout` ADDED.** **Assumption (AS-01):** one role per account — a person who is both coach and athlete needs two accounts. Profile privacy/messaging prefs live here. `google_id` **REMOVED** → `social_accounts`. `notification_prefs` (json) holds per-channel/category push & email preferences. | role, name, email (nullable unique), phone (nullable unique), password_hash (nullable), status, profile_visibility, who_can_message, who_can_connect, social_links, notification_prefs |
 | `otp_codes` | **P0 (D1).** Time-boxed 6-digit codes for sign-up/login/reset **and** guardian consent, over **email or phone** channels. Stored hashed, attempt-counted, single-use, 60s resend cooldown. | purpose, channel, destination, code_hash, expires_at, attempts, resend_available_at, consumed_at |
+| `social_accounts` | **NEW.** Third-party identities for "Continue with Google" (A.3 / D9 CLOSED). Replaces `users.google_id`; a join table so Apple Sign In needs no migration. Keyed on Google's stable `sub` claim, **not** email — consumer Gmail addresses are not unique. OAuth tokens encrypted at rest and excluded from all API responses. | provider, provider_user_id (UK with provider), email, name, avatar_url, access_token (encrypted), refresh_token (encrypted) |
 | `guardian_consents` | **NEW.** Guardian consent + parent controls for minors (DOB < 18) — mandatory before profile activation (A.9/AT.10). Closes AS-34. | guardian_name, guardian_phone, relationship, consent_status, allow_messages, allow_public_profile, leaderboard_name_mode |
 | `verification_requests` | **NEW.** Request → admin queue (AD.4) → blue-check badge. Polymorphic requester over the profile tables. | requestable_type/id, id_proof_media_id, org_proof_media_id, status, reviewed_by, review_reason |
 | `admin_profiles` | Marks a user as admin; carries `two_factor_secret` for the admin portal 2FA (AD.1). | two_factor_secret, is_super_admin |
@@ -951,7 +989,8 @@ erDiagram
 | `enquiries` + `enquiry_messages` | Thread + messages; now linked to a `conversations` row. `subject_type/subject_id` targets a coach profile, academy, organisation, program, opportunity or facility. | preferred_datetime, conversation_id; messages keyed by sender |
 | `saved_items` | Bookmarks polymorphic over academy/coach/trial/tournament/opportunity/program/facility/post/event/generalized profile. | unique (user, item_type, item_id) |
 | `listing_reports` | Reports polymorphic over users, posts and listings; `status` + `resolved_by` capture moderation outcome (AD.7). Reason enum extended (misleading/spam). | reason, comment, status |
-| `notifications` | All alerts; polymorphic link back to the source record for deep-linking. Type enum extended (follow/connection/message/registration_decision/verification_result/mention/broadcast/deadline). | type, read_at |
+| `notifications` | **CHANGED (FCM).** All alerts; polymorphic link back to the source record for deep-linking. The row is the **source of truth** — the in-app inbox reads it and the FCM payload is derived from it, so the tray and the centre cannot disagree. `type` widened from a 3-value enum to `varchar(40)`. | type, channel, category, priority, image_url, action_url, metadata, read_at, pushed_at, push_status |
+| `user_device_tokens` | **CHANGED (FCM).** FCM registration tokens, one row per installed app instance. `token` is **UNIQUE** — FCM tokens identify exactly one installation, and duplicates would let one user's device receive another user's notifications after a reinstall. Tokens are retired on `UNREGISTERED`, after repeated transient failures, on logout, or after `DEVICE_TOKEN_TTL_DAYS` of inactivity. | user_id, token (UK), device_type, device_id, is_active, last_seen_at, failure_count |
 | `reviews` | **NEW [P1].** Ratings (1–5) gated to verified interactions; polymorphic rateable (coach/academy/organizer/program/facility). | rating, body, interaction_verified, status |
 | `broadcasts` | **NEW [P1].** Admin broadcast with audience filter, schedule and FCM fan-out job (AD.12). | audience, title, body, scheduled_at, status |
 | `analytics_events` | **NEW.** Product/funnel event log (signup, registration, enquiry, shortlist); also feeds event analytics (OR.12). | user_id, event, context |

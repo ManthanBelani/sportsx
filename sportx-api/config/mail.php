@@ -14,7 +14,30 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'log'),
+    /*
+    |--------------------------------------------------------------------------
+    | Default Mailer
+    |--------------------------------------------------------------------------
+    |
+    | SportX supports two first-class transactional email providers:
+    |
+    |   "smtp"  — Generic SMTP relay (Gmail/Google Workspace via App Password,
+    |              Zoho, SendGrid, Amazon SES, Mailgun, Brevo, or any host).
+    |              Configured with MAIL_HOST / MAIL_PORT / MAIL_USERNAME /
+    |              MAIL_PASSWORD.
+    |
+    |   "gmail" — Direct Gmail API (OAuth2) delivery. Bypasses SMTP quota and
+    |              works with Workspace accounts that enforce 2FA and block
+    |              "less secure app" passwords. Configured with GMAIL_* vars.
+    |
+    | The active provider is resolved at runtime by
+    | App\Services\MailProviderService (MAIL_PROVIDER env, overridable at
+    | runtime from the admin panel), so this value is only the bootstrap
+    | fallback. See config/sportx.php -> 'mail'.
+    |
+    */
+
+    'default' => env('MAIL_MAILER', 'smtp'),
 
     /*
     |--------------------------------------------------------------------------
@@ -45,8 +68,27 @@ return [
             'port' => env('MAIL_PORT', 2525),
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
-            'timeout' => null,
+            'timeout' => env('MAIL_TIMEOUT'),
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+        ],
+
+        /*
+         * Gmail API (OAuth2) transport — see App\Mail\Transport\GmailApiTransport.
+         * Registered through Mail::extend() in AppServiceProvider.
+         */
+        'gmail' => [
+            'transport' => 'gmail-api',
+            'auth_mode' => env('GMAIL_AUTH_MODE', 'user'), // user | service_account
+            'client_id' => env('GMAIL_CLIENT_ID'),
+            'client_secret' => env('GMAIL_CLIENT_SECRET'),
+            'refresh_token' => env('GMAIL_REFRESH_TOKEN'),
+            'service_account_email' => env('GMAIL_SERVICE_ACCOUNT_EMAIL'),
+            'private_key' => env('GMAIL_PRIVATE_KEY'),
+            'private_key_id' => env('GMAIL_PRIVATE_KEY_ID'),
+            'impersonate' => env('GMAIL_IMPERSONATE_USER', env('MAIL_FROM_ADDRESS')),
+            'project_id' => env('GMAIL_PROJECT_ID', env('FCM_PROJECT_ID')),
+            'token_cache_key' => env('GMAIL_TOKEN_CACHE_KEY', 'sportx.gmail.access_token'),
+            'timeout' => env('GMAIL_TIMEOUT', 15),
         ],
 
         'ses' => [
@@ -82,6 +124,7 @@ return [
         'failover' => [
             'transport' => 'failover',
             'mailers' => [
+                'gmail',
                 'smtp',
                 'log',
             ],
