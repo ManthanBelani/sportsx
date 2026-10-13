@@ -46,7 +46,17 @@ class AthleteProfile extends Model
 
     public function sports(): BelongsToMany
     {
-        return $this->belongsToMany(Sport::class, 'athlete_sports', 'athlete_id', 'sport_id');
+        $relation = $this->belongsToMany(Sport::class, 'athlete_sports', 'athlete_id', 'sport_id');
+
+        // Pivot was extended in Phase 2 (playing_role/level/experience/is_primary).
+        // Only request the extra columns when they exist so reads keep working
+        // on databases that have not migrated yet.
+        if (\Illuminate\Support\Facades\Schema::hasColumn('athlete_sports', 'playing_role')) {
+            $relation->withPivot(['playing_role', 'level', 'experience_years', 'is_primary'])
+                ->withTimestamps();
+        }
+
+        return $relation;
     }
 
     public function ageGroup(): BelongsTo

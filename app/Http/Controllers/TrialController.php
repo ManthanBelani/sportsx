@@ -25,10 +25,44 @@ class TrialController extends Controller
         return response()->json($query->paginate($perPage)->withQueryString());
     }
 
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
         $trial = Trial::published()->with(['sport', 'city', 'academy', 'postedBy'])->findOrFail($id);
 
-        return response()->json(['data' => $trial]);
+        $data = $trial->toArray();
+        $data['registration_status'] = $this->registrationStatus($trial, $request->user());
+
+        return response()->json(['data' => $data]);
+    }
+
+    /**
+     * Registration status for the viewer (Phase 3): own registration state +
+     * seats remaining. Guests get `registered: false` with seat counts.
+     *
+     * @return array{registered: bool, approval_status: ?string, seats_total: ?int, seats_taken: int, seats_left: ?int, is_registerable: bool}
+     */
+    protected function registrationStatus(\App\Models\Trial $trial, $viewer): array
+    {
+        $taken = $trial->registrations()->where('approval_status', 'approved')->count();
+
+        $status = [
+            'registered' => false,
+            'approval_status' => null,
+            'seats_total' => $trial->vacancies,
+            'seats_taken' => $taken,
+            'seats_left' => $trial->vacancies !== null ? max(0, $trial->vacancies - $taken) : null,
+            'is_registerable' => $trial->isRegisterable(),
+        ];
+
+        $athleteId = $viewer?->athleteProfile?->id;
+        if ($athleteId) {
+            $mine = $trial->registrations()->where('athlete_id', $athleteId)->latest('id')->first();
+            if ($mine) {
+                $status['registered'] = true;
+                $status['approval_status'] = $mine->approval_status;
+            }
+        }
+
+        return $status;
     }
 }

@@ -142,6 +142,35 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Discovery masters (Phase 3 — curated; admin-managed in Phase 9)
+    |--------------------------------------------------------------------------
+    |
+    | Positions and facility vocabulary power the Explore filters. Kept in
+    | config until the Phase-9 admin masters (`positions` table + UI) land;
+    | the endpoint shapes stay stable across that swap.
+    |
+    */
+    'masters' => [
+        'positions' => [
+            ['sport' => 'Football', 'positions' => ['Goalkeeper', 'Defender', 'Midfielder', 'Forward', 'Winger']],
+            ['sport' => 'Cricket', 'positions' => ['Batsman', 'Bowler', 'All-rounder', 'Wicket-keeper']],
+            ['sport' => 'Basketball', 'positions' => ['Point Guard', 'Shooting Guard', 'Small Forward', 'Power Forward', 'Center']],
+            ['sport' => 'Hockey', 'positions' => ['Goalkeeper', 'Defender', 'Midfielder', 'Forward']],
+            ['sport' => 'Kabaddi', 'positions' => ['Raider', 'Defender', 'All-rounder']],
+            ['sport' => 'Volleyball', 'positions' => ['Setter', 'Outside Hitter', 'Middle Blocker', 'Libero']],
+            ['sport' => 'Badminton', 'positions' => ['Singles', 'Doubles']],
+            ['sport' => 'Tennis', 'positions' => ['Singles', 'Doubles']],
+            ['sport' => 'Athletics', 'positions' => ['Sprinter', 'Middle-distance', 'Long-distance', 'Jumper', 'Thrower']],
+        ],
+        'facilities' => [
+            'Grass Ground', 'Turf Ground', 'Indoor Court', 'Swimming Pool',
+            'Gym', 'Running Track', 'Net Practice', 'Changing Room',
+            'First Aid', 'Cafeteria', 'Parking', 'Floodlights', 'Hostel',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Media uploads
     |--------------------------------------------------------------------------
     */

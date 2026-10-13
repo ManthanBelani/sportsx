@@ -35,6 +35,7 @@ class VerificationRequest extends Model
      */
     public const BADGE_COLUMNS = [
         'academy' => 'verification_badge',
+        'coach_profile' => 'verification_badge',
         'organizer_profile' => 'verification_status',
         'sponsor_profile' => 'verification_status',
     ];

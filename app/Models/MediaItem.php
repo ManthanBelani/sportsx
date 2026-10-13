@@ -12,7 +12,7 @@ class MediaItem extends Model
 
     protected $fillable = [
         'owner_type', 'owner_id', 'media_type', 'disk', 'path',
-        'original_name', 'mime_type', 'size_bytes', 'sort_order',
+        'original_name', 'caption', 'sport_id', 'mime_type', 'size_bytes', 'sort_order',
     ];
 
     protected $appends = ['url'];

@@ -12,7 +12,7 @@ class EnquiryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'subject_type' => 'required|string|in:coach_profile,academy,organizer_profile,sponsor_profile,sports_venue',
+            'subject_type' => 'required|string|in:coach_profile,academy,organizer_profile,sponsor_profile,sports_venue,program,opportunity',
             'subject_id' => 'required|integer',
             'message' => 'required|string|max:1000',
             'preferred_datetime' => 'nullable|date',
@@ -20,6 +20,8 @@ class EnquiryController extends Controller
 
         $athlete = $request->user()->athleteProfile;
         abort_if(! $athlete, 403, 'Athlete profile required');
+
+        $this->assertSubjectExists($validated['subject_type'], (int) $validated['subject_id']);
 
         $enquiry = Enquiry::create([
             'athlete_id' => $athlete->id,
@@ -43,13 +45,28 @@ class EnquiryController extends Controller
 
         // Build per-role subject map so organizer/sponsor also see their inbox (previous only coach/academy)
         $pairs = match ($user->role) {
-            'coach' => $user->coachProfile ? [['coach_profile', $user->coachProfile->id]] : [],
-            'academy' => $user->academies ? [['academy', $user->academies->id]] : [],
-            'organizer' => $user->organizerProfile ? [['organizer_profile', $user->organizerProfile->id]] : [],
+            'coach' => array_merge(
+                $user->coachProfile ? [['coach_profile', $user->coachProfile->id]] : [],
+                $this->programPairs('coach_profile', $user->coachProfile?->id),
+            ),
+            'academy' => array_merge(
+                $user->academies ? [['academy', $user->academies->id]] : [],
+                $this->programPairs('academy', $user->academies?->id),
+            ),
+            'organizer' => array_merge(
+                $user->organizerProfile ? [['organizer_profile', $user->organizerProfile->id]] : [],
+                $this->opportunityPairs($user->id),
+            ),
             'sponsor' => $user->sponsorProfile ? [['sponsor_profile', $user->sponsorProfile->id]] : [],
+            'talent_scout', 'scout' => $this->opportunityPairs($user->id),
             'athlete' => [], // athletes use sent side below
             default => [],
         };
+
+        // Coaches/academies also receive enquiries on opportunities they posted.
+        if (in_array($user->role, ['coach', 'academy'], true)) {
+            $pairs = array_merge($pairs, $this->opportunityPairs($user->id));
+        }
 
         $query = Enquiry::query()->with(['athlete.user', 'athlete.photo', 'messages' => fn ($m) => $m->latest()]);
 
@@ -134,10 +151,91 @@ class EnquiryController extends Controller
     {
         $isOwner = in_array($user->id, [
             $enquiry->athlete?->user_id,
-            $enquiry->subject?->user_id ?? $enquiry->subject?->owner_user_id,
+            $this->subjectOwnerId($enquiry),
         ]);
 
         abort_unless($isOwner || $user->isAdmin(), 403);
+    }
+
+    /**
+     * Owning user id behind any enquiry subject (Phase 5 adds program +
+     * opportunity, whose owners live behind a profile or creator column).
+     */
+    private function subjectOwnerId(Enquiry $enquiry): ?int
+    {
+        $subject = $enquiry->subject;
+
+        if (! $subject) {
+            return null;
+        }
+
+        return match ($enquiry->subject_type) {
+            'academy' => $subject->owner_user_id,
+            'program' => $this->programOwnerId($subject),
+            'opportunity' => $subject->created_by_user_id,
+            default => $subject->user_id ?? $subject->owner_user_id,
+        };
+    }
+
+    private function programOwnerId($program): ?int
+    {
+        $owner = $program->owner;
+
+        if (! $owner) {
+            return $program->created_by_user_id;
+        }
+
+        return $owner->owner_user_id ?? $owner->user_id ?? $program->created_by_user_id;
+    }
+
+    /**
+     * Enquiry subjects for programs owned by a profile (coach/academy).
+     *
+     * @return list<array{0: string, 1: int}>
+     */
+    private function programPairs(string $ownerType, ?int $ownerId): array
+    {
+        if (! $ownerId) {
+            return [];
+        }
+
+        return \App\Models\Program::where('owner_type', $ownerType)
+            ->where('owner_id', $ownerId)
+            ->pluck('id')
+            ->map(fn ($id) => ['program', $id])
+            ->all();
+    }
+
+    /**
+     * Enquiry subjects for opportunities posted by a user.
+     *
+     * @return list<array{0: string, 1: int}>
+     */
+    private function opportunityPairs(int $userId): array
+    {
+        return \App\Models\Opportunity::where('created_by_user_id', $userId)
+            ->pluck('id')
+            ->map(fn ($id) => ['opportunity', $id])
+            ->all();
+    }
+
+    /**
+     * The subject must exist — otherwise the thread points at nothing and the
+     * provider never sees it.
+     */
+    private function assertSubjectExists(string $type, int $id): void
+    {
+        $model = match ($type) {
+            'coach_profile' => \App\Models\CoachProfile::class,
+            'academy' => \App\Models\Academy::class,
+            'organizer_profile' => \App\Models\OrganizerProfile::class,
+            'sponsor_profile' => \App\Models\SponsorProfile::class,
+            'sports_venue' => \App\Models\SportsVenue::class,
+            'program' => \App\Models\Program::class,
+            'opportunity' => \App\Models\Opportunity::class,
+        };
+
+        abort_unless($model::whereKey($id)->exists(), 404, 'Enquiry subject not found.');
     }
 
     private function getSubjectLabel(string $subjectType, $subject): string
@@ -149,6 +247,8 @@ class EnquiryController extends Controller
             'organizer_profile' => $subject->organization_name ?? 'Organizer',
             'sponsor_profile' => $subject->organization_name ?? 'Sponsor',
             'sports_venue' => $subject->name ?? 'Venue',
+            'program' => $subject->title ?? 'Program',
+            'opportunity' => $subject->title ?? 'Opportunity',
             default => 'a listing',
         };
     }

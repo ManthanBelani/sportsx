@@ -36,4 +36,26 @@ class MetaController extends Controller
         // AS-11: trending search terms enhancement — derive from actual search queries in production
         return response()->json(['data' => Sport::where('is_active', true)->orderBy('sort_order')->pluck('name')]);
     }
+
+    /**
+     * GET /meta/positions — playing positions grouped by sport.
+     *
+     * Curated static master for Phase 3 (powers the position filter). An
+     * admin-managed `positions` master ships in Phase 9; the shape
+     * (`[{sport_id, sport, positions[]}]`) is kept stable for that swap.
+     */
+    public function positions()
+    {
+        return response()->json(['data' => config('sportx.masters.positions', [])]);
+    }
+
+    /**
+     * GET /meta/facilities — facility/amenity vocabulary for filters.
+     *
+     * Same arrangement as positions: curated now, admin-managed in Phase 9.
+     */
+    public function facilities()
+    {
+        return response()->json(['data' => config('sportx.masters.facilities', [])]);
+    }
 }

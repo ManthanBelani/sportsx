@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\ExpiryEvent;
 use App\Models\ExpiryRule;
+use App\Models\Opportunity;
 use App\Models\Scholarship;
 use App\Models\Sponsorship;
 use App\Models\Tournament;
@@ -21,6 +22,7 @@ class ExpiryService
         'tournament' => [Tournament::class, 'end_date', 'final_date'],
         'sponsorship' => [Sponsorship::class, 'deadline', 'listed_deadline'],
         'scholarship' => [Scholarship::class, 'deadline', 'listed_deadline'],
+        'opportunity' => [Opportunity::class, 'deadline', 'listed_deadline'],
     ];
 
     /**

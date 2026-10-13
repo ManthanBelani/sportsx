@@ -4,10 +4,42 @@ namespace App\Http\Controllers;
 
 use App\Models\MediaItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class MediaController extends Controller
 {
+    /**
+     * GET /me/media — the caller's own gallery, newest order first.
+     */
+    public function index(Request $request)
+    {
+        $user = $request->user();
+
+        $owners = array_filter([
+            $user->athleteProfile ? ['athlete_profile', $user->athleteProfile->id] : null,
+            $user->coachProfile ? ['coach_profile', $user->coachProfile->id] : null,
+            $user->academies ? ['academy', $user->academies->id] : null,
+            $user->organizerProfile ? ['organizer_profile', $user->organizerProfile->id] : null,
+            $user->sponsorProfile ? ['sponsor_profile', $user->sponsorProfile->id] : null,
+            $user->talentScoutProfile ? ['talent_scout_profile', $user->talentScoutProfile->id] : null,
+            ['user', $user->id],
+        ]);
+
+        $query = MediaItem::query()->orderBy('sort_order')->latest('id');
+        $query->where(function ($q) use ($owners) {
+            foreach (array_values($owners) as $i => [$type, $id]) {
+                if ($i === 0) {
+                    $q->where(fn ($w) => $w->where('owner_type', $type)->where('owner_id', $id));
+                } else {
+                    $q->orWhere(fn ($w) => $w->where('owner_type', $type)->where('owner_id', $id));
+                }
+            }
+        });
+
+        return response()->json(['data' => $query->paginate(min((int) ($request->per_page ?? 24), 50))]);
+    }
+
     public function upload(Request $request)
     {
         $validated = $request->validate([
@@ -15,6 +47,8 @@ class MediaController extends Controller
             'owner_type' => 'nullable|string',
             'owner_id' => 'nullable|integer',
             'media_type' => 'required|in:photo,video,document',
+            'caption' => 'nullable|string|max:280',
+            'sport_id' => 'nullable|exists:sports,id',
         ]);
 
         $file = $request->file('file');
@@ -70,7 +104,7 @@ class MediaController extends Controller
 
         $path = $file->store("media/{$ownerType}/{$ownerId}", 'public');
 
-        $media = MediaItem::create([
+        $attributes = [
             'owner_type' => $ownerType,
             'owner_id' => $ownerId,
             'media_type' => $validated['media_type'],
@@ -79,7 +113,18 @@ class MediaController extends Controller
             'original_name' => $file->getClientOriginalName(),
             'mime_type' => $file->getMimeType(),
             'size_bytes' => $file->getSize(),
-        ]);
+        ];
+
+        // Caption + sport tag arrive with the Phase-2 migration; accept them
+        // now, persist only when the columns exist.
+        if (isset($validated['caption']) && Schema::hasColumn('media_items', 'caption')) {
+            $attributes['caption'] = $validated['caption'];
+        }
+        if (isset($validated['sport_id']) && Schema::hasColumn('media_items', 'sport_id')) {
+            $attributes['sport_id'] = $validated['sport_id'];
+        }
+
+        $media = MediaItem::create($attributes);
 
         return response()->json([
             'data' => [

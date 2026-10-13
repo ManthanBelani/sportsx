@@ -128,6 +128,8 @@ Route::prefix('v1')->group(function () {
     Route::get('/meta/sports', [MetaController::class, 'sports']);
     Route::get('/meta/cities', [MetaController::class, 'cities']);
     Route::get('/meta/age-groups', [MetaController::class, 'ageGroups']);
+    Route::get('/meta/positions', [MetaController::class, 'positions']);
+    Route::get('/meta/facilities', [MetaController::class, 'facilities']);
     Route::get('/meta/trending-searches', [MetaController::class, 'trendingSearches']);
 
     // ── Onboarding ──
@@ -137,6 +139,8 @@ Route::prefix('v1')->group(function () {
     Route::post('/onboarding/organizer', [OnboardingController::class, 'organizer'])->middleware('auth:sanctum');
     Route::post('/onboarding/sponsor', [OnboardingController::class, 'sponsor'])->middleware('auth:sanctum');
     Route::post('/onboarding/talent-scout', [OnboardingController::class, 'talentScout'])->middleware('auth:sanctum');
+    // Canonical v3 alias for the scout role (storage still `talent_scout`).
+    Route::post('/onboarding/scout', [OnboardingController::class, 'scout'])->middleware('auth:sanctum');
 
     // ── Directories (public read) ──
     Route::get('/academies', [DirectoryController::class, 'academies']);
@@ -147,17 +151,24 @@ Route::prefix('v1')->group(function () {
     Route::get('/trials/{id}', [TrialController::class, 'show']);
     Route::get('/tournaments', [TournamentController::class, 'index']);
     Route::get('/tournaments/{id}', [TournamentController::class, 'show']);
-    Route::get('/scholarships', [ScholarshipController::class, 'index']);
-    Route::get('/scholarships/{id}', [ScholarshipController::class, 'show']);
-    Route::get('/sponsorships', [SponsorshipController::class, 'index']);
-    Route::get('/sponsorships/{id}', [SponsorshipController::class, 'show']);
+    // Phase 4 cutover: legacy scholarship/sponsorship directories are gone —
+    // everything lives under /opportunities (type=scholarship|sponsorship).
+    Route::get('/scholarships', [LegacyGoneController::class, 'gone']);
+    Route::get('/scholarships/{id}', [LegacyGoneController::class, 'gone']);
+    Route::get('/sponsorships', [LegacyGoneController::class, 'gone']);
+    Route::get('/sponsorships/{id}', [LegacyGoneController::class, 'gone']);
     Route::get('/sports-venues', [SportsVenueController::class, 'index']);
     Route::get('/sports-venues/{id}', [SportsVenueController::class, 'show']);
 
     // ── Universal Search ──
     Route::get('/search', [SearchController::class, 'search']);
 
+    // ── Home + Explore (Phase 3) ──
+    Route::get('/me/home', [\App\Http\Controllers\HomeController::class, 'home'])->middleware('auth:sanctum');
+    Route::get('/explore', [\App\Http\Controllers\HomeController::class, 'explore']);
+
     // ── Media ──
+    Route::get('/me/media', [MediaController::class, 'index'])->middleware('auth:sanctum');
     Route::post('/media/upload', [MediaController::class, 'upload'])->middleware('auth:sanctum');
     Route::delete('/media/{id}', [MediaController::class, 'destroy'])->middleware('auth:sanctum');
     Route::put('/media/reorder', [MediaController::class, 'reorder'])->middleware('auth:sanctum');
@@ -184,6 +195,24 @@ Route::prefix('v1')->group(function () {
     Route::put('/me/academy', [AcademyController::class, 'update'])->middleware(['auth:sanctum', 'role:academy']);
     Route::get('/me/organizer', [\App\Http\Controllers\OrganizerProfileController::class, 'show'])->middleware(['auth:sanctum', 'role:organizer']);
     Route::put('/me/organizer', [\App\Http\Controllers\OrganizerProfileController::class, 'update'])->middleware(['auth:sanctum', 'role:organizer']);
+
+    // ── Organizer public card (Phase 2) ──
+    Route::get('/organizers/{id}', [\App\Http\Controllers\OrganizerProfileController::class, 'publicShow']);
+
+    // ── Programs (Phase 5: owner morph coach/academy) ──
+    Route::get('/programs', [\App\Http\Controllers\ProgramController::class, 'index']);
+    Route::get('/programs/{id}', [\App\Http\Controllers\ProgramController::class, 'show']);
+    Route::get('/me/programs', [\App\Http\Controllers\ProgramController::class, 'mine'])->middleware('auth:sanctum');
+    Route::post('/me/programs', [\App\Http\Controllers\ProgramController::class, 'store'])->middleware('auth:sanctum');
+    Route::put('/me/programs/{id}', [\App\Http\Controllers\ProgramController::class, 'update'])->middleware('auth:sanctum');
+    Route::post('/programs/{id}/enquire', [\App\Http\Controllers\ProgramController::class, 'enquire'])->middleware(['auth:sanctum', 'role:athlete']);
+
+    // ── Facilities (Phase 5: academy-owned rows) ──
+    Route::get('/facilities/{id}', [\App\Http\Controllers\FacilityController::class, 'show']);
+    Route::get('/me/facilities', [\App\Http\Controllers\FacilityController::class, 'mine'])->middleware(['auth:sanctum', 'role:academy']);
+    Route::post('/me/facilities', [\App\Http\Controllers\FacilityController::class, 'store'])->middleware(['auth:sanctum', 'role:academy']);
+    Route::put('/me/facilities/{id}', [\App\Http\Controllers\FacilityController::class, 'update'])->middleware(['auth:sanctum', 'role:academy']);
+    Route::delete('/me/facilities/{id}', [\App\Http\Controllers\FacilityController::class, 'destroy'])->middleware(['auth:sanctum', 'role:academy']);
 
     // ── Enquiries ──
     Route::post('/enquiries', [EnquiryController::class, 'store'])->middleware(['auth:sanctum', 'role:athlete']);
@@ -219,6 +248,7 @@ Route::prefix('v1')->group(function () {
 
     // ── Scout directory (athlete discovers scouts — two-way connect) ──
     Route::get('/scouts', [TalentScoutController::class, 'index'])->middleware(['auth:sanctum', 'role:athlete']);
+    Route::get('/scouts/{id}', [TalentScoutController::class, 'publicShow'])->middleware(['auth:sanctum', 'role:athlete']);
     Route::middleware(['auth:sanctum', 'role:athlete'])->group(function () {
         Route::post('/scouts/{scout}/connect', [ScoutConnectionController::class, 'storeFromAthlete']);
     });
@@ -289,22 +319,35 @@ Route::prefix('v1')->group(function () {
     // ── Organizer Analytics ──
     Route::get('/me/organizer/analytics', [OrganizerAnalyticsController::class, 'index'])->middleware(['auth:sanctum', 'role:organizer,admin']);
 
-    // ── Sponsor Engagement (Phase 2) ──
-    Route::get('/me/sponsorships', [SponsorEngagementController::class, 'mySponsorships'])->middleware(['auth:sanctum', 'role:sponsor']);
-    Route::post('/me/sponsorships', [SponsorEngagementController::class, 'storeSponsorship'])->middleware(['auth:sanctum', 'role:sponsor']);
-    Route::put('/me/sponsorships/{sponsorship}', [SponsorEngagementController::class, 'updateSponsorship'])->middleware(['auth:sanctum', 'role:sponsor']);
-    Route::post('/me/sponsorships/{sponsorship}/publish', [SponsorEngagementController::class, 'publishSponsorship'])->middleware(['auth:sanctum', 'role:sponsor']);
-    Route::post('/me/sponsorships/{sponsorship}/close', [SponsorEngagementController::class, 'closeSponsorship'])->middleware(['auth:sanctum', 'role:sponsor']);
+    // ── Opportunities, unified (Phase 4 — replaces scholarships/sponsorships) ──
+    Route::get('/opportunities', [OpportunityController::class, 'index']);
+    Route::get('/opportunities/{id}', [OpportunityController::class, 'show']);
+    Route::post('/me/opportunities', [OpportunityController::class, 'store'])->middleware('auth:sanctum');
+    Route::put('/me/opportunities/{id}', [OpportunityController::class, 'update'])->middleware('auth:sanctum');
+    Route::patch('/me/opportunities/{id}', [OpportunityController::class, 'update'])->middleware('auth:sanctum');
+    Route::post('/me/opportunities/{id}/publish', [OpportunityController::class, 'publish'])->middleware('auth:sanctum');
+    Route::post('/me/opportunities/{id}/close', [OpportunityController::class, 'close'])->middleware('auth:sanctum');
+    Route::get('/me/opportunities', [OpportunityController::class, 'mine'])->middleware('auth:sanctum');
+    Route::post('/opportunities/{id}/apply', [OpportunityController::class, 'apply'])->middleware(['auth:sanctum', 'role:athlete']);
+    Route::get('/opportunities/{id}/applications', [OpportunityController::class, 'applications'])->middleware('auth:sanctum');
+    Route::patch('/opportunities/{id}/applications/{appId}', [OpportunityController::class, 'review'])->middleware('auth:sanctum');
 
-    Route::post('/sponsorships/{sponsorship}/apply', [SponsorEngagementController::class, 'apply'])->middleware(['auth:sanctum', 'role:athlete']);
-    Route::get('/me/applications', [SponsorEngagementController::class, 'myApplications'])->middleware('auth:sanctum');
+    // ── Sponsor Engagement, legacy (Phase 4 cutover — all 410 Gone) ──
+    Route::get('/me/sponsorships', [LegacyGoneController::class, 'gone'])->middleware(['auth:sanctum', 'role:sponsor']);
+    Route::post('/me/sponsorships', [LegacyGoneController::class, 'gone'])->middleware(['auth:sanctum', 'role:sponsor']);
+    Route::put('/me/sponsorships/{sponsorship}', [LegacyGoneController::class, 'gone'])->middleware(['auth:sanctum', 'role:sponsor']);
+    Route::post('/me/sponsorships/{sponsorship}/publish', [LegacyGoneController::class, 'gone'])->middleware(['auth:sanctum', 'role:sponsor']);
+    Route::post('/me/sponsorships/{sponsorship}/close', [LegacyGoneController::class, 'gone'])->middleware(['auth:sanctum', 'role:sponsor']);
 
-    Route::get('/sponsorships/{sponsorship}/applications', [SponsorEngagementController::class, 'applications'])->middleware(['auth:sanctum', 'role:sponsor']);
-    Route::patch('/sponsorships/{sponsorship}/applications/{application}', [SponsorEngagementController::class, 'updateApplication'])->middleware(['auth:sanctum', 'role:sponsor']);
+    Route::post('/sponsorships/{sponsorship}/apply', [LegacyGoneController::class, 'gone'])->middleware(['auth:sanctum', 'role:athlete']);
+    Route::get('/me/applications', [LegacyGoneController::class, 'gone'])->middleware('auth:sanctum');
 
-    Route::get('/me/shortlist', [SponsorEngagementController::class, 'shortlist'])->middleware(['auth:sanctum', 'role:sponsor']);
-    Route::post('/me/shortlist', [SponsorEngagementController::class, 'addToShortlist'])->middleware(['auth:sanctum', 'role:sponsor']);
-    Route::delete('/me/shortlist/{entry}', [SponsorEngagementController::class, 'removeFromShortlist'])->middleware(['auth:sanctum', 'role:sponsor']);
+    Route::get('/sponsorships/{sponsorship}/applications', [LegacyGoneController::class, 'gone'])->middleware(['auth:sanctum', 'role:sponsor']);
+    Route::patch('/sponsorships/{sponsorship}/applications/{application}', [LegacyGoneController::class, 'gone'])->middleware(['auth:sanctum', 'role:sponsor']);
+
+    Route::get('/me/shortlist', [LegacyGoneController::class, 'gone'])->middleware(['auth:sanctum', 'role:sponsor']);
+    Route::post('/me/shortlist', [LegacyGoneController::class, 'gone'])->middleware(['auth:sanctum', 'role:sponsor']);
+    Route::delete('/me/shortlist/{entry}', [LegacyGoneController::class, 'gone'])->middleware(['auth:sanctum', 'role:sponsor']);
 
     // ── Notifications (Phase 2) ──
     Route::get('/me/notifications', [NotificationController::class, 'index'])->middleware('auth:sanctum');
@@ -319,17 +362,31 @@ Route::prefix('v1')->group(function () {
     Route::get('/me/social-links', [SocialLinksController::class, 'show'])->middleware('auth:sanctum');
     Route::put('/me/social-links', [SocialLinksController::class, 'update'])->middleware('auth:sanctum');
 
+    // ── Privacy (Phase 2) ──
+    Route::get('/me/privacy', [PrivacyController::class, 'show'])->middleware('auth:sanctum');
+    Route::put('/me/privacy', [PrivacyController::class, 'update'])->middleware('auth:sanctum');
+
+    // ── Achievements, typed CRUD (Phase 2, owner = own athlete/coach profile) ──
+    Route::get('/me/achievements', [AchievementController::class, 'index'])->middleware('auth:sanctum');
+    Route::post('/me/achievements', [AchievementController::class, 'store'])->middleware('auth:sanctum');
+    Route::put('/me/achievements/{id}', [AchievementController::class, 'update'])->middleware('auth:sanctum');
+    Route::delete('/me/achievements/{id}', [AchievementController::class, 'destroy'])->middleware('auth:sanctum');
+
     // ── Settings (Phase 2) ──
     Route::get('/me/settings', [SettingsController::class, 'show'])->middleware('auth:sanctum');
     Route::put('/me/settings', [SettingsController::class, 'update'])->middleware('auth:sanctum');
     Route::put('/me/settings/password', [SettingsController::class, 'updatePassword'])->middleware('auth:sanctum');
+    // Phase-1 spec aliases (FR-AUTH): same handlers, spec-compliant paths.
+    Route::post('/me/change-password', [SettingsController::class, 'updatePassword'])->middleware('auth:sanctum');
     Route::delete('/me/account', [SettingsController::class, 'destroy'])->middleware('auth:sanctum');
+    Route::post('/me/delete-account', [SettingsController::class, 'destroy'])->middleware('auth:sanctum');
 
     // ── Activity (Phase 2) ──
     Route::get('/me/activity', [ActivityController::class, 'index'])->middleware('auth:sanctum');
 
     // ── Recent Searches ──
     Route::get('/me/recent-searches', [SearchController::class, 'recentSearches'])->middleware('auth:sanctum');
+    Route::post('/me/recent-searches', [SearchController::class, 'storeRecentSearch'])->middleware('auth:sanctum');
 
     // ── Conversations / Chat (Phase 4) ──
     Route::get('/me/conversations', [ConversationController::class, 'index'])->middleware('auth:sanctum');

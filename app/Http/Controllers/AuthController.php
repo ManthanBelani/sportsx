@@ -17,17 +17,33 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'role' => 'required|in:athlete,coach,academy,organizer,sponsor,talent_scout',
+            'role' => 'required|in:athlete,coach,academy,organizer,sponsor,talent_scout,scout',
             'email' => 'required|email|unique:users,email',
             'name' => 'nullable|string|max:100',
             'phone' => 'nullable|string|max:20',
             'password' => ['required', 'string', 'min:8'],
         ]);
 
+        // v3: `sponsor` was removed — sponsorships become `opportunities.type`
+        // in Phase 4. Refuse new sponsor accounts explicitly (410 Gone) so
+        // clients can message the migration instead of failing validation.
+        if ($validated['role'] === 'sponsor') {
+            return response()->json([
+                'error' => [
+                    'code' => 'SPONSOR_REMOVED',
+                    'message' => 'Sponsor accounts are no longer offered. Providers list scholarships and sponsorships as opportunities instead.',
+                ],
+            ], 410);
+        }
+
+        $role = \App\Support\UserRoles::toStorage(
+            \App\Support\UserRoles::normalize($validated['role']) ?? $validated['role']
+        );
+
         $email = strtolower($validated['email']);
         // Determine if this role needs admin approval
         $settings = $this->platformSettings();
-        $needsApproval = match ($validated['role']) {
+        $needsApproval = match ($role) {
             'coach' => !($settings['auto_approve_coach'] ?? false),
             'sponsor' => !($settings['auto_approve_sponsor'] ?? false),
             'talent_scout' => !($settings['auto_approve_talent_scout'] ?? false),
@@ -35,7 +51,7 @@ class AuthController extends Controller
         };
         $status = $needsApproval ? 'pending' : 'active';
         $user = User::create([
-            'role' => $validated['role'],
+            'role' => $role,
             'email' => $email,
             'name' => $validated['name'] ?? explode('@', $email)[0],
             'phone' => $validated['phone'] ?? null,
@@ -247,6 +263,7 @@ class AuthController extends Controller
             'email_verified_at' => $user->email_verified_at?->toIso8601String(),
             'status' => $user->status,
             'social_links' => $user->social_links,
+            'is_verified' => $user->isVerified(),
         ];
     }
 

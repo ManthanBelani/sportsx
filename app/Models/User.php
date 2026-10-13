@@ -17,7 +17,7 @@ class User extends Authenticatable
     protected $fillable = [
         'role', 'name', 'email', 'phone', 'password',
         'status', 'email_verified_at', 'admin_2fa_verified_at',
-        'notification_prefs', 'social_links', 'language',
+        'notification_prefs', 'social_links', 'privacy_settings', 'language',
         'verification_token', 'reset_password_token', 'reset_password_sent_at',
     ];
 
@@ -31,6 +31,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'notification_prefs' => 'array',
             'social_links' => 'array',
+            'privacy_settings' => 'array',
         ];
     }
 
@@ -89,6 +90,13 @@ class User extends Authenticatable
         return $this->hasMany(GuardianConsent::class, 'athlete_user_id');
     }
 
+    public function isVerified(): bool
+    {
+        return \App\Models\VerificationRequest::where('requester_user_id', $this->id)
+            ->where('status', \App\Models\VerificationRequest::STATUS_APPROVED)
+            ->exists();
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
@@ -107,7 +115,7 @@ class User extends Authenticatable
             'academy' => (bool) $this->academies,
             'organizer' => (bool) $this->organizerProfile,
             'sponsor' => (bool) $this->sponsorProfile,
-            'talent_scout' => (bool) $this->talentScoutProfile,
+            'talent_scout', 'scout' => (bool) $this->talentScoutProfile,
             default => true,
         };
     }

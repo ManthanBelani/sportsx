@@ -153,37 +153,21 @@ class OnboardingController extends Controller
 
     public function sponsor(Request $request)
     {
-        $user = $request->user();
-        abort_if($user->role !== 'sponsor', 403);
-
-        $validated = $request->validate([
-            'brand_name' => 'required|string|max:150',
-            'category' => 'nullable|string|max:80',
-            'logo_media_id' => 'nullable|exists:media_items,id',
-            'website' => 'nullable|url|max:255',
-            'verification_doc_media_id' => 'nullable|exists:media_items,id',
-        ]);
-
-        // Only persist columns that exist to avoid SQL error if migration not run
-        $fillable = (new \App\Models\SponsorProfile())->getFillable();
-        $persist = array_intersect_key($validated, array_flip($fillable));
-        // Keep website in memory if column missing — still acknowledge
-        if (isset($validated['website']) && !isset($persist['website'])) {
-            unset($validated['website']);
-        }
-
-        $profile = SponsorProfile::updateOrCreate(
-            ['user_id' => $user->id],
-            $persist ?: $validated
-        );
-
-        return response()->json(['data' => $profile], 201);
+        // v3: `sponsor` removed — sponsorships become `opportunities.type`
+        // (Phase 4). The profile table stays readable for existing rows, but
+        // no new sponsor onboarding is accepted.
+        return response()->json([
+            'error' => [
+                'code' => 'SPONSOR_REMOVED',
+                'message' => 'Sponsor onboarding is no longer offered. Providers list scholarships and sponsorships as opportunities instead.',
+            ],
+        ], 410);
     }
 
     public function talentScout(Request $request)
     {
         $user = $request->user();
-        abort_if($user->role !== 'talent_scout', 403);
+        abort_if(! in_array($user->role, ['talent_scout', 'scout'], true), 403);
 
         $validated = $request->validate([
             'organization' => 'nullable|string|max:150',
@@ -204,8 +188,31 @@ class OnboardingController extends Controller
         return response()->json(['data' => $profile], 201);
     }
 
+    /**
+     * Canonical v3 alias: `POST /onboarding/scout`.
+     *
+     * Storage still uses `talent_scout` until the rename migration lands.
+     */
+    public function scout(Request $request)
+    {
+        return $this->talentScout($request);
+    }
+
     public function schema(Request $request, string $role)
     {
+        // Accept the legacy `talent_scout` storage name wherever the
+        // canonical `scout` is accepted.
+        $role = \App\Support\UserRoles::normalize($role) ?? $role;
+
+        if ($role === 'sponsor') {
+            return response()->json([
+                'error' => [
+                    'code' => 'SPONSOR_REMOVED',
+                    'message' => 'Sponsor onboarding is no longer offered.',
+                ],
+            ], 410);
+        }
+
         $schemas = [
             'athlete' => [
                 'fields' => [
@@ -279,6 +286,9 @@ class OnboardingController extends Controller
                 'step' => 1,
             ],
         ];
+
+        // Canonical alias: `scout` shares the talent-scout schema.
+        $schemas['scout'] = $schemas['talent_scout'];
 
         if (!isset($schemas[$role])) {
             return response()->json([

@@ -50,4 +50,20 @@ class OrganizerProfileController extends Controller
 
         return response()->json(['data' => $profile->fresh()]);
     }
+
+    /**
+     * GET /organizers/{id} — public listing card (no contact internals).
+     */
+    public function publicShow(string $id)
+    {
+        $profile = \App\Models\OrganizerProfile::findOrFail($id);
+
+        $data = $profile->toArray();
+        $data['is_verified'] = ($profile->verification_status ?? null) === 'verified'
+            || \App\Models\VerificationRequest::where('requester_user_id', $profile->user_id)
+                ->where('status', \App\Models\VerificationRequest::STATUS_APPROVED)
+                ->exists();
+
+        return response()->json(['data' => $data]);
+    }
 }
