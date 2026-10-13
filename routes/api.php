@@ -4,6 +4,11 @@ use App\Http\Controllers\AcademyController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\AthleteDiscoveryController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\GuardianController;
+use App\Http\Controllers\VerificationController;
+use App\Http\Controllers\OtpController;
+use App\Http\Controllers\CompletionChecklistController;
 use App\Http\Controllers\ConnectionController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\CoachProfileController;
@@ -79,9 +84,45 @@ Route::prefix('v1')->group(function () {
         Route::post('/auth/login', [AuthController::class, 'login']);
         Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
         Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
+
+        // "Continue with Google" — the backend verifies the ID token, so this
+        // is an unauthenticated credential exchange like the routes above.
+        Route::post('/auth/google', [GoogleAuthController::class, 'login']);
+        Route::post('/auth/resend-verification', [AuthController::class, 'resendVerification']);
+    });
+
+    // OTP issue/verify. Abused heavily and unauthenticated by necessity (the
+    // code is what establishes identity), so these carry their own stricter
+    // per-destination throttles inside OtpController.
+    Route::middleware(['throttle:20,1'])->group(function () {
+        Route::post('/auth/send-otp', [OtpController::class, 'send']);
+        Route::post('/auth/resend-otp', [OtpController::class, 'resend']);
+        Route::post('/auth/verify-otp', [OtpController::class, 'verify']);
     });
     Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+
+    // Linked third-party identities
+    Route::get('/me/social-accounts', [GoogleAuthController::class, 'index'])->middleware('auth:sanctum');
+    Route::delete('/me/social-accounts/{provider}', [GoogleAuthController::class, 'destroy'])->middleware('auth:sanctum');
     Route::get('/auth/me', [AuthController::class, 'me'])->middleware('auth:sanctum');
+
+    // ── Guardian consent (minors, DOB < 18) ──
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/guardian/consent', [GuardianController::class, 'request'])->middleware('throttle:5,1');
+        Route::post('/guardian/verify-otp', [GuardianController::class, 'verify'])->middleware('throttle:10,1');
+        Route::get('/me/guardian-controls', [GuardianController::class, 'show']);
+        Route::put('/me/guardian-controls', [GuardianController::class, 'update']);
+        Route::delete('/me/guardian-consent', [GuardianController::class, 'revoke']);
+    });
+
+    // ── Verification requests (blue check) ──
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/me/verification', [VerificationController::class, 'store'])->middleware('throttle:5,1');
+        Route::get('/me/verification', [VerificationController::class, 'index']);
+
+        // Profile completion nudge
+        Route::get('/me/completion-checklist', [CompletionChecklistController::class, 'show']);
+    });
 
     // ── Meta / Master Data (public read) ──
     Route::get('/meta/sports', [MetaController::class, 'sports']);
@@ -323,6 +364,12 @@ Route::prefix('v1')->group(function () {
 
         // Admin Dashboard
         Route::get('/dashboard', [AdminDashboardController::class, 'index']);
+
+        // Verification review queue (blue check)
+        Route::get('/verification', [VerificationController::class, 'queue']);
+        Route::get('/verification/{id}', [VerificationController::class, 'show']);
+        Route::patch('/verification/{id}/approve', [VerificationController::class, 'approve']);
+        Route::patch('/verification/{id}/reject', [VerificationController::class, 'reject']);
 
         // Admin Content Management
         Route::get('/content', [AdminContentController::class, 'picker']);

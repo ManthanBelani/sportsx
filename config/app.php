@@ -56,6 +56,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Frontend (mobile web / marketing site) URL
+    |--------------------------------------------------------------------------
+    |
+    | Used to build deep links inside transactional emails (email verification,
+    | password reset, account approval, OTP fallback link).
+    |
+    */
+
+    'frontend_url' => rtrim((string) env('FRONTEND_URL', env('APP_URL', 'http://localhost')), '/'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |
