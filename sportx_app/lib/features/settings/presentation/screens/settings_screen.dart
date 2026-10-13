@@ -139,6 +139,56 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ],
                   ),
 
+                  _buildSectionTitle('Privacy'),
+                  _buildSettingsGroup(
+                    children: [
+                      _buildSettingsItem(
+                        icon: LucideIcons.eye,
+                        title: 'Profile Visibility',
+                        subtitle: _privacyLabel(state.privacySettings['profile_visibility'] ?? 'public'),
+                        onTap: () => _showPrivacyOptions(
+                          context,
+                          key: 'profile_visibility',
+                          title: 'Profile Visibility',
+                          options: const {
+                            'public': 'Public — anyone can view',
+                            'followers': 'Followers — connections only',
+                            'private': 'Private — hidden from discovery',
+                          },
+                        ),
+                      ),
+                      _buildSettingsItem(
+                        icon: LucideIcons.messageCircle,
+                        title: 'Who Can Message Me',
+                        subtitle: _privacyLabel(state.privacySettings['who_can_message'] ?? 'everyone'),
+                        onTap: () => _showPrivacyOptions(
+                          context,
+                          key: 'who_can_message',
+                          title: 'Who Can Message Me',
+                          options: const {
+                            'everyone': 'Everyone',
+                            'connections': 'Connections only',
+                            'nobody': 'Nobody',
+                          },
+                        ),
+                      ),
+                      _buildSettingsItem(
+                        icon: LucideIcons.userPlus,
+                        title: 'Who Can Connect',
+                        subtitle: _privacyLabel(state.privacySettings['who_can_connect'] ?? 'everyone'),
+                        onTap: () => _showPrivacyOptions(
+                          context,
+                          key: 'who_can_connect',
+                          title: 'Who Can Connect',
+                          options: const {
+                            'everyone': 'Everyone',
+                            'nobody': 'Nobody',
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+
                   _buildSectionTitle('Preferences'),
                   _buildSettingsGroup(
                     children: [
@@ -378,6 +428,55 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  String _privacyLabel(String value) {
+    return value
+        .split('_')
+        .map((w) => w.isEmpty ? w : w[0].toUpperCase() + w.substring(1))
+        .join(' ');
+  }
+
+  void _showPrivacyOptions(
+    BuildContext context, {
+    required String key,
+    required String title,
+    required Map<String, String> options,
+  }) {
+    final current = ref.read(settingsProvider).privacySettings[key];
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: options.entries.map((entry) {
+            return ListTile(
+              title: Text(entry.value),
+              trailing: entry.key == current
+                  ? const Icon(LucideIcons.check, color: AppColors.primary)
+                  : null,
+              onTap: () async {
+                Navigator.pop(ctx);
+                final ok = await ref
+                    .read(settingsProvider.notifier)
+                    .updatePrivacy({key: entry.key});
+                if (context.mounted) {
+                  if (ok) {
+                    SnackBarUtils.showSuccess(context, 'Privacy updated');
+                  } else {
+                    SnackBarUtils.showError(
+                      context,
+                      ref.read(settingsProvider).error ?? 'Update failed',
+                    );
+                  }
+                }
+              },
+            );
+          }).toList(),
+        ),
       ),
     );
   }

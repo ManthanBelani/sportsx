@@ -5,13 +5,21 @@ import 'package:sportx_app/core/utils/api_client.dart';
 class SettingsState {
   final Map<String, bool> notificationPrefs;
   final String language;
+  final Map<String, String> privacySettings;
   final bool isLoading;
   final String? error;
   final String? successMessage;
 
+  static const defaultPrivacy = {
+    'profile_visibility': 'public',
+    'who_can_message': 'everyone',
+    'who_can_connect': 'everyone',
+  };
+
   SettingsState({
     this.notificationPrefs = const {'email': true, 'push': true, 'sms': false, 'in_app': true},
     this.language = 'en',
+    this.privacySettings = defaultPrivacy,
     this.isLoading = false,
     this.error,
     this.successMessage,
@@ -20,6 +28,7 @@ class SettingsState {
   SettingsState copyWith({
     Map<String, bool>? notificationPrefs,
     String? language,
+    Map<String, String>? privacySettings,
     bool? isLoading,
     String? error,
     String? successMessage,
@@ -27,6 +36,7 @@ class SettingsState {
     return SettingsState(
       notificationPrefs: notificationPrefs ?? this.notificationPrefs,
       language: language ?? this.language,
+      privacySettings: privacySettings ?? this.privacySettings,
       isLoading: isLoading ?? this.isLoading,
       error: error,
       successMessage: successMessage,
@@ -46,9 +56,22 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     try {
       final resp = await _dio.get('/me/settings');
       final data = resp.data['data'] as Map<String, dynamic>;
+      Map<String, String> privacy = Map.from(SettingsState.defaultPrivacy);
+      try {
+        final privacyResp = await _dio.get('/me/privacy');
+        final privacyData = privacyResp.data['data'] as Map<String, dynamic>?;
+        if (privacyData != null) {
+          privacy = {
+            'profile_visibility': privacyData['profile_visibility'] as String? ?? 'public',
+            'who_can_message': privacyData['who_can_message'] as String? ?? 'everyone',
+            'who_can_connect': privacyData['who_can_connect'] as String? ?? 'everyone',
+          };
+        }
+      } catch (_) {}
       state = SettingsState(
         notificationPrefs: Map<String, bool>.from(data['notification_prefs'] ?? {}),
         language: data['language'] as String? ?? 'en',
+        privacySettings: privacy,
       );
     } on DioException catch (e) {
       state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
@@ -98,6 +121,22 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
         'password_confirmation': newPassword,
       });
       state = state.copyWith(isLoading: false, successMessage: 'Password updated');
+      return true;
+    } on DioException catch (e) {
+      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      return false;
+    }
+  }
+
+  Future<bool> updatePrivacy(Map<String, String> privacy) async {
+    state = state.copyWith(isLoading: true, error: null, successMessage: null);
+    try {
+      await _dio.put('/me/privacy', data: privacy);
+      state = state.copyWith(
+        privacySettings: {...state.privacySettings, ...privacy},
+        isLoading: false,
+        successMessage: 'Privacy updated',
+      );
       return true;
     } on DioException catch (e) {
       state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);

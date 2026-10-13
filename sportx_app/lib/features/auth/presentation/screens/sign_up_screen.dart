@@ -6,6 +6,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/features/auth/presentation/widgets/google_sign_in_button.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
@@ -199,6 +200,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       onPressed: _agreed ? _submit : null,
                     ),
                   ),
+                const SizedBox(height: 24),
+
+                // Role is captured from the role-selection screen *before* the
+                // Google button, so signup approval routes correctly.
+                GoogleSignInButton(role: widget.role),
                 const SizedBox(height: 24),
 
                 Row(

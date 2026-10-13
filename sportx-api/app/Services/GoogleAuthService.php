@@ -319,12 +319,33 @@ class GoogleAuthService
     protected function createUser(array $profile, ?string $requestedRole): User
     {
         $allowed = (array) config('sportx.google.restrict_roles', ['athlete']);
+        // Accept the canonical `scout` alias anywhere roles are accepted.
+        $allowed = array_values(array_unique(array_merge(
+            $allowed,
+            in_array(\App\Support\UserRoles::TALENT_SCOUT, $allowed, true)
+                ? [\App\Support\UserRoles::SCOUT]
+                : [],
+            in_array(\App\Support\UserRoles::SCOUT, $allowed, true)
+                ? [\App\Support\UserRoles::TALENT_SCOUT]
+                : [],
+        )));
 
-        $role = $requestedRole && in_array($requestedRole, $allowed, true)
-            ? $requestedRole
+        $normalized = $requestedRole !== null
+            ? (\App\Support\UserRoles::normalize($requestedRole) ?? $requestedRole)
+            : null;
+
+        if ($normalized === \App\Support\UserRoles::SPONSOR) {
+            throw GoogleAuthException::make(
+                'Sponsor accounts are no longer offered. Providers list scholarships and sponsorships as opportunities instead.',
+                410,
+            );
+        }
+
+        $role = $normalized && in_array($normalized, $allowed, true)
+            ? \App\Support\UserRoles::toStorage($normalized)
             : (string) config('sportx.google.default_role', 'athlete');
 
-        if ($requestedRole && ! in_array($requestedRole, $allowed, true)) {
+        if ($requestedRole && ! in_array($normalized, $allowed, true)) {
             throw GoogleAuthException::make(
                 "Role [{$requestedRole}] is not permitted for Google sign-up.",
                 422,

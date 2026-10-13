@@ -6,6 +6,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/features/auth/presentation/widgets/google_sign_in_button.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -27,6 +28,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
+  Future<void> _forgotPassword() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      SnackBarUtils.showError(context, 'Enter your email first, then tap Forgot Password');
+      return;
+    }
+    await ref.read(authProvider.notifier).forgotPassword(email);
+    if (!mounted) return;
+    final state = ref.read(authProvider);
+    if (state.status == AuthStatus.error) {
+      SnackBarUtils.showError(context, state.error ?? 'Request failed');
+    } else {
+      SnackBarUtils.showSuccess(context, 'If an account exists, a reset link has been sent');
+    }
+  }
   Future<void> _login() async {
     await ref.read(authProvider.notifier).login(
       email: _emailController.text.trim(),
@@ -133,7 +149,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: () {},
+                  onPressed: _forgotPassword,
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
                     minimumSize: Size.zero,
@@ -165,6 +181,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   icon: LucideIcons.arrowRight,
                   onPressed: _login,
                 ),
+              const SizedBox(height: 24),
+              const GoogleSignInButton(),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,

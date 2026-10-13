@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Academy;
+use App\Models\AthleteProfile;
 use App\Models\CoachProfile;
 use App\Models\Scholarship;
 use App\Models\Sponsorship;
@@ -105,6 +106,7 @@ class SearchController extends Controller
                 ->when($sportId, fn ($s) => $s->where('sport_id', $sportId))
                 ->when($cityId, fn ($s) => $s->where('city_id', $cityId))
                 ->with(['sport', 'city'])->limit($limit)->get(),
+            'athletes' => $this->athletesGroup($request, $q, $sportId, $cityId, $ageGroupId, $limit),
         ];
 
         return response()->json([
@@ -123,5 +125,66 @@ class SearchController extends Controller
         return response()->json([
             'data' => $searches
         ]);
+    }
+
+    /**
+     * POST /me/recent-searches — explicitly persist a query (the GET /search
+     * auto-save covers typed queries; this covers filter-only exploration).
+     */
+    public function storeRecentSearch(Request $request)
+    {
+        $validated = $request->validate(['query' => 'required|string|max:120']);
+
+        RecentSearch::updateOrCreate(
+            ['user_id' => $request->user()->id, 'query' => $validated['query']],
+            ['created_at' => now()]
+        );
+
+        return response()->json(['data' => ['query' => $validated['query']]], 201);
+    }
+
+    /**
+     * Athletes group (Phase 3): authenticated callers only, privacy-gated and
+     * minor-masked like athlete discovery.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    protected function athletesGroup(Request $request, string $q, $sportId, $cityId, $ageGroupId, int $limit)
+    {
+        $viewer = $request->user();
+
+        if (! $viewer) {
+            return collect();
+        }
+
+        $query = AthleteProfile::with(['sports', 'city', 'ageGroup', 'photo'])
+            ->withCount('achievements')
+            ->whereHas('sports');
+
+        $ownAthleteId = $viewer->athleteProfile?->id;
+        if ($ownAthleteId) {
+            $query->where('id', '!=', $ownAthleteId);
+        }
+
+        if ($q !== '') {
+            $query->where(function ($w) use ($q) {
+                $w->where('full_name', 'like', "%{$q}%")
+                    ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$q}%"));
+            });
+        }
+
+        $query->when($sportId, fn ($s) => $s->whereHas('sports', fn ($sp) => $sp->whereIn('sports.id', (array) $sportId)))
+            ->when($cityId, fn ($s) => $s->where('city_id', $cityId))
+            ->when($ageGroupId, fn ($s) => $s->where('age_group_id', $ageGroupId));
+
+        $athletes = $query->limit($limit + 20)->get();
+
+        $delegate = new AthleteDiscoveryController();
+
+        return $athletes
+            ->filter(fn ($a) => $delegate->isVisibleTo($a, $viewer))
+            ->take($limit)
+            ->each(fn ($a) => $delegate->maskMinor($a, $viewer))
+            ->values();
     }
 }

@@ -10,6 +10,7 @@ import 'package:sportx_app/features/auth/presentation/screens/splash_screen.dart
 import 'package:sportx_app/features/auth/presentation/screens/role_selection_screen.dart';
 import 'package:sportx_app/features/auth/presentation/screens/sign_up_screen.dart';
 import 'package:sportx_app/features/auth/presentation/screens/login_screen.dart';
+import 'package:sportx_app/features/auth/presentation/screens/otp_screen.dart';
 import 'package:sportx_app/features/home/presentation/screens/home_screen.dart';
 import 'package:sportx_app/features/saved/presentation/screens/saved_screen.dart';
 import 'package:sportx_app/features/athlete/presentation/screens/profile_screen.dart';
@@ -101,6 +102,14 @@ import 'package:sportx_app/features/connections/presentation/screens/scout_direc
 import 'package:sportx_app/features/connections/presentation/screens/athlete_directory_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/view_profile_screen.dart';
 import 'package:sportx_app/features/social/presentation/screens/post_detail_screen.dart';
+import 'package:sportx_app/features/opportunity/presentation/screens/opportunity_list_screen.dart';
+import 'package:sportx_app/features/opportunity/presentation/screens/opportunity_detail_screen.dart';
+import 'package:sportx_app/features/opportunity/presentation/screens/my_opportunities_screen.dart';
+import 'package:sportx_app/features/opportunity/presentation/screens/post_opportunity_screen.dart';
+import 'package:sportx_app/features/program/presentation/screens/program_list_screen.dart';
+import 'package:sportx_app/features/program/presentation/screens/program_detail_screen.dart';
+import 'package:sportx_app/features/program/presentation/screens/my_programs_screen.dart';
+import 'package:sportx_app/features/program/presentation/screens/facility_screens.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_login_screen.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_dashboard_screen.dart';
 import 'package:sportx_app/features/admin/presentation/screens/platform_reports_screen.dart';
@@ -198,7 +207,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final authState = ref.read(authProvider);
       final status = authState.status;
       final role = authState.user?.role;
-      const authScreens = ['/splash', '/role-selection', '/sign-up', '/login', '/admin/login'];
+      const authScreens = ['/splash', '/role-selection', '/sign-up', '/login', '/verify-otp', '/admin/login'];
       const onboardingScreens = [
         '/onboarding-1', '/onboarding-2',
         '/coach-onboarding', '/academy-onboarding',
@@ -257,6 +266,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         return SignUpScreen(role: extra?['role'] as String? ?? 'athlete');
       }),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(path: '/verify-otp', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return OtpScreen(
+          email: extra?['email'] as String? ?? '',
+          role: extra?['role'] as String? ?? 'athlete',
+        );
+      }),
       GoRoute(path: '/onboarding-1', builder: (context, state) => const OnboardingSportAgeScreen()),
       GoRoute(path: '/onboarding-2', builder: (context, state) => const OnboardingSkillLocationScreen()),
       GoRoute(path: '/academies', builder: (context, state) => const AcademyDirectoryScreen()),
@@ -393,6 +409,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/sponsorships', builder: (context, state) => const SponsorshipListScreen()),
       GoRoute(path: '/sponsorship-detail/:id', builder: (context, state) => SponsorshipDetailScreen(sponsorshipId: state.pathParameters['id']!)),
       GoRoute(path: '/apply-sponsor/:id', builder: (context, state) => ApplySponsorScreen(sponsorshipId: state.pathParameters['id']!)),
+      GoRoute(path: '/opportunities', builder: (context, state) => const OpportunityListScreen()),
+      GoRoute(path: '/opportunity-detail/:id', builder: (context, state) => OpportunityDetailScreen(opportunityId: state.pathParameters['id']!)),
+      GoRoute(path: '/my-opportunities', builder: (context, state) => const MyOpportunitiesScreen()),
+      GoRoute(path: '/post-opportunity', builder: (context, state) => const PostOpportunityScreen()),
+      GoRoute(path: '/programs', builder: (context, state) => const ProgramListScreen()),
+      GoRoute(path: '/program-detail/:id', builder: (context, state) => ProgramDetailScreen(programId: state.pathParameters['id']!)),
+      GoRoute(path: '/my-programs', builder: (context, state) => const MyProgramsScreen()),
+      GoRoute(path: '/post-program', builder: (context, state) => const PostProgramScreen()),
+      GoRoute(path: '/facilities', builder: (context, state) => const FacilityListScreen()),
+      GoRoute(path: '/post-facility', builder: (context, state) => const PostFacilityScreen()),
       GoRoute(path: '/sports-venues', builder: (context, state) => const SportsVenueListScreen()),
       GoRoute(path: '/sports-venue-detail/:id', builder: (context, state) => SportsVenueDetailScreen(id: state.pathParameters['id']!)),
       GoRoute(path: '/create-post', builder: (context, state) => const CreatePostScreen()),

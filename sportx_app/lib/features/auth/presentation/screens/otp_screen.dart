@@ -58,7 +58,14 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
 
   Future<void> _verify() async {
     if (_otp.length != 6) return;
-    await ref.read(authProvider.notifier).verifyOtp(email: widget.email, otp: _otp);
+    final name = widget.email.split('@').first;
+    await ref.read(authProvider.notifier).verifyOtp(
+          email: widget.email,
+          otp: _otp,
+          purpose: 'signup',
+          name: name,
+          role: widget.role,
+        );
     final state = ref.read(authProvider);
     if (mounted) {
       if (state.status == AuthStatus.authenticated) {
@@ -71,7 +78,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
 
   Future<void> _resend() async {
     if (_secondsLeft > 0) return;
-    await ref.read(authProvider.notifier).resendOtp(widget.email);
+    await ref.read(authProvider.notifier).resendOtp(widget.email, purpose: 'signup');
     if (mounted) {
       SnackBarUtils.showSuccess(context, 'OTP resent');
       _startTimer();

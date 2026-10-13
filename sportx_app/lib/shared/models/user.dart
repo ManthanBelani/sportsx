@@ -1,7 +1,7 @@
 import 'package:sportx_app/core/utils/media_utils.dart';
 
 // ignore: constant_identifier_names
-enum UserRole { athlete, coach, academy, organizer, sponsor, admin, talent_scout }
+enum UserRole { athlete, coach, academy, organizer, sponsor, admin, talent_scout, scout }
 
 int? _parseInt(dynamic value) {
   if (value == null) return null;
@@ -59,7 +59,8 @@ class User {
       case 'organizer': return UserRole.organizer;
       case 'sponsor': return UserRole.sponsor;
       case 'admin': return UserRole.admin;
-      case 'talent_scout': return UserRole.talent_scout;
+      case 'talent_scout':
+      case 'scout': return UserRole.scout;
       default: return UserRole.athlete;
     }
   }

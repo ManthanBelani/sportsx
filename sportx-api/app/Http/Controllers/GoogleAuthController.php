@@ -176,6 +176,7 @@ class GoogleAuthController extends Controller
             'email_verified_at' => $user->email_verified_at?->toIso8601String(),
             'status' => $user->status,
             'social_links' => $user->social_links,
+            'is_verified' => $user->isVerified(),
         ];
     }
 }

@@ -70,7 +70,10 @@ class SavedNotifier extends StateNotifier<SavedState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final resp = await _dio.get('/me/saved');
-      final list = (resp.data['data'] as List? ?? [])
+      // Backend returns a paginator wrapped in `data`; tolerate a bare list.
+      final page = resp.data['data'];
+      final raw = page is Map ? page['data'] as List? : page as List?;
+      final list = (raw ?? [])
           .map((e) => SavedItem.fromJson(e as Map<String, dynamic>))
           .toList();
       state = SavedState(items: list);

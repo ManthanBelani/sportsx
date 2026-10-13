@@ -13,6 +13,9 @@ use App\Models\Academy;
 use App\Models\AthleteProfile;
 use App\Models\CoachProfile;
 use App\Models\OrganizerProfile;
+use App\Models\Opportunity;
+use App\Models\OpportunityApplication;
+use App\Models\Program;
 use App\Models\SocialAccount;
 use App\Models\SponsorProfile;
 use App\Models\TalentScoutProfile;
@@ -58,6 +61,9 @@ class AppServiceProvider extends ServiceProvider
             'tournament' => Tournament::class,
             'scholarship' => Scholarship::class,
             'sponsorship' => Sponsorship::class,
+            'opportunity' => Opportunity::class,
+            'opportunity_application' => OpportunityApplication::class,
+            'program' => Program::class,
             'sports_venue' => SportsVenue::class,
         ]);
 

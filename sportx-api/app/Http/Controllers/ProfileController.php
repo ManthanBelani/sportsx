@@ -16,6 +16,8 @@ class ProfileController extends Controller
             'academy' => $user->academies?->load(['city', 'sports.sport', 'logo', 'cover']),
             'organizer' => $user->organizerProfile,
             'sponsor' => $user->sponsorProfile?->load('logo'),
+            'talent_scout' => $user->talentScoutProfile?->load(['city', 'photo']),
+            'scout' => $user->talentScoutProfile?->load(['city', 'photo']),
             default => null,
         };
 
@@ -108,10 +110,47 @@ class ProfileController extends Controller
 
     public function updateSports(Request $request)
     {
-        $validated = $request->validate(['sports' => 'required|array|min:1', 'sports.*' => 'exists:sports,id']);
+        $validated = $request->validate([
+            'sports' => 'required|array|min:1',
+            'sports.*.sport_id' => 'required_without:sports.*|integer|exists:sports,id',
+        ]);
 
-        $request->user()->athleteProfile->sports()->sync($validated['sports']);
+        // Accept both shapes: plain ids `[1,2]` and rich objects
+        // `[{sport_id, playing_role, level, experience_years, is_primary}]`.
+        $raw = $validated['sports'];
+        $rich = isset($raw[0]) && is_array($raw[0]);
 
-        return response()->json(['data' => $request->user()->athleteProfile->fresh('sports')]);
+        if ($rich) {
+            $request->validate([
+                'sports.*.sport_id' => 'required|integer|exists:sports,id',
+                'sports.*.playing_role' => 'nullable|string|max:100',
+                'sports.*.level' => 'nullable|string|max:50',
+                'sports.*.experience_years' => 'nullable|integer|min:0|max:80',
+                'sports.*.is_primary' => 'nullable|boolean',
+            ]);
+        }
+
+        $profile = $request->user()->athleteProfile;
+        abort_unless($profile, 422, 'Complete your athlete profile first.');
+
+        $extended = \Illuminate\Support\Facades\Schema::hasColumn('athlete_sports', 'playing_role');
+
+        if ($rich && $extended) {
+            $sync = [];
+            foreach ($raw as $entry) {
+                $sync[(int) $entry['sport_id']] = [
+                    'playing_role' => $entry['playing_role'] ?? null,
+                    'level' => $entry['level'] ?? null,
+                    'experience_years' => $entry['experience_years'] ?? null,
+                    'is_primary' => (bool) ($entry['is_primary'] ?? false),
+                ];
+            }
+            $profile->sports()->sync($sync);
+        } else {
+            $ids = $rich ? array_map(fn ($e) => (int) $e['sport_id'], $raw) : $raw;
+            $profile->sports()->sync($ids);
+        }
+
+        return response()->json(['data' => $profile->fresh('sports')]);
     }
 }

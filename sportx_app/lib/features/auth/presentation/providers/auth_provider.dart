@@ -124,12 +124,81 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> verifyOtp({required String email, required String otp}) async {
-    state = state.copyWith(status: AuthStatus.error, error: 'OTP verification is not supported - email is auto-verified on registration');
+  Future<void> sendOtp({required String email, String purpose = 'signup'}) async {
+    state = state.copyWith(status: AuthStatus.loading);
+    try {
+      await _dio.post('/auth/send-otp', data: {
+        'channel': 'email',
+        'destination': email,
+        'purpose': purpose,
+      });
+      state = state.copyWith(status: AuthStatus.unauthenticated);
+    } on DioException catch (e) {
+      _fail(e);
+    }
   }
 
-  Future<void> resendOtp(String email) async {
-    state = state.copyWith(status: AuthStatus.error, error: 'Resend OTP is not supported - emails are auto-verified on registration');
+  Future<void> verifyOtp({
+    required String email,
+    required String otp,
+    String purpose = 'signup',
+    String? name,
+    String? role,
+  }) async {
+    state = state.copyWith(status: AuthStatus.loading);
+    try {
+      final data = <String, dynamic>{
+        'channel': 'email',
+        'destination': email,
+        'code': otp,
+        'purpose': purpose,
+      };
+      if (name != null) data['name'] = name;
+      if (role != null) data['role'] = role;
+      final resp = await _dio.post('/auth/verify-otp', data: data);
+      await _persistAuth(resp.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      _fail(e);
+    }
+  }
+
+  Future<void> resendOtp(String email, {String purpose = 'signup'}) async {
+    state = state.copyWith(status: AuthStatus.loading);
+    try {
+      await _dio.post('/auth/resend-otp', data: {
+        'channel': 'email',
+        'destination': email,
+        'purpose': purpose,
+      });
+      state = state.copyWith(status: AuthStatus.unauthenticated);
+    } on DioException catch (e) {
+      _fail(e);
+    }
+  }
+
+  /// "Continue with Google" — the app obtains the ID token natively
+  /// (google_sign_in) and hands it to the backend, which verifies it.
+  /// On success the same post-login sequence runs as password login:
+  /// persist token → refresh user → register the FCM token.
+  Future<void> signInWithGoogle({required String idToken, String? role}) async {
+    state = state.copyWith(status: AuthStatus.loading);
+    try {
+      final data = <String, dynamic>{'id_token': idToken};
+      if (role != null) data['role'] = role;
+      final resp = await _dio.post('/auth/google', data: data);
+      await _persistAuth(resp.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      _fail(e);
+    }
+  }
+
+  Future<void> _persistAuth(Map<String, dynamic> respData) async {
+    final authToken = respData['token'] as String;
+    await _storage.saveToken(authToken);
+    final user = User.fromJson(respData['user'] as Map<String, dynamic>);
+    final needsOnboarding = respData['needs_onboarding'] == true;
+    state = AuthState(status: AuthStatus.authenticated, user: user, needsOnboarding: needsOnboarding);
+    await _registerFcmToken();
   }
 
   Future<void> login({required String email, required String password}) async {

@@ -7,6 +7,8 @@ export 'trial.dart';
 export 'tournament.dart';
 export 'scholarship.dart';
 export 'sponsorship.dart';
+export 'opportunity.dart';
+export 'program.dart';
 export 'sports_venue.dart';
 export 'user.dart';
 export 'approval.dart';

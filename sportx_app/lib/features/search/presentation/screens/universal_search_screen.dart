@@ -345,6 +345,9 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
       case SearchCategory.academies:
         items = results.academies;
         break;
+      case SearchCategory.athletes:
+        items = results.athletes;
+        break;
       case SearchCategory.trials:
         items = results.trials;
         break;
@@ -364,6 +367,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
         items = [
           ...results.coaches,
           ...results.academies,
+          ...results.athletes,
           ...results.trials,
           ...results.tournaments,
           ...results.scholarships,
@@ -425,7 +429,22 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
     final city = item['city'] is Map ? item['city']['name'] as String? : null;
 
     final title = (item['name'] ?? item['full_name'] ?? item['title'] ?? 'Unknown').toString();
-    final subtitle = [sport, city, item['venue'] ?? item['address']]
+    // Athletes carry a `sports` list rather than a single `sport` map.
+    final List<String> sportNames;
+    if (type == 'athlete' && item['sports'] is List) {
+      sportNames = (item['sports'] as List)
+          .whereType<Map>()
+          .map((s) => s['name']?.toString() ?? '')
+          .where((s) => s.isNotEmpty)
+          .toList();
+    } else {
+      sportNames = [];
+    }
+    final subtitle = [
+      if (sportNames.isNotEmpty) sportNames.join(', ') else sport,
+      city,
+      item['venue'] ?? item['address'],
+    ]
         .whereType<String>()
         .where((s) => s.trim().isNotEmpty)
         .take(2)
@@ -461,6 +480,10 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
         break;
       case 'coach':
         meta = item['fee_structure'] as String?;
+        break;
+      case 'athlete':
+        final count = item['achievements_count'];
+        meta = count != null ? '$count achievements' : null;
         break;
       case 'sports_venue':
         meta = item['pricing'] as String?;
@@ -543,6 +566,9 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
       case 'sports_venue':
         context.push('/sports-venues');
         break;
+      case 'athlete':
+        context.push('/athlete-profile-view', extra: {'id': id});
+        break;
     }
   }
 
@@ -551,6 +577,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
       case SearchCategory.all: return 'All';
       case SearchCategory.coaches: return 'Coaches';
       case SearchCategory.academies: return 'Academies';
+      case SearchCategory.athletes: return 'Athletes';
       case SearchCategory.trials: return 'Trials';
       case SearchCategory.tournaments: return 'Tournaments';
       case SearchCategory.scholarships: return 'Scholarships';
@@ -565,6 +592,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
       case SearchCategory.all: return results.totalCount;
       case SearchCategory.coaches: return results.coaches.length;
       case SearchCategory.academies: return results.academies.length;
+      case SearchCategory.athletes: return results.athletes.length;
       case SearchCategory.trials: return results.trials.length;
       case SearchCategory.tournaments: return results.tournaments.length;
       case SearchCategory.scholarships: return results.scholarships.length;
@@ -576,6 +604,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
   IconData _getIconForType(String type) {
     switch (type) {
       case 'coach': return LucideIcons.user;
+      case 'athlete': return LucideIcons.medal;
       case 'academy': return LucideIcons.building2;
       case 'trial': return LucideIcons.circleDot;
       case 'tournament': return LucideIcons.trophy;

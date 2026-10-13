@@ -47,10 +47,12 @@ final class PlatformSettings
      */
     public static function needsApproval(string $role): bool
     {
+        $role = UserRoles::normalize($role);
+
         return match ($role) {
             'coach' => ! (bool) static::get('auto_approve_coach', false),
             'sponsor' => ! (bool) static::get('auto_approve_sponsor', false),
-            'talent_scout' => ! (bool) static::get('auto_approve_talent_scout', false),
+            UserRoles::SCOUT => ! (bool) static::get('auto_approve_talent_scout', false),
             default => false,
         };
     }

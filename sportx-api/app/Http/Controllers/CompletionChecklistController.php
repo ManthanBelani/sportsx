@@ -48,6 +48,24 @@ class CompletionChecklistController extends Controller
     }
 
     /**
+     * Completion percentage for embedding in other payloads (e.g. /me/home).
+     */
+    public static function completionFor($user): int
+    {
+        $instance = new static();
+        $checks = $instance->checksFor($user);
+
+        $total = count($checks);
+        if ($total === 0) {
+            return 100;
+        }
+
+        $done = count(array_filter($checks, fn (array $c) => $c['done']));
+
+        return (int) round(($done / $total) * 100);
+    }
+
+    /**
      * @return array<int, array{key: string, label: string, deep_link: string, done: bool}>
      */
     protected function checksFor($user): array

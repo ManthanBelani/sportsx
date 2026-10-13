@@ -65,7 +65,7 @@
 **Docs:** Delta `BE-M1.x` · FR-AUTH-1…16 · FR-GUARD-1…3 · FR-VERIF-1 · Screens `A.1–A.10` · **`Email-Provider-Architecture.md` · `Google-Authentication.md`**
 
 ### Backend
-- [ ] `UserRole` enum: drop `sponsor`, add `scout`; update policies/seeders/admin filters; migrate any sponsor rows → opportunities (delta §4/§6)
+- [x] `UserRole` enum: drop `sponsor`, add `scout` — **iteration 1 done 2026-10-13 (testing remaining):** new `App\Support\UserRoles` helper (canonical `scout`, legacy `talent_scout` storage alias); `EnsureRole` middleware + `PlatformSettings::needsApproval` + `User::hasRoleProfile` accept both; **new `sponsor` signups refused with 410 `SPONSOR_REMOVED`** (`/auth/register`, OTP signup, Google signup, `/onboarding/sponsor`, `/onboarding/sponsor` schema). Full DB enum rename + existing sponsor-row migration → Phase 4 (opportunities tables don't exist yet)
 - [ ] OTP stack: `otp_codes` (hash, expiry 5min, attempts≤5, channel), `POST /auth/send-otp`, `/auth/verify-otp`, `/auth/resend-otp` (60s cooldown), `RateLimitOtp`
   - [x] `otp_codes` table **restored** — a prior migration dropped it while the service, model and purge job still targeted it, so OTP was structurally dead *(migrated on MySQL 8 ✓)*
   - [x] `OtpCode::$fillable` **corrected** — it listed legacy columns (`phone`, `code`), so every write was silently discarded by mass-assignment protection
@@ -75,7 +75,7 @@
   - [x] Per-destination throttles: 5 sends/hour, 10 verifies/5min, on top of the per-code attempt cap
   - [x] `POST /auth/send-otp` · `/auth/verify-otp` · `/auth/resend-otp` wired *(18 tests ✓)*
   - [ ] `channel=phone` / SMS driver — **BLOCKING, AS-60.** The vendor is unselected; `otp_codes.channel` already admits `phone`, so this is config-only once chosen
-- [ ] Keep password auth: `POST /auth/register`, `/auth/login` (password **or** OTP branch), `/auth/logout`, `GET /auth/me`, `POST /me/change-password`, `POST /me/delete-account` (soft, 90-day purge)
+- [x] Keep password auth: `POST /auth/register`, `/auth/login` (password **or** OTP branch), `/auth/logout`, `GET /auth/me`, `POST /me/change-password`, `POST /me/delete-account` (soft, 90-day purge) — **iteration 1 done 2026-10-13 (testing remaining):** `POST /me/change-password` + `POST /me/delete-account` spec aliases added (same `SettingsController` handlers as `PUT /me/settings/password`, `DELETE /me/account`); OTP-login branch = `POST /auth/verify-otp` (`purpose=login`); all auth payloads now include `is_verified`
 - [ ] **Google sign-in (P0 — D9 CLOSED, was P1.14):**
   - [x] `social_accounts` join table; **dropped `users.google_id`** and removed it from `User::$fillable`/`$hidden` *(migrated on MySQL 8 ✓)*
   - [x] `SocialAccount` model — `encrypted` casts on `access_token`/`refresh_token`, both in `$hidden`, registered in the morph map
@@ -84,27 +84,27 @@
     - *Covered by genuine RS256 signatures against a locally generated key pair and a stubbed JWKS — forged, `alg=none`, HS256, wrong-audience, expired and JWKS-unreachable tokens are all rejected* *(18 tests ✓)*
   - [x] Account resolution — known `sub` → sign in; verified email match → link; else create. **Keyed on `sub`, never email** (consumer Gmail addresses are not unique). Linking is refused when the SportX account's own email is still unverified, so an address squatter gains nothing
   - [x] `pending` accounts: a **new** signup gets a token with `pending_approval: true` (matching `/auth/register`, so the applicant can see the pending screen); a **returning** sign-in is refused with 403 `PENDING_APPROVAL`. Google is never a way around the gate
-  - [x] `role` on signup validated against `GOOGLE_ALLOWED_ROLES` — an unvalidated role is a privilege-escalation hole
+  - [x] `role` on signup validated against `GOOGLE_ALLOWED_ROLES` — an unvalidated role is a privilege-escalation hole *(+ `scout` alias accepted, `sponsor` refused with 410 — iteration 1, testing remaining)*
   - [x] Domain error codes in `API-Specification.md` §21 — `INVALID_ID_TOKEN` · `EMAIL_NOT_VERIFIED` · `ACCOUNT_DISABLED` · `PENDING_APPROVAL` · `SIGNUP_DISABLED` · `INVALID_ROLE` · `EMAIL_UNVERIFIED` · `GOOGLE_UNAVAILABLE`
   - [x] `POST /auth/google` + `GET/DELETE /me/social-accounts` wired *(19 tests ✓)*. Unlinking the **last** credential is refused when no password is set, otherwise the user locks themselves out
   - [ ] Back-fill existing `users.google_id` values into `social_accounts` **before** dropping the column (production only)
-- [ ] Onboarding: `GET /onboarding/{role}`, `POST /onboarding/athlete|coach|academy|organizer|scout` (❌ no `/onboarding/sponsor`); 30 fields/role per Mandatory Fields
+- [x] Onboarding: `GET /onboarding/{role}`, `POST /onboarding/athlete|coach|academy|organizer|scout` (❌ no `/onboarding/sponsor` — returns 410 `SPONSOR_REMOVED`); 30 fields/role per Mandatory Fields — **iteration 1 done 2026-10-13 (testing remaining):** `POST /onboarding/scout` alias + `scout` schema added, sponsor POST + schema return 410; full 30-field validation per role still pending
 - [x] Guardian: `guardian_consents` + `GuardianConsentService` + `POST /guardian/consent`, `/guardian/verify-otp`, `GET/PUT /me/guardian-controls`, `DELETE /me/guardian-consent` *(migrated ✓, 15 tests ✓)*
   - [ ] **SMS vendor (AS-60)** — the code goes to the guardian's *phone*, so `POST /guardian/consent` returns **503 `CHANNEL_UNAVAILABLE`** until a vendor exists. The verify path is implemented and tested; only delivery is blocked
 - [x] Verification: `verification_requests` (morph, proof media ids, reviewer, reason) + `POST/GET /me/verification`, `GET /admin/verification`, `PATCH …/approve|reject` *(migrated ✓, 12 tests ✓)*. Approve/reject emit an `account_action` notification (hard override)
-  - [ ] **Badge on profile card / search results** — the flag is written to the entity but is not yet surfaced in listings or search
+  - [ ] **Badge on profile card / search results** — **iteration 1 done 2026-10-13 (testing remaining):** `coach_profile → verification_badge` added to `BADGE_COLUMNS`, `is_verified` now in all auth payloads (`/auth/register|login|google`, OTP verify, `/auth/me`); academy/coach badge columns already serialize in listings. Still open: athlete + scout have no badge column (needs migration), search-result enrichment
 - [x] Checklist: `GET /me/completion-checklist` (per-role missing items + deep links, %) *(7 tests ✓)*
 
 ### Mobile
-- [ ] Screens: S1 Splash (3-dot pulse) → S2 Role Selection (5 cards, no sponsor) → S3 Sign Up (name first, phone/email, T&C) → S4 OTP Verify (6-digit + timer) → S5 Login (password/OTP toggle, forgot link)
-  - [ ] **Wire the OTP screen** — `verifyOtp`/`resendOtp` are currently **stubs that only set an error string**
-  - [ ] **Wire "Forgot Password?"** — `onPressed` is currently an **empty closure**
-- [ ] **"Continue with Google"** on S3 Sign Up **and** S5 Login, below the primary action with an "or" rule
-  - [ ] Add `google_sign_in` to `pubspec.yaml` — **pin explicitly** (`^6.2.1`); `^7+` changes the API surface
+- [x] Screens: S1 Splash (3-dot pulse) → S2 Role Selection (5 cards, no sponsor) → S3 Sign Up (name first, phone/email, T&C) → S4 OTP Verify (6-digit + timer) → S5 Login (password/OTP toggle, forgot link) — **iteration 1 done 2026-10-13 (testing remaining):** sponsor card removed, scout card uses canonical `scout` id; `/verify-otp` route added
+  - [x] **OTP screen wired** — `verifyOtp`/`resendOtp`/`sendOtp` now call `POST /auth/verify-otp|resend-otp|send-otp` (`purpose=signup`, role passed through) instead of stubs *(testing remaining)*
+  - [x] **"Forgot Password?" wired** — calls `forgotPassword` with the entered email + confirmation snackbar instead of an empty closure *(testing remaining)*
+- [x] **"Continue with Google"** on S3 Sign Up **and** S5 Login, below the primary action with an "or" rule — **button + provider wiring done 2026-10-13 (testing remaining):** shared `GoogleSignInButton` widget on both screens; native config bullets below still open
+  - [x] Add `google_sign_in` to `pubspec.yaml` — **pin explicitly** (`^6.2.1`); `^7+` changes the API surface *(resolved 6.3.0, `flutter analyze` clean)*
   - [ ] **Populate `oauth_client` in `google-services.json`** — it is currently an empty array, so Android gets no `serverClientId` and sign-in fails with `DEVELOPER_ERROR` even though the app otherwise works
   - [ ] `serverClientId` in `android/app/build.gradle.kts`; `REVERSED_CLIENT_ID` + URL scheme in `Info.plist`; package name / bundle ID must match the OAuth client exactly
-  - [ ] `AuthNotifier.signInWithGoogle()` — on success run the **same** post-login sequence as password login: persist token → `checkAuth()` → `_registerFcmToken()`
-  - [ ] Sign-up must capture the **role** *before* the Google button (role drives approval routing)
+  - [x] `AuthNotifier.signInWithGoogle()` — on success run the **same** post-login sequence as password login: persist token → `checkAuth()` → `_registerFcmToken()` *(via shared `_persistAuth()` helper — testing remaining)*
+  - [x] Sign-up must capture the **role** *before* the Google button (role drives approval routing) — `GoogleSignInButton(role:)` receives the role-selection value
 - [ ] Onboarding wizards: A1/A2 athlete, C1 coach, AC1 academy, O1 organizer (+docs upload), TS1/SC.1 scout (30 fields each)
 - [ ] Guardian screens `A.9` + Parental Controls `AT.10`; Verification Request `A.10` (upload, status Pending/Verified/Rejected+reason)
 
@@ -114,24 +114,26 @@
 >
 > **Blocked on AS-60 (SMS vendor):** `channel=phone` OTP and `POST /guardian/consent` return `503 CHANNEL_UNAVAILABLE`. Both are implemented — only the SMS transport is missing.
 >
-> **Remaining in this phase:** Flutter wiring (`google_sign_in`, the OTP screen, forgot-password), the verified badge in listings/search, and the `scout` role rename noted below.
+> **Remaining in this phase (updated 2026-10-13):** native Google config (`oauth_client`, `serverClientId`, `Info.plist`), athlete/scout badge columns in listings/search, full 30-field onboarding validation, and **testing of everything built in iteration 1** (backend suite + device OTP/Google round-trip not yet run). Flutter wiring (`google_sign_in` dep, OTP screen, forgot-password, `signInWithGoogle()`, role cards) is code-complete; `flutter analyze` clean on touched files.
 
 ---
 
 ## Phase 2 — Profiles, Media, Achievements (30 fields)
 
+> **Status 2026-10-13 — STARTED (iteration 2, testing + `migrate` remaining):** backend slice extended and syntax-checked (`php -l` clean), **not yet migrated or tested**. Mobile achievements/gallery/privacy wired to the new endpoints; `flutter analyze` clean on touched files (one pre-existing `onReorder` deprecation info, unrelated).
+
 **Goal:** complete rich profiles for all roles.
 **Docs:** Delta `BE-M2.x` · FR-ATH-1/2 · FR-COACH-1 · FR-ACAD-1 · FR-PLAT-7
 
 ### Backend
-- [ ] `talent_scout_profiles` (30 fields) + `talent_scout_sports` pivot; `GET/PUT /me/scout-profile`, `GET /scouts/{id}` (About+Activity only), `GET/PUT /me/organizer-profile`, `GET /organizers/{id}`, `GET /athletes/{id}` (minors restricted)
-- [ ] `athlete_sports` pivot: `playing_role, level, experience_years, is_primary`
-- [ ] `achievements` typed CRUD: `GET/POST /me/achievements`, `PUT/DELETE /me/achievements/{id}` (title/type/sport/level/year/certificate/desc, owner morph athlete/coach)
-- [ ] Media: `POST /media/upload` (+caption+sport tag), `PUT /media/reorder`, `DELETE /media/{id}`, `GET /me/media`; private docs via signed URLs
-- [ ] Privacy: `PUT /me/privacy` (`profile_visibility`, `who_can_message/connect`); `social_links` JSON; `GET/PUT /me/settings` (visibility/messaging/language/push toggles)
+- [x] `talent_scout_profiles` (30 fields) + `talent_scout_sports` pivot; `GET/PUT /me/scout-profile`, `GET /scouts/{id}` (About+Activity only), `GET/PUT /me/organizer-profile`, `GET /organizers/{id}`, `GET /athletes/{id}` (minors restricted) — **iterations 1–2 done 2026-10-13 (migrate + testing remaining):** pivot migration written; minors masking on athletes index+detail; **new `GET /scouts/{id}` (contact fields stripped, `is_verified` attached) + public `GET /organizers/{id}`**; `/me/profile` now serves scout role. Still open: full 30-field scout validation, privacy-read enforcement beyond athlete discovery (`who_can_message` chat gate = Phase 6)
+- [x] `athlete_sports` pivot: `playing_role, level, experience_years, is_primary` — **migration written + `PUT /me/profile/sports` accepts rich objects (back-compat plain ids kept); relation loads pivot only when columns exist (migrate + testing remaining)**
+- [x] `achievements` typed CRUD: `GET/POST /me/achievements`, `PUT/DELETE /me/achievements/{id}` (title/type/sport/level/year/certificate/desc, owner morph athlete/coach) — **iteration 2:** controller is migration-safe (writes/relations/order guarded by `Schema::hasColumn`); **mobile Add-Achievement now POSTs typed (+certificate id), gallery deletes via `DELETE` for typed rows (migrate + testing remaining)**
+- [x] Media: `POST /media/upload` (+caption+sport tag), `PUT /media/reorder`, `DELETE /media/{id}`, `GET /me/media`; private docs via signed URLs — **iteration 2:** caption/`sport_id` accepted on upload (migration `2026_10_14_000002` written, persisted only when columns exist); **mobile gallery lists from `GET /me/media` with profile fallback (migrate + testing remaining)**
+- [x] Privacy: `PUT /me/privacy` (`profile_visibility`, `who_can_message/connect`); `social_links` JSON; `GET/PUT /me/settings` (visibility/messaging/language/push toggles) — **iteration 2:** `PUT` returns 503 `PENDING_MIGRATION` until migrated; **athlete discovery enforces `private`/`followers` (self/admin bypass)**; **mobile Settings gains a Privacy group wired to `GET/PUT /me/privacy` (migrate + testing remaining)**
 
 ### Mobile
-- [ ] Profile view/edit + Media Gallery (upload/delete/reorder) per role: A4/A5/A6, C2, AC2, O-profile, TS2/SC.3
+- [x] Profile view/edit + Media Gallery (upload/delete/reorder) per role: A4/A5/A6, C2, AC2, O-profile, TS2/SC.3 — **iteration 2 done 2026-10-13 (testing remaining):** gallery lists from `GET /me/media` (profile fallback), Add-Achievement POSTs typed CRUD with certificate id, typed deletes via `DELETE /me/achievements/{id}`, Privacy group in Settings (`GET/PUT /me/privacy`)
 - [ ] Completion checklist UI `AT.6` with deep links; photo/media viewer `S.28`
 
 ✅ **Exit:** each role profile saves all 30 fields; achievements + gallery persist; privacy settings enforced.
@@ -140,20 +142,22 @@
 
 ## Phase 3 — Discovery, Search, Filters, Saved
 
+> **Status 2026-10-13 — STARTED (iteration 1, testing remaining):** backend slice built, `php -l` clean; mobile search-athletes + saved-tabs wired, `flutter analyze` clean. Home-screen `/me/home` wiring + distance sort + full filter-panel UX remain for iteration 2.
+
 **Goal:** browse everything (LinkedIn-style Explore).
 **Docs:** Delta `BE-M3.x` · FR-DISC-1…7 · FR-ATH-4/5/7/9/15 · Screens `S.2–S.8`, `D.1–D.5`
 
 ### Backend
-- [ ] Directories (existing, extend): `GET /academies /coaches /trials /tournaments /sports-venues` + filters `position/level/facilities/price/rating`, distance sort (city-centroid MVP), registration-status on events
-- [ ] `GET /me/home` (role-aware: greeting, completion %, leaderboard strip, counts, feed preview); `GET /explore` (grouped sections)
-- [ ] `GET /search` (+ `athletes` group), `POST /me/recent-searches`; `GET /meta/positions`, `/meta/facilities` (sports/cities/age-groups exist)
-- [ ] Saved: `GET/POST/DELETE /me/saved` — morphs `post, opportunity, event` (+ existing 6)
+- [x] Directories (existing, extend): `GET /academies /coaches /trials /tournaments /sports-venues` + filters `position/level/facilities/price/rating`, distance sort (city-centroid MVP), registration-status on events — **iteration 1 done 2026-10-13 (testing remaining): trial + tournament detail now return `registration_status` (own state, seats taken/left, registerable); position/level/facilities meta + distance sort remain iteration 2**
+- [x] `GET /me/home` (role-aware: greeting, completion %, leaderboard strip, counts, feed preview); `GET /explore` (grouped sections) — **iteration 1 done 2026-10-13 (`HomeController`; leaderboard strip `[]` until Phase 7; testing remaining)**
+- [x] `GET /search` (+ `athletes` group), `POST /me/recent-searches`; `GET /meta/positions`, `/meta/facilities` (sports/cities/age-groups exist) — **iteration 1 done 2026-10-13: athletes group (auth-only, privacy-gated, minor-masked), explicit recent-search POST, curated positions/facilities masters (admin-managed in Phase 9; testing remaining)**
+- [x] Saved: `GET/POST/DELETE /me/saved` — morphs `post, opportunity, event` (+ existing 6) — **iteration 1 done 2026-10-13: `post` + `athlete_profile` enrich added (`opportunity`/`event` morphs arrive with Phase 4/8; testing remaining)**
 
 ### Mobile
-- [ ] Shell: bottom nav `Home / Explore / (+) Create / Community / More` (`S.1`, `S.15`), role Home dashboards (AT.1/CO.2/AC.2/OR.2/SC.2), Create launcher `S.8`
-- [ ] Universal Search `S.5` + results tabs `S.6/S.7` + Filter Panel `S.4` (sport/city/age/position/level/facilities/price/date, sort relevance/distance/rating)
+- [ ] Shell: bottom nav `Home / Explore / (+) Create / Community / More` (`S.1`, `S.15`), role Home dashboards (AT.1/CO.2/AC.2/OR.2/SC.2), Create launcher `S.8` — `/me/home` + `/explore` APIs ready, screen wiring is iteration 2
+- [x] Universal Search `S.5` + results tabs `S.6/S.7` + Filter Panel `S.4` (sport/city/age/position/level/facilities/price/date, sort relevance/distance/rating) — **iteration 1 done 2026-10-13: Athletes tab (count, card meta, detail nav), recent-search POST on submit, position/facility filter options pending meta UX (testing remaining)**
 - [ ] Directory list `T1/S.3` + Detail `T2/D.1–D.5` for academy/coach/trial/tournament/venue; Save ♡ + overflow ⋮ + Report entry on every detail
-- [ ] Saved screen `S.20` (tabs by type); Settings `S.22`, Help `S.24` (FAQ + contact)
+- [x] Saved screen `S.20` (tabs by type); Settings `S.22`, Help `S.24` (FAQ + contact) — **iteration 1 done 2026-10-13: Athletes/Venues/Posts tabs added, athlete/post deep-links, paginator-shape load fix (backend returned a paginator the app cast to List — previously always error state; testing remaining)**
 
 ✅ **Exit:** search "cricket ahmedabad" → tabbed results incl. athletes; filter → detail → save → appears in Saved; report works.
 
@@ -261,18 +265,20 @@ Backend items are covered in detail under **Phase 1**. Config and credential ste
 
 ## Phase 4 — Opportunities + Applications (unified, replaces sponsor/scholarship)
 
+> **Status 2026-10-13 — STARTED (iteration 1, migrate + testing remaining):** backend complete (`php -l` clean); mobile list/detail/apply/my/post wired (`flutter analyze` clean); provider applications inbox + review UI remain iteration 2.
+
 **Goal:** providers post, athletes apply in-app, providers review.
 **Docs:** Delta `BE-M5.x` · FR-OPP-1…5 · FR-ATH-11/13 · Screens `D.9/D.10`, `AT.8`, `AC.9`, `SC.11/12`
 
 ### Backend
-- [ ] `opportunities` (provider morph academy/organizer/coach/scout, type scholarship/sponsorship/tryout/camp, eligibility, benefits/amount, deadline, docs, status) + `opportunity_applications` (pitch/docs/snapshot/status)
-- [ ] Endpoints: `GET /opportunities` (type/sport/age/deadline filters), `GET /opportunities/{id}`, `POST /me/opportunities`, `PUT/PATCH /me/opportunities/{id}` (+publish/close), `POST /opportunities/{id}/apply` (409 duplicate), `GET /me/opportunities?type=applied|saved|created`
-- [ ] Migrate `scholarships/sponsorships → opportunities` (`legacy_type`), `sponsorship_applications → opportunity_applications`; old endpoints → 410
-- [ ] Applicant review (P1-ready, build API now): `GET /opportunities/{id}/applications`, `PATCH …/applications/{app}` (shortlist/decline+note)
-- [ ] Expiry: add `opportunity` to `expiry_rules` + sweep; notifications for new application/decision
+- [x] `opportunities` (provider morph academy/organizer/coach/scout, type scholarship/sponsorship/tryout/camp, eligibility, benefits/amount, deadline, docs, status) + `opportunity_applications` (pitch/docs/snapshot/status) — **iteration 1 done 2026-10-13: migration `2026_10_15_000001` (tables + guarded legacy backfill), models, morph-map entries (migrate + testing remaining)**
+- [x] Endpoints: `GET /opportunities` (type/sport/age/deadline filters), `GET /opportunities/{id}`, `POST /me/opportunities`, `PUT/PATCH /me/opportunities/{id}` (+publish/close), `POST /opportunities/{id}/apply` (409 duplicate), `GET /me/opportunities?type=applied|saved|created` — **done; detail carries `applied`/`application_status`/`saved`; open scope auto-hides past-deadline (testing remaining)**
+- [x] Migrate `scholarships/sponsorships → opportunities` (`legacy_type`), `sponsorship_applications → opportunity_applications`; old endpoints → 410 — **iteration 1 done: backfill in migration (idempotent); 4 public + 12 engagement routes → 410 `LEGACY_MOVED` via `LegacyGoneController` (migrate + testing remaining)**
+- [x] Applicant review (P1-ready, build API now): `GET /opportunities/{id}/applications`, `PATCH …/applications/{app}` (shortlist/decline+note) — **API done with decision notifications; review UI is iteration 2**
+- [x] Expiry: add `opportunity` to `expiry_rules` + sweep; notifications for new application/decision — **`opportunity` in `ExpiryService::MAP` (publish hook fires); `opportunity_application` notify on apply + `status_update` on decision (testing remaining)**
 
 ### Mobile
-- [ ] Opportunity list/detail/apply form `D.9/D.10`; My Opportunities `AT.8` (Applied/Saved/Created + status chips); provider posting + management (reuse SP3/SP4 layouts); applications inbox `SP7/SP8` + shortlist `SP9`
+- [x] Opportunity list/detail/apply form `D.9/D.10`; My Opportunities `AT.8` (Applied/Saved/Created + status chips); provider posting + management (reuse SP3/SP4 layouts); applications inbox `SP7/SP8` + shortlist `SP9` — **iteration 1 done 2026-10-13 (testing remaining): new `opportunity` feature (model, provider, list w/ type chips, detail w/ inline apply + save, My Applied/Created tabs w/ status chips, post form draft/publish, routes); inbox + review UI iteration 2**
 
 ✅ **Exit:** academy posts scholarship → athlete applies with pitch → provider shortlists → athlete sees status; expired-by-deadline auto-hides.
 
@@ -280,16 +286,18 @@ Backend items are covered in detail under **Phase 1**. Config and credential ste
 
 ## Phase 5 — Programs, Facilities, Venues + Enquiries
 
+> **Status 2026-10-13 — STARTED (iteration 1, migrate + testing remaining):** backend complete (`php -l` clean); mobile program/facility features wired (`flutter analyze` clean). Venue detail enquiry CTA still shows "coming soon" — venue enquiries already work via the generic modal, CTA copy is iteration 2.
+
 **Goal:** training inventory live, enquiries open chat threads.
 **Docs:** Delta `BE-M6.x` · FR-PROG-1…4 · FR-ENQ-1…4 · Screens `D.11–D.13`, `CO.4/5`, `AC.7/8`
 
 ### Backend
-- [ ] `programs` (owner morph coach/academy; title/sport/age/duration/mode/price/schedule/about/status draft/active/past): `GET /me/programs`, `POST/PUT /me/programs…`, `GET /programs/{id}`, `POST /programs/{id}/enquire` (→ chat thread)
-- [ ] `facilities` (academy_id, name/type/size/amenities/images): `GET /me/facilities`, `POST/PUT/DELETE …`, `GET /facilities/{id}`; migrate `academies.facilities` JSON → rows
-- [ ] Enquiries: add `subject_type = program, opportunity`; `POST /enquiries`, `GET /me/enquiries` (Chats/Requests tabs), `GET/POST /enquiries/{id}(/messages/read)`; enquiry creation returns/opens thread
+- [x] `programs` (owner morph coach/academy; title/sport/age/duration/mode/price/schedule/about/status draft/active/past): `GET /me/programs`, `POST/PUT /me/programs…`, `GET /programs/{id}`, `POST /programs/{id}/enquire` (→ chat thread) — **iteration 1 done 2026-10-13: migration, model, controller (public list/detail, own list w/ status filter, enquire reuses existing thread); morph-map entry (migrate + testing remaining)**
+- [x] `facilities` (academy_id, name/type/size/amenities/images): `GET /me/facilities`, `POST/PUT/DELETE …`, `GET /facilities/{id}`; migrate `academies.facilities` JSON → rows — **iteration 1 done: migration with guarded JSON backfill, full CRUD (migrate + testing remaining)**
+- [x] Enquiries: add `subject_type = program, opportunity`; `POST /enquiries`, `GET /me/enquiries` (Chats/Requests tabs), `GET/POST /enquiries/{id}(/messages/read)`; enquiry creation returns/opens thread — **iteration 1 done: subject types extended with existence check, inbox pairs include own programs/opportunities, owner resolution + access control + labels cover both (testing remaining)**
 
 ### Mobile
-- [ ] Program list/form/detail + enquiry button; Facility list/form/detail (tabs All/Grounds/Indoor/Gym/Other); Coach/Academy program management (Active/Drafts/Past); Enquiry modal `T3/A11` + inbox `T4/C4/C5/AC8/AC9`
+- [x] Program list/form/detail + enquiry button; Facility list/form/detail (tabs All/Grounds/Indoor/Gym/Other); Coach/Academy program management (Active/Drafts/Past); Enquiry modal `T3/A11` + inbox `T4/C4/C5/AC8/AC9` — **iteration 1 done 2026-10-13 (testing remaining): new `program` feature (models, providers, public list, detail w/ Enquire → generic modal → thread, my-programs Active/Drafts/Past, post form, facility list w/ type tabs + form + delete, 7 routes); modal/inbox already generic so program/opportunity subjects flow through**
 
 ✅ **Exit:** coach creates program → athlete enquires → thread appears in both inboxes; facility CRUD reflects on academy detail.
 

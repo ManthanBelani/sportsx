@@ -18,7 +18,7 @@ class SavedScreen extends ConsumerStatefulWidget {
 class _SavedScreenState extends ConsumerState<SavedScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  static const _tabs = ['All', 'Academies', 'Coaches', 'Trials', 'Tournaments', 'Scholarships', 'Sponsorships'];
+  static const _tabs = ['All', 'Academies', 'Coaches', 'Athletes', 'Trials', 'Tournaments', 'Scholarships', 'Sponsorships', 'Venues', 'Posts'];
 
   @override
   void initState() {
@@ -40,13 +40,19 @@ class _SavedScreenState extends ConsumerState<SavedScreen> with SingleTickerProv
       case 2:
         return 'coach';
       case 3:
-        return 'trial';
+        return 'athlete';
       case 4:
-        return 'tournament';
+        return 'trial';
       case 5:
-        return 'scholarship';
+        return 'tournament';
       case 6:
+        return 'scholarship';
+      case 7:
         return 'sponsorship';
+      case 8:
+        return 'venue';
+      case 9:
+        return 'post';
       default:
         return null;
     }
@@ -76,7 +82,14 @@ class _SavedScreenState extends ConsumerState<SavedScreen> with SingleTickerProv
         return '/sponsorship-detail/${item.itemId}';
       case 'sports_venue':
       case 'sportsvenue':
+      case 'venue':
         return '/sports-venues';
+      case 'athlete':
+      case 'athlete_profile':
+        return '/athlete-profile-view';
+      case 'post':
+      case 'posts':
+        return '/post-detail/${item.itemId}';
       default:
         return '/universal-search';
     }
@@ -190,7 +203,13 @@ class _SavedScreenState extends ConsumerState<SavedScreen> with SingleTickerProv
             title: item.title,
             subtitle: item.subtitle,
             avatarText: initial,
-            onTap: () => context.push(_routeFor(item)),
+            onTap: () {
+              if (item.type.contains('athlete')) {
+                context.push('/athlete-profile-view', extra: {'id': item.itemId});
+              } else {
+                context.push(_routeFor(item));
+              }
+            },
             trailing: IconButton(
               icon: const Icon(LucideIcons.trash2,
                   color: AppColors.textSecondary, size: 20),

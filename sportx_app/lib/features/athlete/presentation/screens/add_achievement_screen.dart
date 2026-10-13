@@ -10,8 +10,6 @@ import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
-import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
-import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class AddAchievementScreen extends ConsumerStatefulWidget {
   const AddAchievementScreen({super.key});
@@ -28,11 +26,6 @@ class _AddAchievementScreenState extends ConsumerState<AddAchievementScreen> {
   File? _certificateFile;
   bool _isSaving = false;
 
-  // Required-by-backend profile fields (loaded + re-sent on save).
-  Map<String, dynamic> _profile = {};
-  List<Map<String, dynamic>> _existing = [];
-  bool _isLoadingProfile = true;
-
   final List<String> _years = List.generate(10, (index) => (2025 - index).toString());
 
   @override
@@ -40,53 +33,6 @@ class _AddAchievementScreenState extends ConsumerState<AddAchievementScreen> {
     _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadCurrentProfile();
-  }
-
-  String get _role => ref.read(authProvider).user?.role ?? 'athlete';
-  bool get _isCoach => _role == 'coach';
-
-  Future<void> _loadCurrentProfile() async {
-    setState(() => _isLoadingProfile = true);
-    try {
-      try {
-        final resp = await ref.read(dioProvider).get('/me/profile');
-        final d = resp.data['data'] as Map<String, dynamic>?;
-        if (d != null && d.isNotEmpty) {
-          _profile = d;
-          _existing = (d['achievements'] as List? ?? const [])
-              .map((e) {
-                if (e is Map) return <String, dynamic>{'text': (e['text'] ?? e['title'] ?? '').toString()};
-                return <String, dynamic>{'text': e.toString()};
-              })
-              .toList();
-          return;
-        }
-      } catch (_) {}
-      // Fallback for coach if /me/profile returns null
-      if (_isCoach) {
-        try {
-          final resp = await ref.read(dioProvider).get('/me/coach-profile');
-          final d = resp.data['data'] as Map<String, dynamic>?;
-          if (d != null) {
-            _profile = d;
-            _existing = (d['achievements'] as List? ?? const [])
-                .map((e) {
-                  if (e is Map) return <String, dynamic>{'text': (e['text'] ?? e['title'] ?? '').toString()};
-                  return <String, dynamic>{'text': e.toString()};
-                })
-                .toList();
-          }
-        } catch (_) {}
-      }
-    } finally {
-      if (mounted) setState(() => _isLoadingProfile = false);
-    }
   }
 
   Future<void> _pickCertificate() async {
@@ -110,47 +56,29 @@ class _AddAchievementScreenState extends ConsumerState<AddAchievementScreen> {
 
     try {
       final dio = ref.read(dioProvider);
-      // Upload certificate first if present so it is not silently dropped
+      // Upload certificate first so its id can be attached to the achievement.
+      int? certificateId;
       if (_certificateFile != null) {
         try {
           final certForm = FormData.fromMap({
             'file': await MultipartFile.fromFile(_certificateFile!.path),
             'media_type': 'document',
           });
-          await dio.post('/media/upload', data: certForm);
+          final certResp = await dio.post('/media/upload', data: certForm);
+          certificateId = (certResp.data['data'] as Map?)?['id'] as int?;
         } catch (_) {
           if (mounted) SnackBarUtils.showError(context, 'Certificate upload failed, saving achievement without document');
         }
       }
-      final allAchievements = <Map<String, dynamic>>[
-        ..._existing,
-        {
-          'text': _titleController.text.trim() +
-              (_descriptionController.text.trim().isNotEmpty
-                  ? ' — ${_descriptionController.text.trim()} ($_selectedYear)'
-                  : ' ($_selectedYear)'),
-          'title': _titleController.text.trim(),
-          'description': _descriptionController.text.trim(),
-          'year': _selectedYear,
-        },
-      ];
-
-      // PUT /me/profile now handles both athlete and coach achievements.
-      // For athlete, required fields must be re-sent; for coach, achievements-only is sufficient.
-      if (_isCoach) {
-        await dio.put('/me/profile', data: {
-          'achievements': allAchievements,
-        });
-      } else {
-        await dio.put('/me/profile', data: {
-          'full_name': _profile['full_name'] ?? _profile['name'] ?? '',
-          'date_of_birth': _profile['date_of_birth'] ?? '',
-          'gender': _profile['gender'] ?? '',
-          'skill_level': _profile['skill_level'] ?? '',
-          'city_id': _profile['city_id'],
-          'achievements': allAchievements,
-        });
-      }
+      // Phase 2 typed CRUD — the row is owned by the caller's athlete/coach
+      // profile server-side, no profile re-send needed.
+      final payload = <String, dynamic>{
+        'title': _titleController.text.trim(),
+        'description': _descriptionController.text.trim(),
+        'year': int.tryParse(_selectedYear),
+      };
+      if (certificateId != null) payload['certificate_media_id'] = certificateId;
+      await dio.post('/me/achievements', data: payload);
 
       if (mounted) {
         SnackBarUtils.showSuccess(context, 'Achievement added successfully!');
@@ -174,19 +102,6 @@ class _AddAchievementScreenState extends ConsumerState<AddAchievementScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoadingProfile) {
-      return Scaffold(
-        backgroundColor: AppColors.surface,
-        appBar: AppBar(
-          backgroundColor: Colors.white.withValues(alpha: 0.88),
-          elevation: 0,
-          title: Text('Add Achievement',
-              style: GoogleFonts.sora(
-                  fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
-        ),
-        body: const AddAchievementSkeleton(),
-      );
-    }
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(

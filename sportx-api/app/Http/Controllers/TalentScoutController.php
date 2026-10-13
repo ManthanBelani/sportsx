@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\TalentScoutProfile;
+use App\Models\VerificationRequest;
 use Illuminate\Http\Request;
 
 class TalentScoutController extends Controller
@@ -61,6 +62,28 @@ class TalentScoutController extends Controller
         SocialLinksController::attach($profile, $request->user());
 
         return response()->json(['data' => $profile]);
+    }
+
+    /**
+     * GET /scouts/{id} — public About + Activity only.
+     *
+     * Contact details (email/phone) are never exposed; connection + chat are
+     * the only contact paths.
+     */
+    public function publicShow(string $id)
+    {
+        $profile = TalentScoutProfile::with(['city', 'photo'])
+            ->whereHas('user', fn ($q) => $q->where('status', 'active'))
+            ->findOrFail($id);
+
+        $data = $profile->toArray();
+        unset($data['user']);
+
+        $data['is_verified'] = VerificationRequest::where('requester_user_id', $profile->user_id)
+            ->where('status', VerificationRequest::STATUS_APPROVED)
+            ->exists();
+
+        return response()->json(['data' => $data]);
     }
 
     public function update(Request $request)

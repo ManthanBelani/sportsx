@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Academy;
+use App\Models\AthleteProfile;
 use App\Models\CoachProfile;
+use App\Models\Opportunity;
+use App\Models\Post;
 use App\Models\Scholarship;
 use App\Models\SavedItem;
 use App\Models\Sponsorship;
@@ -30,7 +33,9 @@ class SavedItemController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'item_type' => 'required|string|in:academy,coach_profile,trial,tournament,scholarship,sponsorship,sports_venue,athlete_profile',
+            // `opportunity` / `event` morphs arrive with Phase 4 / Phase 8 —
+            // the validation list grows then; stored rows already tolerate them.
+            'item_type' => 'required|string|in:academy,coach_profile,trial,tournament,scholarship,sponsorship,sports_venue,athlete_profile,post,opportunity',
             'item_id' => 'required|integer',
         ]);
 
@@ -139,6 +144,34 @@ class SavedItemController extends Controller
                     'title' => $v->name,
                     'subtitle' => collect([$v->sport?->name, $v->city?->name, $v->address])->filter()->implode(' · '),
                     'meta' => $v->pricing,
+                ];
+            },
+            'athlete_profile' => function () use ($item) {
+                $a = AthleteProfile::with(['sports', 'city'])->withCount('achievements')->find($item->item_id);
+                if (! $a) return null;
+                return [
+                    'title' => $a->full_name,
+                    'subtitle' => collect([$a->sports->pluck('name')->implode(', '), $a->city?->name])->filter()->implode(' · '),
+                    'meta' => $a->achievements_count.' achievements',
+                ];
+            },
+            'post' => function () use ($item) {
+                $p = Post::with('user:id,name')->withCount(['likes', 'comments'])->find($item->item_id);
+                if (! $p) return null;
+                return [
+                    'title' => \Illuminate\Support\Str::limit((string) $p->body, 80),
+                    'subtitle' => $p->user?->name ?? 'SportX',
+                    'meta' => $p->likes_count.' likes · '.$p->comments_count.' comments',
+                    'image_url' => $p->image_url,
+                ];
+            },
+            'opportunity' => function () use ($item) {
+                $o = Opportunity::with('sport')->find($item->item_id);
+                if (! $o) return null;
+                return [
+                    'title' => $o->title,
+                    'subtitle' => collect([$o->type, $o->sport?->name])->filter()->implode(' · '),
+                    'meta' => $o->deadline?->format('d M Y'),
                 ];
             },
             default => null,

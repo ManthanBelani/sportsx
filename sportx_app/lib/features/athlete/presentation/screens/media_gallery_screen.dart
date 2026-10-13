@@ -38,6 +38,42 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
   Future<void> _loadMedia() async {
     if (mounted) setState(() => _isLoading = true);
     try {
+      // Phase 2 typed endpoints first, profile-embedded data as fallback.
+      List<Map<String, dynamic>>? serverItems;
+      List<Map<String, dynamic>>? serverAch;
+      try {
+        final mediaResp = await ref.read(dioProvider).get('/me/media');
+        final page = mediaResp.data['data'];
+        final list = page is Map ? page['data'] as List? : page as List?;
+        serverItems = (list ?? const [])
+            .whereType<Map>()
+            .map((m) => Map<String, dynamic>.from(m))
+            .toList();
+      } catch (_) {}
+      try {
+        final achResp = await ref.read(dioProvider).get('/me/achievements');
+        final list = achResp.data['data'] as List? ?? const [];
+        serverAch = list
+            .whereType<Map>()
+            .map((e) {
+              final m = Map<String, dynamic>.from(e);
+              m['_typed'] = true;
+              m['title'] ??= m['text'];
+              m['text'] ??= m['title'];
+              return m;
+            })
+            .toList();
+      } catch (_) {}
+      if (serverItems != null || serverAch != null) {
+        if (mounted) {
+          setState(() {
+            if (serverItems != null) _mediaItems = serverItems;
+            if (serverAch != null) _achievements = serverAch;
+            _isLoading = false;
+          });
+        }
+        return;
+      }
       // /me/profile now supports both athlete and coach (coach returns media_items + achievements).
       // Fallback to /me/coach-profile if profile is null for coach.
       Map<String, dynamic>? data;
@@ -146,6 +182,17 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
     if (confirmed != true) return;
 
     try {
+      // Typed achievements (Phase 2) delete by id; legacy/profile-embedded
+      // ones fall back to the nested PUT removal.
+      final isTyped = _achievements.any(
+        (a) => a['id'] == achievementId && a['_typed'] == true,
+      );
+      if (isTyped && int.tryParse(achievementId.toString()) != null) {
+        await ref.read(dioProvider).delete('/me/achievements/$achievementId');
+        if (mounted) SnackBarUtils.showSuccess(context, 'Achievement deleted');
+        await _loadMedia();
+        return;
+      }
       // Remove achievement locally by filtering then persist via PUT /me/profile
       // which now supports coach achievements as JSON.
       final remaining = _achievements.where((a) => a['id'] != achievementId).toList();

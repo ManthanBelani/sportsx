@@ -10,7 +10,14 @@ class EnsureRole
 {
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
-        if (! $request->user() || ! in_array($request->user()->role, $roles)) {
+        $userRole = $request->user()?->role;
+
+        $allowed = collect($roles)->contains(
+            fn (string $required) => $userRole !== null
+                && \App\Support\UserRoles::matches($userRole, $required)
+        );
+
+        if (! $request->user() || ! $allowed) {
             return response()->json([
                 'message' => 'Insufficient permissions',
                 'error' => ['code' => 'FORBIDDEN', 'message' => 'Insufficient permissions'],

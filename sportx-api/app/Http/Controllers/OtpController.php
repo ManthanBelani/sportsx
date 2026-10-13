@@ -88,7 +88,7 @@ class OtpController extends Controller
             'code' => 'required|string|max:10',
             'purpose' => 'required|in:'.implode(',', OtpCode::PURPOSES),
             'name' => 'required_if:purpose,signup|string|max:100',
-            'role' => 'required_if:purpose,signup|in:athlete,coach,academy,organizer,sponsor,talent_scout',
+            'role' => 'required_if:purpose,signup|in:athlete,coach,academy,organizer,sponsor,talent_scout,scout',
             'password' => 'required_if:purpose,signup|string|min:8',
             'phone' => 'nullable|string|max:20',
         ]);
@@ -228,7 +228,18 @@ class OtpController extends Controller
      */
     protected function createUserFromVerifiedChannel(array $validated, string $destination): User
     {
-        $role = $validated['role'];
+        $requested = \App\Support\UserRoles::normalize($validated['role']) ?? $validated['role'];
+
+        if ($requested === \App\Support\UserRoles::SPONSOR) {
+            abort(response()->json([
+                'error' => [
+                    'code' => 'SPONSOR_REMOVED',
+                    'message' => 'Sponsor accounts are no longer offered. Providers list scholarships and sponsorships as opportunities instead.',
+                ],
+            ], 410));
+        }
+
+        $role = \App\Support\UserRoles::toStorage($requested);
         $settings = $this->platformSettings();
 
         $needsApproval = match ($role) {
@@ -332,6 +343,7 @@ class OtpController extends Controller
             'email_verified_at' => $user->email_verified_at?->toIso8601String(),
             'status' => $user->status,
             'social_links' => $user->social_links,
+            'is_verified' => $user->isVerified(),
         ];
     }
 }

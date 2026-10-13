@@ -6,6 +6,7 @@ enum SearchCategory {
   all,
   coaches,
   academies,
+  athletes,
   trials,
   tournaments,
   scholarships,
@@ -107,6 +108,7 @@ class SearchFilters {
 class SearchResult {
   final List<Map<String, dynamic>> coaches;
   final List<Map<String, dynamic>> academies;
+  final List<Map<String, dynamic>> athletes;
   final List<Map<String, dynamic>> trials;
   final List<Map<String, dynamic>> tournaments;
   final List<Map<String, dynamic>> scholarships;
@@ -116,6 +118,7 @@ class SearchResult {
   SearchResult({
     this.coaches = const [],
     this.academies = const [],
+    this.athletes = const [],
     this.trials = const [],
     this.tournaments = const [],
     this.scholarships = const [],
@@ -126,6 +129,7 @@ class SearchResult {
   int get totalCount =>
       coaches.length +
       academies.length +
+      athletes.length +
       trials.length +
       tournaments.length +
       scholarships.length +
@@ -217,6 +221,8 @@ class SearchNotifier extends StateNotifier<SearchState> {
       final newResults = SearchResult(
         coaches: _typed(data['coaches'], 'coach'),
         academies: _typed(data['academies'], 'academy'),
+        // Athletes group is auth-only; guests get an empty list.
+        athletes: _typed(data['athletes'], 'athlete'),
         trials: _typed(data['trials'], 'trial'),
         tournaments: _typed(data['tournaments'], 'tournament'),
         scholarships: _typed(data['scholarships'], 'scholarship'),
@@ -231,6 +237,7 @@ class SearchNotifier extends StateNotifier<SearchState> {
         merged = SearchResult(
           coaches: [...prev.coaches, ...newResults.coaches],
           academies: [...prev.academies, ...newResults.academies],
+          athletes: [...prev.athletes, ...newResults.athletes],
           trials: [...prev.trials, ...newResults.trials],
           tournaments: [...prev.tournaments, ...newResults.tournaments],
           scholarships: [...prev.scholarships, ...newResults.scholarships],
@@ -308,6 +315,8 @@ class SearchNotifier extends StateNotifier<SearchState> {
       ...state.recentSearches.where((s) => s != query),
     ].take(10).toList();
     state = state.copyWith(recentSearches: updated);
+    // Persist server-side (Phase 3); local state is the source of truth.
+    _dio.post('/me/recent-searches', data: {'query': query}).then((_) {}).catchError((_) {});
   }
 
   void clearRecentSearches() {
