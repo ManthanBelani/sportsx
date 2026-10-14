@@ -43,6 +43,7 @@ class NotificationsState {
   final int page;
   final int unreadCount;
   final String? error;
+  final String tab;
 
   NotificationsState({
     this.items = const [],
@@ -51,6 +52,7 @@ class NotificationsState {
     this.page = 1,
     this.unreadCount = 0,
     this.error,
+    this.tab = 'All',
   });
 
   NotificationsState copyWith({
@@ -60,6 +62,7 @@ class NotificationsState {
     int? page,
     int? unreadCount,
     String? error,
+    String? tab,
   }) {
     return NotificationsState(
       items: items ?? this.items,
@@ -68,6 +71,7 @@ class NotificationsState {
       page: page ?? this.page,
       unreadCount: unreadCount ?? this.unreadCount,
       error: error ?? this.error,
+      tab: tab ?? this.tab,
     );
   }
 }
@@ -79,11 +83,20 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
     load();
   }
 
+  static const tabs = ['All', 'People', 'Opportunities', 'Events', 'Mentions'];
+
+  Future<void> setTab(String tab) async {
+    if (state.tab == tab) return;
+    state = state.copyWith(tab: tab, page: 1);
+    await load();
+  }
+
   Future<void> load() async {
     if (state.isLoading) return;
     state = state.copyWith(isLoading: true, page: 1);
     try {
-      final resp = await _dio.get('/me/notifications', queryParameters: {'page': 1, 'per_page': 20});
+      final resp = await _dio.get('/me/notifications',
+          queryParameters: {'page': 1, 'per_page': 20, if (state.tab != 'All') 'tab': state.tab});
       final data = (resp.data['data'] as List).map((e) => NotificationItem.fromJson(e)).toList();
       final unreadCount = resp.data['meta']?['unread_count'] as int? ?? 0;
       final pagination = resp.data['meta']?['pagination'];
@@ -100,7 +113,8 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
     state = state.copyWith(isLoading: true);
     try {
       final nextPage = state.page + 1;
-      final resp = await _dio.get('/me/notifications', queryParameters: {'page': nextPage, 'per_page': 20});
+      final resp = await _dio.get('/me/notifications',
+          queryParameters: {'page': nextPage, 'per_page': 20, if (state.tab != 'All') 'tab': state.tab});
       final data = (resp.data['data'] as List).map((e) => NotificationItem.fromJson(e)).toList();
       final pagination = resp.data['meta']?['pagination'];
       final hasMore = pagination != null

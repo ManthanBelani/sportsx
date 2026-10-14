@@ -19,16 +19,28 @@ class _CreateAction {
 }
 
 const _actions = [
+  // Phase 1 (universal S.8): create post + add achievement + upload media
   _CreateAction('Create Post', 'Share an update with your network',
       LucideIcons.penLine, Color(0xFFE3EFFF), AppColors.info, '/create-post'),
-  _CreateAction('Create Opportunity', 'Trials, tournaments & more',
-      LucideIcons.plusCircle, AppColors.yellowTint, AppColors.warnText, '/post-trial'),
   _CreateAction('Add Achievement', 'Medals, records & certificates',
       LucideIcons.award, Color(0xFFDCFCE7), Color(0xFF15803D), '/add-achievement'),
-  _CreateAction('Add Event', 'Host a match or meetup', LucideIcons.calendarPlus,
-      Color(0xFFECE9FF), AppColors.coach, '/post-tournament'),
   _CreateAction('Upload Photo/Video', 'Showcase your highlights',
       LucideIcons.imagePlus, Color(0xFFFEE2E2), AppColors.error, '/media-gallery'),
+  // Phase 4 — opportunities (athletes/coaches only)
+  _CreateAction('Create Opportunity', 'Trials, tournaments & more',
+      LucideIcons.plusCircle, AppColors.yellowTint, AppColors.warnText, '/post-opportunity'),
+  // Phase 4 — programs (coaches only)
+  _CreateAction('Create Training Program', 'Create a new program',
+      LucideIcons.bookOpen, Color(0xFFECE9FF), AppColors.coach, '/post-program'),
+  // Phase 4 — events (academies + organizers)
+  _CreateAction('Create Event / Trial', 'Post a new trial or tournament',
+      LucideIcons.calendarPlus, Color(0xFFFCE7F3), AppColors.organizer, '/post-tournament'),
+  // Phase 5 — facilities (academies)
+  _CreateAction('Add Facility / Venue', 'Showcase grounds, courts, gyms',
+      LucideIcons.mapPin, Color(0xFFDBEAFE), AppColors.info, '/post-facility'),
+  // Phase 11 — recruit staff (P2, hidden by default)
+  _CreateAction('Recruit Staff', 'Post a coach or staff opening',
+      LucideIcons.userPlus, Color(0xFFFEF3C7), AppColors.warnText, '/recruit-staff'),
 ];
 
 /// Shows the v2 create sheet. Call from the bottom-nav FAB.

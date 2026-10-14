@@ -25,13 +25,12 @@ class ReportScreen extends ConsumerStatefulWidget {
 
 class _ReportScreenState extends ConsumerState<ReportScreen> {
   static const _reasons = {
-    'spam': 'Spam',
     'inappropriate': 'Inappropriate content',
     'fake': 'Fake listing',
-    'harassment': 'Harassment',
+    'outdated': 'Outdated info',
     'other': 'Other',
   };
-  String _reason = 'spam';
+  String _reason = 'inappropriate';
   final _comment = TextEditingController();
   bool _submitting = false;
 

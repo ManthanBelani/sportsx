@@ -19,12 +19,14 @@ final opportunityDetailProvider = FutureProvider.family<Opportunity, String>((re
 class MyOpportunitiesState {
   final List<OpportunityApplication> applied;
   final List<Opportunity> created;
+  final List<Opportunity> saved;
   final bool isLoading;
   final String? error;
 
   MyOpportunitiesState({
     this.applied = const [],
     this.created = const [],
+    this.saved = const [],
     this.isLoading = false,
     this.error,
   });
@@ -32,12 +34,14 @@ class MyOpportunitiesState {
   MyOpportunitiesState copyWith({
     List<OpportunityApplication>? applied,
     List<Opportunity>? created,
+    List<Opportunity>? saved,
     bool? isLoading,
     String? error,
   }) {
     return MyOpportunitiesState(
       applied: applied ?? this.applied,
       created: created ?? this.created,
+      saved: saved ?? this.saved,
       isLoading: isLoading ?? this.isLoading,
       error: error,
     );
@@ -66,9 +70,19 @@ class MyOpportunitiesNotifier extends StateNotifier<MyOpportunitiesState> {
       } catch (_) {
         // Providers only — athletes get applied; created stays empty.
       }
+      List<Opportunity> saved = [];
+      try {
+        final savedResp = await _dio.get('/me/opportunities', queryParameters: {'type': 'saved'});
+        final savedPage = savedResp.data;
+        final savedList = (savedPage is Map ? savedPage['data'] as List? : savedPage as List?) ?? [];
+        saved = savedList.map((e) => Opportunity.fromJson(e as Map<String, dynamic>)).toList();
+      } catch (_) {
+        // Saved tab stays empty when unsupported.
+      }
       state = MyOpportunitiesState(
         applied: appliedList.map((e) => OpportunityApplication.fromJson(e as Map<String, dynamic>)).toList(),
         created: created,
+        saved: saved,
       );
     } on DioException catch (e) {
       state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);

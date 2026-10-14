@@ -10,6 +10,7 @@ import 'package:sportx_app/shared/models/social_links.dart';
 import 'package:sportx_app/shared/presentation/widgets/social_links.dart';
 import 'package:sportx_app/features/talent_scout/presentation/providers/scout_connection_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/providers/scout_shortlist_provider.dart';
+import 'package:sportx_app/features/talent_scout/presentation/screens/observations_screen.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
@@ -540,6 +541,24 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
           ),
           const SizedBox(width: 12),
           Expanded(child: _buildConnectButton()),
+        ]),
+        const SizedBox(height: 10),
+        Row(children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () => context.push('/observations', extra: {'athleteProfileId': widget.athleteId}),
+              icon: const Icon(LucideIcons.eye, size: 16),
+              label: const Text('Observe'),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () => showContactAthleteSheet(context, ref, widget.athleteId),
+              icon: const Icon(LucideIcons.send, size: 16),
+              label: const Text('Contact'),
+            ),
+          ),
         ]),
         const SizedBox(height: 12),
         Center(

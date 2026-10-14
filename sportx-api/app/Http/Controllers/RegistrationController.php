@@ -53,6 +53,7 @@ class RegistrationController extends Controller
                 'status' => 'pending',
                 'reminder_enabled' => $validated['reminder_enabled'] ?? false,
             ]);
+            app(RegistrationActivityService::class)->logSubmission($registration, $request->user());
 
             foreach ($validated['document_media_ids'] ?? [] as $i => $mediaId) {
                 TrialRegistrationDocument::create([
@@ -161,6 +162,7 @@ class RegistrationController extends Controller
             'reviewed_by' => $request->user()->id,
             'reviewed_at' => now(),
         ]);
+        app(RegistrationActivityService::class)->logRejection($registration, $request->user(), $reason ?? 'Rejected by organizer');
 
         $registration->load(['trial', 'athlete.user']);
         NotificationService::createStatic([
@@ -187,6 +189,7 @@ class RegistrationController extends Controller
             'reviewed_at' => now(),
             'rejection_reason' => null,
         ]);
+        app(RegistrationActivityService::class)->logApproval($registration, $request->user());
 
         $registration->load(['trial', 'athlete.user']);
         NotificationService::createStatic([
@@ -216,6 +219,7 @@ class RegistrationController extends Controller
             'reviewed_by' => $request->user()->id,
             'reviewed_at' => now(),
         ]);
+        app(RegistrationActivityService::class)->logRejection($registration, $request->user(), $validated['rejection_reason']);
 
         $registration->load(['trial', 'athlete.user']);
         NotificationService::createStatic([
@@ -324,6 +328,7 @@ class RegistrationController extends Controller
             'status' => 'pending',
             'reminder_enabled' => $validated['reminder_enabled'] ?? false,
         ]);
+        app(RegistrationActivityService::class)->logSubmission($registration, $request->user());
 
         $registration->load(['category', 'tournament']);
 
@@ -410,7 +415,7 @@ class RegistrationController extends Controller
             'reviewed_at' => now(),
             'rejection_reason' => null,
         ]);
-
+        app(RegistrationActivityService::class)->logApproval($registration, $request->user());
         $registration->load(['tournament', 'athlete.user']);
         NotificationService::createStatic([
             'user_id' => $registration->athlete->user_id,
@@ -438,7 +443,7 @@ class RegistrationController extends Controller
             'reviewed_by' => $request->user()->id,
             'reviewed_at' => now(),
         ]);
-
+        app(RegistrationActivityService::class)->logRejection($registration, $request->user(), $validated['rejection_reason']);
         $registration->load(['tournament', 'athlete.user']);
         NotificationService::createStatic([
             'user_id' => $registration->athlete->user_id,

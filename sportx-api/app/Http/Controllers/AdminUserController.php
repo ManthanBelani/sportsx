@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Notification;
 use App\Models\Sponsorship;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -52,6 +53,7 @@ class AdminUserController extends Controller
     {
         $user = User::findOrFail($id);
         $user->forceFill(['email_verified_at' => now(), 'status' => 'active'])->save();
+        $this->notifyAccountAction($user, 'approved', 'Your SportX account was approved. Welcome!');
 
         return response()->json(['data' => $user]);
     }
@@ -61,6 +63,7 @@ class AdminUserController extends Controller
     {
         $user = User::findOrFail($id);
         $user->forceFill(['status' => 'deleted'])->save();
+        $this->notifyAccountAction($user, 'rejected', 'Your SportX account application was not approved.');
 
         return response()->json(['data' => $user]);
     }
@@ -69,8 +72,27 @@ class AdminUserController extends Controller
     {
         $user = User::findOrFail($id);
         $user->forceFill(['status' => 'suspended'])->save();
+        $this->notifyAccountAction($user, 'suspended', 'Your SportX account was suspended. Contact support.');
 
         return response()->json(['data' => $user]);
+    }
+
+    /**
+     * account_action hard override: always in-app + email, bypasses prefs.
+     * NotificationService::create handles both legs.
+     */
+    protected function notifyAccountAction(User $user, string $outcome, string $body): void
+    {
+        try {
+            NotificationService::createStatic([
+                'user_id' => $user->id,
+                'type' => 'account_action',
+                'title' => "Account {$outcome}",
+                'body' => $body,
+                'action_url' => '/account-status',
+            ]);
+        } catch (\Throwable) {
+        }
     }
 
     public function destroy(string $id)
@@ -109,7 +131,7 @@ class AdminUserController extends Controller
         return response()->json(['data' => $sponsorship]);
     }
 
-    // ── Notification broadcast ──
+    // ── Notification broadcast (Phase 9: channels in_app+push, chunked fan-out) ──
 
     public function broadcast(Request $request)
     {
@@ -118,26 +140,66 @@ class AdminUserController extends Controller
             'body' => 'required|string',
             'roles' => 'nullable|array',
             'roles.*' => 'string',
+            'channels' => 'nullable|array',
+            'channels.*' => 'in:in_app,push',
         ]);
+
+        $channels = $validated['channels'] ?? ['in_app', 'push'];
+        $wantsInApp = in_array('in_app', $channels, true);
+        $wantsPush = in_array('push', $channels, true);
 
         $recipients = User::query();
         if (! empty($validated['roles'])) {
             $recipients->whereIn('role', $validated['roles']);
         }
-        $recipients->where('status', 'active');
+        $ids = $recipients->where('status', 'active')->pluck('id')->all();
 
-        $now = now();
-        $rows = $recipients->pluck('id')->map(fn ($userId) => [
-            'user_id' => $userId,
-            'type' => 'status_update',
-            'title' => $validated['title'],
-            'body' => $validated['body'],
-            'created_at' => $now,
-            'updated_at' => $now,
-        ])->all();
+        $created = 0;
+        $pushed = 0;
+        $fallback = 0;
+        if ($wantsPush) {
+            // Per-user create: one in-app row + chunked push fan-out each
+            // (prefs gate + email fallback live inside NotificationService).
+            foreach ($ids as $userId) {
+                try {
+                    NotificationService::createStatic([
+                        'user_id' => $userId,
+                        'type' => 'broadcast',
+                        'title' => $validated['title'],
+                        'body' => $validated['body'],
+                    ]);
+                    $created++;
+                    $pushed++;
+                } catch (\Throwable) {
+                    $fallback++;
+                }
+            }
+        } elseif ($wantsInApp) {
+            // In-app only: chunked insert so a 10k broadcast never builds
+            // one giant query.
+            foreach (array_chunk($ids, 500) as $chunk) {
+                $now = now();
+                $rows = array_map(fn ($userId) => [
+                    'user_id' => $userId,
+                    'type' => 'broadcast',
+                    'category' => 'broadcasts',
+                    'title' => $validated['title'],
+                    'body' => $validated['body'],
+                    'push_status' => 'suppressed',
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ], $chunk);
+                DB::table('notifications')->insert($rows);
+                $created += count($rows);
+            }
+        }
 
-        DB::table('notifications')->insert($rows);
-
-        return response()->json(['data' => ['recipients' => count($rows)]], 201);
+        return response()->json(['data' => [
+            'recipients' => count($ids),
+            'in_app_rows' => $created,
+            'push_queued' => $pushed,
+            'failed' => $fallback,
+            'channels' => $channels,
+        ]], 201);
     }
 }

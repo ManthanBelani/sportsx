@@ -3,10 +3,13 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:sportx_app/core/router.dart';
 import 'package:sportx_app/core/services/push_notification_service.dart';
 import 'package:sportx_app/theme/app_theme.dart';
 
+/// Phase 10 observability: Sentry crash reporting. No-op when SENTRY_DSN is
+/// unset (credential gate) — the app boots exactly as before.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -16,14 +19,30 @@ Future<void> main() async {
     // Env asset missing — ApiConfig falls back to its built-in defaults.
   }
 
-  try {
-    await Firebase.initializeApp();
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-  } catch (_) {
-    // Firebase not configured — push notifications will be unavailable.
+  const sentryDsn = String.fromEnvironment('SENTRY_DSN', defaultValue: '');
+
+  Future<void> boot() async {
+    try {
+      await Firebase.initializeApp();
+      FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    } catch (_) {
+      // Firebase not configured — push notifications will be unavailable.
+    }
+
+    runApp(const ProviderScope(child: SportXApp()));
   }
 
-  runApp(const ProviderScope(child: SportXApp()));
+  if (sentryDsn.isEmpty) {
+    await boot();
+  } else {
+    await SentryFlutter.init(
+      (options) {
+        options.dsn = sentryDsn;
+        options.tracesSampleRate = 0.2;
+      },
+      appRunner: boot,
+    );
+  }
 }
 
 class SportXApp extends ConsumerStatefulWidget {

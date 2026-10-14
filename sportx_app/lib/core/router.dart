@@ -73,6 +73,7 @@ import 'package:sportx_app/features/shared/presentation/screens/my_tournaments_m
 import 'package:sportx_app/features/sponsor/presentation/screens/my_sponsorships_management_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/activity_hub_screen.dart';
 import 'package:sportx_app/features/notifications/presentation/screens/notifications_screen.dart';
+import 'package:sportx_app/features/notifications/presentation/screens/notification_preferences_screen.dart';
 import 'package:sportx_app/features/settings/presentation/screens/settings_screen.dart';
 import 'package:sportx_app/features/settings/presentation/screens/help_support_screen.dart';
 import 'package:sportx_app/features/settings/presentation/screens/social_links_screen.dart';
@@ -105,6 +106,7 @@ import 'package:sportx_app/features/social/presentation/screens/post_detail_scre
 import 'package:sportx_app/features/opportunity/presentation/screens/opportunity_list_screen.dart';
 import 'package:sportx_app/features/opportunity/presentation/screens/opportunity_detail_screen.dart';
 import 'package:sportx_app/features/opportunity/presentation/screens/my_opportunities_screen.dart';
+import 'package:sportx_app/features/opportunity/presentation/screens/opportunity_applications_screen.dart';
 import 'package:sportx_app/features/opportunity/presentation/screens/post_opportunity_screen.dart';
 import 'package:sportx_app/features/program/presentation/screens/program_list_screen.dart';
 import 'package:sportx_app/features/program/presentation/screens/program_detail_screen.dart';
@@ -128,6 +130,8 @@ import 'package:sportx_app/features/talent_scout/presentation/screens/talent_sco
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_athlete_discovery_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_athlete_profile_view_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_shortlist_screen.dart';
+import 'package:sportx_app/features/talent_scout/presentation/screens/leaderboard_screen.dart';
+import 'package:sportx_app/features/talent_scout/presentation/screens/observations_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_connection_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_connections_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_profile_screen.dart';
@@ -138,6 +142,7 @@ import 'package:sportx_app/features/shared/presentation/screens/my_applications_
 import 'package:sportx_app/features/shared/presentation/screens/application_status_screen.dart';
 import 'package:sportx_app/features/connections/presentation/screens/network_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/report_screen.dart';
+import 'package:sportx_app/features/shared/presentation/screens/safety_centre_screen.dart';
 import 'package:sportx_app/features/sponsor/presentation/screens/sponsor_directory_screen.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_analytics_screen.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_settings_screen.dart';
@@ -336,6 +341,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/scout-athlete/:id', builder: (context, state) => TalentScoutAthleteProfileViewScreen(athleteId: state.pathParameters['id']!)),
       GoRoute(path: '/scout-connect/:athleteId', builder: (context, state) => TalentScoutConnectionScreen(athleteId: state.pathParameters['athleteId']!)),
+      GoRoute(path: '/leaderboard', builder: (context, state) => const LeaderboardScreen()),
+      GoRoute(path: '/observations', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return ObservationsScreen(athleteProfileId: extra?['athleteProfileId'] as String?);
+      }),
       GoRoute(path: '/sponsor-posting', builder: (context, state) => const SponsorshipPostingScreen()),
       GoRoute(path: '/sponsor-pitch/:id', builder: (context, state) => SponsorPitchScreen(sponsorId: state.pathParameters['id']!)),
       GoRoute(path: '/registrant-detail', builder: (context, state) {
@@ -401,6 +411,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/coach-enrollments', builder: (context, state) => const CoachEnrollmentScreen()),
       GoRoute(path: '/my-coaching-enrollments', builder: (context, state) => const MyCoachingEnrollmentsScreen()),
       GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
+      GoRoute(
+          path: '/notification-preferences',
+          builder: (context, state) => const NotificationPreferencesScreen()),
       GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
       GoRoute(path: '/social-links', builder: (context, state) => const SocialLinksScreen()),
       GoRoute(path: '/help-support', builder: (context, state) => const HelpSupportScreen()),
@@ -412,6 +425,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/opportunities', builder: (context, state) => const OpportunityListScreen()),
       GoRoute(path: '/opportunity-detail/:id', builder: (context, state) => OpportunityDetailScreen(opportunityId: state.pathParameters['id']!)),
       GoRoute(path: '/my-opportunities', builder: (context, state) => const MyOpportunitiesScreen()),
+      GoRoute(
+          path: '/opportunity-applications/:id',
+          builder: (context, state) =>
+              OpportunityApplicationsScreen(opportunityId: state.pathParameters['id']!)),
       GoRoute(path: '/post-opportunity', builder: (context, state) => const PostOpportunityScreen()),
       GoRoute(path: '/programs', builder: (context, state) => const ProgramListScreen()),
       GoRoute(path: '/program-detail/:id', builder: (context, state) => ProgramDetailScreen(programId: state.pathParameters['id']!)),
@@ -465,6 +482,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           title: extra?['title'] as String? ?? '',
         );
       }),
+      GoRoute(path: '/safety', builder: (context, state) => const SafetyCentreScreen()),
       GoRoute(path: '/sponsors', builder: (context, state) => const SponsorDirectoryScreen()),
       GoRoute(path: '/admin/analytics', builder: (context, state) => const AdminAnalyticsScreen()),
       GoRoute(path: '/admin/settings', builder: (context, state) => const AdminSettingsScreen()),
@@ -507,6 +525,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/activity-hub', builder: (context, state) => const ActivityHubScreen()),
           GoRoute(path: '/network', builder: (context, state) => const NetworkScreen()),
           GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
+          // v3 wireframe IA aliases (Explore / Community / More)
+          GoRoute(path: '/explore', redirect: (_, __) => '/universal-search'),
+          GoRoute(path: '/community', redirect: (_, __) => '/network'),
+          GoRoute(path: '/more', redirect: (_, __) => '/profile'),
         ],
       ),
     ],
@@ -542,10 +564,10 @@ class MainShell extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 _buildNavItem(context, role, 0, LucideIcons.house, 'Home', selected == 0),
-                _buildNavItem(context, role, 1, LucideIcons.compass, 'Discover', selected == 1),
+                _buildNavItem(context, role, 1, LucideIcons.compass, 'Explore', selected == 1),
                 _buildFab(context, role, selected == 2),
-                _buildNavItem(context, role, 3, LucideIcons.users, 'Network', selected == 3),
-                _buildNavItem(context, role, 4, LucideIcons.user, 'Me', selected == 4),
+                _buildNavItem(context, role, 3, LucideIcons.users, 'Community', selected == 3),
+                _buildNavItem(context, role, 4, LucideIcons.user, 'More', selected == 4),
               ],
             ),
           ),
@@ -613,22 +635,22 @@ class MainShell extends ConsumerWidget {
   int _calculateSelectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
     if (location.startsWith('/home')) return 0;
-    if (location.startsWith('/search') || location.startsWith('/universal-search')) return 1;
+    if (location.startsWith('/search') || location.startsWith('/universal-search') || location.startsWith('/explore')) return 1;
     if (location.startsWith('/saved')) return 2;
-    if (location.startsWith('/network') || location.startsWith('/activity-hub')) return 3;
-    if (location.startsWith('/profile')) return 4;
+    if (location.startsWith('/network') || location.startsWith('/community') || location.startsWith('/activity-hub')) return 3;
+    if (location.startsWith('/profile') || location.startsWith('/more')) return 4;
     return 0;
   }
 
   void _onItemTapped(int index, BuildContext context, String? role) {
     switch (index) {
       case 0: context.go('/home'); break;
-      case 1: context.go('/universal-search'); break;
+      case 1: context.go('/explore'); break;
       case 2: context.go('/saved'); break;
-      case 3: context.go('/network'); break;
+      case 3: context.go('/community'); break;
       case 4:
         if (role == 'athlete') {
-          context.go('/profile');
+          context.go('/more');
         } else {
           context.go(_dashboardRouteFor(role));
         }

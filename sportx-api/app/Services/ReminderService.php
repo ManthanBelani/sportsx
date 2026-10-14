@@ -2,8 +2,6 @@
 
 namespace App\Services;
 
-use App\Events\NotificationCreated;
-use App\Models\Notification;
 use App\Models\ReminderSubscription;
 use Carbon\Carbon;
 
@@ -59,7 +57,9 @@ class ReminderService
             ->get();
 
         foreach ($due as $reminder) {
-            $notification = Notification::create([
+            // Single fan-out path: NotificationService owns prefs gate,
+            // push_status, chunked push + email fallback (Phase 9).
+            NotificationService::createStatic([
                 'user_id' => $reminder->user_id,
                 'type' => 'reminder',
                 'title' => 'Reminder',
@@ -67,8 +67,6 @@ class ReminderService
                 'notifiable_type' => $reminder->reminderable_type,
                 'notifiable_id' => $reminder->reminderable_id,
             ]);
-
-            NotificationCreated::dispatch($notification);
 
             $reminder->update(['sent_at' => now()]);
         }

@@ -13,8 +13,12 @@ use App\Models\Academy;
 use App\Models\AthleteProfile;
 use App\Models\CoachProfile;
 use App\Models\OrganizerProfile;
+use App\Models\Connection;
+use App\Models\Conversation;
+use App\Models\Facility;
 use App\Models\Opportunity;
 use App\Models\OpportunityApplication;
+use App\Models\Post;
 use App\Models\Program;
 use App\Models\SocialAccount;
 use App\Models\SponsorProfile;
@@ -65,6 +69,13 @@ class AppServiceProvider extends ServiceProvider
             'opportunity_application' => OpportunityApplication::class,
             'program' => Program::class,
             'sports_venue' => SportsVenue::class,
+            'facility' => Facility::class,
+            'post' => Post::class,
+            'connection' => Connection::class,
+            'conversation' => Conversation::class,
+            'scout_shortlist' => \App\Models\ScoutShortlist::class,
+            'observation' => \App\Models\Observation::class,
+            'leaderboard_score' => \App\Models\LeaderboardScore::class,
         ]);
 
         Event::listen(NotificationCreated::class, SendPushNotificationListener::class);

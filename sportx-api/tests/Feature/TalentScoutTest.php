@@ -22,16 +22,21 @@ class TalentScoutTest extends TestCase
     protected TalentScoutProfile $scoutProfile;
     protected User $athleteUser;
     protected AthleteProfile $athleteProfile;
+    protected array $sportIds = [];
+    protected int $cityId = 0;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        // Create required reference data
-        Sport::create(['id' => 1, 'name' => 'Cricket']);
-        Sport::create(['id' => 2, 'name' => 'Football']);
-        City::create(['id' => 1, 'name' => 'Mumbai']);
-        AgeGroup::create(['id' => 1, 'name' => 'Under 18']);
+        // Create required reference data (capture ids: `id` is not fillable,
+        // so explicit ids are dropped and auto-increment applies).
+        $cricket = Sport::create(['name' => 'Cricket']);
+        $football = Sport::create(['name' => 'Football']);
+        $city = City::create(['name' => 'Mumbai', 'state' => 'Maharashtra']);
+        $ageGroup = AgeGroup::create(['name' => 'Under 18']);
+        $this->sportIds = [$cricket->id, $football->id];
+        $this->cityId = $city->id;
 
         // Create scout user and profile
         $this->scoutUser = User::create([
@@ -47,9 +52,9 @@ class TalentScoutTest extends TestCase
             'user_id' => $this->scoutUser->id,
             'organization' => 'Test Agency',
             'affiliation' => 'Test Association',
-            'sports_specialization' => [1, 2],
+            'sports_specialization' => [$cricket->id, $football->id],
             'experience_years' => 5,
-            'city_id' => 1,
+            'city_id' => $city->id,
             'bio' => 'Test bio',
         ]);
 
@@ -68,9 +73,9 @@ class TalentScoutTest extends TestCase
             'full_name' => 'Test Athlete',
             'date_of_birth' => '2000-01-01',
             'gender' => 'male',
-            'age_group_id' => 1,
+            'age_group_id' => $ageGroup->id,
             'skill_level' => 'advanced',
-            'city_id' => 1,
+            'city_id' => $city->id,
         ]);
     }
 
@@ -92,9 +97,9 @@ class TalentScoutTest extends TestCase
         $resp = $this->postJson('/api/v1/onboarding/talent-scout', [
             'organization' => 'New Agency',
             'affiliation' => 'New Association',
-            'sports_specialization' => [1],
+            'sports_specialization' => [$this->sportIds[0]],
             'experience_years' => 3,
-            'city_id' => 1,
+            'city_id' => $this->cityId,
             'bio' => 'New scout bio',
         ]);
 
@@ -121,7 +126,7 @@ class TalentScoutTest extends TestCase
         Sanctum::actingAs($athlete);
 
         $resp = $this->postJson('/api/v1/onboarding/talent-scout', [
-            'sports_specialization' => [1],
+            'sports_specialization' => [$this->sportIds[0]],
         ]);
 
         $resp->assertStatus(403);
@@ -135,7 +140,8 @@ class TalentScoutTest extends TestCase
             'organization' => 'Test',
         ]);
 
-        $resp->assertStatus(422)->assertJsonValidationErrors('sports_specialization');
+        $resp->assertStatus(422)->assertJsonPath('error.code', 'VALIDATION_ERROR');
+        $this->assertArrayHasKey('sports_specialization', $resp->json('error.errors'));
     }
 
     // ==================== Profile Tests ====================
@@ -148,7 +154,7 @@ class TalentScoutTest extends TestCase
 
         $resp->assertStatus(200)
             ->assertJsonPath('data.organization', 'Test Agency')
-            ->assertJsonPath('data.sports_specialization', [1, 2]);
+            ->assertJsonPath('data.sports_specialization', $this->sportIds);
     }
 
     public function test_scout_can_update_profile(): void
@@ -332,7 +338,7 @@ class TalentScoutTest extends TestCase
         ]);
     }
 
-    public function test_scout_cannot_cancel_accepted_connection(): void
+    public function test_scout_can_remove_accepted_connection(): void
     {
         $connection = ScoutConnection::create([
             'talent_scout_profile_id' => $this->scoutProfile->id,
@@ -344,7 +350,10 @@ class TalentScoutTest extends TestCase
 
         $resp = $this->deleteJson("/api/v1/me/scout-connections/{$connection->id}");
 
-        $resp->assertStatus(404);
+        // Either side may remove their own connection (cancel pending or
+        // disconnect accepted) — matches generic connections behavior.
+        $resp->assertStatus(200);
+        $this->assertDatabaseMissing('scout_connections', ['id' => $connection->id]);
     }
 
     // ==================== Athlete Side Tests ====================

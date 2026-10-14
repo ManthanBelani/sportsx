@@ -3,42 +3,20 @@
 namespace App\Listeners;
 
 use App\Events\NotificationCreated;
-use App\Jobs\SendPushNotification;
-use App\Models\UserDeviceToken;
 
+/**
+ * Deprecated shim (Phase 9).
+ *
+ * Push fan-out is owned by NotificationService::create (prefs gate,
+ * push_status, chunked SendPushNotification on the `push` queue, email
+ * fallback). This listener intentionally no-ops so a notification is
+ * never fanned out twice. Kept (not deleted) so the
+ * NotificationCreated event stays observable for logging/analytics.
+ */
 class SendPushNotificationListener
 {
     public function handle(NotificationCreated $event): void
     {
-        $notification = $event->notification;
-        $notification->load('user');
-
-        $user = $notification->user;
-        $prefs = $user->notification_prefs ?? [];
-
-        if (isset($prefs['push']) && $prefs['push'] === false) {
-            return;
-        }
-
-        $deviceTokens = UserDeviceToken::where('user_id', $notification->user_id)
-            ->active()
-            ->pluck('token')
-            ->toArray();
-
-        if (empty($deviceTokens)) {
-            return;
-        }
-
-        SendPushNotification::dispatch(
-            $deviceTokens,
-            $notification->title ?? 'SportX',
-            $notification->body ?? '',
-            [
-                'notification_id' => (string) $notification->id,
-                'type' => $notification->type ?? 'general',
-                'action_url' => $notification->action_url ?? '',
-            ],
-            $notification->user_id
-        );
+        return;
     }
 }

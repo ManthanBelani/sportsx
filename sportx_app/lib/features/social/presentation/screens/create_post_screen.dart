@@ -81,21 +81,24 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
     try {
       final dio = ref.read(dioProvider);
-      final formData = FormData.fromMap({
-        'caption': _captionController.text.trim(),
-        'hashtags': _selectedHashtags,
-        if (_selectedMedia.isNotEmpty)
-          'media': await Future.wait(
-            _selectedMedia.asMap().entries.map((entry) async {
-              return MultipartFile.fromFile(
-                entry.value.path,
-                filename: 'post_media_${entry.key}.jpg',
-              );
-            }),
-          ),
-      });
+      // Upload media first via /media/upload (backend posts accept
+      // image_url/video_url strings, not multipart files).
+      String? imageUrl;
+      if (_selectedMedia.isNotEmpty) {
+        final form = FormData.fromMap({
+          'file': await MultipartFile.fromFile(_selectedMedia.first.path),
+          'media_type': 'image',
+        });
+        final up = await dio.post('/media/upload', data: form);
+        final d = up.data['data'];
+        imageUrl = (d is Map ? d['url'] ?? d['file_url'] : null)?.toString();
+      }
 
-      await dio.post('/posts', data: formData);
+      await dio.post('/posts', data: {
+        'body': _captionController.text.trim().isEmpty ? null : _captionController.text.trim(),
+        if (imageUrl != null) 'image_url': imageUrl,
+        if (_selectedHashtags.isNotEmpty) 'hashtags': _selectedHashtags,
+      });
 
       if (mounted) {
         SnackBarUtils.showSuccess(context, 'Post created successfully!');

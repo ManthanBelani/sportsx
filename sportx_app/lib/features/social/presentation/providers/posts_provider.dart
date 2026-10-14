@@ -64,6 +64,57 @@ Future<bool> togglePostLike(WidgetRef ref, String postId) async {
   }
 }
 
+Future<bool> unlikePost(WidgetRef ref, String postId) async {
+  try {
+    await ref.read(dioProvider).delete('/posts/$postId/like');
+    ref.invalidate(postDetailProvider(postId));
+    ref.invalidate(postsFeedProvider);
+    return true;
+  } on DioException {
+    return false;
+  }
+}
+
+Future<bool> updatePost(WidgetRef ref, String postId, String body) async {
+  try {
+    await ref.read(dioProvider).patch('/posts/$postId', data: {'body': body});
+    ref.invalidate(postDetailProvider(postId));
+    ref.invalidate(postsFeedProvider);
+    return true;
+  } on DioException {
+    return false;
+  }
+}
+
+Future<bool> deletePost(WidgetRef ref, String postId) async {
+  try {
+    await ref.read(dioProvider).delete('/posts/$postId');
+    ref.invalidate(postDetailProvider(postId));
+    ref.invalidate(postsFeedProvider);
+    return true;
+  } on DioException {
+    return false;
+  }
+}
+
+final postCommentsProvider = FutureProvider.family<List<Map<String, dynamic>>, String>((ref, postId) async {
+  final resp = await ref.watch(dioProvider).get('/posts/$postId/comments');
+  final body = resp.data;
+  final list = body is Map && body['data'] is List ? body['data'] as List : (body is List ? body : []);
+  return list.cast<Map<String, dynamic>>();
+});
+
+Future<bool> deleteComment(WidgetRef ref, String postId, String commentId) async {
+  try {
+    await ref.read(dioProvider).delete('/comments/$commentId');
+    ref.invalidate(postDetailProvider(postId));
+    ref.invalidate(postCommentsProvider(postId));
+    return true;
+  } on DioException {
+    return false;
+  }
+}
+
 Future<bool> commentOnPost(WidgetRef ref, String postId, String body) async {
   try {
     await ref.read(dioProvider).post('/posts/$postId/comments', data: {'body': body});

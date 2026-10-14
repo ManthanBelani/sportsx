@@ -35,6 +35,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final int _postsCount = 0;
   int _connectsCount = 0;
   int _achievementsCount = 0;
+  int _sportsCount = 0;
+  int _completionPercent = 0;
 
   List<Map<String, dynamic>> _achievements = [];
 
@@ -77,33 +79,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         final photo = data['photo'] as Map<String, dynamic>?;
         final mediaItems = data['media_items'] as List? ?? const [];
 
-        setState(() {
-          _name = (data['full_name'] ?? data['name'] ?? _name) as String;
-          _bio = (data['experience'] ?? data['bio'] ?? _bio) as String;
-          _sport = sports.isNotEmpty ? ((sports[0] as Map)['name'] as String?) ?? _sport : _sport;
-          _ageGroup = (ageGroup?['label'] ?? ageGroup?['name'] ?? _ageGroup) as String;
-          _location = (city?['name'] ?? _location) as String;
-          _isVerified = data['is_verified'] == true;
-          _avatarUrl = photo?['url'] as String?;
-          _socialLinks = socialLinksOf(Map<String, dynamic>.from(data as Map));
-          _uploadedMedia = mediaItems
-              .whereType<Map>()
-              .map((m) => Map<String, dynamic>.from(m))
-              .toList();
-          _achievementsCount = ach.isNotEmpty ? ach.length : _achievementsCount;
-          if (ach.isNotEmpty) {
-            _achievements = ach.asMap().entries.map((e) {
-              final text = (e.value as Map)['text'] ?? '';
-              return <String, dynamic>{
-                'id': e.key.toString(),
-                'title': text.toString(),
-                'year': '',
-                'icon': '🏆',
-              };
-            }).toList();
-          }
-        });
-      }
+         setState(() {
+           _name = (data['full_name'] ?? data['name'] ?? _name) as String;
+           _bio = (data['experience'] ?? data['bio'] ?? _bio) as String;
+           _sport = sports.isNotEmpty ? ((sports[0] as Map)['name'] as String?) ?? _sport : _sport;
+           _sportsCount = sports.length;
+           _ageGroup = (ageGroup?['label'] ?? ageGroup?['name'] ?? _ageGroup) as String;
+           _location = (city?['name'] ?? _location) as String;
+           _isVerified = data['is_verified'] == true;
+           _avatarUrl = photo?['url'] as String?;
+           _socialLinks = socialLinksOf(Map<String, dynamic>.from(data as Map));
+           _uploadedMedia = mediaItems
+               .whereType<Map>()
+               .map((m) => Map<String, dynamic>.from(m))
+               .toList();
+           _achievementsCount = ach.isNotEmpty ? ach.length : _achievementsCount;
+           if (ach.isNotEmpty) {
+             _achievements = ach.asMap().entries.map((e) {
+               final text = (e.value as Map)['text'] ?? '';
+               return <String, dynamic>{
+                 'id': e.key.toString(),
+                 'title': text.toString(),
+                 'year': '',
+                 'icon': '🏆',
+               };
+             }).toList();
+           }
+         });
+       }
     } catch (e) {
       debugPrint('Failed to load profile: $e');
       if (mounted) SnackBarUtils.showError(context, e, 'Failed to load profile');
@@ -112,6 +115,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
 
     _loadConnectionCount();
+    _loadCompletionPercent();
+  }
+
+  Future<void> _loadCompletionPercent() async {
+    try {
+      final dio = ref.read(dioProvider);
+      final resp = await dio.get('/me/home');
+      final pct = (resp.data['data']?['completion_percent'] as num?)?.toInt();
+      if (mounted && pct != null) {
+        setState(() => _completionPercent = pct);
+      }
+    } catch (_) {
+      // Home endpoint is athlete-only; silently skip for other roles.
+    }
   }
 
   Future<void> _loadConnectionCount() async {
@@ -260,10 +277,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _buildHeaderStatItem('$_postsCount', 'Posts'),
-              const SizedBox(width: 32),
+              const SizedBox(width: 24),
               _buildHeaderStatItem('$_connectsCount', 'Connects'),
-              const SizedBox(width: 32),
-              _buildHeaderStatItem('$_achievementsCount', 'Achievements'),
+              const SizedBox(width: 24),
+              _buildHeaderStatItem('$_sportsCount', 'Sports'),
+              const SizedBox(width: 24),
+              _buildHeaderStatItem('$_achievementsCount', 'Achv.'),
+              const SizedBox(width: 24),
+              _buildHeaderStatItem('$_completionPercent%', 'Complete'),
             ],
           ),
         ],

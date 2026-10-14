@@ -18,6 +18,7 @@ class ChatListScreen extends ConsumerStatefulWidget {
 
 class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   final _searchController = TextEditingController();
+  int _tab = 0; // 0 Chats (v3 S.17), 1 Requests
 
   @override
   void initState() {
@@ -41,6 +42,14 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
 
     final body = Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: Row(children: [
+            _tabChip('Chats', 0),
+            const SizedBox(width: 8),
+            _tabChip('Requests', 1),
+          ]),
+        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: TextField(
@@ -67,7 +76,33 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
           ),
         ),
         Expanded(
-          child: RefreshIndicator(
+          child: _tab == 1
+              ? ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 16), children: [
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: AppColors.border),
+                        borderRadius: BorderRadius.circular(14)),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text('Connection requests',
+                          style: GoogleFonts.sora(fontWeight: FontWeight.w700, color: AppColors.ink)),
+                      const SizedBox(height: 6),
+                      Text('Accept a request to unlock 1-to-1 chat. Enquiry threads appear here too.',
+                          style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 13)),
+                      const SizedBox(height: 10),
+                      ElevatedButton(
+                        onPressed: () => context.push('/connection-requests'),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.yellow,
+                            foregroundColor: AppColors.ink,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                        child: const Text('View requests'),
+                      ),
+                    ]),
+                  ),
+                ])
+              : RefreshIndicator(
             onRefresh: () async => ref.invalidate(conversationsProvider),
             child: async.when(
               loading: () => const ChatListSkeleton(),
@@ -113,6 +148,27 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
             style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
       ),
       body: body,
+    );
+  }
+
+  Widget _tabChip(String label, int i) {
+    final active = _tab == i;
+    return GestureDetector(
+      onTap: () => setState(() => _tab = i),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          gradient: active
+              ? const LinearGradient(colors: [Color(0xFFFFD54A), Color(0xFFFFC107), Color(0xFFF5B400)])
+              : null,
+          color: active ? null : Colors.white,
+          border: Border.all(color: active ? const Color(0x2E785000) : AppColors.border),
+          borderRadius: BorderRadius.circular(11),
+        ),
+        child: Text(label,
+            style: GoogleFonts.inter(
+                fontSize: 12, fontWeight: active ? FontWeight.w800 : FontWeight.w600, color: AppColors.ink)),
+      ),
     );
   }
 

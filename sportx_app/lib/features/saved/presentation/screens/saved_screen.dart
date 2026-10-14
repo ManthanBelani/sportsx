@@ -18,7 +18,14 @@ class SavedScreen extends ConsumerStatefulWidget {
 class _SavedScreenState extends ConsumerState<SavedScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  static const _tabs = ['All', 'Academies', 'Coaches', 'Athletes', 'Trials', 'Tournaments', 'Scholarships', 'Sponsorships', 'Venues', 'Posts'];
+  // v3 S.20 Saved: Athletes | Coaches | Academies | Posts | Opps(+Events)
+  static const _tabs = [
+    'Athletes',
+    'Coaches',
+    'Academies',
+    'Posts',
+    'Opps',
+  ];
 
   @override
   void initState() {
@@ -35,24 +42,17 @@ class _SavedScreenState extends ConsumerState<SavedScreen> with SingleTickerProv
 
   String? _typeForTab(int index) {
     switch (index) {
+      case 0:
+        return 'athlete'; // Athletes
       case 1:
-        return 'academy';
+        return 'coach'; // Coaches
       case 2:
-        return 'coach';
+        return 'academy'; // Academies
       case 3:
-        return 'athlete';
+        return 'post'; // Posts
       case 4:
-        return 'trial';
-      case 5:
-        return 'tournament';
-      case 6:
-        return 'scholarship';
-      case 7:
-        return 'sponsorship';
-      case 8:
-        return 'venue';
-      case 9:
-        return 'post';
+        // Opps: trial + tournament + scholarship + sponsorship + program
+        return 'opportunity';
       default:
         return null;
     }

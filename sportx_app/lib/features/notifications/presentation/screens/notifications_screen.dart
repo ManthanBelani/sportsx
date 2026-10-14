@@ -26,6 +26,10 @@ class NotificationsScreen extends ConsumerWidget {
             style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
         centerTitle: false,
         actions: [
+          IconButton(
+            icon: const Icon(LucideIcons.settings2, color: AppColors.textSecondary),
+            onPressed: () => context.push('/notification-preferences'),
+          ),
           if (state.unreadCount > 0)
             Padding(
               padding: const EdgeInsets.only(right: 8),
@@ -36,10 +40,49 @@ class NotificationsScreen extends ConsumerWidget {
             ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () => ref.read(notificationsProvider.notifier).refresh(),
-        child: _buildBody(context, ref, state),
-      ),
+      body: Column(children: [
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+          child: Row(
+            children: NotificationsNotifier.tabs.map((t) {
+              final active = state.tab == t;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: GestureDetector(
+                  onTap: () => ref.read(notificationsProvider.notifier).setTab(t),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      gradient: active
+                          ? const LinearGradient(colors: [
+                              Color(0xFFFFD54A),
+                              Color(0xFFFFC107),
+                              Color(0xFFF5B400)
+                            ])
+                          : null,
+                      color: active ? null : Colors.white,
+                      border: Border.all(color: active ? const Color(0x2E785000) : AppColors.border),
+                      borderRadius: BorderRadius.circular(11),
+                    ),
+                    child: Text(t,
+                        style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: active ? FontWeight.w800 : FontWeight.w600,
+                            color: AppColors.ink)),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: () => ref.read(notificationsProvider.notifier).refresh(),
+            child: _buildBody(context, ref, state),
+          ),
+        ),
+      ]),
     );
   }
 

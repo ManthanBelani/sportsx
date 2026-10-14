@@ -16,10 +16,16 @@ class AdminContentController extends Controller
         'scholarships' => \App\Models\Scholarship::class,
         'sponsorships' => \App\Models\Sponsorship::class,
         'sports_venues' => \App\Models\SportsVenue::class,
+        'opportunities' => \App\Models\Opportunity::class,
+        'programs' => \App\Models\Program::class,
+        'facilities' => \App\Models\Facility::class,
+        'posts' => \App\Models\Post::class,
     ];
 
     // Not every content table uses the same status column — academies, coaches
     // and sports_venues use `listing_status`, the rest use `status`.
+    // programs use active/draft/past; facilities + posts have no status
+    // column (null = unfiltered, counts report totals only).
     private array $statusColumn = [
         'academies' => 'listing_status',
         'coaches' => 'listing_status',
@@ -28,6 +34,10 @@ class AdminContentController extends Controller
         'scholarships' => 'status',
         'sponsorships' => 'status',
         'sports_venues' => 'listing_status',
+        'opportunities' => 'status',
+        'programs' => 'status',
+        'facilities' => null,
+        'posts' => null,
     ];
 
     public function picker(): JsonResponse
@@ -35,6 +45,10 @@ class AdminContentController extends Controller
         $counts = [];
         foreach ($this->models as $type => $model) {
             $col = $this->statusColumn[$type];
+            if ($col === null) {
+                $counts[$type] = ['total' => $model::count()];
+                continue;
+            }
             $counts[$type] = [
                 'total' => $model::count(),
                 'published' => $model::where($col, 'published')->count(),
@@ -62,12 +76,13 @@ class AdminContentController extends Controller
         $query = $model::query();
 
         // Apply filters
-        if ($request->has('status')) {
+        if ($request->has('status') && $this->statusColumn[$type] !== null) {
             $query->where($this->statusColumn[$type], $request->status);
         }
 
         if ($request->has('q')) {
-            $query->where('name', 'like', '%' . $request->q . '%');
+            $col = $type === 'posts' ? 'body' : ($type === 'programs' ? 'title' : 'name');
+            $query->where($col, 'like', '%' . $request->q . '%');
         }
 
         // Sorting — whitelist to prevent injection

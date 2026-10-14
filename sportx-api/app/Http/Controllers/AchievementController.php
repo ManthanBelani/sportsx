@@ -64,6 +64,15 @@ class AchievementController extends Controller
 
         $achievement = Achievement::create($attributes);
 
+        // Phase 7: verified achievements move leaderboard rank (recalc async).
+        try {
+            $athleteId = $attributes['athlete_profile_id'] ?? null;
+            if ($athleteId) {
+                \App\Jobs\RecalculateLeaderboardJob::dispatch((int) $athleteId);
+            }
+        } catch (\Throwable) {
+        }
+
         return response()->json(['data' => $achievement->load($this->availableRelations())], 201);
     }
 

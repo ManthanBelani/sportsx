@@ -40,12 +40,31 @@ class MetaController extends Controller
     /**
      * GET /meta/positions — playing positions grouped by sport.
      *
-     * Curated static master for Phase 3 (powers the position filter). An
-     * admin-managed `positions` master ships in Phase 9; the shape
-     * (`[{sport_id, sport, positions[]}]`) is kept stable for that swap.
+     * Admin-managed `positions` master (Phase 9); falls back to the curated
+     * config when the table is empty. Shape ([{sport_id, sport,
+     * positions[]}]) is stable for both sources.
      */
     public function positions()
     {
+        try {
+            $rows = \App\Models\Position::with('sport')->orderBy('name')->get();
+            if ($rows->isNotEmpty()) {
+                $grouped = [];
+                foreach ($rows as $row) {
+                    $key = $row->sport_id ?? 0;
+                    $grouped[$key] ??= [
+                        'sport_id' => $row->sport_id,
+                        'sport' => $row->sport?->name ?? 'General',
+                        'positions' => [],
+                    ];
+                    $grouped[$key]['positions'][] = $row->name;
+                }
+
+                return response()->json(['data' => array_values($grouped)]);
+            }
+        } catch (\Throwable) {
+        }
+
         return response()->json(['data' => config('sportx.masters.positions', [])]);
     }
 

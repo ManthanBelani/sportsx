@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Block;
 use App\Models\Conversation;
+use App\Models\GuardianConsent;
 use App\Models\Message;
 use Illuminate\Http\Request;
 
@@ -46,6 +48,12 @@ class ConversationController extends Controller
 
         // Reuse an existing private conversation between these two users.
         if (count($ids) === 1 && $ids[0] !== $user->id) {
+            if (Block::hasBlockBetween($user->id, (int) $ids[0])) {
+                return response()->json(['error' => ['code' => 'BLOCKED', 'message' => 'Chat unavailable.']], 403);
+            }
+            if ($minorError = $this->minorChatGate($user->id, (int) $ids[0])) {
+                return $minorError;
+            }
             $existing = Conversation::where('type', 'private')
                 ->whereHas('participants', fn ($q) => $q->where('user_id', $user->id))
                 ->whereHas('participants', fn ($q) => $q->where('user_id', $ids[0]))
@@ -82,6 +90,12 @@ class ConversationController extends Controller
         $conversation = Conversation::findOrFail($id);
         $this->authorizeAccess($request->user(), $conversation);
 
+        foreach ($conversation->participants as $p) {
+            if ($p->id !== $request->user()->id && Block::hasBlockBetween($request->user()->id, $p->id)) {
+                return response()->json(['error' => ['code' => 'BLOCKED', 'message' => 'Chat disabled.']], 403);
+            }
+        }
+
         $message = Message::create([
             'conversation_id' => $conversation->id,
             'sender_user_id' => $request->user()->id,
@@ -111,6 +125,38 @@ class ConversationController extends Controller
     {
         $isParticipant = $conversation->participants()->where('user_id', $user->id)->exists();
         abort_unless($isParticipant || $user->isAdmin(), 403);
+    }
+
+    /**
+     * Minors: peer chat only when the minor athlete has verified guardian
+     * consent (guardian-allowed). Enquiry/registration threads bypass this
+     * because they live in the Enquiry model, not conversations.
+     */
+    private function minorChatGate(int $userId, int $otherUserId): ?\Illuminate\Http\JsonResponse
+    {
+        foreach ([$userId, $otherUserId] as $candidateId) {
+            $profile = \App\Models\AthleteProfile::where('user_id', $candidateId)->first();
+            if (!$profile || !$profile->date_of_birth) {
+                continue;
+            }
+            try {
+                $age = \Carbon\Carbon::parse($profile->date_of_birth)->age;
+            } catch (\Throwable) {
+                continue;
+            }
+            if ($age >= 18) {
+                continue;
+            }
+            $ok = GuardianConsent::where('athlete_user_id', $candidateId)
+                ->where('consent_status', GuardianConsent::STATUS_VERIFIED)
+                ->where('allow_messages', true)
+                ->exists();
+            if (!$ok) {
+                return response()->json(['error' => ['code' => 'GUARDIAN_REQUIRED', 'message' => 'Minor chat requires guardian consent.']], 403);
+            }
+        }
+
+        return null;
     }
 
     /**

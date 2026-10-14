@@ -55,6 +55,22 @@ class EmailSettingsController extends Controller
 
         $provider = $this->mail->setActiveProvider($validated['provider']);
 
+        // Provider switches change where OTPs go — audit it (Phase 10).
+        try {
+            \App\Models\AuditLog::create([
+                'user_id' => $request->user()?->id,
+                'user_name' => $request->user()?->name ?? 'System',
+                'user_role' => $request->user()?->role ?? 'system',
+                'action' => 'email.provider_switch',
+                'auditable_type' => 'MailProvider',
+                'auditable_id' => 0,
+                'auditable_label' => $provider,
+                'ip_address' => $request->ip(),
+                'route' => substr($request->path() ?? '', 0, 190),
+            ]);
+        } catch (\Throwable) {
+        }
+
         return response()->json([
             'data' => array_merge($this->mail->status(), [
                 'message' => "Active email provider switched to {$provider}.",

@@ -10,11 +10,26 @@ import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
-class TalentScoutShortlistScreen extends ConsumerWidget {
+class TalentScoutShortlistScreen extends ConsumerStatefulWidget {
   const TalentScoutShortlistScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TalentScoutShortlistScreen> createState() => _TalentScoutShortlistScreenState();
+}
+
+class _TalentScoutShortlistScreenState extends ConsumerState<TalentScoutShortlistScreen> {
+  String _status = 'all';
+  static const _tabs = ['all', 'under_review', 'final'];
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => ref.read(scoutShortlistProvider.notifier).load(status: _status));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ref = this.ref;
     final state = ref.watch(scoutShortlistProvider);
 
     return Scaffold(
@@ -28,7 +43,47 @@ class TalentScoutShortlistScreen extends ConsumerWidget {
             style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         bottom: PreferredSize(preferredSize: const Size.fromHeight(1), child: Container(height: 1, color: AppColors.border)),
       ),
-      body: state.isLoading && state.items.isEmpty
+      body: Column(children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+          child: Row(
+            children: _tabs.map((t) {
+              final active = _status == t;
+              final label = t == 'all' ? 'All' : t == 'under_review' ? 'Under Review' : 'Final';
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() => _status = t);
+                    ref.read(scoutShortlistProvider.notifier).load(status: t);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      gradient: active
+                          ? const LinearGradient(colors: [
+                              Color(0xFFFFD54A),
+                              Color(0xFFFFC107),
+                              Color(0xFFF5B400)
+                            ])
+                          : null,
+                      color: active ? null : Colors.white,
+                      border: Border.all(color: active ? const Color(0x2E785000) : AppColors.border),
+                      borderRadius: BorderRadius.circular(11),
+                    ),
+                    child: Text(label,
+                        style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: active ? FontWeight.w800 : FontWeight.w600,
+                            color: AppColors.ink)),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        Expanded(
+          child: state.isLoading && state.items.isEmpty
           ? const GenericListSkeleton()
           : state.error != null && state.items.isEmpty
               ? Center(
@@ -37,7 +92,7 @@ class TalentScoutShortlistScreen extends ConsumerWidget {
                     const SizedBox(height: 12),
                     Text(state.error!, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary), textAlign: TextAlign.center),
                     const SizedBox(height: 12),
-                    PrimaryButton(label: 'Retry', onPressed: () => ref.read(scoutShortlistProvider.notifier).load()),
+                    PrimaryButton(label: 'Retry', onPressed: () => ref.read(scoutShortlistProvider.notifier).load(status: _status)),
                   ]),
                 )
               : state.items.isEmpty
@@ -56,14 +111,16 @@ class TalentScoutShortlistScreen extends ConsumerWidget {
                       ),
                     )
                   : RefreshIndicator(
-                      onRefresh: () => ref.read(scoutShortlistProvider.notifier).load(),
+                      onRefresh: () => ref.read(scoutShortlistProvider.notifier).load(status: _status),
                       child: ListView.builder(
                         padding: const EdgeInsets.all(20),
                         itemCount: state.items.length,
                         itemBuilder: (context, index) => _buildShortlistItem(context, ref, state.items[index]),
                       ),
                     ),
-    );
+        ),
+      ],
+    ));
   }
 
   Widget _buildShortlistItem(BuildContext context, WidgetRef ref, dynamic item) {

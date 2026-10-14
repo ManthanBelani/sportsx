@@ -11,12 +11,22 @@ use App\Http\Controllers\OtpController;
 use App\Http\Controllers\CompletionChecklistController;
 use App\Http\Controllers\ConnectionController;
 use App\Http\Controllers\ConversationController;
+use App\Http\Controllers\BlockController;
+use App\Http\Controllers\FollowController;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\EventRegistrationController;
+use App\Http\Controllers\LeaderboardController;
+use App\Http\Controllers\ObservationController;
+use App\Http\Controllers\AthleteContactController;
+use App\Http\Controllers\ScoutDashboardController;
 use App\Http\Controllers\CoachProfileController;
 use App\Http\Controllers\DirectoryController;
 use App\Http\Controllers\EnquiryController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\MetaController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\NotificationPreferenceController;
+use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
@@ -46,6 +56,7 @@ use App\Http\Controllers\Admin\AdminContentController;
 use App\Http\Controllers\Admin\AdminModerationController;
 use App\Http\Controllers\Admin\AdminExpiryController;
 use App\Http\Controllers\Admin\AdminCategoryController;
+use App\Http\Controllers\Admin\EmailSettingsController;
 use App\Http\Controllers\Admin\RegistrationAnalyticsController;
 use App\Http\Controllers\AdminUserController;
 use Illuminate\Support\Facades\Route;
@@ -181,7 +192,7 @@ Route::prefix('v1')->group(function () {
     Route::delete('/me/saved', [SavedItemController::class, 'destroy'])->middleware('auth:sanctum');
 
     // ── Reports ──
-    Route::post('/reports', [ReportController::class, 'store'])->middleware('auth:sanctum');
+    Route::post('/reports', [ReportController::class, 'store'])->middleware(['auth:sanctum', 'throttle:20,1']);
 
     // ── Athlete self-service ──
     Route::get('/me/profile', [ProfileController::class, 'show'])->middleware('auth:sanctum');
@@ -316,6 +327,24 @@ Route::prefix('v1')->group(function () {
     Route::post('/me/tournaments/{tournament}/publish', [ProviderTournamentController::class, 'publish'])->middleware('auth:sanctum');
     Route::post('/me/tournaments/{tournament}/close', [ProviderTournamentController::class, 'close'])->middleware('auth:sanctum');
 
+    // ── Unified events (Phase 8: single API over trials/tournaments; camp→trial) ──
+    Route::post('/me/events', [EventController::class, 'store'])->middleware('auth:sanctum');
+    Route::get('/me/events', [EventController::class, 'mine'])->middleware('auth:sanctum');
+    Route::get('/events/{id}', [EventController::class, 'show'])->middleware('auth:sanctum');
+    Route::put('/me/events/{id}', [EventController::class, 'update'])->middleware('auth:sanctum');
+    Route::patch('/me/events/{id}', [EventController::class, 'update'])->middleware('auth:sanctum');
+    Route::post('/me/events/{id}/publish', [EventController::class, 'publish'])->middleware('auth:sanctum');
+    Route::post('/me/events/{id}/close', [EventController::class, 'close'])->middleware('auth:sanctum');
+
+    // ── Unified registrant ops (Phase 8 plan shape; per-type PATCH kept) ──
+    Route::get('/events/{id}/registrations', [EventRegistrationController::class, 'index'])->middleware('auth:sanctum');
+    Route::post('/events/{id}/registrations/bulk', [EventRegistrationController::class, 'bulk'])->middleware('auth:sanctum');
+    Route::get('/events/{id}/registrations/export', [EventRegistrationController::class, 'export'])->middleware('auth:sanctum');
+    Route::get('/registrations/{id}', [EventRegistrationController::class, 'show'])->middleware('auth:sanctum');
+    Route::post('/registrations/{id}/approve', [EventRegistrationController::class, 'approve'])->middleware('auth:sanctum');
+    Route::post('/registrations/{id}/reject', [EventRegistrationController::class, 'reject'])->middleware('auth:sanctum');
+    Route::delete('/me/registrations/{id}', [EventRegistrationController::class, 'cancel'])->middleware('auth:sanctum');
+
     // ── Organizer Analytics ──
     Route::get('/me/organizer/analytics', [OrganizerAnalyticsController::class, 'index'])->middleware(['auth:sanctum', 'role:organizer,admin']);
 
@@ -354,6 +383,9 @@ Route::prefix('v1')->group(function () {
     Route::patch('/me/notifications/{notification}/read', [NotificationController::class, 'markRead'])->middleware('auth:sanctum');
     Route::post('/me/notifications/read-all', [NotificationController::class, 'markAllRead'])->middleware('auth:sanctum');
     Route::delete('/me/notifications/{notification}', [NotificationController::class, 'destroy'])->middleware('auth:sanctum');
+    Route::get('/me/notification-preferences', [NotificationPreferenceController::class, 'show'])->middleware('auth:sanctum');
+    Route::put('/me/notification-preferences', [NotificationPreferenceController::class, 'update'])->middleware('auth:sanctum');
+    Route::post('/analytics/events', [AnalyticsController::class, 'store'])->middleware('auth:sanctum');
     Route::post('/me/device-tokens', [NotificationController::class, 'registerDeviceToken'])->middleware('auth:sanctum');
     Route::delete('/me/device-tokens', [NotificationController::class, 'unregisterDeviceToken'])->middleware('auth:sanctum');
     Route::post('/me/notifications/{notification}/send-push', [NotificationController::class, 'sendPushNotification'])->middleware('auth:sanctum');
@@ -388,28 +420,62 @@ Route::prefix('v1')->group(function () {
     Route::get('/me/recent-searches', [SearchController::class, 'recentSearches'])->middleware('auth:sanctum');
     Route::post('/me/recent-searches', [SearchController::class, 'storeRecentSearch'])->middleware('auth:sanctum');
 
-    // ── Conversations / Chat (Phase 4) ──
+    // ── Conversations / Chat (Phase 6) ──
     Route::get('/me/conversations', [ConversationController::class, 'index'])->middleware('auth:sanctum');
     Route::post('/me/conversations', [ConversationController::class, 'store'])->middleware('auth:sanctum');
+    Route::post('/conversations', [ConversationController::class, 'store'])->middleware(['auth:sanctum', 'throttle:60,1']);
     Route::get('/conversations/{id}', [ConversationController::class, 'show'])->middleware('auth:sanctum');
-    Route::post('/conversations/{id}/messages', [ConversationController::class, 'sendMessage'])->middleware('auth:sanctum');
+    Route::post('/conversations/{id}/messages', [ConversationController::class, 'sendMessage'])->middleware(['auth:sanctum', 'throttle:120,1']);
+    Route::post('/conversations/{id}/read', [ConversationController::class, 'markRead'])->middleware('auth:sanctum');
     Route::put('/conversations/{id}/read', [ConversationController::class, 'markRead'])->middleware('auth:sanctum');
+    Route::patch('/conversations/{id}/read', [ConversationController::class, 'markRead'])->middleware('auth:sanctum');
 
-    // ── Connections (Phase 4) ──
+    // ── Connections (Phase 6: POST canonical + legacy aliases) ──
     Route::get('/me/connections', [ConnectionController::class, 'index'])->middleware('auth:sanctum');
+    Route::post('/connections', [ConnectionController::class, 'request'])->middleware(['auth:sanctum', 'throttle:30,1']);
     Route::post('/me/connections/request', [ConnectionController::class, 'request'])->middleware('auth:sanctum');
     Route::post('/me/connections/{id}/accept', [ConnectionController::class, 'accept'])->middleware('auth:sanctum');
+    Route::patch('/connections/{id}', [ConnectionController::class, 'update'])->middleware('auth:sanctum');
+    Route::delete('/connections/{id}', [ConnectionController::class, 'destroy'])->middleware('auth:sanctum');
     Route::delete('/me/connections/{id}', [ConnectionController::class, 'destroy'])->middleware('auth:sanctum');
     Route::get('/me/connections/requests', [ConnectionController::class, 'requests'])->middleware('auth:sanctum');
     Route::get('/me/connections/status/{userId}', [ConnectionController::class, 'status'])->middleware('auth:sanctum');
     Route::get('/me/connections/count', [ConnectionController::class, 'count'])->middleware('auth:sanctum');
 
-    // ── Social Posts (Phase 4) ──
+    // ── Follows, one-way (Phase 6) ──
+    Route::post('/follow/{type}/{id}', [FollowController::class, 'store'])->middleware(['auth:sanctum', 'throttle:60,1']);
+    Route::delete('/follow/{type}/{id}', [FollowController::class, 'destroy'])->middleware('auth:sanctum');
+    Route::get('/me/following', [FollowController::class, 'following'])->middleware('auth:sanctum');
+    Route::get('/me/followers', [FollowController::class, 'followers'])->middleware('auth:sanctum');
+
+    // ── Safety: blocks + reports (Phase 6) ──
+    Route::get('/blocks', [BlockController::class, 'index'])->middleware('auth:sanctum');
+    Route::post('/blocks', [BlockController::class, 'store'])->middleware(['auth:sanctum', 'throttle:30,1']);
+    Route::delete('/blocks/{user}', [BlockController::class, 'destroy'])->middleware('auth:sanctum');
+    Route::get('/me/reports', [ReportController::class, 'index'])->middleware('auth:sanctum');
+
+    // ── Leaderboard (Phase 7: athletes P0; coach/academy tabs P1) ──
+    Route::get('/leaderboard', [LeaderboardController::class, 'index'])->middleware('auth:sanctum');
+    Route::get('/leaderboard/strip', [LeaderboardController::class, 'strip'])->middleware('auth:sanctum');
+
+    // ── Scout extensions (Phase 7) ──
+    Route::get('/observations', [ObservationController::class, 'index'])->middleware('auth:sanctum');
+    Route::post('/observations', [ObservationController::class, 'store'])->middleware(['auth:sanctum', 'throttle:60,1']);
+    Route::post('/athletes/{id}/contact', [AthleteContactController::class, 'store'])->middleware('auth:sanctum');
+    Route::get('/scout/dashboard', [ScoutDashboardController::class, 'show'])->middleware('auth:sanctum');
+
+    // ── Social Posts (Phase 6) ──
+    Route::get('/feed', [PostController::class, 'index'])->middleware('auth:sanctum');
     Route::get('/posts', [PostController::class, 'index'])->middleware('auth:sanctum');
-    Route::post('/posts', [PostController::class, 'store'])->middleware('auth:sanctum');
+    Route::post('/posts', [PostController::class, 'store'])->middleware(['auth:sanctum', 'throttle:30,1']);
     Route::get('/posts/{id}', [PostController::class, 'show'])->middleware('auth:sanctum');
+    Route::patch('/posts/{id}', [PostController::class, 'update'])->middleware('auth:sanctum');
+    Route::delete('/posts/{id}', [PostController::class, 'destroy'])->middleware('auth:sanctum');
     Route::post('/posts/{id}/like', [PostController::class, 'toggleLike'])->middleware('auth:sanctum');
+    Route::delete('/posts/{id}/like', [PostController::class, 'unlike'])->middleware('auth:sanctum');
+    Route::get('/posts/{id}/comments', [PostController::class, 'comments'])->middleware('auth:sanctum');
     Route::post('/posts/{id}/comments', [PostController::class, 'comment'])->middleware('auth:sanctum');
+    Route::delete('/comments/{id}', [PostController::class, 'deleteComment'])->middleware('auth:sanctum');
 
     // ── Onboarding Schema ──
     Route::get('/onboarding/{role}', [OnboardingController::class, 'schema'])->middleware('auth:sanctum');
@@ -442,6 +508,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/moderation/reports/{id}/approve', [AdminModerationController::class, 'approve']);
         Route::post('/moderation/reports/{id}/remove', [AdminModerationController::class, 'remove']);
         Route::post('/moderation/reports/{id}/warn', [AdminModerationController::class, 'warn']);
+        Route::post('/moderation/reports/{id}/suspend', [AdminModerationController::class, 'suspend']);
 
         // Admin Expiry
         Route::get('/expiry-rules', [AdminExpiryController::class, 'getRules']);
@@ -465,6 +532,18 @@ Route::prefix('v1')->group(function () {
         Route::post('/categories/age-groups', [AdminCategoryController::class, 'ageGroupsStore']);
         Route::put('/categories/age-groups/{id}', [AdminCategoryController::class, 'ageGroupsUpdate']);
         Route::delete('/categories/age-groups/{id}', [AdminCategoryController::class, 'ageGroupsDestroy']);
+
+        Route::get('/categories/positions', [AdminCategoryController::class, 'positionsIndex']);
+        Route::post('/categories/positions', [AdminCategoryController::class, 'positionsStore']);
+        Route::put('/categories/positions/{id}', [AdminCategoryController::class, 'positionsUpdate']);
+        Route::delete('/categories/positions/{id}', [AdminCategoryController::class, 'positionsDestroy']);
+
+        // Admin Email settings (Phase 3E: provider status, runtime switch, test)
+        Route::get('/email-settings', [EmailSettingsController::class, 'show']);
+        Route::get('/email-settings/diagnostics', [EmailSettingsController::class, 'diagnostics']);
+        Route::post('/email-settings/switch', [EmailSettingsController::class, 'switchProvider']);
+        Route::post('/email-settings/test', [EmailSettingsController::class, 'test']);
+        Route::post('/email-settings/clear-token-cache', [EmailSettingsController::class, 'clearTokenCache']);
 
         // Admin User Management
         Route::get('/users', [AdminUserController::class, 'index']);

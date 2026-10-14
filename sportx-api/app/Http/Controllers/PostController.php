@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Models\PostComment;
 use App\Models\PostLike;
+use App\Models\Block;
 use App\Models\Connection;
 use Illuminate\Http\Request;
 
@@ -14,6 +15,10 @@ class PostController extends Controller
     public function index(Request $request)
     {
         $userId = $request->user()->id;
+
+        $blockedIds = Block::where('blocker_user_id', $userId)->pluck('blocked_user_id')
+            ->merge(Block::where('blocked_user_id', $userId)->pluck('blocker_user_id'))
+            ->unique()->all();
 
         $connectedIds = Connection::where('status', 'accepted')
             ->where(fn ($q) => $q->where('follower_user_id', $userId)->orWhere('followee_user_id', $userId))
@@ -28,6 +33,7 @@ class PostController extends Controller
 
         $query = Post::with(['user', 'comments.user'])
             ->withCount(['likes', 'comments'])
+            ->whereNotIn('user_id', $blockedIds)
             ->where(function ($q) use ($userId, $connectedIds) {
                 $q->where('visibility', 'public')
                     ->orWhere('user_id', $userId)
@@ -59,6 +65,10 @@ class PostController extends Controller
             'image_url' => 'nullable|string',
             'video_url' => 'nullable|string',
             'visibility' => 'in:public,followers',
+            'audience' => 'in:public,followers',
+            'hashtags' => 'nullable|array|max:10',
+            'hashtags.*' => 'string|max:40',
+            'sport_id' => 'nullable|integer|exists:sports,id',
         ]);
 
         abort_if(empty($validated['body']) && empty($validated['image_url']) && empty($validated['video_url']), 422, 'Post cannot be empty');
@@ -68,10 +78,87 @@ class PostController extends Controller
             'body' => $validated['body'] ?? null,
             'image_url' => $validated['image_url'] ?? null,
             'video_url' => $validated['video_url'] ?? null,
-            'visibility' => $validated['visibility'] ?? 'public',
+            'visibility' => $validated['visibility'] ?? $validated['audience'] ?? 'public',
+            'audience' => $validated['audience'] ?? $validated['visibility'] ?? 'public',
+            'hashtags' => $validated['hashtags'] ?? null,
+            'sport_id' => $validated['sport_id'] ?? null,
         ]);
 
         return response()->json(['data' => $post->load('user')], 201);
+    }
+
+    /** PATCH /posts/{id} — owner or admin. */
+    public function update(Request $request, string $id)
+    {
+        $post = Post::findOrFail($id);
+        abort_unless($post->user_id === $request->user()->id || $request->user()->isAdmin(), 403);
+
+        $validated = $request->validate([
+            'body' => 'nullable|string|max:5000',
+            'image_url' => 'nullable|string',
+            'video_url' => 'nullable|string',
+            'visibility' => 'in:public,followers',
+            'audience' => 'in:public,followers',
+            'hashtags' => 'nullable|array|max:10',
+            'hashtags.*' => 'string|max:40',
+            'sport_id' => 'nullable|integer|exists:sports,id',
+        ]);
+
+        $post->update(array_filter([
+            'body' => $validated['body'] ?? null,
+            'image_url' => $validated['image_url'] ?? null,
+            'video_url' => $validated['video_url'] ?? null,
+            'visibility' => $validated['visibility'] ?? $validated['audience'] ?? null,
+            'audience' => $validated['audience'] ?? $validated['visibility'] ?? null,
+            'sport_id' => $validated['sport_id'] ?? null,
+        ], fn ($v) => $v !== null) + (array_key_exists('hashtags', $validated) ? ['hashtags' => $validated['hashtags']] : []));
+
+        return response()->json(['data' => $post->fresh()->load('user')]);
+    }
+
+    /** DELETE /posts/{id} — owner or admin. */
+    public function destroy(Request $request, string $id)
+    {
+        $post = Post::findOrFail($id);
+        abort_unless($post->user_id === $request->user()->id || $request->user()->isAdmin(), 403);
+        $post->delete();
+
+        return response()->json(['data' => ['message' => 'Deleted']]);
+    }
+
+    /** GET /posts/{id}/comments */
+    public function comments(Request $request, string $id)
+    {
+        $post = Post::findOrFail($id);
+        $comments = PostComment::where('post_id', $post->id)
+            ->with('user')
+            ->latest()
+            ->paginate(20);
+
+        return response()->json($comments);
+    }
+
+    /** DELETE /comments/{id} — comment owner, post owner, or admin. */
+    public function deleteComment(Request $request, string $id)
+    {
+        $comment = PostComment::findOrFail($id);
+        $post = Post::find($comment->post_id);
+        $isOwner = $comment->user_id === $request->user()->id
+            || ($post && $post->user_id === $request->user()->id)
+            || $request->user()->isAdmin();
+        abort_unless($isOwner, 403);
+        $comment->delete();
+
+        return response()->json(['data' => ['message' => 'Deleted']]);
+    }
+
+    /** DELETE /posts/{id}/like — explicit unlike (toggle POST kept for compat). */
+    public function unlike(Request $request, string $id)
+    {
+        PostLike::where('post_id', $id)->where('user_id', $request->user()->id)->delete();
+        $count = PostLike::where('post_id', $id)->count();
+
+        return response()->json(['data' => ['liked' => false, 'likes_count' => $count]]);
     }
 
     public function toggleLike(Request $request, string $id)

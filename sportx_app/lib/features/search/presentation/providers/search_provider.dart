@@ -3,10 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 
 enum SearchCategory {
+  // v3 S.2: All · Athletes · Coaches · Academies · Events (events
+  // covers trials + tournaments; top-level for parity with v2 prototype).
   all,
+  athletes,
   coaches,
   academies,
-  athletes,
+  events,
+  // Phase 4/5 entities — kept under separate routes via home quick links.
   trials,
   tournaments,
   scholarships,
@@ -21,6 +25,10 @@ class SearchFilters {
   final List<String> ageGroups;
   final int? sportId;
   final int? cityId;
+  final String? position;
+  final String? level;
+  final String? facility;
+  final String? sort; // 'relevance' | 'nearest' | 'rating'
   final String gender; // 'all' | 'male' | 'female'
   final double? feeMin;
   final double? feeMax;
@@ -34,6 +42,10 @@ class SearchFilters {
     this.ageGroups = const [],
     this.sportId,
     this.cityId,
+    this.position,
+    this.level,
+    this.facility,
+    this.sort,
     this.gender = 'all',
     this.feeMin,
     this.feeMax,
@@ -50,6 +62,14 @@ class SearchFilters {
     bool clearSportId = false,
     int? cityId,
     bool clearCityId = false,
+    String? position,
+    bool clearPosition = false,
+    String? level,
+    bool clearLevel = false,
+    String? facility,
+    bool clearFacility = false,
+    String? sort,
+    bool clearSort = false,
     String? gender,
     double? feeMin,
     bool clearFeeMin = false,
@@ -67,6 +87,10 @@ class SearchFilters {
       ageGroups: ageGroups ?? this.ageGroups,
       sportId: clearSportId ? null : (sportId ?? this.sportId),
       cityId: clearCityId ? null : (cityId ?? this.cityId),
+      position: clearPosition ? null : (position ?? this.position),
+      level: clearLevel ? null : (level ?? this.level),
+      facility: clearFacility ? null : (facility ?? this.facility),
+      sort: clearSort ? null : (sort ?? this.sort),
       gender: gender ?? this.gender,
       feeMin: clearFeeMin ? null : (feeMin ?? this.feeMin),
       feeMax: clearFeeMax ? null : (feeMax ?? this.feeMax),
@@ -82,6 +106,10 @@ class SearchFilters {
       ageGroups.isNotEmpty ||
       sportId != null ||
       cityId != null ||
+      position != null ||
+      level != null ||
+      facility != null ||
+      sort != null ||
       gender != 'all' ||
       feeMin != null ||
       feeMax != null ||
@@ -92,6 +120,10 @@ class SearchFilters {
     final params = <String, dynamic>{};
     if (sportId != null) params['sport_id'] = sportId;
     if (cityId != null) params['city_id'] = cityId;
+    if (position != null) params['position'] = position;
+    if (level != null) params['level'] = level;
+    if (facility != null) params['facility'] = facility;
+    if (sort != null) params['sort'] = sort;
     if (gender != 'all') params['gender'] = gender;
     if (feeMin != null) params['fee_min'] = feeMin;
     if (feeMax != null) params['fee_max'] = feeMax;

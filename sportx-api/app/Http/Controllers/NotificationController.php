@@ -9,12 +9,33 @@ use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
+    /**
+     * GET /me/notifications?tab=All|People|Opportunities|Events|Mentions
+     * + unread_only. Returns meta.unread_count.
+     */
     public function index(Request $request)
     {
         $user = $request->user();
 
         $query = Notification::where('user_id', $user->id)
             ->orderBy('created_at', 'desc');
+
+        $tab = strtolower($request->query('tab', 'all'));
+        $query = match ($tab) {
+            'people' => $query->where(fn ($q) => $q
+                ->whereIn('type', ['connection', 'follow', 'status_update', 'account_action'])
+                ->orWhere('category', 'people')),
+            'opportunities', 'opps' => $query->where(fn ($q) => $q
+                ->where('category', 'opportunities')
+                ->orWhere('notifiable_type', 'like', 'opportunity%')),
+            'events' => $query->where(fn ($q) => $q
+                ->where('category', 'events')
+                ->orWhereIn('type', ['reminder', 'enquiry_reply', 'registration_approved', 'registration_rejected'])),
+            'mentions' => $query->where(fn ($q) => $q
+                ->where('category', 'mentions')
+                ->orWhereIn('type', ['mention', 'comment', 'like', 'message'])),
+            default => $query,
+        };
 
         if ($request->boolean('unread_only')) {
             $query->whereNull('read_at');
@@ -128,14 +149,11 @@ class NotificationController extends Controller
         SendPushNotification::dispatch(
             $deviceTokens,
             $notification->title ?? 'SportX',
-            $notification->message ?? '',
-            [
-                'notification_id' => (string) $notification->id,
-                'type' => $notification->type ?? 'general',
-                'action_url' => $notification->action_url ?? '',
-            ],
-            $user->id
-        );
+            $notification->body ?? '',
+            $notification->toPushPayload(),
+            $user->id,
+            $notification->id
+        )->onQueue('push');
 
         return response()->json(['data' => ['message' => 'Push notification queued']]);
     }

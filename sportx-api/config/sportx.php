@@ -94,6 +94,10 @@ return [
         'retention_days' => (int) env('NOTIFICATION_RETENTION_DAYS', 180),
         // Device tokens untouched for this long are considered stale.
         'device_token_ttl_days' => (int) env('DEVICE_TOKEN_TTL_DAYS', 120),
+        // 1:1 chat retention (Phase 6: 90-day purge default).
+        'chat' => [
+            'retention_days' => (int) env('CHAT_RETENTION_DAYS', 90),
+        ],
     ],
 
     /*

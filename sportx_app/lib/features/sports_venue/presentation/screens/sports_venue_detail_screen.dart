@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:sportx_app/shared/models/models.dart';
@@ -43,7 +44,7 @@ class SportsVenueDetailScreen extends ConsumerWidget {
           if (v.bookingAvailable) {
             SnackBarUtils.showSuccess(context, 'Booking feature coming soon!');
           } else {
-            SnackBarUtils.showSuccess(context, 'Enquiries for venues coming soon!');
+            context.push('/enquire/sports_venue/${v.id}/${Uri.encodeComponent(v.name)}');
           }
         },
         onPhonePressed: v.contactNumber == null

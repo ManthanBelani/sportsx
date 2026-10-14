@@ -348,6 +348,9 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
       case SearchCategory.athletes:
         items = results.athletes;
         break;
+      case SearchCategory.events:
+        items = [...results.trials, ...results.tournaments];
+        break;
       case SearchCategory.trials:
         items = results.trials;
         break;
@@ -578,6 +581,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
       case SearchCategory.coaches: return 'Coaches';
       case SearchCategory.academies: return 'Academies';
       case SearchCategory.athletes: return 'Athletes';
+      case SearchCategory.events: return 'Events';
       case SearchCategory.trials: return 'Trials';
       case SearchCategory.tournaments: return 'Tournaments';
       case SearchCategory.scholarships: return 'Scholarships';
@@ -593,6 +597,7 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
       case SearchCategory.coaches: return results.coaches.length;
       case SearchCategory.academies: return results.academies.length;
       case SearchCategory.athletes: return results.athletes.length;
+      case SearchCategory.events: return results.trials.length + results.tournaments.length;
       case SearchCategory.trials: return results.trials.length;
       case SearchCategory.tournaments: return results.tournaments.length;
       case SearchCategory.scholarships: return results.scholarships.length;

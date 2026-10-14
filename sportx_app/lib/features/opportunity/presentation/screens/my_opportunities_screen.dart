@@ -7,7 +7,7 @@ import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 
-/// My Opportunities AT.8 (Phase 4): Applied + Created tabs with status chips.
+/// My Opportunities AT.8 (Phase 4): Applied + Saved + Created tabs with status chips.
 class MyOpportunitiesScreen extends ConsumerStatefulWidget {
   const MyOpportunitiesScreen({super.key});
 
@@ -22,7 +22,7 @@ class _MyOpportunitiesScreenState extends ConsumerState<MyOpportunitiesScreen>
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: 2, vsync: this);
+    _tabs = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -58,10 +58,10 @@ class _MyOpportunitiesScreenState extends ConsumerState<MyOpportunitiesScreen>
           labelColor: AppColors.primary,
           unselectedLabelColor: AppColors.textSecondary,
           indicatorColor: AppColors.primary,
-          tabs: const [Tab(text: 'Applied'), Tab(text: 'Created')],
+          tabs: const [Tab(text: 'Applied'), Tab(text: 'Saved'), Tab(text: 'Created')],
         ),
       ),
-      body: state.isLoading && state.applied.isEmpty && state.created.isEmpty
+      body: state.isLoading && state.applied.isEmpty && state.created.isEmpty && state.saved.isEmpty
           ? const GenericListSkeleton()
           : TabBarView(
               controller: _tabs,
@@ -111,6 +111,30 @@ class _MyOpportunitiesScreenState extends ConsumerState<MyOpportunitiesScreen>
                 ),
                 RefreshIndicator(
                   onRefresh: () => ref.read(myOpportunitiesProvider.notifier).load(),
+                  child: state.saved.isEmpty
+                      ? const SingleChildScrollView(
+                          physics: AlwaysScrollableScrollPhysics(),
+                          child: SizedBox(
+                            height: 300,
+                            child: Center(child: Text('No saved opportunities')),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: state.saved.length,
+                          itemBuilder: (context, i) {
+                            final o = state.saved[i];
+                            return EntityRow(
+                              title: o.title,
+                              subtitle: '${o.type} · ${o.status}',
+                              avatarText: o.title.isNotEmpty ? o.title[0].toUpperCase() : 'O',
+                              onTap: () => context.push('/opportunity-detail/${o.id}'),
+                            );
+                          },
+                        ),
+                ),
+                RefreshIndicator(
+                  onRefresh: () => ref.read(myOpportunitiesProvider.notifier).load(),
                   child: state.created.isEmpty
                       ? const SingleChildScrollView(
                           physics: AlwaysScrollableScrollPhysics(),
@@ -129,6 +153,11 @@ class _MyOpportunitiesScreenState extends ConsumerState<MyOpportunitiesScreen>
                               subtitle: '${o.type} · ${o.status}',
                               avatarText: o.title.isNotEmpty ? o.title[0].toUpperCase() : 'O',
                               onTap: () => context.push('/opportunity-detail/${o.id}'),
+                              trailing: TextButton(
+                                onPressed: () =>
+                                    context.push('/opportunity-applications/${o.id}'),
+                                child: const Text('Applicants'),
+                              ),
                             );
                           },
                         ),

@@ -17,8 +17,10 @@ class DirectoryController extends Controller
             ->when($request->fee_min, fn ($q) => $q->where('fee_range', '>=', $request->fee_min))
             ->when($request->fee_max, fn ($q) => $q->where('fee_range', '<=', $request->fee_max))
             ->when($request->age_group_id, fn ($q) => $q->whereJsonContains('age_groups', (int) $request->age_group_id))
+            ->when($request->facility, fn ($q) => $q->whereJsonContains('facilities', $request->facility))
+            ->when($request->level, fn ($q) => $q->where('verification_badge', $request->level === 'verified'))
             ->when($request->q, fn ($q) => $q->where(fn ($sub) => $sub->where('name', 'like', "%{$request->q}%")->orWhere('description', 'like', "%{$request->q}%")))
-            ->when($request->sort, fn ($q) => $q->orderBy($request->sort, $request->direction ?? 'asc'), fn ($q) => $q->latest());
+            ->when($request->sort, $this->sortBy($request), fn ($q) => $q->latest());
 
         return response()->json($this->paginate($query, $request));
     }
@@ -41,7 +43,11 @@ class DirectoryController extends Controller
             ->when($request->fee_min, fn ($q) => $q->where('fee_structure', '>=', $request->fee_min))
             ->when($request->fee_max, fn ($q) => $q->where('fee_structure', '<=', $request->fee_max))
             ->when($request->age_group_id, fn ($q) => $q->whereJsonContains('age_groups', (int) $request->age_group_id))
-            ->when($request->q, fn ($q) => $q->where(fn ($sub) => $sub->where('full_name', 'like', "%{$request->q}%")->orWhere('bio', 'like', "%{$request->q}%")));
+            ->when($request->level && \Illuminate\Support\Facades\Schema::hasColumn('coach_profiles', 'skill_level'), fn ($q) => $q->where('skill_level', $request->level))
+            ->when($request->experience_years && \Illuminate\Support\Facades\Schema::hasColumn('coach_profiles', 'experience_years'), fn ($q) => $q->where('experience_years', '>=', (int) $request->experience_years))
+            ->when($request->rating && \Illuminate\Support\Facades\Schema::hasColumn('coach_profiles', 'avg_rating'), fn ($q) => $q->where('avg_rating', '>=', (float) $request->rating))
+            ->when($request->q, fn ($q) => $q->where(fn ($sub) => $sub->where('full_name', 'like', "%{$request->q}%")->orWhere('bio', 'like', "%{$request->q}%")))
+            ->when($request->sort, $this->sortBy($request), fn ($q) => $q->latest());
 
         return response()->json($this->paginate($query, $request));
     }
@@ -53,6 +59,25 @@ class DirectoryController extends Controller
         $coach->unsetRelation('user');
 
         return response()->json(['data' => $coach]);
+    }
+
+    /** Whitelist sort columns to keep the API safe + default fallback. */
+    protected function sortBy(Request $request): \Closure
+    {
+        $allowed = ['name', 'created_at', 'verification_badge', 'year_established'];
+        $field = in_array($request->sort, $allowed, true) ? $request->sort : 'created_at';
+        $dir = strtolower($request->direction ?? 'desc') === 'asc' ? 'asc' : 'desc';
+
+        return function ($q) use ($field, $dir) {
+            $q->orderBy($field, $dir);
+            // Sort by experience/avg_rating only when the column exists, and
+            // tie-break on name so the result is deterministic.
+            if ($field === 'experience_years' && \Illuminate\Support\Facades\Schema::hasColumn($q->getModel()->getTable(), 'experience_years')) {
+                $q->orderBy('experience_years', $dir)->orderBy('name', 'asc');
+            } elseif (\Illuminate\Support\Facades\Schema::hasColumn($q->getModel()->getTable(), 'avg_rating')) {
+                $q->orderBy('avg_rating', $dir)->orderBy('name', 'asc');
+            }
+        };
     }
 
     protected function paginate($query, Request $request)

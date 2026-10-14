@@ -26,10 +26,10 @@ class ScoutShortlistNotifier extends StateNotifier<ScoutShortlistState> {
     load();
   }
 
-  Future<void> load() async {
+  Future<void> load({String status = 'all'}) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final resp = await _dio.get('/me/scout-shortlist');
+      final resp = await _dio.get('/me/scout-shortlist', queryParameters: status == 'all' ? null : {'status': status});
       final list = (resp.data['data'] as List? ?? [])
           .map((e) => ScoutShortlistItem.fromJson(e as Map<String, dynamic>))
           .toList();
@@ -69,6 +69,22 @@ class ScoutShortlistNotifier extends StateNotifier<ScoutShortlistState> {
   Future<bool> updateNotes(String athleteId, String notes) async {
     try {
       await _dio.patch('/me/scout-shortlist/$athleteId', data: {'notes': notes});
+      await load();
+      return true;
+    } on DioException catch (e) {
+      state = state.copyWith(error: ApiException.fromDio(e).message);
+      return false;
+    }
+  }
+
+  /// Phase 7 pipeline: status (under_review/good/high/final) + tags + notes.
+  Future<bool> updateEntry(String athleteId, {String? status, List<String>? tags, String? notes}) async {
+    try {
+      await _dio.patch('/me/scout-shortlist/$athleteId', data: {
+        if (status != null) 'status': status,
+        if (tags != null) 'tags': tags,
+        if (notes != null) 'notes': notes,
+      });
       await load();
       return true;
     } on DioException catch (e) {

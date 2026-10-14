@@ -7,6 +7,7 @@ import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/shared/presentation/widgets/async_state_view.dart';
 import 'package:sportx_app/shared/presentation/widgets/detail_page_template.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
+import 'package:sportx_app/features/trial/presentation/providers/unified_events_provider.dart';
 
 class TournamentDetailScreen extends ConsumerWidget {
   final String id;
@@ -22,6 +23,7 @@ class TournamentDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(tournamentDetailProvider(id));
+    final results = ref.watch(eventResultsProvider(id));
 
     return AsyncDetailBuilder<Tournament>(
       async: async,
@@ -45,6 +47,30 @@ class TournamentDetailScreen extends ConsumerWidget {
         addressStr: t.venue ?? t.city?.name ?? '',
         ctaText: 'Register',
         onCtaPressed: () => context.push('/tournament-registration/$id'),
+        extraSections: [
+          results.when(
+            loading: () => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
+            data: (rows) {
+              final published = rows.where((r) => r['published_at'] != null).toList();
+              if (published.isEmpty) return const SizedBox.shrink();
+              return Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    const Text('Results', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                    const SizedBox(height: 8),
+                    ...published.map((r) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Text(
+                              '#${r['place']} ${(r['winner_name'] ?? '').toString()}${r['category'] is Map ? ' • ${(r['category'] as Map)['name']}' : ''}'),
+                        )),
+                  ]),
+                ),
+              );
+            },
+          ),
+        ],
         savedType: 'tournament',
         savedItemId: t.id.toString(),
         onPhonePressed: t.contactNumber == null

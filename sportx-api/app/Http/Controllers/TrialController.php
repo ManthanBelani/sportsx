@@ -18,6 +18,11 @@ class TrialController extends Controller
             ->when($request->q, fn ($q) => $q->where(fn ($sub) => $sub->where('name', 'like', "%{$request->q}%")->orWhere('organization_name', 'like', "%{$request->q}%")))
             ->when($request->date_from, fn ($q) => $q->where('event_datetime', '>=', $request->date_from))
             ->when($request->date_to, fn ($q) => $q->where('event_datetime', '<=', $request->date_to))
+            ->when($request->age_group_id && \Illuminate\Support\Facades\Schema::hasColumn('trials', 'age_groups'),
+                fn ($q) => $q->whereJsonContains('age_groups', (int) $request->age_group_id))
+            ->when($request->level && \Illuminate\Support\Facades\Schema::hasColumn('trials', 'level'),
+                fn ($q) => $q->where('level', $request->level))
+            ->when($request->facility, fn ($q) => $q->whereJsonContains('required_documents', $request->facility))
             ->orderBy('event_datetime', 'asc');
 
         $perPage = min((int) ($request->per_page ?? 20), 50);
