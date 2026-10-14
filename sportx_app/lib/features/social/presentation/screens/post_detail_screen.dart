@@ -8,6 +8,8 @@ import 'package:sportx_app/features/social/presentation/providers/posts_provider
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:sportx_app/core/config/api_config.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
@@ -20,6 +22,8 @@ class PostDetailScreen extends ConsumerStatefulWidget {
 
 class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   final _commentController = TextEditingController();
+  String? _replyToId;
+  String? _replyToName;
 
   @override
   void dispose() {
@@ -31,10 +35,16 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     final text = _commentController.text.trim();
     if (text.isEmpty) { SnackBarUtils.showError(context, 'Please enter a comment'); return; }
     _commentController.clear();
-    final ok = await commentOnPost(ref, widget.postId, text);
+    final ok = await commentOnPost(ref, widget.postId, text, parentId: _replyToId);
+    setState(() { _replyToId = null; _replyToName = null; });
     if (mounted) {
       SnackBarUtils.showError(context, ok ? 'Comment posted!' : 'Failed to comment');
     }
+  }
+
+  void _sharePost(String author, String? body) {
+    final url = '${ApiConfig.webBaseUrl}/post-detail/${widget.postId}';
+    Share.share('Check this out on SportX by $author\n$url${body != null && body.isNotEmpty ? '\n\n"${body.length > 120 ? '${body.substring(0, 120)}…' : body}"' : ''}');
   }
 
   @override
@@ -50,6 +60,15 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             style: GoogleFonts.sora(
                 fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
+        actions: [
+          Consumer(builder: (context, ref, _) {
+            final post = ref.watch(postDetailProvider(widget.postId)).valueOrNull;
+            return IconButton(
+              icon: const Icon(LucideIcons.share2, color: AppColors.textPrimary),
+              onPressed: post == null ? null : () => _sharePost(post.authorName, post.body),
+            );
+          }),
+        ],
       ),
       body: Column(
         children: [
@@ -104,11 +123,24 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       child: SectionHeader(
                           title: 'Comments (${post.commentsCount})'),
                     ),
+                    _CommentsList(
+                      postId: widget.postId,
+                      onReply: (id, name) => setState(() { _replyToId = id; _replyToName = name; }),
+                    ),
                   ],
                 ),
               ),
             ),
           ),
+          if (_replyToName != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              color: AppColors.yellowTint,
+              child: Row(children: [
+                Expanded(child: Text('Replying to $_replyToName', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary))),
+                GestureDetector(onTap: () => setState(() { _replyToId = null; _replyToName = null; }), child: const Icon(LucideIcons.x, size: 16)),
+              ]),
+            ),
           _buildCommentInput(),
         ],
       ),
@@ -138,7 +170,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 controller: _commentController,
                 textCapitalization: TextCapitalization.sentences,
                 decoration: InputDecoration(
-                  hintText: 'Write a comment...',
+                  hintText: _replyToName != null ? 'Reply to $_replyToName...' : 'Write a comment...',
                   hintStyle: const TextStyle(color: AppColors.textTertiary),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
                   filled: true,
@@ -156,6 +188,46 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _CommentsList extends ConsumerWidget {
+  final String postId;
+  final void Function(String id, String name) onReply;
+  const _CommentsList({required this.postId, required this.onReply});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(postCommentsProvider(postId));
+    return async.when(
+      loading: () => const Padding(padding: EdgeInsets.all(16), child: Text('Loading comments...', style: TextStyle(color: AppColors.textSecondary, fontSize: 12))),
+      error: (e, _) => Padding(padding: const EdgeInsets.all(16), child: Text(ApiException.messageFor(e), style: const TextStyle(color: AppColors.textSecondary, fontSize: 12))),
+      data: (items) {
+        if (items.isEmpty) {
+          return const Padding(padding: EdgeInsets.all(16), child: Text('Be the first to comment.', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)));
+        }
+        return Column(
+          children: items.map((c) {
+            final user = c['user'] as Map<String, dynamic>?;
+            final name = (user?['name'] ?? 'User').toString();
+            final body = (c['body'] ?? '').toString();
+            final id = c['id'].toString();
+            return ListTile(
+              dense: true,
+              title: Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+              subtitle: Text(body, style: const TextStyle(fontSize: 13)),
+              trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                IconButton(icon: const Icon(LucideIcons.reply, size: 16), onPressed: () => onReply(id, name)),
+                IconButton(icon: const Icon(LucideIcons.trash2, size: 16), onPressed: () async {
+                  final ok = await deleteComment(ref, postId, id);
+                  if (context.mounted && !ok) SnackBarUtils.showError(context, 'Failed to delete comment');
+                }),
+              ]),
+            );
+          }).toList(),
+        );
+      },
     );
   }
 }

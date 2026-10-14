@@ -137,7 +137,6 @@ import 'package:sportx_app/features/talent_scout/presentation/screens/talent_sco
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_profile_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/widgets/scout_shell.dart';
 import 'package:sportx_app/features/social/presentation/screens/create_sheet.dart';
-import 'package:sportx_app/features/home/presentation/screens/opportunities_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/my_applications_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/application_status_screen.dart';
 import 'package:sportx_app/features/connections/presentation/screens/network_screen.dart';
@@ -161,6 +160,7 @@ String? _onboardingRouteFor(String? role) {
       return '/organizer-onboarding';
     case 'sponsor':
       return '/sponsor-onboarding';
+    case 'scout':
     case 'talent_scout':
       return '/scout-onboarding';
     default:
@@ -179,6 +179,7 @@ String _dashboardRouteFor(String? role) {
       return '/organizer-dashboard';
     case 'sponsor':
       return '/sponsor-dashboard';
+    case 'scout':
     case 'talent_scout':
       return '/scout-dashboard';
     case 'admin':
@@ -463,7 +464,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/scout-directory', builder: (context, state) => const ScoutDirectoryScreen()),
       GoRoute(path: '/athlete-directory', builder: (context, state) => const AthleteDirectoryScreen()),
       GoRoute(path: '/discover', builder: (context, state) => const DiscoverScreen()),
-      GoRoute(path: '/opportunities', builder: (context, state) => const OpportunitiesScreen()),
+      GoRoute(path: '/opportunities-legacy', redirect: (_, __) => '/opportunities'),
       GoRoute(path: '/my-applications', builder: (context, state) => const MyApplicationsScreen()),
       GoRoute(path: '/application-status', builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
@@ -515,7 +516,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         return OppReviewDetailScreen(opportunity: opportunity ?? Opportunity(id: '', title: '', sponsorName: '', status: 'pending', createdAt: ''));
       }),
       GoRoute(path: '/admin/notifications/targeting', builder: (context, state) => const NotificationTargetingScreen()),
-      GoRoute(path: '/activity-hub', builder: (context, state) => const ActivityHubScreen()),
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
         routes: [

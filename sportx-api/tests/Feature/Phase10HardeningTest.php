@@ -14,7 +14,7 @@ class Phase10HardeningTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->create(['role' => 'admin', 'status' => 'active', 'email_verified_at' => now()]);
+        return User::factory()->create(['role' => 'admin', 'status' => 'active', 'email_verified_at' => now(), 'admin_2fa_verified_at' => now()]);
     }
 
     public function test_auth_throttle_returns_429_with_retry_after(): void

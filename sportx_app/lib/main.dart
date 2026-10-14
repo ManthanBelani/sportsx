@@ -6,6 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:sportx_app/core/router.dart';
 import 'package:sportx_app/core/services/push_notification_service.dart';
+import 'package:sportx_app/firebase_options.dart';
 import 'package:sportx_app/theme/app_theme.dart';
 
 /// Phase 10 observability: Sentry crash reporting. No-op when SENTRY_DSN is
@@ -23,7 +24,7 @@ Future<void> main() async {
 
   Future<void> boot() async {
     try {
-      await Firebase.initializeApp();
+      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
       FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
     } catch (_) {
       // Firebase not configured — push notifications will be unavailable.

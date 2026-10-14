@@ -233,7 +233,7 @@ class ApprovalRegistrationTest extends TestCase
         $sport = $this->makeSport();
         [$organizer, $tournament, $category] = $this->makeOrganizerWithTournament($sport);
         $athlete = $this->makeAthlete($sport);
-        $admin = User::factory()->create(['role' => 'admin']);
+        $admin = User::factory()->create(['role' => 'admin', 'admin_2fa_verified_at' => now()]);
 
         Sanctum::actingAs($athlete);
         $resp = $this->postJson("/api/v1/tournaments/{$tournament->id}/register", [
@@ -390,7 +390,7 @@ class ApprovalRegistrationTest extends TestCase
         $sport = $this->makeSport();
         [$organizer, $tournament, $category] = $this->makeOrganizerWithTournament($sport);
         $athlete = $this->makeAthlete($sport);
-        $admin = User::factory()->create(['role' => 'admin']);
+        $admin = User::factory()->create(['role' => 'admin', 'admin_2fa_verified_at' => now()]);
 
         Sanctum::actingAs($athlete);
         $this->postJson("/api/v1/tournaments/{$tournament->id}/register", [

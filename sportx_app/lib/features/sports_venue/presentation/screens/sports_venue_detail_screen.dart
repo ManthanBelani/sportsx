@@ -7,7 +7,6 @@ import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/shared/presentation/widgets/async_state_view.dart';
 import 'package:sportx_app/shared/presentation/widgets/detail_page_template.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
-import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
 class SportsVenueDetailScreen extends ConsumerWidget {
   final String id;
@@ -41,11 +40,9 @@ class SportsVenueDetailScreen extends ConsumerWidget {
         addressStr: v.address ?? v.city?.name ?? '',
         ctaText: v.bookingAvailable ? 'Book Now' : 'Enquire',
         onCtaPressed: () {
-          if (v.bookingAvailable) {
-            SnackBarUtils.showSuccess(context, 'Booking feature coming soon!');
-          } else {
-            context.push('/enquire/sports_venue/${v.id}/${Uri.encodeComponent(v.name)}');
-          }
+          // Bookings are enquiries in MVP (no payments/map) — route every CTA
+          // through the generic enquiry modal so venue owners get the thread.
+          context.push('/enquire/sports_venue/${v.id}/${Uri.encodeComponent(v.name)}');
         },
         onPhonePressed: v.contactNumber == null
             ? null

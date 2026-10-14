@@ -13,7 +13,7 @@ class Phase9AdminNotificationsTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->create(['role' => 'admin', 'status' => 'active', 'email_verified_at' => now()]);
+        return User::factory()->create(['role' => 'admin', 'status' => 'active', 'email_verified_at' => now(), 'admin_2fa_verified_at' => now()]);
     }
 
     public function test_notification_tabs_and_unread_count(): void

@@ -26,7 +26,11 @@ class _GoogleSignInButtonState extends ConsumerState<GoogleSignInButton> {
     if (_busy) return;
     setState(() => _busy = true);
     try {
-      final google = GoogleSignIn();
+      // Web client id for backend audience check. Provision via
+      // --dart-define=GOOGLE_SERVER_CLIENT_ID=<web-client-id> (Google Cloud
+      // console → Web OAuth client). Empty in dev → native flow still attempted.
+      const serverId = String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID', defaultValue: '');
+      final google = GoogleSignIn(serverClientId: serverId.isEmpty ? null : serverId);
       final account = await google.signIn();
       if (account == null) {
         // User dismissed the account picker — not an error.

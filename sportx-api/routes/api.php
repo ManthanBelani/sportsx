@@ -59,6 +59,8 @@ use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\EmailSettingsController;
 use App\Http\Controllers\Admin\RegistrationAnalyticsController;
 use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\Admin\AdminAuditController;
+use App\Http\Controllers\LegacyGoneController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -82,6 +84,15 @@ Route::prefix('v1')->group(function () {
         try {
             \Illuminate\Support\Facades\DB::connection()->getPdo();
             return response()->json(['status' => 'ok', 'db' => 'connected']);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'db' => 'disconnected'], 500);
+        }
+    });
+    // Canonical platform health path (plan Phase 0). Keep /health for compat.
+    Route::get('/system/health', function () {
+        try {
+            \Illuminate\Support\Facades\DB::connection()->getPdo();
+            return response()->json(['status' => 'ok', 'db' => 'connected', 'version' => 'v1']);
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'db' => 'disconnected'], 500);
         }
@@ -388,6 +399,9 @@ Route::prefix('v1')->group(function () {
     Route::post('/analytics/events', [AnalyticsController::class, 'store'])->middleware('auth:sanctum');
     Route::post('/me/device-tokens', [NotificationController::class, 'registerDeviceToken'])->middleware('auth:sanctum');
     Route::delete('/me/device-tokens', [NotificationController::class, 'unregisterDeviceToken'])->middleware('auth:sanctum');
+    // Plan-spec aliases (Phase 3E): same handlers, canonical names.
+    Route::post('/me/device-tokens/subscribe', [NotificationController::class, 'registerDeviceToken'])->middleware('auth:sanctum');
+    Route::post('/me/device-tokens/test', [NotificationController::class, 'testDeviceToken'])->middleware('auth:sanctum');
     Route::post('/me/notifications/{notification}/send-push', [NotificationController::class, 'sendPushNotification'])->middleware('auth:sanctum');
 
     // ── Social Links (all roles — stored on users.social_links) ──
@@ -558,8 +572,13 @@ Route::prefix('v1')->group(function () {
         Route::post('/opportunities/{id}/approve', [AdminUserController::class, 'approveOpportunity']);
         Route::post('/opportunities/{id}/reject', [AdminUserController::class, 'rejectOpportunity']);
 
-        // Admin Notification broadcast
+        // Admin Notification broadcast + delivery stats (Phase 3E/9)
         Route::post('/notifications/broadcast', [AdminUserController::class, 'broadcast']);
+        Route::get('/notifications/stats', [NotificationController::class, 'stats']);
+
+        // Admin audit trail (Phase 10: moderation/status/override/provider-switch log)
+        Route::get('/audit-logs', [AdminAuditController::class, 'apiIndex']);
+        Route::get('/audit-logs/{id}', [AdminAuditController::class, 'apiShow']);
 
         // Admin approval analytics + overrides
         Route::get('/registrations/analytics/dashboard', [RegistrationAnalyticsController::class, 'dashboard']);

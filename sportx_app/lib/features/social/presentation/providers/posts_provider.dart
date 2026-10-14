@@ -115,10 +115,11 @@ Future<bool> deleteComment(WidgetRef ref, String postId, String commentId) async
   }
 }
 
-Future<bool> commentOnPost(WidgetRef ref, String postId, String body) async {
+Future<bool> commentOnPost(WidgetRef ref, String postId, String body, {String? parentId}) async {
   try {
-    await ref.read(dioProvider).post('/posts/$postId/comments', data: {'body': body});
+    await ref.read(dioProvider).post('/posts/$postId/comments', data: {'body': body, if (parentId != null) 'parent_id': int.tryParse(parentId) ?? parentId});
     ref.invalidate(postDetailProvider(postId));
+    ref.invalidate(postCommentsProvider(postId));
     return true;
   } on DioException {
     return false;

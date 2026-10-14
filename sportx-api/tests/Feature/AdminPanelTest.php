@@ -45,7 +45,7 @@ class AdminPanelTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->create(['role' => 'admin', 'status' => 'active', 'email_verified_at' => now()]);
+        return User::factory()->create(['role' => 'admin', 'status' => 'active', 'email_verified_at' => now(), 'admin_2fa_verified_at' => now()]);
     }
 
     private function makeSport(string $name = 'Cricket'): Sport
@@ -83,10 +83,11 @@ class AdminPanelTest extends TestCase
 
     public function test_admin_verify_2fa_returns_warning_stub(): void
     {
+        // With ADMIN_2FA_ENFORCE=false (phpunit.xml) any 6 digits verify.
         $admin = $this->admin();
         Sanctum::actingAs($admin);
         $resp = $this->postJson('/api/v1/admin/verify-2fa', ['code' => '123456']);
-        $resp->assertStatus(200)->assertJsonPath('data.message', 'WARNING: 2FA not enforced in this build — enable TOTP before production.');
+        $resp->assertStatus(200)->assertJsonPath('data.message', 'Verified (2FA enforcement disabled).');
     }
 
     public function test_admin_me_requires_auth(): void

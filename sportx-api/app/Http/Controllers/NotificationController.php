@@ -157,4 +157,33 @@ class NotificationController extends Controller
 
         return response()->json(['data' => ['message' => 'Push notification queued']]);
     }
+
+    /** POST /me/device-tokens/test — plan alias: queue a test push to caller's devices. */
+    public function testDeviceToken(Request $request)
+    {
+        $user = $request->user();
+        $tokens = UserDeviceToken::where('user_id', $user->id)->active()->pluck('token')->toArray();
+        if (empty($tokens)) {
+            return response()->json(['data' => ['message' => 'No active device tokens found', 'sent' => false]]);
+        }
+        SendPushNotification::dispatch($tokens, 'SportX test', 'Push is wired correctly.', ['category' => 'broadcasts'], $user->id, null)->onQueue('push');
+
+        return response()->json(['data' => ['message' => 'Test push queued', 'sent' => true, 'devices' => count($tokens)]]);
+    }
+
+    /** GET /admin/notifications/stats — push_status breakdown for admin panel. */
+    public function stats(Request $request)
+    {
+        $byStatus = Notification::selectRaw('COALESCE(push_status, ?) as status, COUNT(*) as count', ['unsent'])
+            ->groupBy('status')->pluck('count', 'status');
+        $byType = Notification::selectRaw('type, COUNT(*) as count')->groupBy('type')->pluck('count', 'type');
+
+        return response()->json(['data' => [
+            'by_push_status' => $byStatus,
+            'by_type' => $byType,
+            'no_devices' => Notification::where('push_status', 'no_devices')->count(),
+            'failed' => Notification::where('push_status', 'failed')->count(),
+            'total' => Notification::count(),
+        ]]);
+    }
 }

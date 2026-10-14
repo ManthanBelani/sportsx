@@ -156,7 +156,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 24),
                   SectionHeader(
-                      title: 'Recommended Athletes',
+                      title: 'Recommended Academies & Coaches',
                       actionText: 'See all',
                       onActionTap: () => context.push('/discover')),
                   const _RecommendedSection(),

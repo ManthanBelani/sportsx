@@ -463,13 +463,20 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
   }
 
   Widget _buildTournamentHistorySection() {
+    final history = (_profileData!['tournament_history'] as List? ?? []);
+    if (history.isEmpty) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Tournament History', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
-        _buildTournamentItem('Gujarat State U-14 Championship', '2025', 'Semi-finalist'),
-        _buildTournamentItem('Ahmedabad District Cricket League', '2024', 'Winner'),
+        ...history.take(10).map((h) {
+          final m = h is Map ? Map<String, dynamic>.from(h) : {'name': h.toString()};
+          final name = (m['name'] ?? m['title'] ?? 'Tournament').toString();
+          final year = (m['year'] ?? m['season'] ?? '').toString();
+          final result = (m['result'] ?? m['position'] ?? m['status'] ?? '').toString();
+          return _buildTournamentItem(name, year, result);
+        }),
       ],
     );
   }

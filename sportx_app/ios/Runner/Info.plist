@@ -66,5 +66,23 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
+	<!-- Google Sign-In (Phase 1 B-7): Ops fills REVERSED_CLIENT_ID from the
+	     iOS OAuth client (Google Cloud console → iOS client → plist).
+	     TODO(prod): replace CHANGE_ME with the real reversed id; the bundle
+	     id must exactly match the OAuth client or sign-in fails. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>CHANGE_ME_REVERSED_CLIENT_ID</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
