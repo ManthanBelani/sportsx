@@ -18,7 +18,12 @@ class ScoutShortlistController extends Controller
             return response()->json(['error' => ['code' => 'FORBIDDEN', 'message' => 'Scout profile required.']], 403);
         }
 
-        $shortlist = ScoutShortlist::where('talent_scout_profile_id', $scoutProfile->id)
+        $status = $request->query('status');
+        $q = ScoutShortlist::where('talent_scout_profile_id', $scoutProfile->id);
+        if (is_string($status) && $status !== '' && $status !== 'all') {
+            $q->where('status', $status);
+        }
+        $shortlist = $q
             ->with(['athlete.user', 'athlete.sports', 'athlete.ageGroup', 'athlete.city', 'athlete.photo'])
             ->withCount(['athlete as athlete_achievements_count' => fn ($q) => $q->select(\Illuminate\Support\Facades\DB::raw('COUNT(*)'))])
             ->get()
@@ -49,10 +54,19 @@ class ScoutShortlistController extends Controller
             return response()->json(['error' => ['code' => 'CONFLICT', 'message' => 'Athlete already shortlisted.']], 409);
         }
 
+        $validated = $request->validate([
+            'notes' => 'nullable|string|max:2000',
+            'status' => 'nullable|in:under_review,good,high,final',
+            'tags' => 'nullable|array|max:10',
+            'tags.*' => 'string|max:30',
+        ]);
+
         $shortlist = ScoutShortlist::create([
             'talent_scout_profile_id' => $scoutProfile->id,
             'athlete_profile_id' => $athlete->id,
-            'notes' => $request->input('notes'),
+            'status' => $validated['status'] ?? 'under_review',
+            'tags' => $validated['tags'] ?? null,
+            'notes' => $validated['notes'] ?? $request->input('notes'),
         ]);
 
         $scoutProfile->load('user');
@@ -97,7 +111,10 @@ class ScoutShortlistController extends Controller
         }
 
         $validated = $request->validate([
-            'notes' => 'nullable|string|max:1000',
+            'notes' => 'nullable|string|max:2000',
+            'status' => 'nullable|in:under_review,good,high,final',
+            'tags' => 'nullable|array|max:10',
+            'tags.*' => 'string|max:30',
         ]);
 
         $shortlist = ScoutShortlist::where('talent_scout_profile_id', $scoutProfile->id)

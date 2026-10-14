@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Post extends Model
 {
-    protected $fillable = ['user_id', 'body', 'image_url', 'video_url', 'visibility'];
+    protected $fillable = ['user_id', 'body', 'image_url', 'video_url', 'visibility', 'hashtags', 'sport_id', 'audience'];
+
+    protected $casts = ['hashtags' => 'array'];
 
     public function user(): BelongsTo
     {

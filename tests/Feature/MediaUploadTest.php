@@ -35,7 +35,8 @@ class MediaUploadTest extends TestCase
 
         $resp = $this->postJson('/api/v1/media/upload', ['media_type' => 'photo']);
 
-        $resp->assertStatus(422)->assertJsonValidationErrors('file');
+        $resp->assertStatus(422)->assertJsonPath('error.code', 'VALIDATION_ERROR');
+        $this->assertArrayHasKey('file', $resp->json('error.errors'));
     }
 
     public function test_upload_infers_owner_from_athlete_profile(): void

@@ -7,9 +7,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ScoutShortlist extends Model
 {
+    public const STATUSES = ['under_review', 'good', 'high', 'final'];
+
     protected $fillable = [
-        'talent_scout_profile_id', 'athlete_profile_id', 'notes',
+        'talent_scout_profile_id', 'athlete_profile_id', 'status', 'tags', 'notes',
     ];
+
+    protected $casts = ['tags' => 'array'];
 
     public function scout(): BelongsTo
     {

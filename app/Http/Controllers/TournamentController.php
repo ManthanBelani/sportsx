@@ -13,7 +13,16 @@ class TournamentController extends Controller
 
         $query->when($request->sport_id, fn ($q) => $q->where('sport_id', $request->sport_id))
             ->when($request->city_id, fn ($q) => $q->where('city_id', $request->city_id))
-            ->when($request->month, fn ($q) => $q->whereYear('start_date', substr($request->month, 0, 4))->whereMonth('start_date', substr($request->month, 5)))
+            ->when($request->q, fn ($q) => $q->where('name', 'like', "%{$request->q}%"))
+            ->when($request->age_group_id, fn ($q) => $q->whereHas('categories', fn ($c) => $c->where('age_group_id', $request->age_group_id)))
+            ->when($request->level && \Illuminate\Support\Facades\Schema::hasColumn('tournaments', 'level'),
+                fn ($q) => $q->where('level', $request->level))
+            ->when($request->month, function ($q) use ($request) {
+                $m = $request->month;
+                $q->where(function ($w) use ($m) {
+                    $w->whereYear('start_date', substr($m, 0, 4))->whereMonth('start_date', substr($m, 5, 2));
+                });
+            })
             ->orderBy('start_date', 'asc');
 
         $perPage = min((int) ($request->per_page ?? 20), 50);

@@ -623,6 +623,7 @@ class AdminPanelController extends Controller
         $user = User::where('status','pending')->findOrFail($id);
         $user->status = 'active';
         $user->save();
+        $this->notifyAccountAction($user, 'approved', 'Your SportX account was approved. Welcome!');
         return back()->with('success', ucfirst($user->role).' approved — login now allowed.');
     }
 
@@ -631,7 +632,22 @@ class AdminPanelController extends Controller
         $user = User::where('status','pending')->findOrFail($id);
         $user->status = 'deleted';
         $user->save();
+        $this->notifyAccountAction($user, 'rejected', 'Your SportX account application was not approved.');
         return back()->with('success', 'Registration rejected.');
+    }
+
+    protected function notifyAccountAction($user, string $outcome, string $body): void
+    {
+        try {
+            \App\Services\NotificationService::createStatic([
+                'user_id' => $user->id,
+                'type' => 'account_action',
+                'title' => "Account {$outcome}",
+                'body' => $body,
+                'action_url' => '/account-status',
+            ]);
+        } catch (\Throwable) {
+        }
     }
 
     public function approveTrial($id)

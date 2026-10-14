@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Block;
 use App\Models\Connection;
 use App\Models\Conversation;
 use App\Services\NotificationService;
@@ -32,6 +33,10 @@ class ConnectionController extends Controller
 
         $userId = $request->user()->id;
         $targetId = $validated['user_id'];
+
+        if (Block::hasBlockBetween($userId, $targetId)) {
+            return response()->json(['error' => ['code' => 'BLOCKED', 'message' => 'Connection unavailable.']], 403);
+        }
 
         $duplicate = Connection::where('follower_user_id', $userId)
             ->where('followee_user_id', $targetId)
@@ -104,6 +109,23 @@ class ConnectionController extends Controller
         ]);
 
         return response()->json(['data' => $connection]);
+    }
+
+    /** PATCH /connections/{id} {action: accept|decline} — plan shape (POST accept kept). */
+    public function update(Request $request, string $id)
+    {
+        $validated = $request->validate(['action' => 'required|in:accept,decline']);
+        if ($validated['action'] === 'accept') {
+            return $this->accept($request, $id);
+        }
+
+        $connection = Connection::where('id', $id)
+            ->where('followee_user_id', $request->user()->id)
+            ->where('status', 'pending')
+            ->firstOrFail();
+        $connection->delete();
+
+        return response()->json(['data' => ['message' => 'Declined']]);
     }
 
     /** Reject / remove a connection. */

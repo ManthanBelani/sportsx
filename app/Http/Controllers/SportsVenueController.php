@@ -13,7 +13,7 @@ class SportsVenueController extends Controller
 
         $query->when($request->sport_id, fn ($q) => $q->where('sport_id', $request->sport_id))
             ->when($request->city_id, fn ($q) => $q->where('city_id', $request->city_id))
-            ->when($request->booking_available, fn ($q) => $q->where('booking_available', filter_var($request->booking_available, FILTER_VALIDATE_BOOLEAN)))
+            ->when($request->booking, fn ($q) => $q->where('is_bookable', $request->boolean('booking')))
             ->when($request->q, fn ($q) => $q->where(fn ($sub) => $sub->where('name', 'like', "%{$request->q}%")->orWhere('address', 'like', "%{$request->q}%")));
 
         $perPage = min((int) ($request->per_page ?? 20), 50);

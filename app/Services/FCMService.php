@@ -24,61 +24,134 @@ class FCMService
         return !empty($this->projectId) && !empty($this->credentialsPath) && file_exists($this->credentialsPath);
     }
 
+    /**
+     * Android notification channels per notification type.
+     * Android 8+ silently drops notifications without a matching channel.
+     */
+    public const ANDROID_CHANNELS = [
+        'default' => 'sportx_default',
+        'enquiry' => 'sportx_enquiries',
+        'reminder' => 'sportx_reminders',
+        'update' => 'sportx_updates',
+        'announcement' => 'sportx_announcements',
+    ];
+
+    public static function channelFor(string $type, ?string $category = null): string
+    {
+        $key = strtolower($category ?: $type);
+        if (str_contains($key, 'enquir') || str_contains($key, 'message') || str_contains($key, 'chat')) {
+            return self::ANDROID_CHANNELS['enquiry'];
+        }
+        if (str_contains($key, 'remind')) {
+            return self::ANDROID_CHANNELS['reminder'];
+        }
+        if (str_contains($key, 'broadcast') || str_contains($key, 'announce')) {
+            return self::ANDROID_CHANNELS['announcement'];
+        }
+        if (str_contains($key, 'status') || str_contains($key, 'regist') || str_contains($key, 'verif')
+            || str_contains($key, 'account') || str_contains($key, 'connection') || str_contains($key, 'follow')) {
+            return self::ANDROID_CHANNELS['update'];
+        }
+
+        return self::ANDROID_CHANNELS['default'];
+    }
+
+    /**
+     * Send one FCM HTTP v1 `messages:send` per token (there is no
+     * multicast endpoint in v1). Returns per-token results so callers can
+     * retire UNREGISTERED tokens immediately and 3-strike transients.
+     */
     public function sendPushNotification(array $deviceTokens, string $title, string $body, array $data = []): array
     {
         if (!$this->isEnabled()) {
             Log::warning('FCM is not enabled or not configured');
-            return ['success' => false, 'message' => 'FCM not configured'];
+            return ['success' => false, 'message' => 'FCM not configured', 'sent' => [], 'failed' => []];
         }
 
-        if (empty($deviceTokens)) {
-            return ['success' => false, 'message' => 'No device tokens provided'];
+        $tokens = array_values(array_unique(array_filter($deviceTokens)));
+        if (empty($tokens)) {
+            return ['success' => false, 'message' => 'No device tokens provided', 'sent' => [], 'failed' => []];
         }
 
-        $message = [
-            'notification' => [
-                'title' => $title,
-                'body' => $body,
-            ],
-            'data' => $data,
-            'tokens' => $deviceTokens,
-        ];
+        $type = (string) ($data['type'] ?? 'general');
+        $category = (string) ($data['category'] ?? $type);
+        $channelId = self::channelFor($type, $category);
+        $sent = [];
+        $failed = [];
 
         try {
-            $response = Http::withToken($this->getAccessToken())
-                ->post("https://fcm.googleapis.com/v1/projects/{$this->projectId}/messages:sendMulticast", $message);
-
-            if ($response->successful()) {
-                $result = $response->json();
-                $successCount = $result['responses'][0]['successCount'] ?? count($deviceTokens);
-                $failureCount = $result['responses'][0]['failureCount'] ?? 0;
-
-                return [
-                    'success' => true,
-                    'success_count' => $successCount,
-                    'failure_count' => $failureCount,
-                ];
-            }
-
-            Log::error('FCM push notification failed', [
-                'status' => $response->status(),
-                'body' => $response->body(),
-            ]);
-
-            return [
-                'success' => false,
-                'message' => 'FCM request failed: ' . $response->status(),
-            ];
+            $accessToken = $this->getAccessToken();
         } catch (\Exception $e) {
-            Log::error('FCM push notification exception', [
-                'error' => $e->getMessage(),
-            ]);
+            Log::error('FCM access token exception', ['error' => $e->getMessage()]);
 
-            return [
-                'success' => false,
-                'message' => $e->getMessage(),
-            ];
+            return ['success' => false, 'message' => $e->getMessage(), 'sent' => [], 'failed' => array_fill_keys($tokens, 'auth_error')];
         }
+
+        foreach ($tokens as $token) {
+            $message = [
+                'message' => [
+                    'token' => $token,
+                    'notification' => ['title' => $title, 'body' => $body],
+                    'data' => array_map('strval', $data),
+                    'android' => ['notification' => ['channel_id' => $channelId]],
+                    'apns' => [
+                        'headers' => ['apns-priority' => '10', 'apns-push-type' => 'alert'],
+                        'payload' => ['aps' => ['sound' => 'default', 'content-available' => 1]],
+                    ],
+                ],
+            ];
+
+            try {
+                $response = Http::withToken($accessToken)
+                    ->post("https://fcm.googleapis.com/v1/projects/{$this->projectId}/messages:send", $message);
+
+                if ($response->successful()) {
+                    $sent[] = $token;
+                } else {
+                    $code = $this->errorCode($response);
+                    $failed[$token] = $code;
+                    Log::warning('FCM per-token send failed', ['status' => $response->status(), 'code' => $code]);
+                }
+            } catch (\Exception $e) {
+                $failed[$token] = 'transport_error';
+                Log::error('FCM per-token exception', ['error' => $e->getMessage()]);
+            }
+        }
+
+        return [
+            'success' => count($sent) > 0,
+            'success_count' => count($sent),
+            'failure_count' => count($failed),
+            'sent' => $sent,
+            'failed' => $failed,
+        ];
+    }
+
+    /** Map an FCM error response to a stable per-token code. */
+    protected function errorCode($response): string
+    {
+        try {
+            $code = $response->json('error.details.0.errorCode')
+                ?? $response->json('error.status')
+                ?? '';
+        } catch (\Throwable) {
+            $code = '';
+        }
+        $code = strtoupper((string) $code);
+        if (str_contains($code, 'UNREGISTERED') || str_contains($code, 'NOT_FOUND') || str_contains($code, 'INVALID_ARGUMENT')) {
+            return 'UNREGISTERED';
+        }
+        if (str_contains($code, 'QUOTA') || str_contains($code, 'RESOURCE_EXHAUSTED')) {
+            return 'QUOTA_EXHAUSTED';
+        }
+        if (str_contains($code, 'SENDER_ID_MISMATCH')) {
+            return 'SENDER_ID_MISMATCH';
+        }
+        if (str_contains($code, 'UNAVAILABLE') || str_contains($code, 'INTERNAL') || str_contains($code, 'DEADLINE')) {
+            return 'TRANSIENT';
+        }
+
+        return $code !== '' ? $code : 'SEND_FAILED';
     }
 
     public function sendToTopic(string $topic, string $title, string $body, array $data = []): array

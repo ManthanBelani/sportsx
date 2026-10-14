@@ -140,8 +140,8 @@ class AdminPanelTest extends TestCase
         $admin = $this->admin();
         Sanctum::actingAs($admin);
         $resp = $this->getJson('/api/v1/admin/content');
-        $resp->assertStatus(200)->assertJsonStructure(['data' => ['academies', 'coaches', 'trials', 'tournaments', 'scholarships', 'sponsorships', 'sports_venues']]);
-        $this->assertEquals(7, count($resp->json('data')));
+        $resp->assertStatus(200)->assertJsonStructure(['data' => ['academies', 'coaches', 'trials', 'tournaments', 'scholarships', 'sponsorships', 'sports_venues', 'opportunities', 'programs', 'facilities', 'posts']]);
+        $this->assertEquals(11, count($resp->json('data')));
     }
 
     public function test_admin_content_index_supports_pagination_and_filters(): void

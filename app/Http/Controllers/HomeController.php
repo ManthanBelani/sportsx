@@ -44,7 +44,7 @@ class HomeController extends Controller
                 'needs_onboarding' => ! $user->hasRoleProfile(),
                 'completion_percent' => CompletionChecklistController::completionFor($user),
                 'is_verified' => $user->isVerified(),
-                'leaderboard_strip' => [],
+                'leaderboard_strip' => $this->leaderboardStrip(),
                 'counts' => $this->counts($user),
                 'feed_preview' => $this->feedPreview(),
             ],
@@ -97,5 +97,26 @@ class HomeController extends Controller
             ->latest()
             ->limit(3)
             ->get();
+    }
+
+    /** Top-5 leaderboard slice for AT.1 home strip (Phase 7). */
+    protected function leaderboardStrip(): array
+    {
+        try {
+            $season = \App\Services\LeaderboardService::activeSeason();
+            return \App\Models\LeaderboardScore::with(['athlete.user', 'sport'])
+                ->where('season_id', $season->id)
+                ->orderByDesc('points')
+                ->limit(5)
+                ->get()
+                ->map(fn ($r) => [
+                    'athlete_profile_id' => $r->athlete_profile_id,
+                    'display_name' => $r->athlete?->user?->name ?? 'Athlete',
+                    'points' => (int) $r->points,
+                    'sport' => $r->sport ? ['id' => $r->sport->id, 'name' => $r->sport->name] : null,
+                ])->all();
+        } catch (\Throwable) {
+            return [];
+        }
     }
 }

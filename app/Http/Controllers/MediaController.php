@@ -167,6 +167,24 @@ class MediaController extends Controller
             'items.*.sort_order' => 'required|integer|min:0',
         ]);
 
+        $user = $request->user();
+        $ids = collect($validated['items'])->pluck('id')->all();
+        $owned = MediaItem::whereIn('id', $ids)->get();
+        abort_if($owned->count() !== count($ids), 404);
+        foreach ($owned as $media) {
+            $allowed = match ($media->owner_type) {
+                'athlete_profile' => $user->athleteProfile?->id === $media->owner_id,
+                'coach_profile' => $user->coachProfile?->id === $media->owner_id,
+                'academy' => $user->academies?->id === $media->owner_id,
+                'organizer_profile' => $user->organizerProfile?->id === $media->owner_id,
+                'sponsor_profile' => $user->sponsorProfile?->id === $media->owner_id,
+                'talent_scout_profile' => $user->talentScoutProfile?->id === $media->owner_id,
+                'user' => $user->id === $media->owner_id,
+                default => false,
+            };
+            abort_unless($allowed || $user->isAdmin(), 403);
+        }
+
         foreach ($validated['items'] as $item) {
             MediaItem::where('id', $item['id'])->update(['sort_order' => $item['sort_order']]);
         }
@@ -199,8 +217,9 @@ class MediaController extends Controller
             default => false,
         };
         abort_unless($allowed || $user->isAdmin(), 403);
-        $url = \Illuminate\Support\Facades\URL::temporarySignedRoute('media.download', now()->addMinutes(15), ['id' => $media->id]);
-        return response()->json(['data' => ['url' => $url, 'expires_at' => now()->addMinutes(15)->toISOString()]]);
+        // Phase 10: 60-minute signed URLs for private docs (was 15).
+        $url = \Illuminate\Support\Facades\URL::temporarySignedRoute('media.download', now()->addMinutes(60), ['id' => $media->id]);
+        return response()->json(['data' => ['url' => $url, 'expires_at' => now()->addMinutes(60)->toISOString()]]);
     }
 }
 

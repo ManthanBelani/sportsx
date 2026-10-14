@@ -7,10 +7,19 @@ use Illuminate\Http\Request;
 
 class ReportController extends Controller
 {
+    public function index(Request $request)
+    {
+        $rows = ListingReport::where('reporter_user_id', $request->user()->id)
+            ->latest()
+            ->paginate(20);
+
+        return response()->json($rows);
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'reportable_type' => 'required|string|in:academy,coach_profile,trial,tournament,scholarship,sponsorship,sports_venue,athlete_profile',
+            'reportable_type' => 'required|string|in:academy,coach_profile,trial,tournament,scholarship,sponsorship,sports_venue,athlete_profile,user,post,opportunity,program,facility',
             'reportable_id' => 'required|integer',
             'reason' => 'required|in:fake,outdated,inappropriate,other',
             'comment' => 'nullable|string|max:1000',

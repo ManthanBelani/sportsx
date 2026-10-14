@@ -41,7 +41,8 @@ class AuthTest extends TestCase
             'password' => 'Password123',
         ]);
 
-        $resp->assertStatus(422)->assertJsonValidationErrors('email');
+        $resp->assertStatus(422)->assertJsonPath('error.code', 'VALIDATION_ERROR');
+        $this->assertArrayHasKey('email', $resp->json('error.errors'));
     }
 
     public function test_register_rejects_weak_password_with_field_error(): void
@@ -52,7 +53,8 @@ class AuthTest extends TestCase
             'password' => '123',
         ]);
 
-        $resp->assertStatus(422)->assertJsonValidationErrors('password');
+        $resp->assertStatus(422)->assertJsonPath('error.code', 'VALIDATION_ERROR');
+        $this->assertArrayHasKey('password', $resp->json('error.errors'));
     }
 
     public function test_login_invalid_credentials_returns_401(): void

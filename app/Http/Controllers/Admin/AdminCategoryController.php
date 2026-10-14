@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use App\Models\Sport;
 use App\Models\City;
 use App\Models\AgeGroup;
+use App\Models\Position;
 use Illuminate\Support\Facades\Validator;
 
 class AdminCategoryController extends Controller
@@ -218,6 +219,44 @@ class AdminCategoryController extends Controller
 
         // Soft delete - mark as inactive
         $ageGroup->update(['is_active' => false]);
+
+        return response()->json(null, 204);
+    }
+
+    // Positions (Phase 9 master; MetaController reads DB first, config fallback)
+    public function positionsIndex(): JsonResponse
+    {
+        return response()->json(['data' => Position::with('sport')->orderBy('name')->get()]);
+    }
+
+    public function positionsStore(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:100',
+            'sport_id' => 'nullable|integer|exists:sports,id',
+        ]);
+        $exists = Position::where('name', $validated['name'])
+            ->where('sport_id', $validated['sport_id'] ?? null)->exists();
+        abort_if($exists, 409, 'Position already exists for this sport.');
+
+        return response()->json(['data' => Position::create($validated)], 201);
+    }
+
+    public function positionsUpdate(Request $request, int $id): JsonResponse
+    {
+        $position = Position::findOrFail($id);
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:100',
+            'sport_id' => 'nullable|integer|exists:sports,id',
+        ]);
+        $position->update($validated);
+
+        return response()->json(['data' => $position->fresh()]);
+    }
+
+    public function positionsDestroy(int $id): JsonResponse
+    {
+        Position::findOrFail($id)->delete();
 
         return response()->json(null, 204);
     }

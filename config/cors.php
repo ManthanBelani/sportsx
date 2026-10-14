@@ -17,17 +17,20 @@ return [
 
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
-    'allowed_methods' => ['*'],
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
-    'allowed_origins' => ['*'],
+    // Phase 10 hardening: wildcard origins only when explicitly allowed
+    // (local dev). Production sets CORS_ALLOWED_ORIGINS to the Flutter
+    // web origin + admin panel origin; credentials stay off for token auth.
+    'allowed_origins' => array_filter(array_map('trim', explode(',', env('CORS_ALLOWED_ORIGINS', '*')))),
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['*'],
+    'allowed_headers' => ['Accept', 'Authorization', 'Content-Type', 'X-Requested-With'],
 
-    'exposed_headers' => [],
+    'exposed_headers' => ['Retry-After'],
 
-    'max_age' => 0,
+    'max_age' => 3600,
 
     'supports_credentials' => false,
 

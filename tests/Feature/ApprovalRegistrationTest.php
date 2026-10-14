@@ -33,6 +33,7 @@ class ApprovalRegistrationTest extends TestCase
     private function makeAthlete(Sport $sport): User
     {
         $user = User::factory()->create(['role' => 'athlete']);
+        $ageGroup = AgeGroup::first() ?? AgeGroup::create(['name' => 'U-16 '.uniqid(), 'min_age' => 14, 'max_age' => 16]);
         AthleteProfile::create([
             'user_id' => $user->id,
             'full_name' => 'Test Athlete',
@@ -40,6 +41,7 @@ class ApprovalRegistrationTest extends TestCase
             'gender' => 'male',
             'sport_id' => $sport->id,
             'skill_level' => 'intermediate',
+            'age_group_id' => $ageGroup->id,
         ]);
 
         return $user->fresh();
