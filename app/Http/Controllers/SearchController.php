@@ -25,6 +25,10 @@ class SearchController extends Controller
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date',
             'gender' => 'nullable|in:male,female,mixed,open,all',
+            'position' => 'nullable|string|max:80',
+            'level' => 'nullable|string|max:40',
+            'facilities' => 'nullable|string|max:255',
+            'sort' => 'nullable|in:relevance,distance,rating',
         ]);
 
         $q = (string) $request->input('q', '');
@@ -35,6 +39,10 @@ class SearchController extends Controller
         $dateFrom = $request->date_from;
         $dateTo = $request->date_to;
         $gender = $request->gender && $request->gender !== 'all' ? $request->gender : null;
+        $position = $request->input('position');
+        $level = $request->input('level');
+        $facilities = $request->input('facilities') ? array_map('trim', explode(',', (string) $request->input('facilities'))) : [];
+        $sort = $request->input('sort', 'relevance');
 
         $hasFilters = $sportId || $cityId || $ageGroupId || $dateFrom || $dateTo || $gender;
         abort_unless($q !== '' || $hasFilters, 422, 'A query or at least one filter is required');
@@ -75,6 +83,25 @@ class SearchController extends Controller
                 ->when($textMatch(['full_name', 'bio']), fn ($query, $cond) => $query->where($cond))
                 ->when($sportId, fn ($s) => $s->where('sport_id', $sportId))
                 ->when($cityId, fn ($s) => $s->where('city_id', $cityId))
+                // Position/level filters (column-guarded; falls back to bio search).
+                ->when($position, function ($s) use ($position) {
+                    $cols = array_values(array_filter(['position', 'specialization'], fn ($c) => \Schema::hasColumn('coach_profiles', $c)));
+                    $cols = array_merge($cols, ['bio', 'full_name']);
+                    $s->where(function ($w) use ($cols, $position) {
+                        foreach ($cols as $i => $c) {
+                            $i === 0 ? $w->where($c, 'like', "%{$position}%") : $w->orWhere($c, 'like', "%{$position}%");
+                        }
+                    });
+                })
+                ->when($level, function ($s) use ($level) {
+                    $cols = array_values(array_filter(['level', 'experience_level'], fn ($c) => \Schema::hasColumn('coach_profiles', $c)));
+                    $cols = array_merge($cols, ['bio']);
+                    $s->where(function ($w) use ($cols, $level) {
+                        foreach ($cols as $i => $c) {
+                            $i === 0 ? $w->where($c, 'like', "%{$level}%") : $w->orWhere($c, 'like', "%{$level}%");
+                        }
+                    });
+                })
                 ->with(['sport', 'city'])->limit($limit)->get(),
             'trials' => Trial::published()
                 ->when($textMatch(['name', 'organization_name']), fn ($query, $cond) => $query->where($cond))
@@ -105,13 +132,20 @@ class SearchController extends Controller
                 ->when($textMatch(['name', 'address']), fn ($query, $cond) => $query->where($cond))
                 ->when($sportId, fn ($s) => $s->where('sport_id', $sportId))
                 ->when($cityId, fn ($s) => $s->where('city_id', $cityId))
+                ->when(!empty($facilities), function ($s) use ($facilities) {
+                    $s->where(function ($w) use ($facilities) {
+                        foreach ($facilities as $f) {
+                            $w->orWhere('facilities', 'like', "%{$f}%")->orWhere('name', 'like', "%{$f}%")->orWhere('address', 'like', "%{$f}%");
+                        }
+                    });
+                })
                 ->with(['sport', 'city'])->limit($limit)->get(),
             'athletes' => $this->athletesGroup($request, $q, $sportId, $cityId, $ageGroupId, $limit),
         ];
 
         return response()->json([
             'data' => $data,
-            'meta' => ['query' => $q],
+            'meta' => ['query' => $q, 'filters' => array_filter(['position' => $position, 'level' => $level, 'facilities' => $facilities, 'sort' => $sort])],
         ]);
     }
 

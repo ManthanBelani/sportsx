@@ -7,6 +7,7 @@ use App\Models\PostComment;
 use App\Models\PostLike;
 use App\Models\Block;
 use App\Models\Connection;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
@@ -43,7 +44,17 @@ class PostController extends Controller
             })
             ->latest();
 
-        return response()->json($query->paginate(15));
+        $page = $query->paginate(15);
+        // Single-query liked map so feed rows carry correct heart state (G-2).
+        $likedIds = PostLike::where('user_id', $userId)->whereIn('post_id', $page->getCollection()->pluck('id'))->pluck('post_id')->flip();
+        $page->getCollection()->transform(function ($post) use ($likedIds) {
+            $arr = $post->toArray();
+            $arr['liked'] = isset($likedIds[$post->id]);
+
+            return $arr;
+        });
+
+        return response()->json($page);
     }
 
     public function show(Request $request, string $id)
@@ -174,6 +185,18 @@ class PostController extends Controller
         } else {
             PostLike::create(['post_id' => $id, 'user_id' => $userId]);
             $liked = true;
+            // Notify author (skip self-likes; prefs + block gates inside service).
+            if ((int) $post->user_id !== (int) $userId && !Block::hasBlockBetween((int) $userId, (int) $post->user_id)) {
+                NotificationService::createStatic([
+                    'user_id' => $post->user_id,
+                    'type' => 'like',
+                    'title' => 'New like',
+                    'body' => ($request->user()->name ?? 'Someone').' liked your post.',
+                    'notifiable_type' => 'post',
+                    'notifiable_id' => $post->id,
+                    'action_url' => '/post-detail/'.$post->id,
+                ]);
+            }
         }
 
         return response()->json(['data' => ['liked' => $liked, 'likes_count' => $post->likes()->count()]]);
@@ -194,6 +217,18 @@ class PostController extends Controller
             'body' => $validated['body'],
             'parent_id' => $validated['parent_id'] ?? null,
         ]);
+
+        if ((int) $post->user_id !== (int) $request->user()->id && !Block::hasBlockBetween((int) $request->user()->id, (int) $post->user_id)) {
+            NotificationService::createStatic([
+                'user_id' => $post->user_id,
+                'type' => 'comment',
+                'title' => 'New comment',
+                'body' => ($request->user()->name ?? 'Someone').' commented on your post.',
+                'notifiable_type' => 'post',
+                'notifiable_id' => $post->id,
+                'action_url' => '/post-detail/'.$post->id,
+            ]);
+        }
 
         return response()->json(['data' => $comment->load('user')], 201);
     }

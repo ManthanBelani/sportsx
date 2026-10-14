@@ -24,7 +24,7 @@ class VerificationRequestTest extends TestCase
     {
         return User::create([
             'role' => 'admin', 'name' => 'Admin User', 'email' => 'admin@sportx.test',
-            'password' => Hash::make('password'), 'status' => 'active',
+            'password' => Hash::make('password'), 'status' => 'active', 'admin_2fa_verified_at' => now(),
         ]);
     }
 

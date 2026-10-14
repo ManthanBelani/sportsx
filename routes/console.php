@@ -1,6 +1,8 @@
 <?php
 
+use App\Jobs\PruneNotificationRowsJob;
 use App\Jobs\PruneOldMessagesJob;
+use App\Jobs\PruneStaleDeviceTokensJob;
 use App\Jobs\PurgeExpiredOtpsJob;
 use App\Jobs\RecalculateLeaderboardJob;
 use App\Jobs\SendDueRemindersJob;
@@ -24,6 +26,10 @@ Schedule::job(new PurgeExpiredOtpsJob)->dailyAt('02:00');
 
 // 90-day chat purge (Phase 6: minors + storage)
 Schedule::job(new PruneOldMessagesJob)->dailyAt('03:00');
+
+// Stale device-token + notification-row prunes (Phase 3E/10 ops)
+Schedule::job(new PruneStaleDeviceTokensJob)->dailyAt('03:30');
+Schedule::job(new PruneNotificationRowsJob)->dailyAt('03:45');
 
 // Nightly leaderboard rebuild (Phase 7: verified achievements + activity)
 Schedule::job(new RecalculateLeaderboardJob)->dailyAt('04:00');

@@ -61,4 +61,34 @@ class AdminAuditController extends Controller
         $log = AuditLog::with('user')->findOrFail($id);
         return view('admin.audit_log_detail', ['log' => $log]);
     }
+
+    /** GET /admin/audit-logs — JSON API twin of index() for mobile/admin client. */
+    public function apiIndex(Request $request)
+    {
+        $query = AuditLog::with('user')->latest();
+        if ($request->filled('action')) {
+            $query->where('action', $request->action);
+        }
+        if ($request->filled('auditable_type')) {
+            $query->where('auditable_type', $request->auditable_type);
+        }
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+        if ($request->filled('q')) {
+            $q = $request->q;
+            $query->where(fn ($b) => $b->where('auditable_label', 'like', "%{$q}%")->orWhere('action', 'like', "%{$q}%"));
+        }
+        $logs = $query->paginate(25);
+
+        return response()->json(['data' => $logs->items(), 'meta' => [
+            'current_page' => $logs->currentPage(), 'per_page' => $logs->perPage(), 'total' => $logs->total(),
+        ]]);
+    }
+
+    /** GET /admin/audit-logs/{id} — JSON detail. */
+    public function apiShow($id)
+    {
+        return response()->json(['data' => AuditLog::with('user')->findOrFail($id)]);
+    }
 }
