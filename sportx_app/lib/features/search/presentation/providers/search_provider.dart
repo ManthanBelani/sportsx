@@ -220,6 +220,11 @@ class SearchState {
 class SearchNotifier extends StateNotifier<SearchState> {
   final Dio _dio;
 
+  /// Monotonic request id: rapid typing fires overlapping requests and the
+  /// responses can arrive out of order. Only the latest request may write
+  /// results; stale responses are dropped.
+  int _searchGen = 0;
+
   SearchNotifier(this._dio) : super(SearchState());
 
   /// Injects a `type` label into each raw item so the UI can render and
@@ -237,6 +242,7 @@ class SearchNotifier extends StateNotifier<SearchState> {
       return;
     }
 
+    final gen = ++_searchGen;
     state = state.copyWith(isLoading: true, error: null, query: query);
 
     try {
@@ -248,6 +254,9 @@ class SearchNotifier extends StateNotifier<SearchState> {
       queryParams.addAll(state.filters.toQueryParams());
 
       final response = await _dio.get('/search', queryParameters: queryParams);
+      if (!mounted) {
+        return;
+      }
       final data = response.data['data'] as Map<String, dynamic>? ?? {};
 
       final newResults = SearchResult(
@@ -284,32 +293,44 @@ class SearchNotifier extends StateNotifier<SearchState> {
       final currentPage = meta?['current_page'] ?? 1;
       final lastPage = meta?['last_page'] ?? 1;
 
-      state = state.copyWith(
+      if (gen != _searchGen) return; // Superseded by a newer keystroke.
+
+      if (mounted) {
+        state = state.copyWith(
         results: merged,
         isLoading: false,
         page: currentPage,
         hasMore: currentPage < lastPage,
-      );
+        );
+      }
 
       // Save to recent searches
       if (query.trim().isNotEmpty) {
         _saveRecentSearch(query);
       }
     } on DioException catch (e) {
-      state = state.copyWith(
+      if (gen != _searchGen) return; // Superseded — keep the newer state.
+      if (mounted) {
+        state = state.copyWith(
         isLoading: false,
         error: ApiException.fromDio(e).message,
-      );
+        );
+      }
     }
   }
 
   Future<void> loadRecentSearches() async {
     try {
       final resp = await _dio.get('/me/recent-searches');
+      if (!mounted) {
+        return;
+      }
       final list = (resp.data['data'] as List? ?? [])
           .map((e) => e.toString())
           .toList();
-      state = state.copyWith(recentSearches: list);
+      if (mounted) {
+        state = state.copyWith(recentSearches: list);
+      }
     } catch (_) {
       // Recent searches are non-critical — ignore failures.
     }

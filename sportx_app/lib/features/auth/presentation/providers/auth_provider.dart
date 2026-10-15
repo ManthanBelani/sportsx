@@ -51,28 +51,52 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> checkAuth() async {
     final startTime = DateTime.now();
     final token = await _storage.getToken();
+    if (!mounted) {
+      return;
+    }
     
     if (token == null) {
       await _ensureMinSplashDuration(startTime);
-      state = state.copyWith(status: AuthStatus.unauthenticated);
+      if (!mounted) {
+        return;
+      }
+      if (mounted) {
+        state = state.copyWith(status: AuthStatus.unauthenticated);
+      }
       return;
     }
     
     try {
       final resp = await _dio.get('/auth/me');
+      if (!mounted) {
+        return;
+      }
       final data = resp.data['data'] as Map<String, dynamic>;
       
       await _ensureMinSplashDuration(startTime);
-      state = AuthState(
+      if (!mounted) {
+        return;
+      }
+      if (mounted) {
+        state = AuthState(
         status: AuthStatus.authenticated,
         user: User.fromJson(data),
         needsOnboarding: data['needs_onboarding'] == true,
-      );
+        );
+      }
     } catch (_) {
       await _storage.deleteToken();
+      if (!mounted) {
+        return;
+      }
       
       await _ensureMinSplashDuration(startTime);
-      state = state.copyWith(status: AuthStatus.unauthenticated);
+      if (!mounted) {
+        return;
+      }
+      if (mounted) {
+        state = state.copyWith(status: AuthStatus.unauthenticated);
+      }
     }
   }
 
@@ -80,6 +104,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final elapsed = DateTime.now().difference(startTime);
     if (elapsed.inMilliseconds < 1500) {
       await Future.delayed(Duration(milliseconds: 1500 - elapsed.inMilliseconds));
+      if (!mounted) {
+        return;
+      }
     }
   }
 
@@ -96,13 +123,24 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
       // Email/password-only auth: backend returns a token immediately (no OTP).
       final resp = await _dio.post('/auth/register', data: data);
+      if (!mounted) {
+        return;
+      }
       final respData = resp.data;
       final authToken = respData['token'] as String;
       await _storage.saveToken(authToken);
+      if (!mounted) {
+        return;
+      }
       final user = User.fromJson(respData['user'] as Map<String, dynamic>);
       final needsOnboarding = respData['needs_onboarding'] == true;
-      state = AuthState(status: AuthStatus.authenticated, user: user, needsOnboarding: needsOnboarding);
+      if (mounted) {
+        state = AuthState(status: AuthStatus.authenticated, user: user, needsOnboarding: needsOnboarding);
+      }
       await _registerFcmToken();
+      if (!mounted) {
+        return;
+      }
     } on DioException catch (e) {
       _fail(e);
     }
@@ -112,13 +150,24 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(status: AuthStatus.loading);
     try {
       final resp = await _dio.post('/auth/verify-email', data: {'token': token});
+      if (!mounted) {
+        return;
+      }
       final data = resp.data;
       final authToken = data['token'] as String;
       await _storage.saveToken(authToken);
+      if (!mounted) {
+        return;
+      }
       final user = User.fromJson(data['user'] as Map<String, dynamic>);
       final needsOnboarding = data['needs_onboarding'] == true;
-      state = AuthState(status: AuthStatus.authenticated, user: user, needsOnboarding: needsOnboarding);
+      if (mounted) {
+        state = AuthState(status: AuthStatus.authenticated, user: user, needsOnboarding: needsOnboarding);
+      }
       await _registerFcmToken();
+      if (!mounted) {
+        return;
+      }
     } on DioException catch (e) {
       _fail(e);
     }
@@ -132,7 +181,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
         'destination': email,
         'purpose': purpose,
       });
-      state = state.copyWith(status: AuthStatus.unauthenticated);
+      if (!mounted) {
+        return;
+      }
+      if (mounted) {
+        state = state.copyWith(status: AuthStatus.unauthenticated);
+      }
     } on DioException catch (e) {
       _fail(e);
     }
@@ -156,7 +210,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (name != null) data['name'] = name;
       if (role != null) data['role'] = role;
       final resp = await _dio.post('/auth/verify-otp', data: data);
+      if (!mounted) {
+        return;
+      }
       await _persistAuth(resp.data as Map<String, dynamic>);
+      if (!mounted) {
+        return;
+      }
     } on DioException catch (e) {
       _fail(e);
     }
@@ -170,7 +230,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
         'destination': email,
         'purpose': purpose,
       });
-      state = state.copyWith(status: AuthStatus.unauthenticated);
+      if (!mounted) {
+        return;
+      }
+      if (mounted) {
+        state = state.copyWith(status: AuthStatus.unauthenticated);
+      }
     } on DioException catch (e) {
       _fail(e);
     }
@@ -186,7 +251,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final data = <String, dynamic>{'id_token': idToken};
       if (role != null) data['role'] = role;
       final resp = await _dio.post('/auth/google', data: data);
+      if (!mounted) {
+        return;
+      }
       await _persistAuth(resp.data as Map<String, dynamic>);
+      if (!mounted) {
+        return;
+      }
     } on DioException catch (e) {
       _fail(e);
     }
@@ -195,23 +266,42 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> _persistAuth(Map<String, dynamic> respData) async {
     final authToken = respData['token'] as String;
     await _storage.saveToken(authToken);
+    if (!mounted) {
+      return;
+    }
     final user = User.fromJson(respData['user'] as Map<String, dynamic>);
     final needsOnboarding = respData['needs_onboarding'] == true;
-    state = AuthState(status: AuthStatus.authenticated, user: user, needsOnboarding: needsOnboarding);
+    if (mounted) {
+      state = AuthState(status: AuthStatus.authenticated, user: user, needsOnboarding: needsOnboarding);
+    }
     await _registerFcmToken();
+    if (!mounted) {
+      return;
+    }
   }
 
   Future<void> login({required String email, required String password}) async {
     state = state.copyWith(status: AuthStatus.loading);
     try {
       final resp = await _dio.post('/auth/login', data: {'email': email, 'password': password});
+      if (!mounted) {
+        return;
+      }
       final data = resp.data;
       final token = data['token'] as String;
       await _storage.saveToken(token);
+      if (!mounted) {
+        return;
+      }
       final user = User.fromJson(data['user'] as Map<String, dynamic>);
       final needsOnboarding = data['needs_onboarding'] == true;
-      state = AuthState(status: AuthStatus.authenticated, user: user, needsOnboarding: needsOnboarding);
+      if (mounted) {
+        state = AuthState(status: AuthStatus.authenticated, user: user, needsOnboarding: needsOnboarding);
+      }
       await _registerFcmToken();
+      if (!mounted) {
+        return;
+      }
     } on DioException catch (e) {
       _fail(e);
     }
@@ -221,7 +311,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(status: AuthStatus.loading);
     try {
       await _dio.post('/auth/forgot-password', data: {'email': email});
-      state = state.copyWith(status: AuthStatus.unauthenticated);
+      if (!mounted) {
+        return;
+      }
+      if (mounted) {
+        state = state.copyWith(status: AuthStatus.unauthenticated);
+      }
     } on DioException catch (e) {
       _fail(e);
     }
@@ -236,12 +331,23 @@ class AuthNotifier extends StateNotifier<AuthState> {
         'password': password,
         'password_confirmation': password,
       });
+      if (!mounted) {
+        return;
+      }
       final data = resp.data;
       final authToken = data['token'] as String;
       await _storage.saveToken(authToken);
+      if (!mounted) {
+        return;
+      }
       final user = User.fromJson(data['user'] as Map<String, dynamic>);
-      state = AuthState(status: AuthStatus.authenticated, user: user, needsOnboarding: false);
+      if (mounted) {
+        state = AuthState(status: AuthStatus.authenticated, user: user, needsOnboarding: false);
+      }
       await _registerFcmToken();
+      if (!mounted) {
+        return;
+      }
     } on DioException catch (e) {
       _fail(e);
     }
@@ -249,22 +355,39 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> logout() async {
     await _unregisterFcmToken();
+    if (!mounted) {
+      return;
+    }
     try {
       await _dio.post('/auth/logout');
+      if (!mounted) {
+        return;
+      }
     } catch (_) {}
     await _storage.deleteToken();
-    state = AuthState(status: AuthStatus.unauthenticated);
+    if (!mounted) {
+      return;
+    }
+    if (mounted) {
+      state = AuthState(status: AuthStatus.unauthenticated);
+    }
   }
 
   Future<void> _registerFcmToken() async {
     try {
       final token = await FirebaseMessaging.instance.getToken();
+      if (!mounted) {
+        return;
+      }
       if (token != null) {
         final deviceType = defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';
         await _dio.post('/me/device-tokens', data: {
           'token': token,
           'device_type': deviceType,
         });
+        if (!mounted) {
+          return;
+        }
       }
     } catch (_) {
       // Firebase not configured or FCM unavailable — skip token registration.
@@ -274,8 +397,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> _unregisterFcmToken() async {
     try {
       final token = await FirebaseMessaging.instance.getToken();
+      if (!mounted) {
+        return;
+      }
       if (token != null) {
         await _dio.delete('/me/device-tokens', data: {'token': token});
+        if (!mounted) {
+          return;
+        }
       }
     } catch (_) {
       // Firebase not configured or FCM unavailable — skip token unregistration.
@@ -302,11 +431,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> refreshUser() async {
     try {
       final resp = await _dio.get('/auth/me');
+      if (!mounted) {
+        return;
+      }
       final data = resp.data['data'] as Map<String, dynamic>;
-      state = state.copyWith(
+      if (mounted) {
+        state = state.copyWith(
         user: User.fromJson(data),
         needsOnboarding: data['needs_onboarding'] == true,
-      );
+        );
+      }
     } catch (_) {
       // Silently fail - user data refresh is best-effort
     }

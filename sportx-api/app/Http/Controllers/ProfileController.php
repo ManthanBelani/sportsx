@@ -58,7 +58,8 @@ class ProfileController extends Controller
                 'photo_media_id' => 'nullable|integer|exists:media_items,id',
             ]);
 
-            $profile = $user->athleteProfile;
+            $profile = $user->athleteProfile()->first();
+            abort_unless($profile, 404, 'Athlete profile not found.');
             $profile->update(Arr::except($validated, ['achievements']));
             $user->update(['name' => $validated['full_name']]);
 
@@ -84,7 +85,8 @@ class ProfileController extends Controller
                 'achievements.*.title' => 'nullable|string',
             ]);
 
-            $profile = $user->coachProfile;
+            $profile = $user->coachProfile()->first();
+            abort_unless($profile, 404, 'Coach profile not found.');
             if (isset($validated['achievements'])) {
                 // Normalize achievements to consistent shape {text, title?, description?, year?}
                 $normalized = array_map(fn ($a) => is_string($a) ? ['text' => $a] : $a, $validated['achievements']);

@@ -190,7 +190,7 @@ class _NetworkScreenState extends ConsumerState<NetworkScreen> {
               ),
             ),
             GestureDetector(
-              onTap: () => context.push('/sponsors'),
+              onTap: () => context.push('/opportunities'),
               child: Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
@@ -221,7 +221,7 @@ class _NetworkScreenState extends ConsumerState<NetworkScreen> {
                                   fontWeight: FontWeight.w700,
                                   color: Colors.white)),
                           const SizedBox(height: 2),
-                          Text('Browse sponsors',
+                          Text('Browse opportunities',
                               style: GoogleFonts.inter(
                                   fontSize: 12,
                                   color: Colors.white70)),

@@ -89,6 +89,9 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
     if (state.tab == tab) return;
     state = state.copyWith(tab: tab, page: 1);
     await load();
+    if (!mounted) {
+      return;
+    }
   }
 
   Future<void> load() async {
@@ -97,14 +100,25 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
     try {
       final resp = await _dio.get('/me/notifications',
           queryParameters: {'page': 1, 'per_page': 20, if (state.tab != 'All') 'tab': state.tab});
+      if (!mounted) {
+        return;
+      }
       final data = (resp.data['data'] as List).map((e) => NotificationItem.fromJson(e)).toList();
       final unreadCount = resp.data['meta']?['unread_count'] as int? ?? 0;
       final pagination = resp.data['meta']?['pagination'];
       final hasMore = pagination != null
           && (pagination['current_page'] as int) < (pagination['last_page'] as int);
-      state = NotificationsState(items: data, hasMore: hasMore, page: 1, unreadCount: unreadCount);
+      if (mounted) {
+        state = NotificationsState(items: data, hasMore: hasMore, page: 1, unreadCount: unreadCount);
+      }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: 'Something went wrong. Please try again.');
+        }
     }
   }
 
@@ -115,66 +129,97 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
       final nextPage = state.page + 1;
       final resp = await _dio.get('/me/notifications',
           queryParameters: {'page': nextPage, 'per_page': 20, if (state.tab != 'All') 'tab': state.tab});
+      if (!mounted) {
+        return;
+      }
       final data = (resp.data['data'] as List).map((e) => NotificationItem.fromJson(e)).toList();
       final pagination = resp.data['meta']?['pagination'];
       final hasMore = pagination != null
           && (pagination['current_page'] as int) < (pagination['last_page'] as int);
-      state = state.copyWith(
+      if (mounted) {
+        state = state.copyWith(
         items: [...state.items, ...data],
         hasMore: hasMore,
         page: nextPage,
         isLoading: false,
-      );
+        );
+      }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: 'Something went wrong. Please try again.');
+        }
     }
   }
 
   Future<void> markAsRead(int id) async {
+    final wasUnread =
+        state.items.any((item) => item.id == id && !item.isRead);
     try {
       await _dio.patch('/me/notifications/$id/read');
-      state = state.copyWith(
+      if (!mounted) {
+        return;
+      }
+      if (mounted) {
+        state = state.copyWith(
         items: state.items.map((item) {
-          if (item.id == id) {
-            return NotificationItem(
-              id: item.id,
-              title: item.title,
-              body: item.body,
-              type: item.type,
-              isRead: true,
-              createdAt: item.createdAt,
-              actionUrl: item.actionUrl,
-            );
-          }
-          return item;
+        if (item.id == id) {
+        return NotificationItem(
+        id: item.id,
+        title: item.title,
+        body: item.body,
+        type: item.type,
+        isRead: true,
+        createdAt: item.createdAt,
+        actionUrl: item.actionUrl,
+        );
+        }
+        return item;
         }).toList(),
-        unreadCount: state.unreadCount > 0 ? state.unreadCount - 1 : 0,
-      );
+        unreadCount: wasUnread && state.unreadCount > 0
+        ? state.unreadCount - 1
+        : state.unreadCount,
+        );
+      }
     } catch (_) {}
   }
 
   Future<void> markAllRead() async {
     try {
       await _dio.post('/me/notifications/read-all');
-      state = state.copyWith(
+      if (!mounted) {
+        return;
+      }
+      if (mounted) {
+        state = state.copyWith(
         items: state.items.map((item) => NotificationItem(
-          id: item.id, title: item.title, body: item.body,
-          type: item.type, isRead: true, createdAt: item.createdAt,
-          actionUrl: item.actionUrl,
+        id: item.id, title: item.title, body: item.body,
+        type: item.type, isRead: true, createdAt: item.createdAt,
+        actionUrl: item.actionUrl,
         )).toList(),
         unreadCount: 0,
-      );
+        );
+      }
     } catch (_) {}
   }
 
   Future<void> refresh() async {
     state = NotificationsState();
     await load();
+    if (!mounted) {
+      return;
+    }
   }
 
   Future<bool> registerDeviceToken(String token, {String deviceType = 'android'}) async {
     try {
       await _dio.post('/me/device-tokens', data: {'token': token, 'device_type': deviceType});
+      if (!mounted) {
+        return false;
+      }
       return true;
     } on DioException {
       return false;
@@ -184,6 +229,9 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
   Future<bool> unregisterDeviceToken(String token) async {
     try {
       await _dio.delete('/me/device-tokens', data: {'token': token});
+      if (!mounted) {
+        return false;
+      }
       return true;
     } on DioException {
       return false;

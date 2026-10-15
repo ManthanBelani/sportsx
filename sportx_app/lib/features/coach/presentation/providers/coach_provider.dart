@@ -62,22 +62,33 @@ class CoachNotifier extends StateNotifier<CoachState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final response = await _dio.get('/me/coach-profile');
+      if (!mounted) {
+        return;
+      }
       final data = response.data['data'];
       if (data != null) {
-        state = state.copyWith(
+        if (mounted) {
+          state = state.copyWith(
           coachProfile: Coach.fromJson(data),
           certifications: _parseStringList(data['certifications']),
           facilities: _parseStringList(data['facilities']).map((e) => {'name': e}).toList(),
           showcaseAthletes: List<Map<String, dynamic>>.from(data['showcase_athletes'] ?? []),
           isLoading: false,
-        );
+          );
+        }
       } else {
-        state = state.copyWith(isLoading: false);
+        if (mounted) {
+          state = state.copyWith(isLoading: false);
+        }
       }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.messageFor(e));
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.messageFor(e));
+      }
     }
   }
 
@@ -88,14 +99,23 @@ class CoachNotifier extends StateNotifier<CoachState> {
       await _dio.put('/me/coach-profile', data: {
         'certifications': updatedCredentials,
       });
-      state = state.copyWith(
+      if (!mounted) {
+        return;
+      }
+      if (mounted) {
+        state = state.copyWith(
         certifications: updatedCredentials,
         isLoading: false,
-      );
+        );
+      }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.messageFor(e));
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.messageFor(e));
+      }
     }
   }
 
@@ -107,14 +127,23 @@ class CoachNotifier extends StateNotifier<CoachState> {
       await _dio.put('/me/coach-profile', data: {
         'certifications': updatedCredentials,
       });
-      state = state.copyWith(
+      if (!mounted) {
+        return;
+      }
+      if (mounted) {
+        state = state.copyWith(
         certifications: updatedCredentials,
         isLoading: false,
-      );
+        );
+      }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.messageFor(e));
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.messageFor(e));
+      }
     }
   }
 
@@ -124,14 +153,23 @@ class CoachNotifier extends StateNotifier<CoachState> {
       await _dio.put('/me/coach-profile', data: {
         'facilities': facilities,
       });
-      state = state.copyWith(
+      if (!mounted) {
+        return;
+      }
+      if (mounted) {
+        state = state.copyWith(
         facilities: facilities,
         isLoading: false,
-      );
+        );
+      }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.messageFor(e));
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.messageFor(e));
+      }
     }
   }
 
@@ -141,20 +179,32 @@ class CoachNotifier extends StateNotifier<CoachState> {
       await _dio.put('/me/coach-profile', data: {
         'showcase_athletes': athletes,
       });
-      state = state.copyWith(
+      if (!mounted) {
+        return;
+      }
+      if (mounted) {
+        state = state.copyWith(
         showcaseAthletes: athletes,
         isLoading: false,
-      );
+        );
+      }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.messageFor(e));
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.messageFor(e));
+      }
     }
   }
 
   Future<List<Map<String, dynamic>>> searchAthletes(String query) async {
     try {
       final response = await _dio.get('/athletes', queryParameters: {'search': query});
+      if (!mounted) {
+        return [];
+      }
       final data = response.data['data'];
       if (data is List) {
         return data.cast<Map<String, dynamic>>();

@@ -117,19 +117,36 @@ class ShortlistNotifier extends StateNotifier<ShortlistState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final resp = await _dio.get('/me/shortlist');
+      if (!mounted) {
+        return;
+      }
       final list = (resp.data['data'] as List? ?? [])
           .map((e) => ShortlistEntry.fromJson(e as Map<String, dynamic>))
           .toList();
-      state = ShortlistState(items: list);
+      if (mounted) {
+        state = ShortlistState(items: list);
+      }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: 'Something went wrong. Please try again.');
+        }
     }
   }
 
   Future<bool> add(String athleteId, {String? note}) async {
     try {
       await _dio.post('/me/shortlist', data: {'athlete_id': athleteId, 'note': ?note});
+      if (!mounted) {
+        return false;
+      }
       await load();
+      if (!mounted) {
+        return false;
+      }
       return true;
     } on DioException {
       return false;
@@ -139,7 +156,12 @@ class ShortlistNotifier extends StateNotifier<ShortlistState> {
   Future<bool> remove(String entryId) async {
     try {
       await _dio.delete('/me/shortlist/$entryId');
-      state = state.copyWith(items: state.items.where((e) => e.id != entryId).toList());
+      if (!mounted) {
+        return false;
+      }
+      if (mounted) {
+        state = state.copyWith(items: state.items.where((e) => e.id != entryId).toList());
+      }
       return true;
     } on DioException {
       return false;

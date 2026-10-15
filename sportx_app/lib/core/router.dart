@@ -48,9 +48,6 @@ import 'package:sportx_app/features/coach/presentation/screens/coach_profile_pos
 import 'package:sportx_app/features/academy/presentation/screens/academy_profile_posting_screen.dart';
 import 'package:sportx_app/features/academy/presentation/screens/academy_profile_screen.dart';
 import 'package:sportx_app/features/organizer/presentation/screens/organizer_onboarding_screen.dart';
-import 'package:sportx_app/features/sponsor/presentation/screens/sponsor_onboarding_screen.dart';
-import 'package:sportx_app/features/sponsor/presentation/screens/sponsorship_posting_screen.dart';
-import 'package:sportx_app/features/shared/presentation/screens/sponsor_pitch_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/registrant_detail_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/coach_onboarding_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/coach_enquiry_inbox_screen.dart';
@@ -62,26 +59,16 @@ import 'package:sportx_app/features/organizer/presentation/screens/registration_
 import 'package:sportx_app/features/organizer/presentation/screens/capacity_management_screen.dart';
 import 'package:sportx_app/features/organizer/presentation/screens/results_publishing_screen.dart';
 import 'package:sportx_app/features/organizer/presentation/screens/results_view_screen.dart';
-import 'package:sportx_app/features/sponsor/presentation/screens/sponsor_dashboard_screen.dart';
-import 'package:sportx_app/features/sponsor/presentation/screens/athlete_discovery_screen.dart';
-import 'package:sportx_app/features/sponsor/presentation/screens/athlete_profile_view_screen.dart';
-import 'package:sportx_app/features/sponsor/presentation/screens/applications_inbox_screen.dart';
-import 'package:sportx_app/features/sponsor/presentation/screens/application_detail_screen.dart';
-import 'package:sportx_app/features/sponsor/presentation/screens/shortlist_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/my_trials_management_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/my_tournaments_management_screen.dart';
-import 'package:sportx_app/features/sponsor/presentation/screens/my_sponsorships_management_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/activity_hub_screen.dart';
 import 'package:sportx_app/features/notifications/presentation/screens/notifications_screen.dart';
 import 'package:sportx_app/features/notifications/presentation/screens/notification_preferences_screen.dart';
 import 'package:sportx_app/features/settings/presentation/screens/settings_screen.dart';
 import 'package:sportx_app/features/settings/presentation/screens/help_support_screen.dart';
+import 'package:sportx_app/core/session_scope.dart';
+import 'package:sportx_app/features/settings/presentation/screens/legal_screen.dart';
 import 'package:sportx_app/features/settings/presentation/screens/social_links_screen.dart';
-import 'package:sportx_app/features/scholarship/presentation/screens/scholarship_list_screen.dart';
-import 'package:sportx_app/features/scholarship/presentation/screens/scholarship_detail_screen.dart';
-import 'package:sportx_app/features/sponsorship/presentation/screens/sponsorship_list_screen.dart';
-import 'package:sportx_app/features/sponsorship/presentation/screens/sponsorship_detail_screen.dart';
-import 'package:sportx_app/features/sponsorship/presentation/screens/apply_sponsor_screen.dart';
 import 'package:sportx_app/features/sports_venue/presentation/screens/sports_venue_list_screen.dart';
 import 'package:sportx_app/features/sports_venue/presentation/screens/sports_venue_detail_screen.dart';
 import 'package:sportx_app/features/social/presentation/screens/create_post_screen.dart';
@@ -93,7 +80,6 @@ import 'package:sportx_app/features/athlete/presentation/screens/media_gallery_s
 import 'package:sportx_app/features/coach/presentation/screens/add_credential_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/edit_facilities_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/showcase_athletes_screen.dart';
-import 'package:sportx_app/features/coach/presentation/screens/sponsor_directory_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/coach_profile_detail_screen.dart';
 import 'package:sportx_app/features/search/presentation/screens/universal_search_screen.dart';
 import 'package:sportx_app/features/connections/presentation/screens/my_connections_screen.dart';
@@ -142,7 +128,6 @@ import 'package:sportx_app/features/shared/presentation/screens/application_stat
 import 'package:sportx_app/features/connections/presentation/screens/network_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/report_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/safety_centre_screen.dart';
-import 'package:sportx_app/features/sponsor/presentation/screens/sponsor_directory_screen.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_analytics_screen.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_settings_screen.dart';
 
@@ -159,7 +144,8 @@ String? _onboardingRouteFor(String? role) {
     case 'organizer':
       return '/organizer-onboarding';
     case 'sponsor':
-      return '/sponsor-onboarding';
+      // Legacy role: no sponsor onboarding exists anymore.
+      return null;
     case 'scout':
     case 'talent_scout':
       return '/scout-onboarding';
@@ -178,7 +164,8 @@ String _dashboardRouteFor(String? role) {
     case 'organizer':
       return '/organizer-dashboard';
     case 'sponsor':
-      return '/sponsor-dashboard';
+      // Legacy role: sponsors now browse unified opportunities.
+      return '/opportunities';
     case 'scout':
     case 'talent_scout':
       return '/scout-dashboard';
@@ -192,6 +179,19 @@ String _dashboardRouteFor(String? role) {
 class RouterNotifier extends ChangeNotifier {
   RouterNotifier(Ref ref) {
     ref.listen<AuthState>(authProvider, (previous, next) {
+      final signedOut = next.status == AuthStatus.unauthenticated &&
+          previous?.status != AuthStatus.unauthenticated;
+      final switchedUser = previous?.user?.id != null &&
+          next.user?.id != null &&
+          previous?.user?.id != next.user?.id;
+      final signedIn = previous?.user?.id == null &&
+          next.user?.id != null &&
+          next.status == AuthStatus.authenticated;
+      if (signedOut || switchedUser || signedIn) {
+        // Never leak one account's feed/chats/saved/notifications into the
+        // next session (or into logged-out screens hitting 401s).
+        resetUserScopedProviders(ref);
+      }
       if (previous?.status != next.status ||
           previous?.needsOnboarding != next.needsOnboarding ||
           previous?.user?.role != next.user?.role) {
@@ -328,7 +328,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/edit-academy-profile', builder: (context, state) => const AcademyProfilePostingScreen()),
       GoRoute(path: '/academy-profile', builder: (context, state) => const AcademyProfileScreen()),
       GoRoute(path: '/organizer-onboarding', builder: (context, state) => const OrganizerOnboardingScreen()),
-      GoRoute(path: '/sponsor-onboarding', builder: (context, state) => const SponsorOnboardingScreen()),
+      // Legacy sponsor role removed backend-side (410 SPONSOR_REMOVED):
+      // sponsorships/scholarships now live under unified /opportunities.
+      GoRoute(path: '/sponsor-onboarding', redirect: (_, __) => '/role-selection'),
       GoRoute(path: '/scout-onboarding', builder: (context, state) => const TalentScoutOnboardingScreen()),
       ShellRoute(
         builder: (context, state, child) => ScoutShell(child: child),
@@ -347,8 +349,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         final extra = state.extra as Map<String, dynamic>?;
         return ObservationsScreen(athleteProfileId: extra?['athleteProfileId'] as String?);
       }),
-      GoRoute(path: '/sponsor-posting', builder: (context, state) => const SponsorshipPostingScreen()),
-      GoRoute(path: '/sponsor-pitch/:id', builder: (context, state) => SponsorPitchScreen(sponsorId: state.pathParameters['id']!)),
+      GoRoute(path: '/sponsor-posting', redirect: (_, __) => '/post-opportunity'),
+      GoRoute(path: '/sponsor-pitch/:id', redirect: (_, __) => '/opportunities'),
       GoRoute(path: '/registrant-detail', builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
         return RegistrantDetailScreen(registrationId: extra?['id'] as String? ?? '');
@@ -390,24 +392,23 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/organizer-analytics', builder: (context, state) => const OrganizerAnalyticsScreen()),
       GoRoute(path: '/organizer-profile', builder: (context, state) => const OrganizerProfileScreen()),
       GoRoute(path: '/edit-tournament/:id', builder: (context, state) => TournamentEditScreen(tournamentId: state.pathParameters['id']!)),
-      GoRoute(path: '/sponsor-dashboard', builder: (context, state) => const SponsorDashboardScreen()),
-      GoRoute(path: '/athlete-discovery', builder: (context, state) => const AthleteDiscoveryScreen()),
+      GoRoute(path: '/sponsor-dashboard', redirect: (_, __) => '/opportunities'),
+      GoRoute(path: '/athlete-discovery', redirect: (_, __) => '/scout-discovery'),
       GoRoute(path: '/athlete-profile-view', builder: (context, state) {
+        // Legacy sponsor-era route: the sponsor shortlist flow is gone (410).
+        // Serve the generic wired profile view instead.
         final extra = state.extra as Map<String, dynamic>?;
-        return AthleteProfileViewScreen(athleteId: extra?['id'] as String? ?? '');
-      }),
-      GoRoute(path: '/applications-inbox', builder: (context, state) => const ApplicationsInboxScreen()),
-      GoRoute(path: '/application-detail', builder: (context, state) {
-        final extra = state.extra as Map<String, dynamic>?;
-        return ApplicationDetailScreen(
-          sponsorshipId: extra?['sponsorship_id'] as String? ?? '',
-          applicationId: extra?['id'] as String? ?? '',
+        return ViewProfileScreen(
+          type: 'athlete',
+          id: extra?['id']?.toString() ?? '',
         );
       }),
-      GoRoute(path: '/shortlist', builder: (context, state) => const ShortlistScreen()),
+      GoRoute(path: '/applications-inbox', redirect: (_, __) => '/my-opportunities'),
+      GoRoute(path: '/application-detail', redirect: (_, __) => '/my-opportunities'),
+      GoRoute(path: '/shortlist', redirect: (_, __) => '/my-opportunities'),
       GoRoute(path: '/my-trials', builder: (context, state) => const MyTrialsManagementScreen()),
       GoRoute(path: '/my-tournaments', builder: (context, state) => const MyTournamentsManagementScreen()),
-      GoRoute(path: '/my-sponsorships', builder: (context, state) => const MySponsorshipsManagementScreen()),
+      GoRoute(path: '/my-sponsorships', redirect: (_, __) => '/my-opportunities'),
       GoRoute(path: '/my-registrations', builder: (context, state) => const MyRegistrationsScreen()),
       GoRoute(path: '/coach-enrollments', builder: (context, state) => const CoachEnrollmentScreen()),
       GoRoute(path: '/my-coaching-enrollments', builder: (context, state) => const MyCoachingEnrollmentsScreen()),
@@ -418,11 +419,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
       GoRoute(path: '/social-links', builder: (context, state) => const SocialLinksScreen()),
       GoRoute(path: '/help-support', builder: (context, state) => const HelpSupportScreen()),
-      GoRoute(path: '/scholarships', builder: (context, state) => const ScholarshipListScreen()),
-      GoRoute(path: '/scholarship-detail/:id', builder: (context, state) => ScholarshipDetailScreen(scholarshipId: state.pathParameters['id']!)),
-      GoRoute(path: '/sponsorships', builder: (context, state) => const SponsorshipListScreen()),
-      GoRoute(path: '/sponsorship-detail/:id', builder: (context, state) => SponsorshipDetailScreen(sponsorshipId: state.pathParameters['id']!)),
-      GoRoute(path: '/apply-sponsor/:id', builder: (context, state) => ApplySponsorScreen(sponsorshipId: state.pathParameters['id']!)),
+      GoRoute(path: '/legal', builder: (context, state) {
+        final tab = state.uri.queryParameters['tab'] ?? 'terms';
+        return LegalScreen(tab: tab);
+      }),
+      GoRoute(path: '/scholarships', redirect: (_, __) => '/opportunities'),
+      GoRoute(path: '/scholarship-detail/:id', redirect: (_, __) => '/opportunities'),
+      GoRoute(path: '/sponsorships', redirect: (_, __) => '/opportunities'),
+      GoRoute(path: '/sponsorship-detail/:id', redirect: (_, __) => '/opportunities'),
+      GoRoute(path: '/apply-sponsor/:id', redirect: (_, __) => '/opportunities'),
       GoRoute(path: '/opportunities', builder: (context, state) => const OpportunityListScreen()),
       GoRoute(path: '/opportunity-detail/:id', builder: (context, state) => OpportunityDetailScreen(opportunityId: state.pathParameters['id']!)),
       GoRoute(path: '/my-opportunities', builder: (context, state) => const MyOpportunitiesScreen()),
@@ -455,7 +460,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/add-credential', builder: (context, state) => const AddCredentialScreen()),
       GoRoute(path: '/edit-facilities', builder: (context, state) => const EditFacilitiesScreen()),
       GoRoute(path: '/showcase-athletes', builder: (context, state) => const ShowcaseAthletesScreen()),
-      GoRoute(path: '/sponsor-directory-coach', builder: (context, state) => const SponsorDirectoryCoachScreen()),
+      GoRoute(path: '/sponsor-directory-coach', redirect: (_, __) => '/opportunities'),
       GoRoute(path: '/coach-profile-detail/:id', builder: (context, state) => CoachProfileDetailScreen(coachId: state.pathParameters['id']!)),
       GoRoute(path: '/search-filter', builder: (context, state) => const SearchFilterScreen()),
       GoRoute(path: '/my-connections', builder: (context, state) => const MyConnectionsScreen()),
@@ -484,7 +489,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         );
       }),
       GoRoute(path: '/safety', builder: (context, state) => const SafetyCentreScreen()),
-      GoRoute(path: '/sponsors', builder: (context, state) => const SponsorDirectoryScreen()),
+      GoRoute(path: '/sponsors', redirect: (_, __) => '/opportunities'),
       GoRoute(path: '/admin/analytics', builder: (context, state) => const AdminAnalyticsScreen()),
       GoRoute(path: '/admin/settings', builder: (context, state) => const AdminSettingsScreen()),
       GoRoute(path: '/view-profile', builder: (context, state) {

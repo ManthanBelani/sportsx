@@ -341,8 +341,8 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
         if (completeness < 1) ...[
           const SizedBox(height: 10),
           InkWell(
-            onTap: () {},
-            child: const Text('Complete all 6 fields to reach 100%', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            onTap: () => context.push('/scout-onboarding'),
+            child: const Text('Complete your profile to reach 100%', style: TextStyle(fontSize: 12, color: AppColors.scout)),
           ),
         ],
       ]),

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/features/opportunity/presentation/providers/opportunity_provider.dart';
 import 'package:sportx_app/shared/providers/providers.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
@@ -28,7 +29,7 @@ class HomeScreen extends ConsumerWidget {
         ref.read(coachesProvider.notifier).refresh(),
         ref.read(trialsProvider.notifier).refresh(),
         ref.read(tournamentsProvider.notifier).refresh(),
-        ref.read(scholarshipsProvider.notifier).refresh(),
+        ref.read(opportunitiesProvider.notifier).refresh(),
       ]);
     }
 
@@ -141,17 +142,17 @@ class HomeScreen extends ConsumerWidget {
                           tintFg: AppColors.coach,
                           onTap: () => context.push('/tournaments')),
                       QuickTile(
-                          label: 'Scholarships',
+                          label: 'Opportunities',
                           icon: LucideIcons.graduationCap,
                           tintBg: AppColors.yellowTint,
                           tintFg: const Color(0xFFF59E0B),
-                          onTap: () => context.push('/scholarships')),
+                          onTap: () => context.push('/opportunities')),
                       QuickTile(
-                          label: 'Sponsorships',
-                          icon: LucideIcons.briefcase,
+                          label: 'Saved',
+                          icon: LucideIcons.bookmark,
                           tintBg: AppColors.infoLight,
                           tintFg: AppColors.info,
-                          onTap: () => context.push('/sponsorships')),
+                          onTap: () => context.push('/saved')),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -164,7 +165,7 @@ class HomeScreen extends ConsumerWidget {
                   SectionHeader(
                       title: 'Latest Opportunities',
                       actionText: 'See all',
-                      onActionTap: () => context.push('/trials')),
+                      onActionTap: () => context.push('/opportunities')),
                   const _TrialSection(),
                   const SizedBox(height: 8),
                   const _TournamentSection(),
@@ -406,7 +407,7 @@ class _ScholarshipSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(scholarshipsProvider);
+    final state = ref.watch(opportunitiesProvider);
 
     if (state.isLoading && state.items.isEmpty) {
       return ShimmerSkeleton(
@@ -434,12 +435,27 @@ class _ScholarshipSection extends ConsumerWidget {
 
     return Column(
       children: state.items.take(2).map((item) {
+        final daysLeft = item.deadline?.difference(DateTime.now()).inDays;
+        final subtitle = [
+          if (item.amount != null)
+            'Up to ₹${item.amount!.toStringAsFixed(item.amount! % 1 == 0 ? 0 : 2)}',
+          if (item.deadline != null)
+            'Deadline: ${item.deadline!.day}/${item.deadline!.month}',
+        ].join(' · ');
         return EntityRow(
           title: item.title,
-          subtitle: 'Up to ₹50,000 · Deadline: Aug 30',
-          avatarText: 'S',
-          trailing: const StatusPill(label: '18 days left', kind: PillKind.pending),
-          onTap: () => context.push('/scholarship-detail/${item.id}'),
+          subtitle: subtitle.isEmpty ? (item.type) : subtitle,
+          avatarText: 'O',
+          trailing: daysLeft != null
+              ? StatusPill(
+                  label: daysLeft < 0
+                      ? 'Closed'
+                      : daysLeft == 0
+                          ? 'Last day'
+                          : '$daysLeft days left',
+                  kind: PillKind.pending)
+              : null,
+          onTap: () => context.push('/opportunity-detail/${item.id}'),
         );
       }).toList(),
     );

@@ -20,10 +20,17 @@ class ReportNotifier extends StateNotifier<AsyncValue<void>> {
         'reason': reason,
         'description': ?description,
       });
-      state = const AsyncValue.data(null);
+      if (!mounted) {
+        return false;
+      }
+      if (mounted) {
+        state = const AsyncValue.data(null);
+      }
       return true;
     } on DioException catch (e) {
-      state = AsyncValue.error(ApiException.fromDio(e), StackTrace.current);
+      if (mounted) {
+        state = AsyncValue.error(ApiException.fromDio(e), StackTrace.current);
+      }
       return false;
     }
   }

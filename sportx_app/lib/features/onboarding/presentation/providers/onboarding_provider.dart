@@ -99,10 +99,22 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       await _dio.post('/onboarding/athlete', data: state.toAthletePayload());
-      state = state.copyWith(isLoading: false);
+      if (!mounted) {
+        return false;
+      }
+      if (mounted) {
+        state = state.copyWith(isLoading: false);
+      }
       return true;
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
+      return false;
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: 'Something went wrong. Please try again.');
+      }
       return false;
     }
   }

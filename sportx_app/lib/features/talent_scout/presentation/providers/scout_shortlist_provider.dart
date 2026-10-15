@@ -30,12 +30,23 @@ class ScoutShortlistNotifier extends StateNotifier<ScoutShortlistState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final resp = await _dio.get('/me/scout-shortlist', queryParameters: status == 'all' ? null : {'status': status});
+      if (!mounted) {
+        return;
+      }
       final list = (resp.data['data'] as List? ?? [])
           .map((e) => ScoutShortlistItem.fromJson(e as Map<String, dynamic>))
           .toList();
-      state = ScoutShortlistState(items: list);
+      if (mounted) {
+        state = ScoutShortlistState(items: list);
+      }
     } on DioException catch (e) {
-      state = ScoutShortlistState(items: state.items, isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = ScoutShortlistState(items: state.items, isLoading: false, error: ApiException.fromDio(e).message);
+      }
+    } catch (_) {
+      if (mounted) {
+        state = ScoutShortlistState(items: state.items, isLoading: false, error: 'Something went wrong. Please try again.');
+      }
     }
   }
 
@@ -56,12 +67,24 @@ class ScoutShortlistNotifier extends StateNotifier<ScoutShortlistState> {
 
   Future<bool> removeFromShortlist(String athleteId) async {
     final previous = List<ScoutShortlistItem>.from(state.items);
-    state = state.copyWith(items: state.items.where((e) => e.athlete.id != athleteId).toList());
+    if (mounted) {
+      state = state.copyWith(items: state.items.where((e) => e.athlete.id != athleteId).toList());
+    }
     try {
       await _dio.delete('/me/scout-shortlist/$athleteId');
+      if (!mounted) {
+        return false;
+      }
       return true;
     } on DioException catch (e) {
-      state = ScoutShortlistState(items: previous, isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = ScoutShortlistState(items: previous, isLoading: false, error: ApiException.fromDio(e).message);
+      }
+      return false;
+    } catch (_) {
+      if (mounted) {
+        state = ScoutShortlistState(items: previous, isLoading: false, error: 'Something went wrong. Please try again.');
+      }
       return false;
     }
   }

@@ -32,8 +32,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
       'answer': 'Trial fees vary by organizer. Some are free, others charge a nominal entry fee (₹100-₹500). Fee details are clearly mentioned on each trial\'s detail page.'
     },
     {
-      'question': 'How do I apply for scholarships?',
-      'answer': 'Visit the Scholarships tab to browse available opportunities. Tap on any scholarship to see eligibility criteria and apply directly through the provider\'s official portal.'
+      'question': 'How do I apply for scholarships and sponsorships?',
+      'answer': 'Open Opportunities from Home to browse scholarships, sponsorships, tryouts and camps. Tap any listing to check eligibility, then apply in the app with a short pitch. You can track everything under My Opportunities.'
     },
     {
       'question': 'How do I delete my account?',
@@ -153,22 +153,9 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                   const Text('Still need help?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                   const SizedBox(height: 8),
                   const Text(
-                    'Our support team is available Mon-Sat, 9 AM - 6 PM IST',
+                    'Found something inappropriate? Use the Report option on any listing, post or profile — our team reviews every report.',
                     style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
                     textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(LucideIcons.mail, size: 18),
-                    label: const Text('Email Support', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      elevation: 0,
-                    ),
                   ),
                 ],
               ),

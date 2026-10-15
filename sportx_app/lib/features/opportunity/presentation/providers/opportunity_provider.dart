@@ -59,11 +59,17 @@ class MyOpportunitiesNotifier extends StateNotifier<MyOpportunitiesState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final appliedResp = await _dio.get('/me/opportunities', queryParameters: {'type': 'applied'});
+      if (!mounted) {
+        return;
+      }
       final appliedPage = appliedResp.data;
       final appliedList = (appliedPage is Map ? appliedPage['data'] as List? : appliedPage as List?) ?? [];
       List<Opportunity> created = [];
       try {
         final createdResp = await _dio.get('/me/opportunities', queryParameters: {'type': 'created'});
+        if (!mounted) {
+          return;
+        }
         final createdPage = createdResp.data;
         final createdList = (createdPage is Map ? createdPage['data'] as List? : createdPage as List?) ?? [];
         created = createdList.map((e) => Opportunity.fromJson(e as Map<String, dynamic>)).toList();
@@ -73,29 +79,48 @@ class MyOpportunitiesNotifier extends StateNotifier<MyOpportunitiesState> {
       List<Opportunity> saved = [];
       try {
         final savedResp = await _dio.get('/me/opportunities', queryParameters: {'type': 'saved'});
+        if (!mounted) {
+          return;
+        }
         final savedPage = savedResp.data;
         final savedList = (savedPage is Map ? savedPage['data'] as List? : savedPage as List?) ?? [];
         saved = savedList.map((e) => Opportunity.fromJson(e as Map<String, dynamic>)).toList();
       } catch (_) {
         // Saved tab stays empty when unsupported.
       }
-      state = MyOpportunitiesState(
+      if (mounted) {
+        state = MyOpportunitiesState(
         applied: appliedList.map((e) => OpportunityApplication.fromJson(e as Map<String, dynamic>)).toList(),
         created: created,
         saved: saved,
-      );
+        );
+      }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: 'Something went wrong. Please try again.');
+        }
     }
   }
 
   Future<bool> apply({required String opportunityId, required String pitch}) async {
     try {
       await _dio.post('/opportunities/$opportunityId/apply', data: {'pitch': pitch});
+      if (!mounted) {
+        return false;
+      }
       await load();
+      if (!mounted) {
+        return false;
+      }
       return true;
     } on DioException catch (e) {
-      state = state.copyWith(error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(error: ApiException.fromDio(e).message);
+      }
       return false;
     }
   }
@@ -103,10 +128,18 @@ class MyOpportunitiesNotifier extends StateNotifier<MyOpportunitiesState> {
   Future<bool> post(Map<String, dynamic> payload) async {
     try {
       await _dio.post('/me/opportunities', data: payload);
+      if (!mounted) {
+        return false;
+      }
       await load();
+      if (!mounted) {
+        return false;
+      }
       return true;
     } on DioException catch (e) {
-      state = state.copyWith(error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(error: ApiException.fromDio(e).message);
+      }
       return false;
     }
   }

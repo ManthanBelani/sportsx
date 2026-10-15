@@ -43,13 +43,24 @@ class MyProgramsNotifier extends StateNotifier<MyProgramsState> {
     try {
       final resp = await _dio.get('/me/programs',
           queryParameters: status != null ? {'status': status} : null);
+      if (!mounted) {
+        return;
+      }
       final page = resp.data;
       final raw = (page is Map ? page['data'] as List? : page as List?) ?? [];
-      state = MyProgramsState(
+      if (mounted) {
+        state = MyProgramsState(
         items: raw.map((e) => Program.fromJson(e as Map<String, dynamic>)).toList(),
-      );
+        );
+      }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: 'Something went wrong. Please try again.');
+        }
     }
   }
 
@@ -57,13 +68,24 @@ class MyProgramsNotifier extends StateNotifier<MyProgramsState> {
     try {
       if (id == null) {
         await _dio.post('/me/programs', data: payload);
+        if (!mounted) {
+          return false;
+        }
       } else {
         await _dio.put('/me/programs/$id', data: payload);
+        if (!mounted) {
+          return false;
+        }
       }
       await load();
+      if (!mounted) {
+        return false;
+      }
       return true;
     } on DioException catch (e) {
-      state = state.copyWith(error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(error: ApiException.fromDio(e).message);
+      }
       return false;
     }
   }
@@ -101,12 +123,23 @@ class FacilitiesNotifier extends StateNotifier<FacilitiesState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final resp = await _dio.get('/me/facilities');
+      if (!mounted) {
+        return;
+      }
       final raw = (resp.data['data'] as List? ?? []);
-      state = FacilitiesState(
+      if (mounted) {
+        state = FacilitiesState(
         items: raw.map((e) => Facility.fromJson(e as Map<String, dynamic>)).toList(),
-      );
+        );
+      }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: 'Something went wrong. Please try again.');
+        }
     }
   }
 
@@ -114,13 +147,24 @@ class FacilitiesNotifier extends StateNotifier<FacilitiesState> {
     try {
       if (id == null) {
         await _dio.post('/me/facilities', data: payload);
+        if (!mounted) {
+          return false;
+        }
       } else {
         await _dio.put('/me/facilities/$id', data: payload);
+        if (!mounted) {
+          return false;
+        }
       }
       await load();
+      if (!mounted) {
+        return false;
+      }
       return true;
     } on DioException catch (e) {
-      state = state.copyWith(error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(error: ApiException.fromDio(e).message);
+      }
       return false;
     }
   }
@@ -128,10 +172,17 @@ class FacilitiesNotifier extends StateNotifier<FacilitiesState> {
   Future<bool> remove(String id) async {
     try {
       await _dio.delete('/me/facilities/$id');
-      state = state.copyWith(items: state.items.where((f) => f.id.toString() != id).toList());
+      if (!mounted) {
+        return false;
+      }
+      if (mounted) {
+        state = state.copyWith(items: state.items.where((f) => f.id.toString() != id).toList());
+      }
       return true;
     } on DioException catch (e) {
-      state = state.copyWith(error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(error: ApiException.fromDio(e).message);
+      }
       return false;
     }
   }

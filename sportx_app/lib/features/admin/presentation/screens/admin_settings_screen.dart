@@ -1,41 +1,137 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 /// v2 admin-settings.html — System Settings.
-/// Local draft state (no platform-settings endpoint exists yet):
-/// toggling updates the draft; Save confirms. Sections mirror the
-/// web panel's settings/system-settings pages.
-class AdminSettingsScreen extends StatefulWidget {
+///
+/// Backed by GET/PUT /admin/settings (platform_settings.json via
+/// PlatformSettings). Every toggle here reads and writes the server — there
+/// is no local-only draft state.
+class AdminSettingsScreen extends ConsumerStatefulWidget {
   const AdminSettingsScreen({super.key});
 
   @override
-  State<AdminSettingsScreen> createState() => _AdminSettingsScreenState();
+  ConsumerState<AdminSettingsScreen> createState() =>
+      _AdminSettingsScreenState();
 }
 
-class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
-  bool _maintenance = false;
-  bool _trialRegsOpen = true;
-  bool _tournamentRegsOpen = true;
-  bool _autoApproveTrials = false;
-  bool _autoApproveTournaments = false;
-  bool _pushEnabled = true;
-  bool _emailEnabled = true;
-  bool _reportAlerts = true;
-  bool _dirty = false;
+class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
+  bool _loading = true;
+  bool _saving = false;
+  String? _error;
+  Map<String, bool> _values = {};
+  Map<String, bool> _initial = {};
 
-  void _set(void Function() fn) => setState(() {
-        fn();
-        _dirty = true;
+  static const _rows = [
+    (
+      'maintenance_mode',
+      'Maintenance mode',
+      'Take the app offline for users',
+      true,
+    ),
+    (
+      'registrations_open',
+      'Registrations open',
+      'Allow new trial & event entries',
+      false,
+    ),
+    (
+      'auto_approve_trials',
+      'Auto-approve trials',
+      'Skip manual trial review',
+      false,
+    ),
+    (
+      'auto_approve_tournaments',
+      'Auto-approve tournaments',
+      'Skip manual tournament review',
+      false,
+    ),
+    ('push_notifications', 'Push notifications', 'Send pushes to users', false),
+    ('email_alerts', 'Email notifications', 'Send emails to users', false),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final resp = await ref.read(dioProvider).get('/admin/settings');
+      final raw = Map<String, dynamic>.from(
+        resp.data['data']['settings'] as Map,
+      );
+      final values = {
+        for (final r in _rows) r.$1: (raw[r.$1] as bool?) ?? false,
+      };
+      if (mounted) {
+        setState(() {
+          _values = values;
+          _initial = Map.of(values);
+          _loading = false;
+        });
+      }
+    } on DioException catch (e) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error =
+              e.response?.data?['error']?['message']?.toString() ??
+              'Could not load settings';
+        });
+      }
+    }
+  }
+
+  bool get _dirty {
+    if (_values.length != _initial.length) return false;
+    for (final k in _values.keys) {
+      if (_values[k] != _initial[k]) return true;
+    }
+    return false;
+  }
+
+  Future<void> _save() async {
+    setState(() => _saving = true);
+    try {
+      final resp = await ref
+          .read(dioProvider)
+          .put('/admin/settings', data: _values);
+      final raw = Map<String, dynamic>.from(
+        resp.data['data']['settings'] as Map,
+      );
+      if (!mounted) return;
+      final values = {
+        for (final r in _rows) r.$1: (raw[r.$1] as bool?) ?? false,
+      };
+      setState(() {
+        _values = values;
+        _initial = Map.of(values);
+        _saving = false;
       });
-
-  void _save() {
-    setState(() => _dirty = false);
-    SnackBarUtils.showSuccess(context, 'Settings saved');
+      SnackBarUtils.showSuccess(context, 'Settings saved');
+    } on DioException catch (e) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      SnackBarUtils.showError(
+        context,
+        e.response?.data?['error']?['message']?.toString() ??
+            'Could not save settings',
+      );
+    }
   }
 
   @override
@@ -47,67 +143,80 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft, color: AppColors.ink),
-          onPressed: () => context.canPop()
-              ? context.pop()
-              : context.go('/admin/dashboard'),
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go('/admin/dashboard'),
         ),
-        title: Text('System Settings',
-            style: GoogleFonts.sora(
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                color: AppColors.ink)),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 120),
-        children: [
-          _section('General', LucideIcons.settings, [
-            _toggle('Maintenance mode', 'Take the app offline for users',
-                _maintenance, (v) => _set(() => _maintenance = v),
-                danger: true),
-            _toggle('Trial registrations', 'Allow new trial entries',
-                _trialRegsOpen, (v) => _set(() => _trialRegsOpen = v)),
-            _toggle(
-                'Tournament registrations',
-                'Allow new tournament entries',
-                _tournamentRegsOpen,
-                (v) => _set(() => _tournamentRegsOpen = v)),
-          ]),
-          _section('Content Approvals', LucideIcons.shieldCheck, [
-            _toggle('Auto-approve trials', 'Skip manual trial review',
-                _autoApproveTrials, (v) => _set(() => _autoApproveTrials = v)),
-            _toggle(
-                'Auto-approve tournaments',
-                'Skip manual tournament review',
-                _autoApproveTournaments,
-                (v) => _set(() => _autoApproveTournaments = v)),
-          ]),
-          _section('Notifications', LucideIcons.bell, [
-            _toggle('Push notifications', 'Send pushes to users',
-                _pushEnabled, (v) => _set(() => _pushEnabled = v)),
-            _toggle('Email notifications', 'Send emails to users',
-                _emailEnabled, (v) => _set(() => _emailEnabled = v)),
-            _toggle('Moderation alerts', 'Alert admins on new reports',
-                _reportAlerts, (v) => _set(() => _reportAlerts = v)),
-          ]),
-        ],
-      ),
-      bottomSheet: Container(
-        padding: EdgeInsets.fromLTRB(
-            16, 12, 16, 12 + MediaQuery.of(context).padding.bottom),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.94),
-          border: const Border(top: BorderSide(color: AppColors.border)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: SizedBox(
-            width: double.infinity,
-            child: PrimaryButton(
-                label: _dirty ? 'Save Changes' : 'Saved',
-                onPressed: _dirty ? _save : null),
+        title: Text(
+          'System Settings',
+          style: GoogleFonts.sora(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: AppColors.ink,
           ),
         ),
       ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _error!,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  PrimaryButton(label: 'Retry', small: true, onPressed: _load),
+                ],
+              ),
+            )
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 120),
+              children: [
+                _section('General', LucideIcons.settings, [
+                  _toggle(0, danger: true),
+                  _toggle(1),
+                ]),
+                _section('Content Approvals', LucideIcons.shieldCheck, [
+                  _toggle(2),
+                  _toggle(3),
+                ]),
+                _section('Notifications', LucideIcons.bell, [
+                  _toggle(4),
+                  _toggle(5),
+                ]),
+              ],
+            ),
+      bottomSheet: _loading || _error != null
+          ? null
+          : Container(
+              padding: EdgeInsets.fromLTRB(
+                16,
+                12,
+                16,
+                12 + MediaQuery.of(context).padding.bottom,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.94),
+                border: const Border(top: BorderSide(color: AppColors.border)),
+              ),
+              child: SafeArea(
+                top: false,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: PrimaryButton(
+                    label: _saving
+                        ? 'Saving…'
+                        : (_dirty ? 'Save Changes' : 'Saved'),
+                    onPressed: (_dirty && !_saving) ? _save : null,
+                  ),
+                ),
+              ),
+            ),
     );
   }
 
@@ -123,11 +232,14 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
               children: [
                 Icon(icon, size: 18, color: AppColors.yellowDeep),
                 const SizedBox(width: 8),
-                Text(title,
-                    style: GoogleFonts.sora(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.ink)),
+                Text(
+                  title,
+                  style: GoogleFonts.sora(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.ink,
+                  ),
+                ),
               ],
             ),
           ),
@@ -145,9 +257,9 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     );
   }
 
-  Widget _toggle(String title, String subtitle, bool value,
-      ValueChanged<bool> onChanged,
-      {bool danger = false}) {
+  Widget _toggle(int index, {bool danger = false}) {
+    final row = _rows[index];
+    final value = _values[row.$1] ?? false;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: const BoxDecoration(
@@ -159,23 +271,28 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: danger && value
-                            ? AppColors.error
-                            : AppColors.ink)),
+                Text(
+                  row.$2,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: danger && value ? AppColors.error : AppColors.ink,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(subtitle,
-                    style: GoogleFonts.inter(
-                        fontSize: 12, color: AppColors.textSecondary)),
+                Text(
+                  row.$3,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ],
             ),
           ),
           Switch(
             value: value,
-            onChanged: onChanged,
+            onChanged: (v) => setState(() => _values[row.$1] = v),
             activeThumbColor: AppColors.yellowDeep,
             activeTrackColor: AppColors.yellowTint,
           ),

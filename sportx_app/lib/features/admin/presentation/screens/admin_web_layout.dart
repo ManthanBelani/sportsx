@@ -36,7 +36,7 @@ class AdminWebLayout extends StatelessWidget {
           if (actions != null) ...actions!,
           IconButton(
             icon: const Icon(LucideIcons.settings, color: AppColors.ink),
-            onPressed: () {},
+            onPressed: () => context.push('/admin/settings'),
           ),
         ],
       ),

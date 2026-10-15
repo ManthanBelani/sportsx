@@ -59,6 +59,9 @@ class ScoutConnectionNotifier extends StateNotifier<ScoutConnectionState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final resp = await _dio.get('/me/scout-connections');
+      if (!mounted) {
+        return;
+      }
       final list = List<Map<String, dynamic>>.from(resp.data['data'] ?? []);
       
       int accepted = 0;
@@ -82,33 +85,52 @@ class ScoutConnectionNotifier extends StateNotifier<ScoutConnectionState> {
       List<Map<String, dynamic>> incoming = state.incoming;
       try {
         final inResp = await _dio.get('/me/scout-connections/incoming');
+        if (!mounted) {
+          return;
+        }
         incoming = List<Map<String, dynamic>>.from(inResp.data['data'] ?? []);
       } catch (_) {
         // Non-fatal: older backend or no incoming.
       }
 
-      state = ScoutConnectionState(
+      if (mounted) {
+        state = ScoutConnectionState(
         connections: list,
         incoming: incoming,
         stats: ScoutConnectionStats(
-          totalCount: list.length,
-          acceptedCount: accepted,
-          pendingCount: pending,
-          rejectedCount: rejected,
+        totalCount: list.length,
+        acceptedCount: accepted,
+        pendingCount: pending,
+        rejectedCount: rejected,
         ),
-      );
+        );
+      }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: 'Something went wrong. Please try again.');
+        }
     }
   }
 
   Future<bool> sendConnectionRequest(String athleteId, {String? message}) async {
     try {
       await _dio.post('/athletes/$athleteId/connect', data: {'message': message});
+      if (!mounted) {
+        return false;
+      }
       await load();
+      if (!mounted) {
+        return false;
+      }
       return true;
     } on DioException catch (e) {
-      state = state.copyWith(error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(error: ApiException.fromDio(e).message);
+      }
       return false;
     }
   }
@@ -116,10 +138,18 @@ class ScoutConnectionNotifier extends StateNotifier<ScoutConnectionState> {
   Future<bool> cancelConnection(String connectionId) async {
     try {
       await _dio.delete('/me/scout-connections/$connectionId');
+      if (!mounted) {
+        return false;
+      }
       await load();
+      if (!mounted) {
+        return false;
+      }
       return true;
     } on DioException catch (e) {
-      state = state.copyWith(error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(error: ApiException.fromDio(e).message);
+      }
       return false;
     }
   }
@@ -128,10 +158,18 @@ class ScoutConnectionNotifier extends StateNotifier<ScoutConnectionState> {
   Future<bool> acceptIncoming(String connectionId) async {
     try {
       await _dio.post('/me/scout-connections/$connectionId/accept');
+      if (!mounted) {
+        return false;
+      }
       await load();
+      if (!mounted) {
+        return false;
+      }
       return true;
     } on DioException catch (e) {
-      state = state.copyWith(error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(error: ApiException.fromDio(e).message);
+      }
       return false;
     }
   }
@@ -140,10 +178,18 @@ class ScoutConnectionNotifier extends StateNotifier<ScoutConnectionState> {
   Future<bool> rejectIncoming(String connectionId) async {
     try {
       await _dio.post('/me/scout-connections/$connectionId/reject');
+      if (!mounted) {
+        return false;
+      }
       await load();
+      if (!mounted) {
+        return false;
+      }
       return true;
     } on DioException catch (e) {
-      state = state.copyWith(error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(error: ApiException.fromDio(e).message);
+      }
       return false;
     }
   }

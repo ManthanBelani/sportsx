@@ -50,21 +50,32 @@ class AthleteDiscoveryNotifier extends StateNotifier<AthleteDiscoveryState> {
       final params = <String, dynamic>{'page': 1, 'per_page': 20};
       if (filters != null) params.addAll(filters);
       final resp = await _dio.get('/athletes', queryParameters: params);
+      if (!mounted) {
+        return;
+      }
       final body = resp.data as Map<String, dynamic>;
       final list = (body['data'] as List? ?? [])
           .map((e) => AthleteDiscovery.fromJson(e as Map<String, dynamic>))
           .toList();
       final currentPage = (body['current_page'] as num?)?.toInt() ?? 1;
       final lastPage = (body['last_page'] as num?)?.toInt() ?? (list.length < 20 ? 1 : 2);
-      state = AthleteDiscoveryState(
+      if (mounted) {
+        state = AthleteDiscoveryState(
         athletes: list,
         isLoading: false,
         hasMore: currentPage < lastPage,
         currentPage: currentPage,
         lastPage: lastPage,
-      );
+        );
+      }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: 'Something went wrong. Please try again.');
+        }
     }
   }
 
@@ -76,21 +87,32 @@ class AthleteDiscoveryNotifier extends StateNotifier<AthleteDiscoveryState> {
       final params = <String, dynamic>{'page': nextPage, 'per_page': 20};
       if (filters != null) params.addAll(filters);
       final resp = await _dio.get('/athletes', queryParameters: params);
+      if (!mounted) {
+        return;
+      }
       final body = resp.data as Map<String, dynamic>;
       final list = (body['data'] as List? ?? [])
           .map((e) => AthleteDiscovery.fromJson(e as Map<String, dynamic>))
           .toList();
       final currentPage = (body['current_page'] as num?)?.toInt() ?? nextPage;
       final lastPage = (body['last_page'] as num?)?.toInt() ?? state.lastPage;
-      state = AthleteDiscoveryState(
+      if (mounted) {
+        state = AthleteDiscoveryState(
         athletes: [...state.athletes, ...list],
         isLoading: false,
         hasMore: currentPage < lastPage,
         currentPage: currentPage,
         lastPage: lastPage,
-      );
+        );
+      }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: 'Something went wrong. Please try again.');
+        }
     }
   }
 

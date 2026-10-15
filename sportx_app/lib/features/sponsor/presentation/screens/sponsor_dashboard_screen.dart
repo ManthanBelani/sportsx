@@ -47,7 +47,7 @@ class _SponsorDashboardScreenState extends ConsumerState<SponsorDashboardScreen>
           ),
         ],
       ),
-      body: _currentTabIndex == 0 ? _buildHomeTab() : const Center(child: Text('Under Construction')),
+      body: _buildHomeTab(),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentTabIndex,
         onDestinationSelected: (index) {

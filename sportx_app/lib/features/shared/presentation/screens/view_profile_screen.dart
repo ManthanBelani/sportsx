@@ -9,6 +9,7 @@ import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/chat/presentation/providers/chat_provider.dart';
+import 'package:sportx_app/features/saved/presentation/providers/saved_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/social_links.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
@@ -38,6 +39,81 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
   bool _connLoading = false;
   bool _connecting = false;
   bool _openingChat = false;
+  bool _isSaved = false;
+  bool _savingToggle = false;
+
+  /// Backend saved item_type for the profile being viewed.
+  String get _saveType => widget.type == 'coach' ? 'coach_profile' : 'athlete_profile';
+
+  void _syncSavedFlag() {
+    final items = ref.read(savedProvider).items;
+    _isSaved = items.any((i) =>
+        i.itemId == widget.id && i.type.toLowerCase() == _saveType);
+  }
+
+  Future<void> _toggleSave() async {
+    if (_savingToggle) return;
+    setState(() => _savingToggle = true);
+    try {
+      final saved = await ref
+          .read(savedProvider.notifier)
+          .toggle(type: _saveType, itemId: widget.id);
+      if (!mounted) return;
+      setState(() {
+        _isSaved = saved;
+        _savingToggle = false;
+      });
+      SnackBarUtils.showSuccess(
+          context, saved ? 'Saved to your list' : 'Removed from saved');
+    } catch (_) {
+      if (mounted) setState(() => _savingToggle = false);
+    }
+  }
+
+  void _showAllMedia() {
+    final mediaItems = _profileData!['media_items'] as List? ?? [];
+    final urls = mediaItems
+        .whereType<Map>()
+        .map((m) => MediaUtils.resolveNullable(
+            (m['url'] ?? m['media_url'])?.toString()))
+        .whereType<String>()
+        .toList();
+    if (urls.isEmpty) return;
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        insetPadding: const EdgeInsets.all(12),
+        backgroundColor: Colors.black,
+        child: Stack(
+          children: [
+            PageView.builder(
+              itemCount: urls.length,
+              itemBuilder: (context, index) => InteractiveViewer(
+                child: Center(
+                  child: Image.network(
+                    urls[index],
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, _, _) => const Icon(
+                        LucideIcons.image,
+                        color: Colors.white54,
+                        size: 48),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -57,6 +133,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
           _profileData = response.data['data'];
           _isLoading = false;
         });
+        _syncSavedFlag();
         _loadConnStatus();
       }
     } catch (e) {
@@ -309,8 +386,12 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
       ),
       actions: [
         IconButton(
-          icon: const Icon(LucideIcons.heart, color: Colors.white),
-          onPressed: () {},
+          icon: Icon(
+            LucideIcons.heart,
+            color: _isSaved ? Colors.redAccent : Colors.white,
+            fill: _isSaved ? 1 : 0,
+          ),
+          onPressed: _savingToggle ? null : _toggleSave,
         ),
         IconButton(
           icon: const Icon(LucideIcons.share2, color: Colors.white),
@@ -569,7 +650,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
           children: [
             Text('Media Gallery', style: Theme.of(context).textTheme.titleLarge),
             TextButton(
-              onPressed: () {},
+              onPressed: _showAllMedia,
               child: const Text('See all →'),
             ),
           ],

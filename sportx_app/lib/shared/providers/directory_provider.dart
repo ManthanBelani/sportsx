@@ -43,18 +43,27 @@ class DirectoryNotifier<T> extends StateNotifier<DirectoryState<T>> {
     state = state.copyWith(isLoading: true, page: 1);
     try {
       final resp = await _dio.get(endpoint, queryParameters: {'page': 1, 'per_page': 20});
+      if (!mounted) {
+        return;
+      }
       // Laravel returns a flat paginator: top-level { current_page, data, last_page, … }
       // (no `meta` wrapper).
       final data = resp.data['data'] as List;
       final items = data.map((e) => fromJson(e)).toList();
       final hasMore = (resp.data['current_page'] ?? 1) < (resp.data['last_page'] ?? 1);
-      state = DirectoryState(items: items, hasMore: hasMore, page: 1);
+      if (mounted) {
+        state = DirectoryState(items: items, hasMore: hasMore, page: 1);
+      }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
     } catch (e) {
       // Parsing / contract errors (e.g. type mismatches) — surface instead of
       // leaving the directory stuck on an infinite loading spinner.
-      state = DirectoryState(isLoading: false, hasMore: false, error: 'Failed to load: $e');
+      if (mounted) {
+        state = DirectoryState(isLoading: false, hasMore: false, error: 'Failed to load: $e');
+      }
     }
   }
 
@@ -64,25 +73,39 @@ class DirectoryNotifier<T> extends StateNotifier<DirectoryState<T>> {
     try {
       final nextPage = state.page + 1;
       final resp = await _dio.get(endpoint, queryParameters: {'page': nextPage, 'per_page': 20});
+      if (!mounted) {
+        return;
+      }
       final data = resp.data['data'] as List;
       final newItems = data.map((e) => fromJson(e)).toList();
       final hasMore = (resp.data['current_page'] ?? 1) < (resp.data['last_page'] ?? 1);
-      state = state.copyWith(
+      // Fresh state (not copyWith): a previous page error must not linger
+      // after a successful append.
+      if (mounted) {
+        state = DirectoryState(
         items: [...state.items, ...newItems],
         hasMore: hasMore,
         page: nextPage,
         isLoading: false,
-      );
+        );
+      }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
     } catch (e) {
-      state = state.copyWith(isLoading: false, hasMore: false, error: 'Failed to load more: $e');
+      if (mounted) {
+        state = state.copyWith(isLoading: false, hasMore: false, error: 'Failed to load more: $e');
+      }
     }
   }
 
   Future<void> refresh() async {
     state = state.copyWith(items: [], hasMore: true, page: 0);
     await load();
+    if (!mounted) {
+      return;
+    }
   }
 }
 

@@ -273,25 +273,35 @@ class AdminNotifier extends StateNotifier<AdminState> {
         'email': email,
         'password': password,
       });
+      if (!mounted) {
+        return false;
+      }
       final data = response.data['data'] as Map<String, dynamic>;
       final token = data['token'] as String?;
       if (token != null) {
         await _storage.saveToken(token);
+        if (!mounted) {
+          return false;
+        }
       }
       final userMap = data['user'] as Map<String, dynamic>? ?? data;
-      state = state.copyWith(
+      if (mounted) {
+        state = state.copyWith(
         isLoading: false,
         isLoggedIn: true,
         currentAdmin: AdminUser(
-          id: userMap['id'].toString(),
-          name: userMap['name'] ?? '',
-          email: userMap['email'] ?? '',
-          role: userMap['role'] ?? 'admin',
+        id: userMap['id'].toString(),
+        name: userMap['name'] ?? '',
+        email: userMap['email'] ?? '',
+        role: userMap['role'] ?? 'admin',
         ),
-      );
+        );
+      }
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      }
       return false;
     }
   }
@@ -302,20 +312,27 @@ class AdminNotifier extends StateNotifier<AdminState> {
       final response = await _dio.post('/admin/verify-2fa', data: {
         'code': code,
       });
+      if (!mounted) {
+        return false;
+      }
       final data = response.data['data'] as Map<String, dynamic>;
       final userMap = data['user'] as Map<String, dynamic>? ?? data;
-      state = state.copyWith(
+      if (mounted) {
+        state = state.copyWith(
         isLoading: false,
         currentAdmin: AdminUser(
-          id: userMap['id'].toString(),
-          name: userMap['name'] ?? '',
-          email: userMap['email'] ?? '',
-          role: userMap['role'] ?? 'admin',
+        id: userMap['id'].toString(),
+        name: userMap['name'] ?? '',
+        email: userMap['email'] ?? '',
+        role: userMap['role'] ?? 'admin',
         ),
-      );
+        );
+      }
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      }
       return false;
     }
   }
@@ -323,23 +340,38 @@ class AdminNotifier extends StateNotifier<AdminState> {
   Future<void> logout() async {
     try {
       await _dio.post('/admin/logout');
+      if (!mounted) {
+        return;
+      }
     } catch (_) {}
     await _storage.deleteToken();
-    state = AdminState();
+    if (!mounted) {
+      return;
+    }
+    if (mounted) {
+      state = AdminState();
+    }
   }
 
   Future<void> loadDashboard() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final response = await _dio.get('/admin/dashboard');
+      if (!mounted) {
+        return;
+      }
       if (response.statusCode == 200) {
-        state = state.copyWith(
+        if (mounted) {
+          state = state.copyWith(
           stats: PlatformStats.fromJson(response.data['data']),
           isLoading: false,
-        );
+          );
+        }
       }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      }
     }
   }
 
@@ -347,18 +379,25 @@ class AdminNotifier extends StateNotifier<AdminState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final response = await _dio.get('/admin/content');
+      if (!mounted) {
+        return;
+      }
       if (response.statusCode == 200) {
         final data = response.data['data'] as Map<String, dynamic>;
         final pickers = data.entries.map((e) =>
           ContentPicker.fromJson(e.key, e.value as Map<String, dynamic>)
         ).toList();
-        state = state.copyWith(
+        if (mounted) {
+          state = state.copyWith(
           contentPicker: pickers,
           isLoading: false,
-        );
+          );
+        }
       }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      }
     }
   }
 
@@ -370,14 +409,21 @@ class AdminNotifier extends StateNotifier<AdminState> {
       if (q != null) params['q'] = q;
 
       final response = await _dio.get('/admin/content/$type', queryParameters: params);
+      if (!mounted) {
+        return;
+      }
       if (response.statusCode == 200) {
-        state = state.copyWith(
+        if (mounted) {
+          state = state.copyWith(
           contentList: List<dynamic>.from(response.data['data'] ?? []),
           isLoading: false,
-        );
+          );
+        }
       }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      }
     }
   }
 
@@ -385,39 +431,60 @@ class AdminNotifier extends StateNotifier<AdminState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final response = await _dio.get('/admin/moderation/queue');
+      if (!mounted) {
+        return;
+      }
       if (response.statusCode == 200) {
         final reports = (response.data['data'] as List)
             .map((r) => Report.fromJson(r))
             .toList();
-        state = state.copyWith(
+        if (mounted) {
+          state = state.copyWith(
           reports: reports,
           isLoading: false,
-        );
+          );
+        }
       }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      }
     }
   }
 
   Future<void> approveReport(String reportId) async {
     try {
       await _dio.post('/admin/moderation/reports/$reportId/approve');
-      state = state.copyWith(
+      if (!mounted) {
+        return;
+      }
+      if (mounted) {
+        state = state.copyWith(
         reports: state.reports.where((r) => r.id != reportId).toList(),
-      );
+        );
+      }
     } catch (e) {
-      state = state.copyWith(error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(error: _getErrorMessage(e));
+      }
     }
   }
 
   Future<void> removeListing(String reportId) async {
     try {
       await _dio.post('/admin/moderation/reports/$reportId/remove');
-      state = state.copyWith(
+      if (!mounted) {
+        return;
+      }
+      if (mounted) {
+        state = state.copyWith(
         reports: state.reports.where((r) => r.id != reportId).toList(),
-      );
+        );
+      }
     } catch (e) {
-      state = state.copyWith(error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(error: _getErrorMessage(e));
+      }
     }
   }
 
@@ -426,11 +493,18 @@ class AdminNotifier extends StateNotifier<AdminState> {
       await _dio.post('/admin/moderation/reports/$reportId/warn', data: {
         'message': ?message,
       });
-      state = state.copyWith(
+      if (!mounted) {
+        return;
+      }
+      if (mounted) {
+        state = state.copyWith(
         reports: state.reports.where((r) => r.id != reportId).toList(),
-      );
+        );
+      }
     } catch (e) {
-      state = state.copyWith(error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(error: _getErrorMessage(e));
+      }
     }
   }
 
@@ -440,30 +514,47 @@ class AdminNotifier extends StateNotifier<AdminState> {
       final response = await _dio.get('/admin/expiry/monitor', queryParameters: {
         'tab': tab,
       });
+      if (!mounted) {
+        return;
+      }
       if (response.statusCode == 200) {
-        state = state.copyWith(
+        if (mounted) {
+          state = state.copyWith(
           contentList: List<dynamic>.from(response.data['data'] ?? []),
           isLoading: false,
-        );
+          );
+        }
       }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      }
     }
   }
 
   Future<void> overrideExpiry(int eventId) async {
     try {
       await _dio.post('/admin/expiry/events/$eventId/override');
+      if (!mounted) {
+        return;
+      }
     } catch (e) {
-      state = state.copyWith(error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(error: _getErrorMessage(e));
+      }
     }
   }
 
   Future<void> restoreListing(int eventId) async {
     try {
       await _dio.post('/admin/expiry/events/$eventId/restore');
+      if (!mounted) {
+        return;
+      }
     } catch (e) {
-      state = state.copyWith(error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(error: _getErrorMessage(e));
+      }
     }
   }
 
@@ -471,23 +562,35 @@ class AdminNotifier extends StateNotifier<AdminState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final response = await _dio.get('/admin/categories/$type');
+      if (!mounted) {
+        return;
+      }
       if (response.statusCode == 200) {
-        state = state.copyWith(
+        if (mounted) {
+          state = state.copyWith(
           contentList: List<dynamic>.from(response.data['data'] ?? []),
           isLoading: false,
-        );
+          );
+        }
       }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      }
     }
   }
 
   Future<bool> createCategory(String type, Map<String, dynamic> data) async {
     try {
       await _dio.post('/admin/categories/$type', data: data);
+      if (!mounted) {
+        return false;
+      }
       return true;
     } catch (e) {
-      state = state.copyWith(error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(error: _getErrorMessage(e));
+      }
       return false;
     }
   }
@@ -495,9 +598,14 @@ class AdminNotifier extends StateNotifier<AdminState> {
   Future<bool> updateCategory(String type, int id, Map<String, dynamic> data) async {
     try {
       await _dio.put('/admin/categories/$type/$id', data: data);
+      if (!mounted) {
+        return false;
+      }
       return true;
     } catch (e) {
-      state = state.copyWith(error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(error: _getErrorMessage(e));
+      }
       return false;
     }
   }
@@ -505,9 +613,14 @@ class AdminNotifier extends StateNotifier<AdminState> {
   Future<bool> deleteCategory(String type, int id) async {
     try {
       await _dio.delete('/admin/categories/$type/$id');
+      if (!mounted) {
+        return false;
+      }
       return true;
     } catch (e) {
-      state = state.copyWith(error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(error: _getErrorMessage(e));
+      }
       return false;
     }
   }
@@ -522,14 +635,21 @@ class AdminNotifier extends StateNotifier<AdminState> {
       final query = q ?? search;
       if (query != null) params['q'] = query;
       final response = await _dio.get('/admin/users', queryParameters: params);
+      if (!mounted) {
+        return;
+      }
       if (response.statusCode == 200) {
         final list = (response.data['data'] as List? ?? [])
             .map((u) => AdminUser.fromJson(u as Map<String, dynamic>))
             .toList();
-        state = state.copyWith(users: list, isLoading: false);
+        if (mounted) {
+          state = state.copyWith(users: list, isLoading: false);
+        }
       }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      }
     }
   }
 
@@ -537,57 +657,92 @@ class AdminNotifier extends StateNotifier<AdminState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final response = await _dio.get('/admin/users', queryParameters: {'status': 'pending'});
+      if (!mounted) {
+        return;
+      }
       if (response.statusCode == 200) {
         final list = (response.data['data'] as List? ?? [])
             .map((u) => AdminUser.fromJson(u as Map<String, dynamic>))
             .toList();
-        state = state.copyWith(pendingApprovals: list, isLoading: false);
+        if (mounted) {
+          state = state.copyWith(pendingApprovals: list, isLoading: false);
+        }
       }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      }
     }
   }
 
   Future<void> approveUser(String id) async {
     try {
       await _dio.post('/admin/users/$id/approve');
-      state = state.copyWith(
+      if (!mounted) {
+        return;
+      }
+      if (mounted) {
+        state = state.copyWith(
         users: state.users.where((u) => u.id != id).toList(),
         pendingApprovals: state.pendingApprovals.where((u) => u.id != id).toList(),
-      );
+        );
+      }
     } catch (e) {
-      state = state.copyWith(error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(error: _getErrorMessage(e));
+      }
     }
   }
 
   Future<void> rejectUser(String id) async {
     try {
       await _dio.post('/admin/users/$id/reject');
-      state = state.copyWith(
+      if (!mounted) {
+        return;
+      }
+      if (mounted) {
+        state = state.copyWith(
         pendingApprovals: state.pendingApprovals.where((u) => u.id != id).toList(),
-      );
+        );
+      }
     } catch (e) {
-      state = state.copyWith(error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(error: _getErrorMessage(e));
+      }
     }
   }
 
   Future<void> suspendUser(String id) async {
     try {
       await _dio.post('/admin/users/$id/suspend');
-      state = state.copyWith(
+      if (!mounted) {
+        return;
+      }
+      if (mounted) {
+        state = state.copyWith(
         users: state.users.map((u) => u.id == id ? u : u).toList(),
-      );
+        );
+      }
     } catch (e) {
-      state = state.copyWith(error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(error: _getErrorMessage(e));
+      }
     }
   }
 
   Future<void> deleteUser(String id) async {
     try {
       await _dio.delete('/admin/users/$id');
-      state = state.copyWith(users: state.users.where((u) => u.id != id).toList());
+      if (!mounted) {
+        return;
+      }
+      if (mounted) {
+        state = state.copyWith(users: state.users.where((u) => u.id != id).toList());
+      }
     } catch (e) {
-      state = state.copyWith(error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(error: _getErrorMessage(e));
+      }
     }
   }
 
@@ -601,26 +756,40 @@ class AdminNotifier extends StateNotifier<AdminState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final response = await _dio.get('/admin/opportunities');
+      if (!mounted) {
+        return;
+      }
       if (response.statusCode == 200) {
         final list = (response.data['data'] as List? ?? [])
             .map((o) => Opportunity.fromJson(o as Map<String, dynamic>))
             .toList();
-        state = state.copyWith(opportunities: list, isLoading: false);
+        if (mounted) {
+          state = state.copyWith(opportunities: list, isLoading: false);
+        }
       }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      }
     }
   }
 
   Future<bool> approveOpportunity(String id) async {
     try {
       await _dio.post('/admin/opportunities/$id/approve');
-      state = state.copyWith(
+      if (!mounted) {
+        return false;
+      }
+      if (mounted) {
+        state = state.copyWith(
         opportunities: state.opportunities.where((o) => o.id != id).toList(),
-      );
+        );
+      }
       return true;
     } catch (e) {
-      state = state.copyWith(error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(error: _getErrorMessage(e));
+      }
       return false;
     }
   }
@@ -628,12 +797,19 @@ class AdminNotifier extends StateNotifier<AdminState> {
   Future<bool> rejectOpportunity(String id) async {
     try {
       await _dio.post('/admin/opportunities/$id/reject');
-      state = state.copyWith(
+      if (!mounted) {
+        return false;
+      }
+      if (mounted) {
+        state = state.copyWith(
         opportunities: state.opportunities.where((o) => o.id != id).toList(),
-      );
+        );
+      }
       return true;
     } catch (e) {
-      state = state.copyWith(error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(error: _getErrorMessage(e));
+      }
       return false;
     }
   }
@@ -653,9 +829,14 @@ class AdminNotifier extends StateNotifier<AdminState> {
         'body': body,
         'roles': ?roles,
       });
+      if (!mounted) {
+        return false;
+      }
       return true;
     } catch (e) {
-      state = state.copyWith(error: _getErrorMessage(e));
+      if (mounted) {
+        state = state.copyWith(error: _getErrorMessage(e));
+      }
       return false;
     }
   }

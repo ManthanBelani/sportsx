@@ -34,13 +34,24 @@ class AthleteDirectoryNotifier extends StateNotifier<AthleteDirectoryState> {
         'per_page': 20,
         if (query != null && query.isNotEmpty) 'q': query,
       });
+      if (!mounted) {
+        return;
+      }
       final body = resp.data;
       final List list = body is Map && body['data'] is List ? body['data'] as List : (body is List ? body : []);
-      state = AthleteDirectoryState(
+      if (mounted) {
+        state = AthleteDirectoryState(
         athletes: list.map((e) => Map<String, dynamic>.from(e as Map)).toList(),
-      );
+        );
+      }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: 'Something went wrong. Please try again.');
+        }
     }
   }
 
@@ -49,6 +60,9 @@ class AthleteDirectoryNotifier extends StateNotifier<AthleteDirectoryState> {
   Future<String?> connect(int userId) async {
     try {
       await _dio.post('/me/connections/request', data: {'user_id': userId});
+      if (!mounted) {
+        return null;
+      }
       return null;
     } on DioException catch (e) {
       final msg = e.response?.data?['error']?['message']?.toString();

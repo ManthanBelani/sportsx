@@ -5,6 +5,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/features/coach/presentation/widgets/coach_enrollment_section.dart';
@@ -476,10 +477,11 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Associated Athletes', style: Theme.of(context).textTheme.titleLarge),
-            TextButton(
-              onPressed: () {},
-              child: const Text('See all →'),
-            ),
+            if (athletes.length > 5)
+              TextButton(
+                onPressed: () => context.push('/athlete-directory'),
+                child: const Text('See all →'),
+              ),
           ],
         ),
         const SizedBox(height: 12),
@@ -529,13 +531,15 @@ class _CoachProfileDetailScreenState extends ConsumerState<CoachProfileDetailScr
           _buildContactItem(
             icon: LucideIcons.phone,
             label: _coachData!['contact_number'],
-            onTap: () {},
+            onTap: () => launchUrl(
+                Uri.parse('tel:${_coachData!['contact_number']}')),
           ),
         if (_coachData!['email'] != null)
           _buildContactItem(
             icon: LucideIcons.mail,
             label: _coachData!['email'],
-            onTap: () {},
+            onTap: () => launchUrl(
+                Uri.parse('mailto:${_coachData!['email']}')),
           ),
       ],
     );

@@ -74,7 +74,13 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
         privacySettings: privacy,
       );
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: 'Something went wrong. Please try again.');
+      }
     }
   }
 
@@ -82,10 +88,22 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     state = state.copyWith(isLoading: true, error: null, successMessage: null);
     try {
       await _dio.put('/me/settings', data: {'notification_prefs': prefs});
-      state = state.copyWith(notificationPrefs: prefs, isLoading: false, successMessage: 'Preferences saved');
+      if (!mounted) {
+        return false;
+      }
+      if (mounted) {
+        state = state.copyWith(notificationPrefs: prefs, isLoading: false, successMessage: 'Preferences saved');
+      }
       return true;
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
+      return false;
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: 'Something went wrong. Please try again.');
+      }
       return false;
     }
   }
@@ -94,10 +112,22 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     state = state.copyWith(isLoading: true, error: null, successMessage: null);
     try {
       await _dio.put('/me/settings', data: {'language': lang});
-      state = state.copyWith(language: lang, isLoading: false, successMessage: 'Language updated');
+      if (!mounted) {
+        return false;
+      }
+      if (mounted) {
+        state = state.copyWith(language: lang, isLoading: false, successMessage: 'Language updated');
+      }
       return true;
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
+      return false;
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: 'Something went wrong. Please try again.');
+      }
       return false;
     }
   }
@@ -120,10 +150,22 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
         'password': newPassword,
         'password_confirmation': newPassword,
       });
-      state = state.copyWith(isLoading: false, successMessage: 'Password updated');
+      if (!mounted) {
+        return false;
+      }
+      if (mounted) {
+        state = state.copyWith(isLoading: false, successMessage: 'Password updated');
+      }
       return true;
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
+      return false;
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: 'Something went wrong. Please try again.');
+      }
       return false;
     }
   }
@@ -132,14 +174,26 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     state = state.copyWith(isLoading: true, error: null, successMessage: null);
     try {
       await _dio.put('/me/privacy', data: privacy);
-      state = state.copyWith(
-        privacySettings: {...state.privacySettings, ...privacy},
-        isLoading: false,
-        successMessage: 'Privacy updated',
-      );
+      if (!mounted) {
+        return false;
+      }
+      if (mounted) {
+        state = state.copyWith(
+          privacySettings: {...state.privacySettings, ...privacy},
+          isLoading: false,
+          successMessage: 'Privacy updated',
+        );
+      }
       return true;
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
+      return false;
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: 'Something went wrong. Please try again.');
+      }
       return false;
     }
   }

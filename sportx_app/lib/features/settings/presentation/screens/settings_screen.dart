@@ -222,12 +222,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       _buildSettingsItem(
                         icon: LucideIcons.fileText,
                         title: 'Terms of Service',
-                        onTap: () {},
+                        onTap: () => context.push('/legal?tab=terms'),
                       ),
                       _buildSettingsItem(
                         icon: LucideIcons.shield,
                         title: 'Privacy Policy',
-                        onTap: () {},
+                        onTap: () => context.push('/legal?tab=privacy'),
                       ),
                     ],
                   ),

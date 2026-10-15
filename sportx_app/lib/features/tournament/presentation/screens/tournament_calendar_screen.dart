@@ -424,7 +424,11 @@ class _TournamentCalendarScreenState extends ConsumerState<TournamentCalendarScr
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
-                      tournament.status == 'open' ? 'Registration Open' : 'Coming Soon',
+                      tournament.status == 'published'
+                          ? 'Registration Open'
+                          : tournament.status == 'closed'
+                              ? 'Closed'
+                              : 'Coming Soon',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,

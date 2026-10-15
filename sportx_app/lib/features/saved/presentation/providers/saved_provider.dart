@@ -70,15 +70,26 @@ class SavedNotifier extends StateNotifier<SavedState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final resp = await _dio.get('/me/saved');
+      if (!mounted) {
+        return;
+      }
       // Backend returns a paginator wrapped in `data`; tolerate a bare list.
       final page = resp.data['data'];
       final raw = page is Map ? page['data'] as List? : page as List?;
       final list = (raw ?? [])
           .map((e) => SavedItem.fromJson(e as Map<String, dynamic>))
           .toList();
-      state = SavedState(items: list);
+      if (mounted) {
+        state = SavedState(items: list);
+      }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: 'Something went wrong. Please try again.');
+        }
     }
   }
 
@@ -91,17 +102,30 @@ class SavedNotifier extends StateNotifier<SavedState> {
     try {
       if (isSaved) {
         await _dio.delete('/me/saved', data: {'item_type': lowerType, 'item_id': parsedItemId});
-        state = state.copyWith(
+        if (!mounted) {
+          return false;
+        }
+        if (mounted) {
+          state = state.copyWith(
           items: state.items.where((i) => !(i.itemId == itemId && i.type.toLowerCase() == lowerType)).toList(),
-        );
+          );
+        }
         return false;
       } else {
         await _dio.post('/me/saved', data: {'item_type': lowerType, 'item_id': parsedItemId});
+        if (!mounted) {
+          return false;
+        }
         await load();
+        if (!mounted) {
+          return false;
+        }
         return true;
       }
     } on DioException catch (e) {
-      state = state.copyWith(error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(error: ApiException.fromDio(e).message);
+      }
       return isSaved;
     }
   }
@@ -110,9 +134,16 @@ class SavedNotifier extends StateNotifier<SavedState> {
     try {
       final parsedItemId = int.tryParse(item.itemId) ?? 0;
       await _dio.delete('/me/saved', data: {'item_type': item.type.toLowerCase(), 'item_id': parsedItemId});
-      state = state.copyWith(items: state.items.where((i) => i.id != item.id).toList());
+      if (!mounted) {
+        return;
+      }
+      if (mounted) {
+        state = state.copyWith(items: state.items.where((i) => i.id != item.id).toList());
+      }
     } on DioException catch (e) {
-      state = state.copyWith(error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(error: ApiException.fromDio(e).message);
+      }
     }
   }
 }

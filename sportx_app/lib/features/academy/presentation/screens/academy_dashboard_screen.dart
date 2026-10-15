@@ -44,7 +44,7 @@ class _AcademyDashboardScreenState extends ConsumerState<AcademyDashboardScreen>
           ),
         ],
       ),
-      body: _currentTabIndex == 0 ? _buildHomeTab() : const Center(child: Text('Under Construction')),
+      body: _buildHomeTab(),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentTabIndex,
         onDestinationSelected: (index) {

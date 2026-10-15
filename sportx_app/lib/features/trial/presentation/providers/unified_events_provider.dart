@@ -71,27 +71,44 @@ class MyEventsNotifier extends StateNotifier<MyEventsState> {
     state = state.copyWith(isLoading: true, filter: filter ?? state.filter);
     try {
       final resp = await _dio.get('/me/events', queryParameters: {'filter': state.filter});
+      if (!mounted) {
+        return;
+      }
       final data = resp.data['data'] as Map<String, dynamic>;
       final list = (data['events'] as List? ?? [])
           .map((e) => UnifiedEvent.fromJson(e as Map<String, dynamic>))
           .toList();
       final counts = data['counts'] as Map<String, dynamic>? ?? {};
-      state = state.copyWith(
+      if (mounted) {
+        state = state.copyWith(
         events: list,
         upcoming: (counts['upcoming'] as num?)?.toInt() ?? 0,
         past: (counts['past'] as num?)?.toInt() ?? 0,
         total: (counts['total'] as num?)?.toInt() ?? 0,
         isLoading: false,
-      );
+        );
+      }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: 'Something went wrong. Please try again.');
+        }
     }
   }
 
   Future<bool> publish(String id, String type) async {
     try {
       await _dio.post('/me/events/$id/publish', queryParameters: {'type': type});
+      if (!mounted) {
+        return false;
+      }
       await load();
+      if (!mounted) {
+        return false;
+      }
       return true;
     } on DioException {
       return false;
@@ -101,7 +118,13 @@ class MyEventsNotifier extends StateNotifier<MyEventsState> {
   Future<bool> close(String id, String type) async {
     try {
       await _dio.post('/me/events/$id/close', queryParameters: {'type': type});
+      if (!mounted) {
+        return false;
+      }
       await load();
+      if (!mounted) {
+        return false;
+      }
       return true;
     } on DioException {
       return false;

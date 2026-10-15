@@ -561,16 +561,15 @@ class _UniversalSearchScreenState extends ConsumerState<UniversalSearchScreen> {
         context.push('/tournament-detail/$id');
         break;
       case 'scholarship':
-        context.push('/scholarship-detail/$id');
-        break;
       case 'sponsorship':
-        context.push('/sponsorship-detail/$id');
+      case 'opportunity':
+        context.push('/opportunity-detail/$id');
         break;
       case 'sports_venue':
         context.push('/sports-venues');
         break;
       case 'athlete':
-        context.push('/athlete-profile-view', extra: {'id': id});
+        context.push('/view-profile', extra: {'type': 'athlete', 'id': id});
         break;
     }
   }

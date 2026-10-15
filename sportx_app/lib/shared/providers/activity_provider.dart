@@ -81,6 +81,19 @@ class ActivityEntry {
     );
   }
 
+  factory ActivityEntry.fromOpportunityApplication(Map<String, dynamic> json) {
+    final opp = json['opportunity'] as Map<String, dynamic>? ?? json;
+    return ActivityEntry(
+      id: json['id']?.toString() ?? '',
+      title: opp['title'] as String? ?? 'Opportunity',
+      status: json['status'] as String? ?? 'submitted',
+      date: json['created_at'] as String?,
+      category: 'opportunity',
+      entityType: 'opportunity',
+      entityId: opp['id']?.toString() ?? json['opportunity_id']?.toString(),
+    );
+  }
+
   factory ActivityEntry.fromEnquiry(Map<String, dynamic> json) {
     return ActivityEntry(
       id: json['id']?.toString() ?? '',
@@ -126,6 +139,9 @@ class ActivityNotifier extends StateNotifier<ActivityState> {
       // Fetch all registrations (trials + tournaments) from unified endpoint
       try {
         final regResp = await _dio.get('/me/registrations');
+        if (!mounted) {
+          return;
+        }
         final regList = (regResp.data['data'] as List? ?? []);
         for (final item in regList) {
           final type = item['type'] as String? ?? '';
@@ -137,18 +153,26 @@ class ActivityNotifier extends StateNotifier<ActivityState> {
         }
       } catch (_) {}
 
-      // Fetch sponsorship applications
+      // Fetch opportunity applications (unified Phase 4 endpoint).
+      // 403 for non-athletes is expected — skip silently.
       try {
-        final sponsorResp = await _dio.get('/me/sponsorship-applications');
-        final sponsorList = (sponsorResp.data['data'] as List? ?? sponsorResp.data as List? ?? []);
-        for (final item in sponsorList) {
-          allItems.add(ActivityEntry.fromSponsorshipApplication(item as Map<String, dynamic>));
+        final oppResp = await _dio.get('/me/opportunities', queryParameters: {'type': 'applied'});
+        if (!mounted) {
+          return;
+        }
+        final page = oppResp.data;
+        final oppList = (page is Map ? page['data'] as List? : page as List?) ?? [];
+        for (final item in oppList) {
+          allItems.add(ActivityEntry.fromOpportunityApplication(item as Map<String, dynamic>));
         }
       } catch (_) {}
 
       // Fetch enquiries
       try {
         final enquiryResp = await _dio.get('/me/enquiries');
+        if (!mounted) {
+          return;
+        }
         final enquiryList = (enquiryResp.data['data'] as List? ?? enquiryResp.data as List? ?? []);
         for (final item in enquiryList) {
           allItems.add(ActivityEntry.fromEnquiry(item as Map<String, dynamic>));
@@ -159,6 +183,9 @@ class ActivityNotifier extends StateNotifier<ActivityState> {
       if (allItems.isEmpty) {
         try {
           final resp = await _dio.get('/me/activity');
+          if (!mounted) {
+            return;
+          }
           final list = (resp.data['data'] as List? ?? resp.data as List? ?? []);
           for (final item in list) {
             allItems.add(ActivityEntry.fromJson(item as Map<String, dynamic>));
@@ -166,11 +193,17 @@ class ActivityNotifier extends StateNotifier<ActivityState> {
         } catch (_) {}
       }
 
-      state = ActivityState(items: allItems);
+      if (mounted) {
+        state = ActivityState(items: allItems);
+      }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'Failed to load activity: $e');
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: 'Failed to load activity: $e');
+      }
     }
   }
 }

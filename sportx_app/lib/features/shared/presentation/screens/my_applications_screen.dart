@@ -286,10 +286,10 @@ class _RegistrationsTab extends StatelessWidget {
             avatarText: 'C',
             onTap: () => context.push('/my-tournaments')),
         EntityRow(
-            title: 'My Sponsorships',
-            subtitle: 'Sponsorship applications',
-            avatarText: 'S',
-            onTap: () => context.push('/my-sponsorships')),
+            title: 'My Opportunities',
+            subtitle: 'Opportunity applications',
+            avatarText: 'O',
+            onTap: () => context.push('/my-opportunities')),
         EntityRow(
             title: 'Browse Opportunities',
             subtitle: 'Trials, tournaments & more',

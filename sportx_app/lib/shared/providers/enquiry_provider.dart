@@ -143,14 +143,25 @@ class EnquiryNotifier extends StateNotifier<EnquiryState> {
         params['filter'] = filter;
       }
       final resp = await _dio.get('/me/enquiries', queryParameters: params);
+      if (!mounted) {
+        return;
+      }
       final user = _ref.read(authProvider).user;
       final currentUserId = user?.id.toString();
       final list = (resp.data['data'] as List? ?? [])
           .map((e) => Enquiry.fromJson(e as Map<String, dynamic>, currentUserId: currentUserId))
           .toList();
-      state = EnquiryState(items: list);
+      if (mounted) {
+        state = EnquiryState(items: list);
+      }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: 'Something went wrong. Please try again.');
+        }
     }
   }
 
@@ -207,6 +218,11 @@ Future<(bool, String?)> replyEnquiry(WidgetRef ref, String id, String message) a
 Future<(bool, String?)> markEnquiryRead(Ref ref, String id) async {
   try {
     await ref.read(dioProvider).put('/enquiries/$id/read');
+    ref.invalidate(enquiryDetailProvider(id));
+    // NOTE: do NOT invalidate enquiryInboxProvider here — EnquiryNotifier
+    // does not auto-load, so invalidating would blank the inbox list.
+    // Reload explicitly instead.
+    ref.read(enquiryInboxProvider.notifier).load();
     return (true, null);
   } on DioException catch (e) {
     return (false, ApiException.fromDio(e).message);

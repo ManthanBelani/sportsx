@@ -5,6 +5,8 @@ import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
+import 'package:sportx_app/features/opportunity/presentation/providers/opportunity_provider.dart';
+import 'package:sportx_app/shared/models/opportunity.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
@@ -22,7 +24,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   String? _selectedState;
   String? _selectedAgeGroup;
 
-  final List<String> _tabs = ['Athletes', 'Coaches', 'Sponsors'];
+  final List<String> _tabs = ['Athletes', 'Coaches', 'Opportunities'];
 
   final List<String> _sports = ['Cricket', 'Football', 'Badminton', 'Tennis', 'Hockey'];
   final List<String> _states = ['Maharashtra', 'Gujarat', 'Delhi', 'Karnataka', 'Tamil Nadu'];
@@ -431,13 +433,13 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   }
 
   Widget _buildSponsorsGrid() {
-    final sponsorships = ref.watch(sponsorshipsProvider);
+    final opportunities = ref.watch(opportunitiesProvider);
 
-    if (sponsorships.isLoading && sponsorships.items.isEmpty) {
+    if (opportunities.isLoading && opportunities.items.isEmpty) {
       return const GenericGridSkeleton();
     }
-    if (sponsorships.items.isEmpty) {
-      return const Center(child: Text('No sponsors found'));
+    if (opportunities.items.isEmpty) {
+      return const Center(child: Text('No opportunities found'));
     }
     return GridView.builder(
       padding: const EdgeInsets.all(16),
@@ -447,16 +449,21 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
         crossAxisSpacing: 12,
         childAspectRatio: 0.85,
       ),
-      itemCount: sponsorships.items.length,
+      itemCount: opportunities.items.length,
       itemBuilder: (context, index) {
-        return _buildSponsorCard(sponsorships.items[index]);
+        return _buildSponsorCard(opportunities.items[index]);
       },
     );
   }
 
-  Widget _buildSponsorCard(dynamic sponsor) {
+  Widget _buildSponsorCard(Opportunity opportunity) {
+    final meta = [
+      opportunity.type,
+      if (opportunity.amount != null)
+        '₹${opportunity.amount!.toStringAsFixed(opportunity.amount! % 1 == 0 ? 0 : 2)}',
+    ].join(' · ');
     return InkWell(
-      onTap: () => context.push('/sponsor-pitch/${sponsor.id}'),
+      onTap: () => context.push('/opportunity-detail/${opportunity.id}'),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
@@ -482,14 +489,14 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    sponsor.title ?? 'Sponsorship',
+                    opportunity.title,
                     style: GoogleFonts.sora(fontWeight: FontWeight.w600, color: AppColors.ink),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    sponsor.industry ?? 'Various',
+                    meta,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   const SizedBox(height: 8),
@@ -500,7 +507,9 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
-                      sponsor.budget ?? 'Contact for details',
+                      opportunity.benefits ?? 'See details',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: AppColors.ctaDark,
                         fontSize: 11,

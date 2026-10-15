@@ -42,20 +42,39 @@ class ScoutRequestNotifier extends StateNotifier<ScoutRequestState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final resp = await _dio.get('/me/scout-connection-requests');
+      if (!mounted) {
+        return;
+      }
       final list = List<Map<String, dynamic>>.from(resp.data['data'] ?? []);
-      state = ScoutRequestState(requests: list);
+      if (mounted) {
+        state = ScoutRequestState(requests: list);
+      }
     } on DioException catch (e) {
-      state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: ApiException.fromDio(e).message);
+      }
+    } catch (_) {
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: 'Something went wrong. Please try again.');
+        }
     }
   }
 
   Future<bool> accept(String connectionId) async {
     try {
       await _dio.post('/me/scout-connection-requests/$connectionId/accept');
+      if (!mounted) {
+        return false;
+      }
       await load();
+      if (!mounted) {
+        return false;
+      }
       return true;
     } on DioException catch (e) {
-      state = state.copyWith(error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(error: ApiException.fromDio(e).message);
+      }
       return false;
     }
   }
@@ -63,10 +82,18 @@ class ScoutRequestNotifier extends StateNotifier<ScoutRequestState> {
   Future<bool> reject(String connectionId) async {
     try {
       await _dio.post('/me/scout-connection-requests/$connectionId/reject');
+      if (!mounted) {
+        return false;
+      }
       await load();
+      if (!mounted) {
+        return false;
+      }
       return true;
     } on DioException catch (e) {
-      state = state.copyWith(error: ApiException.fromDio(e).message);
+      if (mounted) {
+        state = state.copyWith(error: ApiException.fromDio(e).message);
+      }
       return false;
     }
   }

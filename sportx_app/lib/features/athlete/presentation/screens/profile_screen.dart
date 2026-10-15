@@ -756,21 +756,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           _QuickLink('Search', '/universal-search', LucideIcons.search),
         ];
       case 'sponsor':
+        // Legacy role (removed server-side): route to unified opportunities.
         return const [
-          _QuickLink('Dashboard', '/sponsor-dashboard', LucideIcons.layoutDashboard),
-          _QuickLink('Post Sponsor', '/sponsor-posting', LucideIcons.plusCircle),
-          _QuickLink('Discover', '/athlete-discovery', LucideIcons.search),
-          _QuickLink('Shortlist', '/shortlist', LucideIcons.star),
-          _QuickLink('Applications', '/applications-inbox', LucideIcons.inbox),
-          _QuickLink('My Listings', '/my-sponsorships', LucideIcons.list),
+          _QuickLink('Opportunities', '/opportunities', LucideIcons.layoutDashboard),
+          _QuickLink('My Opportunities', '/my-opportunities', LucideIcons.list),
+          _QuickLink('Activity', '/activity-hub', LucideIcons.activity),
         ];
       default: // athlete
         return const [
           _QuickLink('Edit Profile', '/edit-profile', LucideIcons.edit2),
           _QuickLink('Media', '/media-gallery', LucideIcons.image),
           _QuickLink('Activity', '/activity-hub', LucideIcons.activity),
-          _QuickLink('Scholarships', '/scholarships', LucideIcons.graduationCap),
-          _QuickLink('Sponsorships', '/sponsorships', LucideIcons.star),
+          _QuickLink('Opportunities', '/opportunities', LucideIcons.graduationCap),
           _QuickLink('Tournaments', '/tournament-calendar', LucideIcons.calendar),
           _QuickLink('Connections', '/my-connections', LucideIcons.users),
         ];
