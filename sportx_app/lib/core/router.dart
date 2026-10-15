@@ -7,6 +7,7 @@ import 'package:sportx_app/features/auth/presentation/providers/auth_provider.da
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/services/push_notification_service.dart';
 import 'package:sportx_app/features/auth/presentation/screens/splash_screen.dart';
+import 'package:sportx_app/features/auth/presentation/screens/landing_screen.dart';
 import 'package:sportx_app/features/auth/presentation/screens/role_selection_screen.dart';
 import 'package:sportx_app/features/auth/presentation/screens/sign_up_screen.dart';
 import 'package:sportx_app/features/auth/presentation/screens/login_screen.dart';
@@ -72,6 +73,7 @@ import 'package:sportx_app/features/settings/presentation/screens/social_links_s
 import 'package:sportx_app/features/sports_venue/presentation/screens/sports_venue_list_screen.dart';
 import 'package:sportx_app/features/sports_venue/presentation/screens/sports_venue_detail_screen.dart';
 import 'package:sportx_app/features/social/presentation/screens/create_post_screen.dart';
+import 'package:sportx_app/features/social/presentation/screens/community_feed_screen.dart';
 import 'package:sportx_app/features/chat/presentation/screens/chat_list_screen.dart';
 import 'package:sportx_app/features/chat/presentation/screens/chat_screen.dart';
 import 'package:sportx_app/features/athlete/presentation/screens/edit_profile_screen.dart';
@@ -213,7 +215,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final authState = ref.read(authProvider);
       final status = authState.status;
       final role = authState.user?.role;
-      const authScreens = ['/splash', '/role-selection', '/sign-up', '/login', '/verify-otp', '/admin/login'];
+      const authScreens = ['/splash', '/landing', '/role-selection', '/sign-up', '/login', '/verify-otp', '/admin/login'];
       const onboardingScreens = [
         '/onboarding-1', '/onboarding-2',
         '/coach-onboarding', '/academy-onboarding',
@@ -256,7 +258,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       if (status == AuthStatus.unauthenticated) {
-        if (loc == '/splash') return '/role-selection';
+        if (loc == '/splash') return '/landing';
         if (authScreens.contains(loc)) return null;
         if (loc.startsWith('/admin')) return null;
         return '/role-selection';
@@ -266,6 +268,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
+      GoRoute(path: '/landing', builder: (context, state) => const LandingScreen()),
       GoRoute(path: '/role-selection', builder: (context, state) => const RoleSelectionScreen()),
       GoRoute(path: '/sign-up', builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
@@ -445,6 +448,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/sports-venues', builder: (context, state) => const SportsVenueListScreen()),
       GoRoute(path: '/sports-venue-detail/:id', builder: (context, state) => SportsVenueDetailScreen(id: state.pathParameters['id']!)),
       GoRoute(path: '/create-post', builder: (context, state) => const CreatePostScreen()),
+      GoRoute(path: '/community', builder: (context, state) => const CommunityFeedScreen()),
       GoRoute(path: '/chat-list', builder: (context, state) => const ChatListScreen()),
       GoRoute(path: '/chat-screen', builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
@@ -532,7 +536,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
           // v3 wireframe IA aliases (Explore / Community / More)
           GoRoute(path: '/explore', redirect: (_, __) => '/universal-search'),
-          GoRoute(path: '/community', redirect: (_, __) => '/network'),
           GoRoute(path: '/more', redirect: (_, __) => '/profile'),
         ],
       ),

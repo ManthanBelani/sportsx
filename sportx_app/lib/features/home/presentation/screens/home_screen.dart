@@ -5,6 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/opportunity/presentation/providers/opportunity_provider.dart';
+import 'package:sportx_app/features/social/presentation/providers/posts_provider.dart';
+import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/shared/providers/providers.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
@@ -24,7 +27,8 @@ class HomeScreen extends ConsumerWidget {
     final initial = firstName.isNotEmpty ? firstName[0].toUpperCase() : 'A';
 
     Future<void> onRefresh() async {
-      await Future.wait([
+      ref.invalidate(postsFeedProvider);
+      await Future.wait<dynamic>([
         ref.read(academiesProvider.notifier).refresh(),
         ref.read(coachesProvider.notifier).refresh(),
         ref.read(trialsProvider.notifier).refresh(),
@@ -155,6 +159,8 @@ class HomeScreen extends ConsumerWidget {
                           onTap: () => context.push('/saved')),
                     ],
                   ),
+                  const SizedBox(height: 24),
+                  const _FeedSection(),
                   const SizedBox(height: 24),
                   SectionHeader(
                       title: 'Recommended Academies & Coaches',
@@ -460,4 +466,323 @@ class _ScholarshipSection extends ConsumerWidget {
       }).toList(),
     );
   }
+}
+
+class _FeedSection extends ConsumerWidget {
+  const _FeedSection();
+
+  Future<void> _toggleLike(WidgetRef ref, String postId, bool currentlyLiked) async {
+    if (currentlyLiked) {
+      await unlikePost(ref, postId);
+    } else {
+      await togglePostLike(ref, postId);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final feed = ref.watch(postsFeedProvider);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SectionHeader(
+          title: 'Latest from the Community',
+          actionText: 'See all',
+          onActionTap: () => context.push('/community'),
+        ),
+        if (feed.isLoading && feed.value == null)
+          const _FeedSkeleton()
+        else if (feed.hasError)
+          _FeedRetry(onRetry: () => ref.invalidate(postsFeedProvider))
+        else if (!feed.hasValue || feed.value!.isEmpty)
+          const SizedBox(
+            height: 120,
+            child: Center(
+              child: Text(
+                'Be the first to post — share an update from your training.',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          )
+        else
+          ...feed.value!.take(2).map((p) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _PostCard(
+                  post: p,
+                  onLike: () => _toggleLike(ref, p.id, p.liked),
+                  onTap: () => context.push('/post-detail/${p.id}'),
+                ),
+              )),
+      ],
+    );
+  }
+}
+
+class _FeedSkeleton extends StatelessWidget {
+  const _FeedSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.only(bottom: 12),
+      child: ShimmerSkeleton(
+        child: Column(
+          children: [
+            _SkeletonPost(),
+            SizedBox(height: 12),
+            _SkeletonPost(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedRetry extends StatelessWidget {
+  final VoidCallback onRetry;
+  const _FeedRetry({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: OutlinedButton.icon(
+        onPressed: onRetry,
+        icon: const Icon(LucideIcons.refreshCw, size: 16),
+        label: const Text('Couldn\'t load feed — tap to retry'),
+      ),
+    );
+  }
+}
+
+class _SkeletonPost extends StatelessWidget {
+  const _SkeletonPost();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            SkeletonBox(width: 36, height: 36, borderRadius: 99),
+            SizedBox(width: 10),
+            SkeletonBox(width: 120, height: 12, borderRadius: 6),
+          ]),
+          SizedBox(height: 12),
+          SkeletonBox(width: double.infinity, height: 12, borderRadius: 6),
+          SizedBox(height: 6),
+          SkeletonBox(width: 220, height: 12, borderRadius: 6),
+        ],
+      ),
+    );
+  }
+}
+
+class _PostCard extends StatelessWidget {
+  final SocialPost post;
+  final VoidCallback onLike;
+  final VoidCallback onTap;
+  const _PostCard({
+    required this.post,
+    required this.onLike,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final avatar = post.authorAvatar;
+    final image = post.imageUrl;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: SportXShadows.e1,
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: AppColors.yellowTint,
+                    backgroundImage: (avatar != null && avatar.isNotEmpty)
+                        ? NetworkImage(MediaUtils.resolveUrl(avatar))
+                        : null,
+                    child: (avatar == null || avatar.isEmpty)
+                        ? Text(
+                            post.authorName.isNotEmpty
+                                ? post.authorName[0].toUpperCase()
+                                : 'U',
+                            style: GoogleFonts.sora(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.ink,
+                            ),
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          post.authorName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.ink,
+                          ),
+                        ),
+                        if ((post.createdAt ?? '').isNotEmpty)
+                          Text(
+                            _humanizeTime(post.createdAt!),
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if ((post.body ?? '').isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+                child: Text(
+                  post.body!,
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    height: 1.4,
+                    color: AppColors.ink,
+                  ),
+                ),
+              ),
+            if (image != null && image.isNotEmpty)
+              AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Image.network(
+                  MediaUtils.resolveUrl(image),
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => Container(
+                    color: AppColors.surface,
+                    alignment: Alignment.center,
+                    child: const Icon(LucideIcons.image,
+                        color: AppColors.textTertiary, size: 32),
+                  ),
+                ),
+              ),
+            Container(
+              height: 1,
+              margin: const EdgeInsets.symmetric(horizontal: 12),
+              color: AppColors.borderSoft,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              child: Row(
+                children: [
+                  _ActionButton(
+                    icon: post.liked ? LucideIcons.heart : LucideIcons.heart,
+                    iconColor:
+                        post.liked ? Colors.redAccent : AppColors.textSecondary,
+                    filled: post.liked,
+                    label: _compactNumber(post.likesCount),
+                    onTap: onLike,
+                  ),
+                  _ActionButton(
+                    icon: LucideIcons.messageCircle,
+                    iconColor: AppColors.textSecondary,
+                    label: _compactNumber(post.commentsCount),
+                    onTap: onTap,
+                  ),
+                  const Spacer(),
+                  _ActionButton(
+                    icon: LucideIcons.share2,
+                    iconColor: AppColors.textSecondary,
+                    onTap: onTap,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ActionButton extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final bool filled;
+  final String? label;
+  final VoidCallback onTap;
+  const _ActionButton({
+    required this.icon,
+    required this.iconColor,
+    required this.onTap,
+    this.label,
+    this.filled = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton.icon(
+      onPressed: onTap,
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        minimumSize: const Size(0, 36),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        foregroundColor: iconColor,
+      ),
+      icon: Icon(icon, size: 18, color: iconColor,
+          fill: filled ? 1.0 : null),
+      label: label == null
+          ? const SizedBox.shrink()
+          : Text(label!,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+              )),
+    );
+  }
+}
+
+String _humanizeTime(String raw) {
+  final dt = DateTime.tryParse(raw);
+  if (dt == null) return '';
+  final diff = DateTime.now().difference(dt);
+  if (diff.inMinutes < 1) return 'just now';
+  if (diff.inMinutes < 60) return '${diff.inMinutes}m';
+  if (diff.inHours < 24) return '${diff.inHours}h';
+  if (diff.inDays < 7) return '${diff.inDays}d';
+  return '${dt.day}/${dt.month}';
+}
+
+String _compactNumber(int n) {
+  if (n < 1000) return n.toString();
+  if (n < 10000) return '${(n / 1000).toStringAsFixed(1)}K';
+  return '${(n / 1000).round()}K';
 }
