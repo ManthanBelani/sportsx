@@ -56,4 +56,78 @@ final class PlatformSettings
             default => false,
         };
     }
+
+    /**
+     * Effective settings = defaults overlaid with stored overrides.
+     */
+    public static function effective(): array
+    {
+        return array_merge(static::defaults(), array_intersect_key(static::all(), static::defaults()));
+    }
+
+    /**
+     * Persist an allow-listed subset of settings. Returns the effective map.
+     */
+    public static function update(array $values): array
+    {
+        $allowed = static::writable();
+        $patch = array_intersect_key($values, array_flip($allowed));
+
+        $current = static::all();
+        foreach ($patch as $k => $v) {
+            $current[$k] = $v;
+        }
+
+        @file_put_contents(
+            storage_path('app/platform_settings.json'),
+            json_encode($current, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+        );
+
+        return static::effective();
+    }
+
+    /**
+     * Keys the mobile admin screen (and the web panel) may change at runtime.
+     */
+    public static function writable(): array
+    {
+        return [
+            'maintenance_mode',
+            'registrations_open',
+            'auto_approve_trials',
+            'auto_approve_tournaments',
+            'push_notifications',
+            'email_alerts',
+        ];
+    }
+
+    public static function defaults(): array
+    {
+        return [
+            'moderation_required' => true,
+            'auto_verify_coaches' => false,
+            'auto_approve_coach' => false,
+            'auto_approve_sponsor' => false,
+            'auto_approve_talent_scout' => false,
+            'auto_approve_trials' => false,
+            'auto_approve_tournaments' => false,
+            'auto_approve_scholarships' => false,
+            'auto_approve_sponsorships' => false,
+            'auto_approve_academies' => false,
+            'auto_approve_venues' => false,
+            'email_alerts' => true,
+            'push_notifications' => true,
+            'suspicious_login_detection' => true,
+            'maintenance_mode' => false,
+            'registrations_open' => true,
+            'max_listings_per_user_per_day' => 5,
+            'media_max_size_mb' => 10,
+            'session_lifetime_minutes' => 30,
+            'rate_limit_login_per_minute' => 10,
+            'audit_log_enabled' => true,
+            'data_retention_days' => 365,
+            'allow_user_data_export' => true,
+            'allow_user_data_delete' => true,
+        ];
+    }
 }

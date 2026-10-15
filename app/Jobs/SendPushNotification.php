@@ -20,8 +20,7 @@ class SendPushNotification implements ShouldQueue
     public int $tries = 3;
     public int $backoff = 60;
 
-    /** Separate queue so a slow SMTP handshake never starves push. */
-    public $queue = 'push';
+    /** Separate queue so a slow SMTP handshake never starves push (set in ctor — must not redeclare Queueable::$queue). */
 
     public function __construct(
         public array $deviceTokens,
@@ -30,7 +29,9 @@ class SendPushNotification implements ShouldQueue
         public array $data = [],
         public ?int $userId = null,
         public ?int $notificationId = null,
-    ) {}
+    ) {
+        $this->onQueue('push');
+    }
 
     public function handle(FCMService $fcmService): void
     {

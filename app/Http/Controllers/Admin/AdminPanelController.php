@@ -15,6 +15,7 @@ use App\Models\SportsVenue;
 use App\Models\Tournament;
 use App\Models\Trial;
 use App\Models\User;
+use App\Support\PlatformSettings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -693,35 +694,9 @@ class AdminPanelController extends Controller
 
     private function readSettings(): array
     {
-        $defaults = [
-            'moderation_required' => true,
-            'auto_verify_coaches' => false,
-            // Per-type auto-approve — if true, new entries go live immediately; if false, they stay pending/draft
-            'auto_approve_coach' => false,
-            'auto_approve_sponsor' => false,
-            'auto_approve_talent_scout' => false,
-            'auto_approve_trials' => false,
-            'auto_approve_tournaments' => false,
-            'auto_approve_scholarships' => false,
-            'auto_approve_sponsorships' => false,
-            'auto_approve_academies' => false,
-            'auto_approve_venues' => false,
-            'email_alerts' => true,
-            'push_notifications' => true,
-            'suspicious_login_detection' => true,
-            'maintenance_mode' => false,
-            // Platform access & limits
-            'registrations_open' => true,
-            'max_listings_per_user_per_day' => 5,
-            'media_max_size_mb' => 10,
-            'session_lifetime_minutes' => 30,
-            'rate_limit_login_per_minute' => 10,
-            'audit_log_enabled' => true,
-            // Data & compliance
-            'data_retention_days' => 365,
-            'allow_user_data_export' => true,
-            'allow_user_data_delete' => true,
-        ];
+        // Single source of truth lives in PlatformSettings (shared with the
+        // JSON API consumed by the mobile System Settings screen).
+        $defaults = PlatformSettings::defaults();
         $path = $this->settingsPath();
         if (file_exists($path)) {
             $stored = json_decode((string) file_get_contents($path), true) ?: [];

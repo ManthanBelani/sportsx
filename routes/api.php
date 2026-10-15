@@ -26,6 +26,11 @@ use App\Http\Controllers\MediaController;
 use App\Http\Controllers\MetaController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NotificationPreferenceController;
+use App\Http\Controllers\OpportunityController;
+use App\Http\Controllers\ProgramController;
+use App\Http\Controllers\FacilityController;
+use App\Http\Controllers\AchievementController;
+use App\Http\Controllers\PrivacyController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\PostController;
@@ -56,6 +61,7 @@ use App\Http\Controllers\Admin\AdminContentController;
 use App\Http\Controllers\Admin\AdminModerationController;
 use App\Http\Controllers\Admin\AdminExpiryController;
 use App\Http\Controllers\Admin\AdminCategoryController;
+use App\Http\Controllers\Admin\AdminSettingsController;
 use App\Http\Controllers\Admin\EmailSettingsController;
 use App\Http\Controllers\Admin\RegistrationAnalyticsController;
 use App\Http\Controllers\AdminUserController;
@@ -551,6 +557,10 @@ Route::prefix('v1')->group(function () {
         Route::post('/categories/positions', [AdminCategoryController::class, 'positionsStore']);
         Route::put('/categories/positions/{id}', [AdminCategoryController::class, 'positionsUpdate']);
         Route::delete('/categories/positions/{id}', [AdminCategoryController::class, 'positionsDestroy']);
+
+        // Admin platform settings (JSON API for the mobile System Settings screen)
+        Route::get('/settings', [AdminSettingsController::class, 'index']);
+        Route::put('/settings', [AdminSettingsController::class, 'update']);
 
         // Admin Email settings (Phase 3E: provider status, runtime switch, test)
         Route::get('/email-settings', [EmailSettingsController::class, 'show']);
