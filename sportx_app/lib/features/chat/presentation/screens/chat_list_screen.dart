@@ -201,7 +201,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                 style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14.5, color: AppColors.ink),
                 overflow: TextOverflow.ellipsis),
           ),
-          Text(chat.lastMessageAt ?? '',
+          Text(shortChatTime(chat.lastMessageAt),
               style: GoogleFonts.inter(fontSize: 11, color: AppColors.textTertiary)),
         ],
       ),

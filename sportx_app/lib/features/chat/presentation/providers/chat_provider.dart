@@ -45,16 +45,51 @@ class ChatMessage {
     this.createdAt,
   });
 
+  /// Sender ids arrive in mixed shapes ("7", 7, or "users/7") — normalize to
+  /// the trailing numeric id so `senderId == currentUserId` actually matches
+  /// and bubbles align to the right side for the current user.
+  static String _normalizedId(dynamic raw) {
+    final s = raw?.toString() ?? '';
+    final m = RegExp(r'(\d+)\s*$').firstMatch(s);
+    return m != null ? m.group(1)! : s;
+  }
+
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
     final sender = json['sender'] as Map<String, dynamic>?;
     return ChatMessage(
       id: json['id']?.toString() ?? '',
       body: (json['body'] ?? '').toString(),
-      senderId: (sender?['id'] ?? json['sender_user_id'])?.toString() ?? '',
+      senderId: _normalizedId(sender?['id'] ?? json['sender_user_id']),
       senderName: (sender?['name'] ?? 'User').toString(),
       createdAt: json['created_at'] as String?,
     );
   }
+}
+
+const _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const _months = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
+/// Short human time for chat lists/bubbles:
+/// today → 10:42 · yesterday → Yesterday · <7d → Tue · this year → 12 Oct · older → 12/10/25.
+String shortChatTime(String? raw) {
+  if (raw == null || raw.isEmpty) return '';
+  final dt = DateTime.tryParse(raw);
+  if (dt == null) return raw;
+  final local = dt.toLocal();
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final day = DateTime(local.year, local.month, local.day);
+  final diff = today.difference(day).inDays;
+  final hh = local.hour.toString().padLeft(2, '0');
+  final mm = local.minute.toString().padLeft(2, '0');
+  if (diff == 0) return '$hh:$mm';
+  if (diff == 1) return 'Yesterday';
+  if (diff < 7) return _weekdays[local.weekday - 1];
+  if (local.year == now.year) return '${local.day} ${_months[local.month - 1]}';
+  return '${local.day}/${local.month}/${local.year % 100}';
 }
 
 final conversationsProvider = FutureProvider<List<ConversationItem>>((ref) async {

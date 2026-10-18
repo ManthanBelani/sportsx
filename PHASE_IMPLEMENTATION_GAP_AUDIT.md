@@ -1,4 +1,4 @@
-# SportX — Phase 0–10 Implementation Gap Audit (Production Gate)
+cl# SportX — Phase 0–10 Implementation Gap Audit (Production Gate)
 
 **Date:** 2026-10-14
 **Scope:** `PHASE_WISE_IMPLEMENTATION_PLAN.md` (Phases 0, 1, 2, 3, 3E, 4, 5, 6, 7, 8, 9, 10) vs `sportx-api/` (Laravel, `routes/api.php` ~582 lines, `database/migrations/` 57 files, `app/Services|Jobs|Mail|Http/Controllers`) vs `sportx_app/` (Flutter, `lib/core/router.dart` ~660 lines / ~130 GoRoutes, `pubspec.yaml`, `android/`, `ios/`, `lib/main.dart`, `lib/features/*`)

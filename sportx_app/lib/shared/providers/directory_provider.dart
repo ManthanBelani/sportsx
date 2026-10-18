@@ -180,16 +180,6 @@ final tournamentDetailProvider = FutureProvider.family<Tournament, String>((ref,
   return _detailFromResponse<Tournament>(resp, Tournament.fromJson);
 });
 
-final scholarshipDetailProvider = FutureProvider.family<Scholarship, String>((ref, id) async {
-  final resp = await ref.watch(dioProvider).get('/scholarships/$id');
-  return _detailFromResponse<Scholarship>(resp, Scholarship.fromJson);
-});
-
-final sponsorshipDetailProvider = FutureProvider.family<Sponsorship, String>((ref, id) async {
-  final resp = await ref.watch(dioProvider).get('/sponsorships/$id');
-  return _detailFromResponse<Sponsorship>(resp, Sponsorship.fromJson);
-});
-
 final sportsVenueDetailProvider = FutureProvider.family<SportsVenue, String>((ref, id) async {
   final resp = await ref.watch(dioProvider).get('/sports-venues/$id');
   return _detailFromResponse<SportsVenue>(resp, SportsVenue.fromJson);

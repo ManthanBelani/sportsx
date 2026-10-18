@@ -75,11 +75,11 @@ class _SavedScreenState extends ConsumerState<SavedScreen> with SingleTickerProv
         return '/tournament-detail/${item.itemId}';
       case 'scholarship':
       case 'scholarships':
-        return '/scholarship-detail/${item.itemId}';
       case 'sponsorship':
       case 'sponsorships':
       case 'sponsor':
-        return '/sponsorship-detail/${item.itemId}';
+      case 'opportunity':
+        return '/opportunity-detail/${item.itemId}';
       case 'sports_venue':
       case 'sportsvenue':
       case 'venue':

@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_flutter/lucide_flutter.dart';
-import 'package:sportx_app/features/coach/presentation/providers/coach_provider.dart';
-import 'package:sportx_app/features/coach/presentation/screens/coach_enquiry_inbox_screen.dart';
-import 'package:sportx_app/features/coach/presentation/screens/coach_profile_view_screen.dart';
-import 'package:sportx_app/core/utils/media_utils.dart';
-import 'package:sportx_app/shared/models/coach.dart';
-import 'package:sportx_app/shared/providers/enquiry_provider.dart';
-import 'package:sportx_app/theme/colors.dart';
-import 'package:sportx_app/core/utils/date_format_utils.dart';
-import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/core/utils/media_utils.dart';
+import 'package:sportx_app/features/coach/presentation/providers/coach_provider.dart';
+import 'package:sportx_app/shared/providers/enquiry_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/home_kit.dart';
+import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
+/// CO.2 Coach dashboard — v3 homeShell('Hi, Coach …', 'COACH', …) ending with
+/// the design's "Recent enquiries" list. Providers/routes unchanged.
 class CoachDashboardScreen extends ConsumerStatefulWidget {
   const CoachDashboardScreen({super.key});
 
@@ -22,8 +20,6 @@ class CoachDashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
-  int _currentTabIndex = 0;
-
   @override
   void initState() {
     super.initState();
@@ -33,451 +29,92 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
     });
   }
 
-  void _switchTab(int index) {
-    if (mounted) setState(() => _currentTabIndex = index);
-  }
-
   @override
   Widget build(BuildContext context) {
     final coachState = ref.watch(coachProvider);
-    final profile = coachState.coachProfile;
+    final coach = coachState.coachProfile;
+    final firstName = coach?.fullName.split(' ').first ?? 'Coach';
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppBar(
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-        title: Text('SportX',
-            style: GoogleFonts.sora(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.ink)),
-        actions: [
-          IconButton(
-            icon: const Icon(LucideIcons.settings, color: AppColors.textPrimary),
-            onPressed: () => context.push('/settings'),
-          ),
-          IconButton(
-            icon: const Icon(LucideIcons.bell, color: AppColors.textPrimary),
-            onPressed: () => context.push('/notifications'),
-          ),
-        ],
-      ),
-      body: IndexedStack(
-        index: _currentTabIndex,
-        children: [
-          _buildHomeTab(profile),
-          _buildScheduleTab(),
-          const CoachEnquiryInboxScreen(isTabContent: true),
-          const CoachProfileViewScreen(isTabContent: true),
-        ],
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentTabIndex,
-        onDestinationSelected: (index) {
-          if (index == 2) {
-            context.push('/coach-enquiry-inbox');
-          } else {
-            setState(() => _currentTabIndex = index);
-          }
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(LucideIcons.home),
-            selectedIcon: Icon(LucideIcons.home, color: AppColors.primary),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(LucideIcons.calendar),
-            selectedIcon: Icon(LucideIcons.calendar, color: AppColors.primary),
-            label: 'Schedule',
-          ),
-          NavigationDestination(
-            icon: Icon(LucideIcons.messageCircle),
-            selectedIcon: Icon(LucideIcons.messageCircle, color: AppColors.primary),
-            label: 'Enquiries',
-          ),
-          NavigationDestination(
-            icon: Icon(LucideIcons.user),
-            selectedIcon: Icon(LucideIcons.user, color: AppColors.primary),
-            label: 'Profile',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildScheduleTab() {
-    final coachState = ref.watch(coachProvider);
-    if (coachState.isLoading && coachState.coachProfile == null) {
-      return const CoachDashboardScheduleSkeleton();
-    }
-    final availability = coachState.coachProfile?.availability ?? {};
-    final hasAvailability = availability.values.any((s) => (s as List).isNotEmpty);
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-        boxShadow: SportXShadows.e1,
-      ),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                Container(width: 40, height: 40, decoration: BoxDecoration(color: AppColors.coach.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(16)), child: const Icon(LucideIcons.calendar, color: AppColors.coach, size: 20)),
-                const SizedBox(width: 12),
-                 Expanded(child: Text('Weekly Availability', style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary))),
-                TextButton(onPressed: () => context.push('/coach-profile-edit'), child: const Text('Edit')),
-              ]),
-              const SizedBox(height: 12),
-              if (!hasAvailability)
-                const Text('No availability set. Tap Edit to define your weekly time slots.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary))
-              else
-                ...availability.entries.where((e) => (e.value as List).isNotEmpty).map((e) => Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: Row(children: [
-                        SizedBox(width: 40, child: Text(e.key, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary))),
-                        Expanded(child: Text((e.value as List).join(', '), style: const TextStyle(fontSize: 13, color: AppColors.textSecondary))),
-                      ]),
-                    )),
-            ]),
-          ),
-          const SizedBox(height: 24),
-          const SectionHeader(title: 'Quick Actions'),
-          GestureDetector(onTap: () => context.push('/coach-profile-edit'), child: _buildScheduleAction(LucideIcons.clock, 'Set Availability', hasAvailability ? 'Update your time slots' : 'Define your weekly time slots')),
-          GestureDetector(onTap: () => context.push('/coach-enquiry-inbox'), child: _buildScheduleAction(LucideIcons.messageCircle, 'Enquiries', 'View and reply to athlete enquiries')),
-          _buildScheduleAction(LucideIcons.mapPin, 'Training Location', coachState.coachProfile?.city?.name ?? 'Set in profile'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildScheduleAction(IconData icon, String title, String subtitle) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-        boxShadow: SportXShadows.e1,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: AppColors.coach.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(16),
+      body: RefreshIndicator(
+        color: AppColors.yellowDeep,
+        onRefresh: () async => ref.read(enquiryInboxProvider.notifier).load(),
+        child: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              backgroundColor: Colors.white.withValues(alpha: 0.96),
+              pinned: true,
+              elevation: 0,
+              automaticallyImplyLeading: false,
+              toolbarHeight: 68,
+              titleSpacing: 16,
+              title: Row(
+                children: const [
+                  Expanded(child: SportXWordmark()),
+                  HomeHeaderActions(),
+                ],
+              ),
             ),
-            child: Icon(icon, color: AppColors.coach, size: 22),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                const SizedBox(height: 2),
-                Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-              ],
-            ),
-          ),
-          const Icon(LucideIcons.chevronRight, color: AppColors.textSecondary, size: 20),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHomeTab(Coach? profile) {
-    final coachState = ref.watch(coachProvider);
-    if (coachState.isLoading && profile == null) {
-      return const CoachDashboardHomeSkeleton();
-    }
-    final enquiryState = ref.watch(enquiryInboxProvider);
-    final totalEnquiries = enquiryState.items.length;
-    final newEnquiries = enquiryState.items.where((e) => e.status == 'new' && !e.isRead).length;
-    final thisMonthEnquiries = totalEnquiries > 0 ? (totalEnquiries * 0.8).ceil() : 0;
-    final avgRating = profile?.rating?.toString() ?? profile?.avgRating?.toString() ?? '-';
-    final recentEnquiries = enquiryState.items.take(5).toList();
-    final name = profile?.fullName.split(' ').first ?? 'Coach';
-    
-    String? photoUrl = profile?.profilePhotoUrl != null ? MediaUtils.resolveUrl(profile!.profilePhotoUrl!) : null;
-    final completeness = _calculateProfileCompleteness(profile);
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
-              boxShadow: SportXShadows.e1,
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  key: ValueKey(photoUrl ?? 'no-photo'),
-                  radius: 28,
-                  backgroundColor: AppColors.coach.withValues(alpha: 0.12),
-                  backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
-                  onBackgroundImageError: photoUrl != null ? (_, _) {} : null,
-                  child: photoUrl == null ? const Icon(LucideIcons.user, color: AppColors.coach, size: 28) : null,
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  GreetCardV3(
+                    greeting: greetingFor(DateTime.now()),
+                    name: 'Hi, $firstName!',
+                    avatarInitial: firstName.isNotEmpty ? firstName[0].toUpperCase() : 'C',
+                    avatarUrl: MediaUtils.resolveNullable(coach?.profilePhotoUrl),
+                    subtitle: 'Complete your profile to appear in athlete searches',
+                    progress: coach != null && coachState.certifications.isNotEmpty ? 0.75 : 0.5,
+                    ctaLabel: 'Complete Now',
+                    onCta: () => context.push('/coach-profile-edit'),
+                  ),
+                  const SizedBox(height: 10),
+                  const RoleLine(badgeLabel: 'COACH'),
+                  const LeaderboardSectionV3(),
+                  GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                    childAspectRatio: 0.62,
                     children: [
-                      Text('Welcome, $name!', style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                      const SizedBox(height: 2),
-                      Text(
-                        profile != null
-                            ? '${profile.sport?.name ?? 'Coach'} · ${profile.city?.name ?? 'Location'}'
-                            : 'Set up your profile',
-                        style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
-                      ),
-                      if (newEnquiries > 0) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          'You have $newEnquiries new enquiry${newEnquiries != 1 ? 'ies' : 'y'}',
-                          style: const TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w500),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          Row(
-            children: [
-              Expanded(child: _buildStatCard('$totalEnquiries', 'Total Enquiries')),
-              const SizedBox(width: 10),
-              Expanded(child: _buildStatCard('$thisMonthEnquiries', 'This Month')),
-              const SizedBox(width: 10),
-              Expanded(child: _buildStatCard(avgRating, 'Avg Rating', icon: LucideIcons.star)),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
-              boxShadow: SportXShadows.e1,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Profile Completeness', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                    Text('${(completeness * 100).toInt()}%', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary)),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(999),
-                  child: LinearProgressIndicator(
-                    value: completeness,
-                    backgroundColor: AppColors.border,
-                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
-                    minHeight: 8,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                ..._buildProfileTips(profile),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
-              boxShadow: SportXShadows.e1,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SectionHeader(title: 'Quick Actions'),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildQuickAction(LucideIcons.user, 'Edit Profile', () => _switchTab(3)),
-                    _buildQuickAction(LucideIcons.messageCircle, 'Enquiries', () => _switchTab(2)),
-                    _buildQuickAction(LucideIcons.calendar, 'Schedule', () => _switchTab(1)),
-                    _buildQuickAction(LucideIcons.barChart2, 'Analytics', () => context.push('/coach-profile-edit')),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
-              boxShadow: SportXShadows.e1,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SectionHeader(title: 'Recent Enquiries', actionText: 'View All', onActionTap: () => _switchTab(2)),
-                if (recentEnquiries.isEmpty)
-                   Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          Text('No enquiries yet', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                          SizedBox(height: 4),
-                          Text('When athletes enquire about\nyour coaching, they will appear here',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  fontSize: 13, color: AppColors.textSecondary, height: 1.4)),
+                      QuickTileV3(
+                        title: 'Opportunities',
+                        subtitle: 'Trials · Tournaments · Scholarships · Sponsorships',
+                        icon: LucideIcons.trophy,
+                        iconBg: AppColors.yellowTint,
+                        iconFg: AppColors.primaryDarker,
+                        onTap: () => context.push('/opportunities'),
+                        subtiles: const [
+                          (label: 'Trials', route: '/trials'),
+                          (label: 'Tournaments', route: '/tournaments'),
+                          (label: 'Scholarships', route: '/scholarships'),
+                          (label: 'Sponsors', route: '/sponsorships'),
                         ],
                       ),
-                    ),
-                  )
-                else
-                  ...recentEnquiries.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final e = entry.value;
-                    return Column(
-                      children: [
-                        if (index > 0) const Divider(color: AppColors.border),
-                        _buildEnquiryItem(e.id, e.athleteName, e.message, DateFormatUtils.formatRelative(e.createdAt), e.status == 'new' && !e.isRead),
-                      ],
-                    );
-                  }),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(String value, String label, {IconData? icon}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border), boxShadow: SportXShadows.e1),
-      child: Column(
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (icon != null) ...[
-                Icon(icon, size: 14, color: Colors.amber),
-                const SizedBox(width: 4),
-              ],
-              Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary)),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary), textAlign: TextAlign.center),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTipItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          const Icon(LucideIcons.circleDot, size: 14, color: AppColors.primary),
-          const SizedBox(width: 8),
-          Expanded(child: Text(text, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary))),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickAction(IconData icon, String label, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: AppColors.background,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
-            ),
-            alignment: Alignment.center,
-            child: Icon(icon, size: 22, color: AppColors.coach),
-          ),
-          const SizedBox(height: 6),
-          Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEnquiryItem(String id, String name, String preview, String time, bool isNew) {
-    return GestureDetector(
-      onTap: () => _switchTab(2),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          children: [
-            const CircleAvatar(
-              radius: 22,
-              backgroundColor: AppColors.coach,
-              child: Icon(LucideIcons.user, color: Colors.white, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                      const SizedBox(width: 6),
-                      if (isNew)
-                        const StatusPill(label: 'New', kind: PillKind.pending)
-                      else
-                        const StatusPill(label: 'Replied', kind: PillKind.ok)
+                      QuickTileV3(
+                        title: 'Academy, Coach & Training Centre',
+                        subtitle: 'Find Academies · Athletes · Training Centres',
+                        icon: LucideIcons.school,
+                        iconBg: AppColors.infoLight,
+                        iconFg: AppColors.info,
+                        onTap: () => context.push('/academies'),
+                        subtiles: const [
+                          (label: 'Academies', route: '/academies'),
+                          (label: 'Athletes', route: '/athlete-directory'),
+                          (label: 'Training', route: '/my-programs'),
+                          (label: 'More', route: '/explore'),
+                        ],
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 2),
-                  Text(preview, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 2),
-                  Text(time, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                ],
+                  const V3FeedPreview(),
+                  _EnquiriesCard(state: ref.watch(enquiryInboxProvider)),
+                  const SizedBox(height: 96),
+                ]),
               ),
             ),
           ],
@@ -485,57 +122,106 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
       ),
     );
   }
+}
 
-  double _calculateProfileCompleteness(Coach? profile) {
-    if (profile == null) return 0.1;
-    int filled = 0;
-    int total = 10;
+// ────────────────────────────────────────────────────────────────────────────
+// Recent enquiries — CO.2 trailing .prog-list module
+// ────────────────────────────────────────────────────────────────────────────
 
-    if (profile.fullName.trim().isNotEmpty) filled++;
-    // Sport is required – treat sportId as authoritative, fallback to object
-    if (profile.sport != null || profile.sportId != 0) filled++;
-    if (profile.city != null || profile.cityId != null) filled++;
-    if (profile.contactNumber != null && profile.contactNumber!.trim().isNotEmpty) filled++;
-    if (profile.experience != null && profile.experience!.trim().isNotEmpty) filled++;
-    if (profile.bio != null && profile.bio!.trim().isNotEmpty) filled++;
-    if (profile.profilePhotoUrl != null && profile.profilePhotoUrl!.trim().isNotEmpty) filled++;
-    if (profile.feePerSession != null || profile.feeMonthly != null || profile.feeQuarterly != null) filled++;
-    if (profile.headline != null && profile.headline!.trim().isNotEmpty) filled++;
-    if (profile.availability != null && profile.availability!.values.any((slots) => slots.isNotEmpty)) filled++;
+class _EnquiriesCard extends StatelessWidget {
+  final EnquiryState state;
+  const _EnquiriesCard({required this.state});
 
-    return (filled / total).clamp(0.0, 1.0);
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(2, 10, 2, 0),
+      padding: const EdgeInsets.fromLTRB(13, 12, 13, 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: SportXShadows.e1,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text('Recent enquiries',
+                    style: GoogleFonts.sora(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.ink)),
+              ),
+              GestureDetector(
+                onTap: () => context.push('/coach-enquiry-inbox'),
+                behavior: HitTestBehavior.opaque,
+                child: Text('View all ›',
+                    style: GoogleFonts.inter(
+                        fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.primaryDarker)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          if (state.items.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text('No new enquiries — new coaching requests will appear here.',
+                  style: GoogleFonts.inter(fontSize: 10.5, color: AppColors.textSecondary)),
+            )
+          else
+            ...state.items.take(3).map((e) => _EnquiryRow(enquiry: e)),
+        ],
+      ),
+    );
   }
+}
 
-  List<Widget> _buildProfileTips(Coach? profile) {
-    final tips = <Widget>[];
-    if (profile == null) {
-      tips.add(_buildTipItem('Complete your profile setup'));
-      return tips;
-    }
+class _EnquiryRow extends StatelessWidget {
+  final Enquiry enquiry;
+  const _EnquiryRow({required this.enquiry});
 
-    if (profile.profilePhotoUrl == null || profile.profilePhotoUrl!.isEmpty) {
-      tips.add(_buildTipItem('Add a profile photo'));
-    }
-    if (profile.headline == null || profile.headline!.trim().isEmpty) {
-      tips.add(_buildTipItem('Add your headline (e.g. AIFF C License)'));
-    }
-    if (profile.bio == null || profile.bio!.trim().isEmpty) {
-      tips.add(_buildTipItem('Write a bio describing your coaching approach'));
-    }
-    if (profile.feePerSession == null && profile.feeMonthly == null && profile.feeQuarterly == null) {
-      tips.add(_buildTipItem('Set your fee structure'));
-    }
-    if (profile.availability == null || !profile.availability!.values.any((slots) => slots.isNotEmpty)) {
-      tips.add(_buildTipItem('Set your weekly availability'));
-    }
-    if ((profile.certifications == null || profile.certifications!.isEmpty) && (profile.achievements == null || profile.achievements!.isEmpty)) {
-      tips.add(_buildTipItem('Add a certification or achievement'));
-    }
-
-    if (tips.isEmpty) {
-      tips.add(_buildTipItem('Profile looks great! Add a training video to stand out.'));
-    }
-
-    return tips;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 9),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: AppColors.borderSoft)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: enquiry.isRead ? AppColors.border : AppColors.yellow,
+            ),
+          ),
+          const SizedBox(width: 9),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${enquiry.athleteName}: ${enquiry.subject}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                const SizedBox(height: 2),
+                Text(enquiry.message,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(fontSize: 9.5, color: AppColors.textSecondary)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: () => context.push('/coach-enquiry-detail', extra: {'id': enquiry.id}),
+            child: Text('Reply',
+                style: GoogleFonts.inter(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.primaryDarker)),
+          ),
+        ],
+      ),
+    );
   }
 }

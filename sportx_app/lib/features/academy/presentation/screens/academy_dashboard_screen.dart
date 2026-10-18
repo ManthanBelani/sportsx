@@ -1,316 +1,165 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/academy/presentation/providers/academy_provider.dart';
-import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
-import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
+import 'package:sportx_app/core/utils/media_utils.dart';
+import 'package:sportx_app/shared/presentation/widgets/home_kit.dart';
+import 'package:sportx_app/shared/providers/enquiry_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
-class AcademyDashboardScreen extends ConsumerStatefulWidget {
+/// AC.2 Academy dashboard — v3 homeShell + the design's kpi-grid
+/// (Enquiries / Registrations from real enquiry + trial data).
+class AcademyDashboardScreen extends ConsumerWidget {
   const AcademyDashboardScreen({super.key});
 
   @override
-  ConsumerState<AcademyDashboardScreen> createState() => _AcademyDashboardScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(myAcademyProvider);
+    final enquiries = ref.watch(enquiryInboxProvider);
+    final trialsState = ref.watch(myTrialsProvider);
+    final academy = ref.watch(myAcademyProvider).valueOrNull;
 
-class _AcademyDashboardScreenState extends ConsumerState<AcademyDashboardScreen> {
-  int _currentTabIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    Future.microtask(() {
-      ref.read(myAcademyProvider);
-      ref.read(myTrialsProvider.notifier).refresh();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppBar(
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-        title: Text('SportX',
-            style: GoogleFonts.sora(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.ink)),
-        actions: [
-          IconButton(
-            icon: const Icon(LucideIcons.bell, color: AppColors.textPrimary),
-            onPressed: () => context.push('/notifications'),
-          ),
-        ],
-      ),
-      body: _buildHomeTab(),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentTabIndex,
-        onDestinationSelected: (index) {
-          if (index == 1) {
-            context.push('/my-trials');
-          } else if (index == 2) {
-            context.push('/enquiry-inbox');
-          } else if (index == 3) {
-            context.push('/academy-profile');
-          } else {
-            setState(() => _currentTabIndex = index);
-          }
+      body: RefreshIndicator(
+        color: AppColors.yellowDeep,
+        onRefresh: () async {
+          ref.invalidate(myAcademyProvider);
+          ref.invalidate(enquiryInboxProvider);
+          await ref.read(myTrialsProvider.notifier).refresh();
         },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(LucideIcons.home),
-            selectedIcon: Icon(LucideIcons.home, color: AppColors.primary),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(LucideIcons.clipboardList),
-            selectedIcon: Icon(LucideIcons.clipboardList, color: AppColors.primary),
-            label: 'Trials',
-          ),
-          NavigationDestination(
-            icon: Icon(LucideIcons.messageCircle),
-            selectedIcon: Icon(LucideIcons.messageCircle, color: AppColors.primary),
-            label: 'Enquiries',
-          ),
-          NavigationDestination(
-            icon: Icon(LucideIcons.user),
-            selectedIcon: Icon(LucideIcons.user, color: AppColors.primary),
-            label: 'Profile',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHomeTab() {
-    final academyAsync = ref.watch(myAcademyProvider);
-    final academy = academyAsync.valueOrNull;
-    final trialsState = ref.watch(myTrialsProvider);
-    final trials = trialsState.items;
-    if (academyAsync.isLoading || (trialsState.isLoading && trials.isEmpty)) {
-      return const SponsorDashboardSkeleton();
-    }
-    final active = trials.where((t) => t.status == 'published').length;
-    final drafts = trials.where((t) => t.status == 'draft').length;
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Academy Banner
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
-              boxShadow: SportXShadows.e1,
+        child: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              backgroundColor: Colors.white.withValues(alpha: 0.96),
+              pinned: true,
+              elevation: 0,
+              automaticallyImplyLeading: false,
+              toolbarHeight: 68,
+              titleSpacing: 16,
+              title: Row(
+                children: const [
+                  Expanded(child: SportXWordmark()),
+                  HomeHeaderActions(),
+                ],
+              ),
             ),
-            child: Row(
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: AppColors.academy,
-                    borderRadius: BorderRadius.circular(16),
-                    image: academy?.logoUrl != null
-                        ? DecorationImage(
-                            image: NetworkImage(academy!.logoUrl!),
-                            fit: BoxFit.cover,
-                          )
-                        : null,
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  GreetCardV3(
+                    greeting: greetingFor(DateTime.now()),
+                    name: 'Hi, ${academy?.name ?? 'Academy'}!',
+                    avatarInitial: _initialOf(academy?.name),
+                    avatarUrl: MediaUtils.resolveNullable(academy?.logoUrl),
+                    subtitle: 'Keep programs and trials up to date to attract athletes',
+                    progress: 0.7,
+                    ctaLabel: 'Complete Now',
+                    onCta: () => context.push('/edit-academy-profile'),
                   ),
-                  alignment: Alignment.center,
-                  child: academy?.logoUrl == null
-                      ? const Icon(LucideIcons.building2, color: Colors.white, size: 28)
-                      : null,
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 10),
+                  const RoleLine(badgeLabel: 'ACADEMY'),
+                  const LeaderboardSectionV3(),
+                  GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                    childAspectRatio: 0.62,
                     children: [
-                      Text(academy?.name ?? 'My Academy',
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                      const SizedBox(height: 2),
-                      Text(
-                        [academy?.sport?.name, academy?.city?.name].whereType<String>().where((s) => s.isNotEmpty).join(' • '),
-                        style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                      QuickTileV3(
+                        title: 'Opportunities',
+                        subtitle: 'Trials · Tournaments · Scholarships · Sponsorships',
+                        icon: LucideIcons.trophy,
+                        iconBg: AppColors.yellowTint,
+                        iconFg: AppColors.primaryDarker,
+                        onTap: () => context.push('/opportunities'),
+                        subtiles: const [
+                          (label: 'Trials', route: '/trials'),
+                          (label: 'Tournaments', route: '/tournaments'),
+                          (label: 'Scholarships', route: '/scholarships'),
+                          (label: 'Sponsors', route: '/sponsorships'),
+                        ],
+                      ),
+                      QuickTileV3(
+                        title: 'Find Talent',
+                        subtitle: 'Connect with Athletes · Coaches · Staff',
+                        icon: LucideIcons.users,
+                        iconBg: AppColors.infoLight,
+                        iconFg: AppColors.info,
+                        onTap: () => context.push('/athlete-directory'),
+                        subtiles: const [
+                          (label: 'Athletes', route: '/athlete-directory'),
+                          (label: 'Coaches', route: '/coaches'),
+                          (label: 'Staff', route: '/academy-staff'),
+                          (label: 'More', route: '/explore'),
+                        ],
                       ),
                     ],
                   ),
-                ),
-              ],
+                  const V3FeedPreview(),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _Kpi(
+                            value: enquiries.items.length.toString(),
+                            label: 'Enquiries',
+                            onTap: () => context.push('/enquiry-inbox')),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _Kpi(
+                            value: trialsState.items.length.toString(),
+                            label: 'Registrations',
+                            onTap: () => context.push('/my-trials')),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 96),
+                ]),
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-
-          // Stats Row
-          Row(
-            children: [
-              Expanded(child: _buildStatCard('$active', 'Active Trials')),
-              const SizedBox(width: 10),
-              Expanded(child: _buildStatCard('${trials.length}', 'Total Trials')),
-              const SizedBox(width: 10),
-              Expanded(child: _buildStatCard('$drafts', 'Drafts')),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Quick Actions
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
-              boxShadow: SportXShadows.e1,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SectionHeader(title: 'Quick Actions'),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildQuickAction(LucideIcons.plusCircle, 'Post Trial', () => context.push('/post-trial')),
-                    _buildQuickAction(LucideIcons.clipboardList, 'My Trials', () => context.push('/my-trials')),
-                    _buildQuickAction(LucideIcons.messageCircle, 'Enquiries', () => context.push('/enquiry-inbox')),
-                    _buildQuickAction(LucideIcons.user, 'Edit Listing', () => context.push('/edit-academy-profile')),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // My Trials List
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
-              boxShadow: SportXShadows.e1,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SectionHeader(
-                    title: 'My Trials', actionText: 'View All', onActionTap: () => context.push('/my-trials')),
-                if (trials.isEmpty)
-                   Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text('No trials yet. Tap “Post Trial” to create one.', style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary)),
-                  )
-                else
-                  ...trials.take(3).map((t) {
-                    final dateStr = t.trialDate != null
-                        ? '${t.trialDate!.day}/${t.trialDate!.month}/${t.trialDate!.year} • ${t.filledSpots ?? 0} registrations'
-                        : '${t.filledSpots ?? 0} registrations';
-                    final status = t.status[0].toUpperCase() + t.status.substring(1);
-                    return _buildTrialItem(t.title, dateStr, status, LucideIcons.circleDot);
-                  }),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: () async {
-              await ref.read(authProvider.notifier).logout();
-            },
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.red,
-              side: const BorderSide(color: Colors.red),
-              minimumSize: const Size.fromHeight(48),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            icon: const Icon(LucideIcons.logOut, size: 18),
-            label: const Text('Log out', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildStatCard(String value, String label) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-        boxShadow: SportXShadows.e1,
-      ),
-      child: Column(
-        children: [
-          Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary)),
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary), textAlign: TextAlign.center),
-        ],
-      ),
-    );
-  }
+  String _initialOf(String? name) =>
+      name != null && name.trim().isNotEmpty ? name.trim()[0].toUpperCase() : 'A';
+}
 
-  Widget _buildQuickAction(IconData icon, String label, VoidCallback onTap) {
+class _Kpi extends StatelessWidget {
+  final String value;
+  final String label;
+  final VoidCallback onTap;
+  const _Kpi({required this.value, required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: AppColors.background,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
-            ),
-            alignment: Alignment.center,
-            child: Icon(icon, size: 22, color: AppColors.academy),
-          ),
-          const SizedBox(height: 6),
-          Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTrialItem(String title, String meta, String status, IconData icon) {
-    final PillKind pillKind =
-        status == 'Published' ? PillKind.ok : status == 'Draft' ? PillKind.pending : PillKind.draft;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: AppColors.background,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
-            ),
-            alignment: Alignment.center,
-            child: Icon(icon, size: 20, color: AppColors.academy),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                const SizedBox(height: 2),
-                Text(meta, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-              ],
-            ),
-          ),
-          StatusPill(label: status, kind: pillKind),
-        ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: SportXShadows.e1,
+        ),
+        child: Column(
+          children: [
+            Text(value, style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink)),
+            const SizedBox(height: 3),
+            Text(label, style: GoogleFonts.inter(fontSize: 10, color: AppColors.textSecondary)),
+          ],
+        ),
       ),
     );
   }

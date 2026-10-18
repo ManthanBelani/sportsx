@@ -26,6 +26,7 @@ import 'package:sportx_app/features/talent_scout/presentation/providers/scout_co
 import 'package:sportx_app/features/talent_scout/presentation/providers/scout_shortlist_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/providers/talent_scout_provider.dart';
 import 'package:sportx_app/features/trial/presentation/providers/unified_events_provider.dart';
+import 'package:sportx_app/features/athlete/presentation/providers/achievements_provider.dart';
 import 'package:sportx_app/shared/providers/activity_provider.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/shared/providers/enquiry_provider.dart';
@@ -48,6 +49,7 @@ void resetUserScopedProviders(Ref ref) {
   ref.invalidate(myTrialRegistrationsProvider);
   ref.invalidate(myTournamentRegistrationsProvider);
   ref.invalidate(profileProvider);
+  ref.invalidate(achievementsProvider);
   ref.invalidate(enquiryInboxProvider);
   ref.invalidate(enquiryDetailProvider);
   ref.invalidate(academiesProvider);

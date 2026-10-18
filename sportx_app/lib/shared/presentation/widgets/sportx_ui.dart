@@ -129,12 +129,21 @@ class SportXTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Internal pages always get a back button (D.x detail pages). Shell pages
+    // (Home/Explore/Create/Community/More) are top-level in the nested
+    // navigator, so canPop() is false there and the leading slot stays empty.
+    bool canPop = false;
+    if (!showBack) {
+      try {
+        canPop = Navigator.of(context).canPop();
+      } catch (_) {}
+    }
     return AppBar(
       backgroundColor: Colors.white.withValues(alpha: 0.88),
       surfaceTintColor: Colors.white,
       elevation: 0,
       automaticallyImplyLeading: false,
-      leading: showBack
+      leading: (showBack || canPop)
           ? IconButton(
               icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
               onPressed: onBack ?? () => Navigator.of(context).maybePop(),

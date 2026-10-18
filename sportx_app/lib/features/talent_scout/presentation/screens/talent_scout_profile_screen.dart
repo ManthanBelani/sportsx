@@ -164,7 +164,7 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
     if (_loadError != null) {
       return Scaffold(
         backgroundColor: AppColors.surface,
-        appBar: const SportXTopBar(title: 'Scout Profile'),
+        appBar: const SportXTopBar(title: 'Scout Profile', showBack: true),
         body: Center(
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
             const Icon(LucideIcons.alertCircle, size: 48, color: AppColors.border),
@@ -194,6 +194,7 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: SportXTopBar(
+        showBack: true,
         titleWidget: Row(
           children: [
             Text('Scout Profile',

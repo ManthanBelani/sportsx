@@ -10,10 +10,14 @@ import 'package:sportx_app/features/auth/presentation/providers/auth_provider.da
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/models/social_links.dart';
 import 'package:sportx_app/shared/presentation/widgets/social_links.dart';
+import 'package:sportx_app/shared/presentation/widgets/home_kit.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
+/// Own-profile screen — D.1 layout: profile hero + overlapping avatar,
+/// stathead (5 stats + completion bar), bio, Edit/Share/Public actions,
+/// tab strip and about/details / media / achievements cards.
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
@@ -23,6 +27,7 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _isLoading = true;
+  int _tab = 0;
 
   // Profile data
   int _userId = 0;
@@ -43,10 +48,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   String? _avatarUrl;
 
   List<Map<String, dynamic>> _uploadedMedia = const [];
-
-  final List<Map<String, dynamic>> _tournamentHistory = [];
-
-  final List<Map<String, dynamic>> _performanceStats = [];
 
   Map<String, String> _socialLinks = const {};
 
@@ -79,34 +80,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         final photo = data['photo'] as Map<String, dynamic>?;
         final mediaItems = data['media_items'] as List? ?? const [];
 
-         setState(() {
-           _name = (data['full_name'] ?? data['name'] ?? _name) as String;
-           _bio = (data['experience'] ?? data['bio'] ?? _bio) as String;
-           _sport = sports.isNotEmpty ? ((sports[0] as Map)['name'] as String?) ?? _sport : _sport;
-           _sportsCount = sports.length;
-           _ageGroup = (ageGroup?['label'] ?? ageGroup?['name'] ?? _ageGroup) as String;
-           _location = (city?['name'] ?? _location) as String;
-           _isVerified = data['is_verified'] == true;
-           _avatarUrl = photo?['url'] as String?;
-           _socialLinks = socialLinksOf(Map<String, dynamic>.from(data as Map));
-           _uploadedMedia = mediaItems
-               .whereType<Map>()
-               .map((m) => Map<String, dynamic>.from(m))
-               .toList();
-           _achievementsCount = ach.isNotEmpty ? ach.length : _achievementsCount;
-           if (ach.isNotEmpty) {
-             _achievements = ach.asMap().entries.map((e) {
-               final text = (e.value as Map)['text'] ?? '';
-               return <String, dynamic>{
-                 'id': e.key.toString(),
-                 'title': text.toString(),
-                 'year': '',
-                 'icon': '🏆',
-               };
-             }).toList();
-           }
-         });
-       }
+        setState(() {
+          _name = (data['full_name'] ?? data['name'] ?? _name) as String;
+          _bio = (data['experience'] ?? data['bio'] ?? _bio) as String;
+          _sport = sports.isNotEmpty ? ((sports[0] as Map)['name'] as String?) ?? _sport : _sport;
+          _sportsCount = sports.length;
+          _ageGroup = (ageGroup?['label'] ?? ageGroup?['name'] ?? _ageGroup) as String;
+          _location = (city?['name'] ?? _location) as String;
+          _isVerified = data['is_verified'] == true;
+          _avatarUrl = photo?['url'] as String?;
+          _socialLinks = socialLinksOf(Map<String, dynamic>.from(data as Map));
+          _uploadedMedia = mediaItems
+              .whereType<Map>()
+              .map((m) => Map<String, dynamic>.from(m))
+              .toList();
+          _achievementsCount = ach.isNotEmpty ? ach.length : _achievementsCount;
+          if (ach.isNotEmpty) {
+            _achievements = ach.asMap().entries.map((e) {
+              final text = (e.value as Map)['text'] ?? '';
+              return <String, dynamic>{
+                'id': e.key.toString(),
+                'title': text.toString(),
+                'year': '',
+                'icon': '🏆',
+              };
+            }).toList();
+          }
+        });
+      }
     } catch (e) {
       debugPrint('Failed to load profile: $e');
       if (mounted) SnackBarUtils.showError(context, e, 'Failed to load profile');
@@ -142,7 +143,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       }
     } catch (e) {
       debugPrint('Failed to load connection count: $e');
-      if (mounted) SnackBarUtils.showError(context, e, 'Failed to load connection count');
     }
   }
 
@@ -150,437 +150,512 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppBar(
-        backgroundColor: Colors.white.withValues(alpha: 0.88),
-        elevation: 0,
-        title: Text('My Profile',
-            style: GoogleFonts.sora(
-                fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
-        centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(LucideIcons.edit2, color: AppColors.primary, size: 20),
-            onPressed: () async {
-              await context.push('/edit-profile');
-              _loadProfile();
-            },
-          ),
-        ],
-      ),
+      appBar: SportXTopBar(title: 'My Profile'),
       body: RefreshIndicator(
         onRefresh: _loadProfile,
         child: _isLoading
-            ? const SingleChildScrollView(
-                physics: AlwaysScrollableScrollPhysics(),
-                child: CoachProfileViewSkeleton(),
-              )
-            : SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _buildProfileHeader(),
-                    _buildSectionDivider(),
-                    _buildAboutSection(),
-                    _buildSectionDivider(),
-                    _buildAchievementsSection(),
-                    _buildSectionDivider(),
-                    _buildTournamentHistorySection(),
-                    _buildSectionDivider(),
-                    _buildPerformanceStatsSection(),
-                    _buildSectionDivider(),
-                    _buildMediaGallerySection(),
-                    _buildSectionDivider(),
-                    _buildSocialSection(),
-                    _buildSectionDivider(),
-                    _buildShareProfileButton(),
-                    _buildSectionDivider(),
-                    _buildRoleQuickLinks(),
-                    _buildAccountActions(),
-                  ],
-                ),
+            ? const CoachProfileViewSkeleton()
+            : ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  _profileHero(),
+                  _profileTitle(),
+                  _statHead(),
+                  const SizedBox(height: 8),
+                  if (_bio.trim().isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      child: Text(_bio,
+                          style: GoogleFonts.inter(
+                              fontSize: 11, height: 1.6, color: AppColors.textSecondary)),
+                    ),
+                  _profileActions(),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border(top: BorderSide(color: AppColors.border)),
+                    ),
+                    child: KitTabBar(
+                      labels: const ['Overview', 'Posts', 'Achv', 'Media', 'Conn.'],
+                      activeIndex: _tab,
+                      onChanged: (i) {
+                        switch (i) {
+                          case 1:
+                            context.push('/activity-hub');
+                            break;
+                          case 2:
+                            context.push('/achievements');
+                            break;
+                          case 3:
+                            context.push('/media-gallery');
+                            break;
+                          case 4:
+                            context.push('/my-connections');
+                            break;
+                        }
+                        setState(() => _tab = 0);
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  _aboutCard(),
+                  const SizedBox(height: 12),
+                  _sportsCard(),
+                  const SizedBox(height: 12),
+                  _mediaCard(),
+                  const SizedBox(height: 12),
+                  _achievementsCard(),
+                  const SizedBox(height: 12),
+                  _socialCard(),
+                  _roleQuickLinks(),
+                  _accountActions(),
+                  const SizedBox(height: 24),
+                ],
               ),
       ),
     );
   }
 
-  Widget _buildSectionDivider() {
-    return Container(
-      height: 8,
-      color: AppColors.surface,
+  /// .profile-hero — full-bleed cover (166px) with the 84px avatar overlapping
+  /// the bottom-left corner (white padding ring, bottom −42).
+  Widget _profileHero() {
+    final cover = _uploadedMedia.isNotEmpty ? _absoluteUrl(((_uploadedMedia.first['url'] ?? '') as String)) : '';
+    Widget coverImg = Container(
+      height: 166,
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFFFF3D6), AppColors.yellowTint, AppColors.surface],
+        ),
+      ),
+      alignment: Alignment.center,
+      child: const Icon(LucideIcons.image, size: 28, color: AppColors.textTertiary),
     );
-  }
-
-  Widget _buildProfileHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
-      child: Column(
-        children: [
-          Container(
-            width: 96,
-            height: 96,
+    if (cover.isNotEmpty) {
+      coverImg = Image.network(cover,
+          height: 166, width: double.infinity, fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => coverImg);
+    }
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        coverImg,
+        Positioned(
+          left: 16,
+          bottom: -42,
+          child: Container(
+            width: 84,
+            height: 84,
+            padding: const EdgeInsets.all(3),
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [AppColors.yellow, AppColors.ctaDark],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(color: Color(0x1A101415), blurRadius: 18, offset: Offset(0, 6)),
+              ],
             ),
             child: ClipOval(
               child: _avatarUrl != null
                   ? Image.network(
                       _absoluteUrl(_avatarUrl!),
-                      width: 96,
-                      height: 96,
+                      width: 78,
+                      height: 78,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) =>
-                          const Icon(LucideIcons.user, size: 48, color: AppColors.ink),
+                      errorBuilder: (_, _, _) => const _FallbackAvatar(),
                     )
-                  : const Icon(LucideIcons.user, size: 48, color: AppColors.ink),
+                  : const _FallbackAvatar(),
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                _name,
-                style: GoogleFonts.sora(
-                    fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.ink),
-              ),
-              if (_isVerified) ...[
-                const SizedBox(width: 4),
-                const Icon(LucideIcons.badgeCheck, color: AppColors.primary, size: 20),
+        ),
+      ],
+    );
+  }
+
+  Widget _profileTitle() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 42, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Expanded(
+              child: Text(_name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
+            ),
+            if (_isVerified) const Icon(LucideIcons.badgeCheck, size: 16, color: AppColors.primary),
+          ]),
+          const SizedBox(height: 5),
+          Text(_ageGroup.isNotEmpty ? '$_sport Player • $_ageGroup' : _sport.isNotEmpty ? '$_sport Player • Athlete' : 'Athlete',
+              style: GoogleFonts.inter(fontSize: 10, color: AppColors.textSecondary)),
+          const SizedBox(height: 5),
+          Row(children: [
+            const Icon(LucideIcons.mapPin, size: 13, color: AppColors.yellowDeep),
+            const SizedBox(width: 4),
+            Text(_location,
+                style: GoogleFonts.inter(fontSize: 10, color: AppColors.textSecondary)),
+          ]),
+        ],
+      ),
+    );
+  }
+
+  /// .stathead — gradient card, 5-count grid + completion bar.
+  Widget _statHead() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment(-0.4, -1),
+            end: Alignment(0.4, 1),
+            colors: [Colors.white, AppColors.yellowSoft],
+          ),
+          border: Border.all(color: const Color(0xFFF0E3B2)),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                _stat('$_postsCount', 'Posts'),
+                _stat('$_connectsCount', 'Connections'),
+                _stat('$_sportsCount', 'Sports'),
+                _stat('$_achievementsCount', 'Achieve.'),
+                _stat('$_completionPercent%', 'Complete'),
               ],
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '$_sport • $_ageGroup',
-            style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(LucideIcons.mapPin, size: 14, color: AppColors.textSecondary),
-              const SizedBox(width: 4),
-              Text(
-                _location,
-                style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(99),
+              child: Container(
+                height: 6,
+                color: AppColors.surface,
+                child: FractionallySizedBox(
+                  alignment: Alignment.centerLeft,
+                  widthFactor: (_completionPercent.clamp(0, 100)) / 100,
+                  child: Container(color: AppColors.yellow),
+                ),
               ),
-            ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _stat(String value, String label) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.sora(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.ink)),
+          const SizedBox(height: 2),
+          Text(label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(fontSize: 9, color: AppColors.textSecondary)),
+        ],
+      ),
+    );
+  }
+
+  /// .profile-actions — Edit (primary) + Share/Public chips.
+  Widget _profileActions() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () async {
+                await context.push('/edit-profile');
+                _loadProfile();
+              },
+              child: Container(
+                height: 40,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFFFFD54A), AppColors.yellow, Color(0xFFF5B400)],
+                  ),
+                  borderRadius: BorderRadius.circular(11),
+                  border: Border.all(color: const Color(0x2E785000)),
+                  boxShadow: SportXShadows.btnShadow,
+                ),
+                alignment: Alignment.center,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(LucideIcons.pencil, size: 14, color: AppColors.ink),
+                    const SizedBox(width: 6),
+                    Text('Edit',
+                        style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.ink)),
+                  ],
+                ),
+              ),
+            ),
           ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildHeaderStatItem('$_postsCount', 'Posts'),
-              const SizedBox(width: 24),
-              _buildHeaderStatItem('$_connectsCount', 'Connects'),
-              const SizedBox(width: 24),
-              _buildHeaderStatItem('$_sportsCount', 'Sports'),
-              const SizedBox(width: 24),
-              _buildHeaderStatItem('$_achievementsCount', 'Achv.'),
-              const SizedBox(width: 24),
-              _buildHeaderStatItem('$_completionPercent%', 'Complete'),
-            ],
+          const SizedBox(width: 8),
+          SportXChip(label: 'Share', onTap: _shareProfile),
+          const SizedBox(width: 8),
+          SportXChip(label: 'Public', onTap: () => context.push('/view-as-public')),
+        ],
+      ),
+    );
+  }
+
+  void _shareProfile() {
+    final shareUrl = '${ApiConfig.webBaseUrl}/profile/$_userId';
+    Share.share('Check out my profile on SportX India!\n$shareUrl');
+  }
+
+  Widget _card({required List<Widget> children}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: SportXShadows.e1,
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: children),
+      ),
+    );
+  }
+
+  Widget _inCardSection(String title, {Widget? action}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        children: [
+          Text(title,
+              style: GoogleFonts.sora(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink)),
+          const Spacer(),
+          ?action,
+        ],
+      ),
+    );
+  }
+
+  Widget _detailRow(String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 9),
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: AppColors.borderSoft)),
+      ),
+      child: Row(
+        children: [
+          Text(label, style: GoogleFonts.inter(fontSize: 10, color: AppColors.textSecondary)),
+          const Spacer(),
+          Flexible(
+            child: Text(value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.right,
+                style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.ink)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildHeaderStatItem(String value, String label) {
-    return Column(
-      children: [
-        Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-        Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-      ],
-    );
-  }
-
-  Widget _buildAboutSection() {
-    return _buildSection(
-      title: 'About',
-      child: Text(
-        _bio,
-        style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.5),
-      ),
-    );
-  }
-
-  Widget _buildSocialSection() {
-    if (_socialLinks.isEmpty) {
-      return _buildSection(
-        title: 'Social Links',
-        action: GestureDetector(
-          onTap: () => context.push('/social-links'),
-          child: const Text('Add', style: TextStyle(fontSize: 13, color: AppColors.primary)),
+  Widget _aboutCard() {
+    return _card(children: [
+      _inCardSection('👤 About'),
+      _detailRow('Full Name', _name),
+      _detailRow('Role', _sport.isNotEmpty ? '$_sport Player' : 'Athlete'),
+      _detailRow('Location', _location),
+      if (_ageGroup.isNotEmpty) _detailRow('Age Group', _ageGroup),
+      if (_bio.trim().isEmpty)
+        const Padding(
+          padding: EdgeInsets.only(top: 8),
+          child: Text('No bio yet — add one from Edit profile.',
+              style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
         ),
-        child: const Text(
-          'No social links yet. Add them so others can find you.',
-          style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+    ]);
+  }
+
+  Widget _sportsCard() {
+    if (_sport.isEmpty) return const SizedBox.shrink();
+    return _card(children: [
+      _inCardSection('🏏 Sports'),
+      Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(12),
         ),
-      );
-    }
-    return _buildSection(
-      title: 'Social Links',
-      action: GestureDetector(
-        onTap: () async {
-          await context.push('/social-links');
-          _loadProfile();
-        },
-        child: const Text('Edit', style: TextStyle(fontSize: 13, color: AppColors.primary)),
-      ),
-      child: SocialLinksRow(links: _socialLinks),
-    );
-  }
-
-  Widget _buildAchievementsSection() {
-    return _buildSection(
-      title: 'Achievements',
-      action: GestureDetector(
-        onTap: () => context.push('/add-achievement'),
-        child: const Text('Add', style: TextStyle(fontSize: 13, color: AppColors.primary)),
-      ),
-      child: Column(
-        children: _achievements.map((achievement) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(achievement['icon'], style: const TextStyle(fontSize: 20)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              Expanded(
+                child: Text('🏏 $_sport',
+                    style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.ink)),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AppColors.yellowTint,
+                  borderRadius: BorderRadius.circular(99),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        achievement['title'],
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        achievement['year'],
-                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildTournamentHistorySection() {
-    if (_tournamentHistory.isEmpty) {
-      return _buildSection(
-        title: 'Tournament History',
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          child: Center(
-            child: Column(
-              children: [
-                const Icon(LucideIcons.trophy, size: 40, color: AppColors.textSecondary),
-                const SizedBox(height: 12),
-                const Text(
-                  'No tournament history yet',
-                  style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Register for trials and tournaments to build your history',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary.withValues(alpha: 0.7)),
-                ),
-              ],
-            ),
-          ),
+                child: Text('Primary Sport',
+                    style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.w700, color: Color(0xFF8A6D00))),
+              ),
+            ]),
+            if (_ageGroup.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text('Age group · $_ageGroup',
+                  style: GoogleFonts.inter(fontSize: 10, color: AppColors.textSecondary)),
+            ],
+          ],
         ),
-      );
-    }
-    return _buildSection(
-      title: 'Tournament History',
-      child: Column(
-        children: _tournamentHistory.map((tournament) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(tournament['icon'] ?? '🏆', style: const TextStyle(fontSize: 20)),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        tournament['name'] ?? '',
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${tournament['year'] ?? ''} • ${tournament['result'] ?? ''}',
-                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        }).toList(),
       ),
-    );
+      const SizedBox(height: 10),
+      GestureDetector(
+        onTap: () => context.push('/manage-sports'),
+        behavior: HitTestBehavior.opaque,
+        child: Text('+ Add Another Sport',
+            style: GoogleFonts.inter(
+                fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFF8A6D00))),
+      ),
+    ]);
   }
 
-  Widget _buildPerformanceStatsSection() {
-    if (_performanceStats.isEmpty) {
-      return _buildSection(
-        title: 'Performance Stats',
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          child: Center(
-            child: Column(
-              children: [
-                const Icon(LucideIcons.barChart3, size: 40, color: AppColors.textSecondary),
-                const SizedBox(height: 12),
-                const Text(
-                  'No stats available',
-                  style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Your performance stats will appear here after tournaments',
-                  textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12, color: AppColors.textSecondary.withValues(alpha: 0.7)),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-    return _buildSection(
-      title: 'Performance Stats',
-      child: GridView.count(
-        crossAxisCount: 2,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 10,
-        childAspectRatio: 2.2,
-        padding: EdgeInsets.zero,
-        children: _performanceStats.map((stat) {
-          return Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  stat['value'] ?? '0',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.primary),
-                ),
-                Text(
-                  stat['label'] ?? '',
-                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                ),
-              ],
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildMediaGallerySection() {
+  Widget _mediaCard() {
     final images = _uploadedMedia
         .map((m) => _absoluteUrl((m['url'] ?? '') as String))
         .where((u) => u.isNotEmpty)
         .toList();
-
-    return _buildSection(
-      title: 'Media Gallery',
-      action: GestureDetector(
-        onTap: () async {
-          await context.push('/media-gallery');
-          _loadProfile();
-        },
-        child: const Text('See all', style: TextStyle(fontSize: 13, color: AppColors.primary)),
-      ),
-      child: images.isEmpty
-          ? Container(
-              padding: const EdgeInsets.all(24),
-              child: Center(
-                child: Column(
-                  children: [
-                    const Icon(LucideIcons.image, size: 40, color: AppColors.textSecondary),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'No media yet',
-                      style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Add photos and videos to your gallery',
-                      textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary.withValues(alpha: 0.7)),
-                    ),
-                  ],
+    return _card(children: [
+      _inCardSection('📷 Media', action: _cardAction('See all', () async {
+        await context.push('/media-gallery');
+        _loadProfile();
+      })),
+      const SizedBox(height: 8),
+      if (images.isEmpty)
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Center(
+            child: Text('No media yet — add photos from your gallery.',
+                style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondary)),
+          ),
+        )
+      else
+        GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            mainAxisSpacing: 6,
+            crossAxisSpacing: 6,
+            mainAxisExtent: 76,
+          ),
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: EdgeInsets.zero,
+          itemCount: images.length.clamp(0, 6),
+          itemBuilder: (context, index) {
+            if (index == 5 && images.length > 6) {
+              return Container(
+                decoration: BoxDecoration(
+                  color: AppColors.ink,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                alignment: Alignment.center,
+                child: Text('+${images.length - 5}',
+                    style: GoogleFonts.inter(
+                        fontSize: 12, fontWeight: FontWeight.w800, color: Colors.white)),
+              );
+            }
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                images[index],
+                height: 76,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => Container(
+                  color: AppColors.surface,
+                  child: const Icon(LucideIcons.image, size: 18, color: AppColors.textSecondary),
                 ),
               ),
-            )
-          : GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                mainAxisSpacing: 8,
-                crossAxisSpacing: 8,
+            );
+          },
+        ),
+    ]);
+  }
+
+  Widget _achievementsCard() {
+    return _card(children: [
+      _inCardSection('🏆 Achievements', action: _cardAction('Add', () => context.push('/add-achievement'))),
+      if (_achievements.isEmpty)
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Center(
+            child: Text('No achievements yet — add your first one.',
+                style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondary)),
+          ),
+        )
+      else
+        ..._achievements.map((a) => Container(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: const BoxDecoration(
+                border: Border(top: BorderSide(color: AppColors.borderSoft)),
               ),
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: EdgeInsets.zero,
-              itemCount: images.length,
-              itemBuilder: (context, index) {
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: Image.network(
-                    images[index],
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => Container(
-                      color: AppColors.surface,
-                      child: const Icon(LucideIcons.image, color: AppColors.textSecondary),
-                    ),
+              child: Row(
+                children: [
+                  Text(a['icon'] ?? '🏆', style: const TextStyle(fontSize: 15)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(a['title'] ?? '',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                            fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.ink)),
                   ),
-                );
-              },
-            ),
+                  if ((a['year'] ?? '').toString().isNotEmpty) ...[
+                    const SizedBox(width: 6),
+                    Text(a['year'],
+                        style: GoogleFonts.inter(fontSize: 9, color: AppColors.textSecondary)),
+                  ],
+                  const SizedBox(width: 4),
+                  const Icon(LucideIcons.chevronRight, size: 14, color: AppColors.textTertiary),
+                ],
+              ),
+            )),
+    ]);
+  }
+
+  Widget _socialCard() {
+    return _card(children: [
+      _inCardSection('🔗 Social Links', action: _cardAction(_socialLinks.isEmpty ? 'Add' : 'Edit', () async {
+        await context.push('/social-links');
+        _loadProfile();
+      })),
+      const SizedBox(height: 8),
+      if (_socialLinks.isEmpty)
+        const Text('No social links yet. Add them so others can find you.',
+            style: TextStyle(fontSize: 11, color: AppColors.textSecondary))
+      else
+        SocialLinksRow(links: _socialLinks),
+    ]);
+  }
+
+  Widget _cardAction(String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Text('$label ›',
+          style: GoogleFonts.inter(fontSize: 10.5, fontWeight: FontWeight.w700, color: Color(0xFF8A6D00))),
     );
   }
 
@@ -595,121 +670,86 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return '$origin$url';
   }
 
-  Widget _buildShareProfileButton() {
+  Widget _roleQuickLinks() {
+    final role = ref.watch(authProvider).user?.role ?? 'athlete';
+    final links = _quickLinksForRole(role);
     return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: SizedBox(
-            width: double.infinity,
-            child: SecondaryButton(
-              label: 'Share Profile',
-              icon: LucideIcons.share2,
-              onPressed: () {
-                final shareUrl = '${ApiConfig.webBaseUrl}/profile/$_userId';
-                Share.share(
-                  'Check out my profile on SportX India!\n$shareUrl',
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: SportXShadows.e1,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _inCardSection(_roleTitle(role)),
+            GridView.count(
+              crossAxisCount: 3,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 1.0,
+              padding: EdgeInsets.zero,
+              children: links.map((l) {
+                return GestureDetector(
+                  onTap: () => context.push(l.route),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      border: Border.all(color: AppColors.borderSoft),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(l.icon, color: AppColors.yellowDeep, size: 22),
+                        const SizedBox(height: 6),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Text(
+                            l.label,
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 );
-              },
+              }).toList(),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildRoleQuickLinks() {
-    final role = ref.watch(authProvider).user?.role ?? 'athlete';
-    final links = _quickLinksForRole(role);
-    return _buildSection(
-      title: _roleTitle(role),
-      child: GridView.count(
-        crossAxisCount: 3,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 1.0,
-        padding: EdgeInsets.zero,
-        children: links.map((l) {
-          return GestureDetector(
-            onTap: () => context.push(l.route),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: AppColors.border),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(l.icon, color: AppColors.primary, size: 24),
-                  const SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Text(
-                      l.label,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
-                    ),
-                  ),
-                ],
-                ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildAccountActions() {
+  Widget _accountActions() {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       child: Column(
         children: [
-          Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
-              child: SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => context.push('/settings'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.textPrimary,
-                    side: const BorderSide(color: AppColors.border),
-                    minimumSize: const Size.fromHeight(48),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  ),
-                  icon: const Icon(LucideIcons.settings, size: 18),
-                  label: const Text('Settings', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                ),
-              ),
-            ),
+          SharedOutlinedAction(
+            label: 'Settings',
+            icon: LucideIcons.settings,
+            onPressed: () => context.push('/settings'),
+            foregroundColor: AppColors.textPrimary,
           ),
-          const SizedBox(height: 12),
-          Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
-              child: SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () async {
-                    await ref.read(authProvider.notifier).logout();
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.error,
-                    side: const BorderSide(color: AppColors.error),
-                    minimumSize: const Size.fromHeight(48),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  ),
-                  icon: const Icon(LucideIcons.logOut, size: 18),
-                  label: const Text('Log out', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                ),
-              ),
-            ),
+          const SizedBox(height: 10),
+          SharedOutlinedAction(
+            label: 'Log out',
+            icon: LucideIcons.logOut,
+            onPressed: () async {
+              await ref.read(authProvider.notifier).logout();
+            },
+            foregroundColor: AppColors.error,
           ),
         ],
       ),
@@ -773,30 +813,47 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ];
     }
   }
+}
 
-  Widget _buildSection({
-    required String title,
-    Widget? action,
-    required Widget child,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(title,
-                  style: GoogleFonts.sora(
-                      fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
-              ?action,
-            ],
-          ),
-          const SizedBox(height: 16),
-          child,
-        ],
+class _FallbackAvatar extends StatelessWidget {
+  const _FallbackAvatar();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.surface,
+      alignment: Alignment.center,
+      child: const Icon(LucideIcons.user, size: 34, color: AppColors.ink),
+    );
+  }
+}
+
+/// Ghost action row shared by Settings / Logout.
+class SharedOutlinedAction extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Future<void> Function() onPressed;
+  final Color foregroundColor;
+  const SharedOutlinedAction({
+    super.key,
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+    required this.foregroundColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: () => onPressed(),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: foregroundColor,
+        side: BorderSide(color: foregroundColor == AppColors.error ? AppColors.error : AppColors.border),
+        minimumSize: const Size.fromHeight(48),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
+      icon: Icon(icon, size: 18),
+      label: Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
     );
   }
 }

@@ -36,12 +36,45 @@ class AuthInterceptor extends Interceptor {
 
   AuthInterceptor(this.ref);
 
+  /// Endpoints that always require a session. Hitting them without a token
+  /// used to produce a wave of 401 round-trips — now they are rejected
+  /// locally before leaving the device, protecting the server and app perf.
+  static const _authRequiredPrefixes = [
+    '/api/v1/me/',
+    '/api/v1/posts',
+    '/api/v1/athletes',
+    '/api/v1/scouts',
+    '/api/v1/blocks',
+    '/api/v1/leaderboard/',
+  ];
+
+  static String _normalizedPath(RequestOptions options) {
+    final p = options.uri.path;
+    final idx = p.indexOf('/api/');
+    return idx >= 0 ? p.substring(idx) : p;
+  }
+
+  static bool _requiresAuth(RequestOptions options) {
+    final p = _normalizedPath(options);
+    return _authRequiredPrefixes.any(p.startsWith);
+  }
+
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     final storage = ref.read(storageServiceProvider);
     final token = await storage.getToken();
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
+      handler.next(options);
+      return;
+    }
+    if (_requiresAuth(options)) {
+      handler.reject(DioException(
+        requestOptions: options,
+        type: DioExceptionType.cancel,
+        error: ApiException(message: 'Please log in to see this.'),
+      ));
+      return;
     }
     handler.next(options);
   }
@@ -111,7 +144,7 @@ class ApiException implements Exception {
           }
           // Append validation details when message is generic.
           if (fieldErrors.isNotEmpty && msg.toLowerCase().contains('validation')) {
-            msg = '${msg}: ${fieldErrors.values.join(', ')}';
+            msg = '$msg: ${fieldErrors.values.join(', ')}';
           }
         } else if (data is String && data.trim().isNotEmpty) {
           msg = data.trim();

@@ -467,7 +467,20 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
         }
 
         final item = items[index];
-        return _buildMediaTile(item);
+        // S.28 — open the full-screen media viewer for this gallery item.
+        return GestureDetector(
+          onTap: () => context.push(
+            '/media-viewer',
+            extra: {
+              'media': items
+                  .map((i) => _absoluteUrl((i['url'] ?? '') as String))
+                  .toList(),
+              'index': index,
+              'title': item['media_type'] == 'video' ? 'Video' : 'Photo',
+            },
+          ),
+          child: _buildMediaTile(item),
+        );
       },
     );
   }

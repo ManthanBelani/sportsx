@@ -3,85 +3,878 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SportX v3.2 — New Design Review · 129 screens · 6 roles</title>
+<title>SportX v3.2 - Stitch "Remix of SX new Design" - 129 screens - 6 roles</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../styles.css" />
 <style>
-.wrap{max-width:1200px;margin:0 auto;padding:28px 22px 60px}
-.hero{background:radial-gradient(circle at 85% 0%,#fff0aa 0,transparent 30%),#111;color:#fff;border-radius:22px;padding:38px 30px}
-.hero h1{font:800 clamp(26px,4vw,46px)/1.08 "Sora";letter-spacing:-1.5px;margin:12px 0}
-.hero h1 em{color:var(--yellow);font-style:normal}
-.hero p{color:#bbb;font-size:13px;max-width:640px;line-height:1.7}
-.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
-.badges span{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:11px;font-weight:700;border-radius:99px;padding:7px 12px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:18px}
-.role-card{background:#fff;border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
-.role-card h2{font:800 17px "Sora";margin:0 0 2px}
-.role-card>p{font-size:11px;color:var(--secondary);margin:0 0 10px}
-.journey{font-size:11px;background:var(--yellow-soft);border:1px solid #f0e3b2;border-radius:10px;padding:8px 10px;margin-bottom:10px}
-.links{display:flex;flex-wrap:wrap;gap:6px}
-.links a{font-size:10px;font-weight:700;text-decoration:none;color:#2b2b2b;border:1px solid var(--border);border-radius:9px;padding:6px 9px;background:#fff}
-.links a:hover{border-color:var(--yellow-deep);background:var(--yellow-light)}
-.links a small{font-weight:500;color:var(--secondary)}
-.pri{font-size:8px;font-weight:800;border-radius:99px;padding:2px 6px;margin-left:4px}
-.p0{background:#dcfce7;color:#15803d}.p1{background:#e3efff;color:#1d4ed8}.p2{background:#f3f4f6;color:#6b7280}
-.sys{background:#fff;border:1px solid var(--border);border-radius:18px;padding:18px;margin-top:14px}
-.sys code{background:var(--surface);padding:2px 6px;border-radius:6px;font-size:11px}
-.mx{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px}
-.mx th,.mx td{border:1px solid var(--border);padding:7px 8px;text-align:left;vertical-align:top}
-.mx th{background:var(--surface);font-size:10px}
-.mx td.c{text-align:center;font-weight:800}
-.mx .y{color:#15803d}.mx .n{color:#ccc;font-weight:400}
-.mx small{color:var(--secondary)}
+:root {
+  --yellow: #ffc107;
+  --yellow-deep: #d9a400;
+  --yellow-light: #fff6da;
+  --yellow-soft: #fff9e6;
+  --ink: #111111;
+  --text: #111111;
+  --secondary: #6b7280;
+  --tertiary: #9ca3af;
+  --surface: #f4f5f7;
+  --white: #ffffff;
+  --border: #e8eaed;
+  --border-soft: #eff1f4;
+  --green: #22c55e;
+  --blue: #3b82f6;
+  --red: #ef4444;
+  --purple: #8a6aea;
+  --orange: #fb802e;
+  --pink: #f24c96;
+  --shadow: 0 1px 2px rgba(16, 20, 21, .05), 0 1px 3px rgba(16, 20, 21, .04);
+  --shadow-up: 0 8px 24px -8px rgba(16, 20, 21, .14), 0 2px 6px rgba(16, 20, 21, .05);
+}
+
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; min-height: 100%; }
+body { background: #e8eaed; color: var(--text); font-family: "Inter", sans-serif; -webkit-font-smoothing: antialiased; }
+.app-shell { min-height: 100vh; display: flex; justify-content: center; }
+.phone { position: relative; width: 100%; max-width: 430px; min-height: 100vh; background: var(--surface); overflow-x: hidden; box-shadow: 0 0 42px rgba(17,17,17,.12); padding-bottom: 83px; }
+.icon { display: block; flex: 0 0 auto; }
+.tap { cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+.tap:active { transform: scale(.98); }
+.topbar { position: sticky; top: 0; z-index: 20; height: 64px; background: rgba(255,255,255,.94); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; }
+.logo { position: relative; font: 800 23px "Sora"; letter-spacing: -1.4px; }
+.logo span { color: var(--yellow-deep); }
+.logo i { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: var(--yellow); right: -5px; top: 2px; }
+.top-actions { display: flex; align-items: center; gap: 7px; }
+.icon-tap { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid var(--border); background: var(--white); border-radius: 50%; box-shadow: var(--shadow); }
+.notification-button { position: relative; }
+.notification-button b { position: absolute; right: -2px; top: -3px; width: 17px; height: 17px; border-radius: 99px; display: grid; place-items: center; color: var(--white); background: var(--red); border: 2px solid var(--white); font-size: 8px; }
+.topbar-title { position: absolute; left: 50%; transform: translateX(-50%); font: 700 16px "Sora"; white-space: nowrap; }
+.topbar-spacer { width: 38px; }
+.avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid var(--white); box-shadow: 0 0 0 2px var(--yellow); }
+.avatar-small { width: 36px; height: 36px; }
+.page { padding: 14px 14px 28px; }
+.subpage { padding-bottom: 102px; }
+.greet-card { display: flex; align-items: center; gap: 12px; background: linear-gradient(var(--white),#fffcf0); border: 1px solid #f0e3b2; border-radius: 18px; padding: 13px; box-shadow: var(--shadow); }
+.greet-copy { flex: 1; min-width: 0; }
+.greet-copy > span { font-size: 10px; color: var(--secondary); }
+.greet-copy strong { display: block; font-size: 13px; margin: 2px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.greet-copy p { margin: 0 0 7px; font-size: 10px; color: var(--secondary); }
+.greet-card > b { font: 800 11px "Sora"; }
+.progress { height: 6px; border-radius: 99px; background: #edeff2; overflow: hidden; }
+.progress i { display: block; width: 80%; height: 100%; background: var(--yellow); border-radius: inherit; }
+.role-line { display: flex; align-items: center; gap: 8px; margin: 10px 2px 2px; color: var(--secondary); font-size: 10px; }
+.role-badge { display: inline-flex; align-items: center; height: 23px; padding: 0 9px; border-radius: 99px; background: var(--yellow-light); color: #8a6d00; font-size: 9px; font-weight: 800; }
+.section-head { display: flex; align-items: center; justify-content: space-between; margin: 18px 2px 10px; font: 700 16px "Sora"; }
+.see-all { display: flex; align-items: center; gap: 2px; height: 28px; padding: 0 9px; border: 1px solid var(--border); border-radius: 99px; background: var(--white); color: var(--secondary); font: 700 10px "Inter"; box-shadow: var(--shadow); }
+.leaderboard { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.rank { position: relative; text-align: center; background: var(--white); border: 1px solid var(--border); border-radius: 14px; padding: 10px 4px 8px; box-shadow: var(--shadow); }
+.rank > span { position: absolute; left: 5px; top: 5px; width: 20px; height: 20px; display: grid; place-items: center; border-radius: 50%; background: var(--yellow); font: 800 10px "Sora"; }
+.rank img { width: 49px; height: 49px; object-fit: cover; border-radius: 50%; border: 2px solid var(--yellow); }
+.rank strong { display: block; font-size: 9px; line-height: 1.25; margin-top: 5px; height: 23px; }
+.rank small { color: var(--secondary); font-size: 8px; }
+.quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.quick-tile { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 12px; box-shadow: var(--shadow); }
+.tile-icon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; margin-bottom: 8px; }
+.tile-icon.yellow { color: #8a6d00; background: var(--yellow-light); }
+.tile-icon.blue { color: var(--blue); background: #e3efff; }
+.quick-tile strong { display: block; font: 700 12px "Sora"; }
+.quick-tile span { display: block; color: var(--secondary); font-size: 9px; margin-top: 3px; }
+.feed-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 12px; box-shadow: var(--shadow); }
+.feed-author { display: flex; align-items: center; gap: 8px; }
+.feed-author > div:nth-child(2) { flex: 1; }
+.feed-author strong, .feed-author span { display: block; font-size: 11px; }
+.feed-author span { color: var(--secondary); font-size: 9px; margin-top: 2px; }
+.feed-card > p { font-size: 11px; line-height: 1.45; }
+.feed-card > img { width: 100%; height: 155px; border-radius: 12px; object-fit: cover; }
+.feed-actions { display: flex; gap: 22px; padding: 10px 3px 0; color: var(--secondary); font-size: 10px; }
+.feed-actions span { display: flex; gap: 4px; align-items: center; }
+.search { height: 46px; display: flex; align-items: center; gap: 10px; background: var(--white); border: 1.5px solid var(--border); border-radius: 13px; padding: 0 14px; color: var(--secondary); font-size: 12px; box-shadow: var(--shadow); }
+.horizontal { display: flex; gap: 7px; overflow-x: auto; scrollbar-width: none; }
+.chips { margin: 10px 0; }
+.chip { min-height: 32px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 0 12px; border-radius: 11px; border: 1px solid var(--border); background: var(--white); box-shadow: var(--shadow); color: #2b2b2b; font-size: 11px; white-space: nowrap; }
+.chip-active { background: linear-gradient(#ffd54a,var(--yellow),#f5b400); border-color: rgba(120,80,0,.2); color: var(--ink); font-weight: 700; }
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin: 4px 0 12px; overflow-x: auto; scrollbar-width: none; }
+.tabs > .tap { flex: 1; min-width: fit-content; text-align: center; padding: 10px 9px 9px; color: var(--secondary); font-size: 10px; font-weight: 600; border-bottom: 2px solid transparent; }
+.tabs > .tab-active { color: var(--ink); border-bottom-color: var(--yellow); font-weight: 800; }
+.academy-list { display: flex; flex-direction: column; gap: 9px; }
+.academy-card { display: flex; padding: 8px; gap: 10px; border-radius: 14px; background: var(--white); border: 1px solid var(--border); box-shadow: var(--shadow); }
+.academy-card > img { width: 104px; height: 86px; border-radius: 10px; object-fit: cover; }
+.academy-info { flex: 1; min-width: 0; padding: 2px 2px 0 0; }
+.verified-line { display: flex; align-items: center; gap: 4px; }
+.academy-info strong { font-size: 11px; line-height: 1.3; }
+.verified { display: inline-grid; place-items: center; color: var(--white); background: var(--green); border-radius: 50%; width: 13px; height: 13px; font-size: 8px; font-style: normal; }
+.academy-info p { display: flex; align-items: center; gap: 3px; color: var(--secondary); font-size: 9px; margin: 6px 0 15px; }
+.card-bottom { display: flex; justify-content: space-between; align-items: center; font-size: 9px; color: var(--secondary); }
+.card-bottom span { display: flex; align-items: center; gap: 2px; }
+.card-bottom .icon { color: var(--yellow-deep); fill: var(--yellow); }
+.text-link { color: #8a6d00 !important; font-weight: 800; }
+.person-row { display: flex; align-items: center; gap: 9px; min-height: 67px; background: var(--white); border: 1px solid var(--border); border-radius: 14px; padding: 9px; margin-bottom: 8px; box-shadow: var(--shadow); }
+.person-row .avatar { width: 45px; height: 45px; }
+.person-copy { flex: 1; min-width: 0; }
+.person-copy strong { display: flex; align-items: center; gap: 4px; font-size: 11px; }
+.person-copy p { margin: 3px 0; color: var(--secondary); font-size: 9px; }
+.person-copy > span { display: flex; align-items: center; color: var(--secondary); font-size: 8px; }
+.person-copy .icon { color: var(--yellow-deep); fill: var(--yellow); }
+.primary { min-height: 46px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 0 18px; border-radius: 14px; background: linear-gradient(#ffd54a,var(--yellow),#f5b400); border: 1px solid rgba(120,80,0,.18); box-shadow: 0 6px 16px rgba(255,193,7,.3); font-size: 12px; font-weight: 800; white-space: nowrap; }
+.primary-compact { min-height: 30px; padding: 0 10px; border-radius: 9px; box-shadow: none; font-size: 8px; }
+.create-page { padding-top: 8px; }
+.create-row { display: flex; align-items: center; gap: 12px; background: var(--white); border-bottom: 1px solid var(--border-soft); padding: 12px 10px; }
+.create-row:first-child { border-radius: 16px 16px 0 0; }
+.create-row:last-child { border-radius: 0 0 16px 16px; border-bottom: 0; }
+.create-row > div { flex: 1; }
+.create-row strong { display: block; font-size: 12px; }
+.create-row p { margin: 3px 0 0; color: var(--secondary); font-size: 9px; }
+.create-icon { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: var(--white); }
+.purple { background: var(--purple); }.green { background: var(--green); }.red { background: var(--red); }.blue { background: var(--blue); }.orange { background: var(--orange); }.pink,.magenta { background: var(--pink); }
+.community-tabs { margin-top: -14px; }
+.group-row { display: flex; align-items: center; gap: 9px; padding: 8px; margin-bottom: 8px; background: var(--white); border: 1px solid var(--border); border-radius: 14px; }
+.group-row img { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; }
+.group-row > div { flex: 1; }
+.group-row strong, .group-row span { display: block; font-size: 10px; }
+.group-row span { color: var(--secondary); font-size: 8px; margin-top: 4px; }
+.profile-summary { display: flex; align-items: center; gap: 12px; background: linear-gradient(140deg,var(--white),var(--yellow-soft)); border: 1px solid #f0e3b2; border-radius: 18px; padding: 14px; }
+.profile-summary > div { flex: 1; }
+.profile-summary strong,.profile-summary span,.profile-summary b { display: block; }
+.profile-summary strong { font-size: 12px; }
+.profile-summary span { color: var(--secondary); font-size: 9px; margin-top: 3px; }
+.profile-summary b { color: #8a6d00; font-size: 9px; margin-top: 6px; }
+.menu-card { margin-top: 12px; background: var(--white); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.menu-row { display: flex; align-items: center; gap: 12px; min-height: 47px; padding: 0 13px; border-bottom: 1px solid var(--border-soft); color: #2b2b2b; }
+.menu-row span { flex: 1; font-size: 11px; font-weight: 600; }
+.menu-row > .icon:last-child { color: var(--tertiary); }
+.menu-row.logout { color: var(--red); border: 0; }
+.profile-hero { position: relative; margin: -14px -14px 48px; }
+.profile-hero > img { width: 100%; height: 166px; object-fit: cover; }
+.profile-avatar { position: absolute; left: 16px; bottom: -42px; width: 84px; height: 84px; border-radius: 50%; padding: 3px; background: var(--white); box-shadow: var(--shadow-up); }
+.profile-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.profile-title strong { font: 700 17px "Sora"; }
+.profile-title p,.profile-title > span { display: flex; align-items: center; gap: 4px; margin: 5px 0; color: var(--secondary); font-size: 10px; }
+.profile-title > span .icon { color: var(--yellow-deep); fill: var(--yellow); }
+.profile-actions { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin: 12px 0; }
+.content-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 0 14px 14px; box-shadow: var(--shadow); }
+.content-card p,.detail-sheet > p { color: var(--secondary); font-size: 11px; line-height: 1.55; }
+.details div { display: flex; justify-content: space-between; padding: 9px 0; border-top: 1px solid var(--border-soft); font-size: 10px; }
+.details span { color: var(--secondary); }
+.list-card { display: flex; align-items: center; gap: 9px; background: var(--white); border: 1px solid var(--border); border-radius: 14px; padding: 8px; margin-bottom: 9px; box-shadow: var(--shadow); }
+.list-card > img { width: 86px; height: 72px; border-radius: 10px; object-fit: cover; }
+.list-card > div { flex: 1; min-width: 0; }
+.list-card strong { display: block; font-size: 10px; }
+.list-card p { display: flex; gap: 3px; align-items: center; margin: 5px 0; color: var(--secondary); font-size: 8px; }
+.list-card b { font-size: 10px; }
+.facility-card > img { width: 96px; }
+.event-card { display: flex; align-items: center; gap: 8px; min-height: 82px; background: var(--white); border: 1px solid var(--border); border-radius: 14px; padding: 8px; margin-bottom: 9px; }
+.event-card > img { width: 72px; height: 65px; object-fit: cover; border-radius: 9px; }
+.event-date { width: 34px; text-align: center; }
+.event-date b { display: block; font: 800 14px "Sora"; }
+.event-date span { color: var(--secondary); font-size: 8px; }
+.event-card > div:nth-child(3) { flex: 1; }
+.event-card strong { display: block; font-size: 9px; }
+.event-card p { display: flex; align-items: center; color: var(--secondary); font-size: 8px; margin: 5px 0; }
+.status-pill { padding: 3px 6px; border-radius: 99px; background: #dcfce7; color: #15803d; font-size: 7px; font-weight: 700; }
+.sticky-action { position: fixed; z-index: 30; bottom: 70px; left: 50%; transform: translateX(-50%); width: min(430px,100%); padding: 10px 14px; background: rgba(255,255,255,.95); border-top: 1px solid var(--border); box-shadow: var(--shadow-up); }
+.sticky-action .primary { width: 100%; }
+.notification-row { display: flex; align-items: center; gap: 11px; padding: 12px 3px; border-bottom: 1px solid var(--border); }
+.notification-row > i { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; color: #8a6d00; background: var(--yellow-light); }
+.notification-row > div { flex: 1; }
+.notification-row strong,.notification-row span { display: block; font-size: 10px; }
+.notification-row span { color: var(--secondary); font-size: 8px; margin-top: 4px; }
+.notification-row > b { width: 7px; height: 7px; border-radius: 50%; background: var(--yellow); }
+.chat-row { display: flex; align-items: center; gap: 10px; padding: 10px 2px; border-bottom: 1px solid var(--border); }
+.chat-row .avatar { width: 45px; height: 45px; box-shadow: none; border-color: var(--border); }
+.chat-row > div { flex: 1; min-width: 0; }
+.chat-row strong { font-size: 11px; }
+.chat-row p { margin: 4px 0 0; color: var(--secondary); font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-row > span { color: var(--secondary); font-size: 8px; text-align: right; }
+.chat-row > span b { display: grid; place-items: center; width: 17px; height: 17px; border-radius: 50%; margin: 5px 0 0 auto; background: var(--yellow); color: var(--ink); }
+.detail-page { min-height: 100vh; background: var(--surface); padding-bottom: 86px; }
+.detail-hero { position: relative; height: 250px; }
+.detail-hero > img { width: 100%; height: 100%; object-fit: cover; }
+.floating-back,.floating-save { position: absolute; top: 16px; width: 39px; height: 39px; display: grid; place-items: center; border-radius: 50%; background: rgba(17,17,17,.54); color: var(--white); border: 1px solid rgba(255,255,255,.25); }
+.floating-back { left: 14px; }.floating-save { right: 14px; }
+.detail-sheet { position: relative; margin-top: -22px; background: var(--white); border-radius: 22px 22px 0 0; padding: 18px 16px 28px; min-height: 400px; }
+.detail-title { margin: 8px 0 6px; font: 700 19px/1.3 "Sora"; }
+.detail-sheet > p { display: flex; gap: 4px; }
+.detail-rating { display: flex; align-items: center; gap: 4px; font-size: 11px; }
+.detail-rating .icon { color: var(--yellow-deep); fill: var(--yellow); }
+.detail-rating span { color: var(--secondary); }
+.detail-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin: 16px 0; }
+.stat { padding: 11px; text-align: center; background: var(--surface); border: 1px solid var(--border-soft); border-radius: 14px; }
+.stat strong { display: block; font: 800 15px "Sora"; }
+.stat span { color: var(--secondary); font-size: 8px; }
+.offer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.offer-grid span { padding: 10px; border: 1px solid var(--border-soft); border-radius: 12px; background: var(--surface); font-size: 10px; }
+.detail-action { bottom: 0; display: grid; grid-template-columns: auto 1fr; gap: 8px; }
+.detail-action .chip { min-height: 46px; border-radius: 14px; }
+.bottom-nav { position: fixed; z-index: 40; bottom: 0; left: 50%; transform: translateX(-50%); width: min(430px,100%); height: 72px; display: grid; grid-template-columns: repeat(5,1fr); background: rgba(255,255,255,.97); backdrop-filter: blur(14px); border-top: 1px solid var(--border); box-shadow: 0 -4px 18px rgba(17,17,17,.05); }
+.nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--tertiary); font-size: 8px; font-weight: 600; }
+.nav-icon { height: 26px; display: grid; place-items: center; }
+.nav-active { color: #8a6d00; font-weight: 800; }
+.nav-active .nav-icon:not(.create-nav .nav-icon) { position: relative; }
+.nav-active .nav-icon:not(.create-nav .nav-icon)::after { content: ""; position: absolute; bottom: -2px; width: 18px; height: 3px; border-radius: 99px; background: var(--yellow); }
+.create-nav .nav-icon { width: 47px; height: 47px; margin-top: -28px; color: var(--ink); background: linear-gradient(#ffd54a,var(--yellow),#f5b400); border: 3px solid var(--white); border-radius: 50%; box-shadow: 0 7px 18px rgba(255,193,7,.5); }
+.toast { position: fixed; z-index: 100; left: 50%; bottom: 90px; transform: translateX(-50%); width: max-content; max-width: 86%; padding: 11px 15px; border-radius: 10px; color: var(--white); background: #2b2b2b; box-shadow: var(--shadow-up); font-size: 11px; animation: toast-in .22s ease-out; }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%,8px); } }
+@media (min-width: 600px) { .phone { min-height: 920px; } }
+
+/* Role-by-role product showcase */
+.showcase { min-height: 100vh; background: #f6f6f3; overflow: hidden; }
+.showcase-hero { padding: 64px clamp(24px,6vw,96px) 60px; background: radial-gradient(circle at 86% 5%,#fff0aa 0,transparent 28%),var(--ink); color: var(--white); }
+.showcase-hero > div:first-child { display: flex; align-items: center; gap: 14px; }
+.showcase-hero .logo { color: var(--white); }
+.showcase-hero > div:first-child > span { padding: 6px 10px; border: 1px solid #444; border-radius: 99px; color: #b8b8b8; font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; }
+.showcase-title { max-width: 820px; margin: 34px 0 18px; font: 800 clamp(34px,5vw,68px)/1.05 "Sora"; letter-spacing: -2.5px; }
+.showcase-title em { color: var(--yellow); font-style: normal; }
+.showcase-hero > p { max-width: 580px; color: #aaa; font-size: 15px; line-height: 1.7; }
+.showcase-hero > .primary { margin-top: 24px; }
+.role-section { padding: 48px 0 54px; border-bottom: 1px solid #deded8; }
+.role-section:nth-child(odd) { background: #efefe9; }
+.role-heading { display: flex; align-items: center; gap: 16px; padding: 0 clamp(24px,6vw,96px) 24px; }
+.role-mark { width: 50px; height: 50px; display: grid; place-items: center; border-radius: 15px; color: var(--white); background: var(--purple); box-shadow: 0 8px 20px rgba(17,17,17,.12); }
+.role-academy .role-mark { background: #03b94c; }.role-organizer .role-mark { background: var(--orange); }.role-scout .role-mark { background: var(--blue); }
+.role-heading > div:nth-child(2) { flex: 1; }
+.role-heading span { color: var(--secondary); font-size: 9px; font-weight: 800; letter-spacing: 1.6px; }
+.role-title { margin: 2px 0; font: 800 27px "Sora"; letter-spacing: -.7px; }
+.role-heading p { margin: 0; color: var(--secondary); font-size: 11px; }
+.scroll-hint { display: flex; align-items: center; gap: 5px; color: var(--secondary); font-size: 10px; }
+.screen-row { display: flex; gap: 18px; padding: 0 clamp(24px,6vw,96px) 18px; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-color: var(--yellow) transparent; scrollbar-width: thin; }
+.showcase-card { flex: 0 0 252px; scroll-snap-align: start; }
+.screen-number { height: 34px; padding-left: 5px; font: 700 12px "Sora"; }
+.screen-number span { color: var(--secondary); font: 500 9px "Inter"; }
+.mini-phone { position: relative; height: 526px; overflow: hidden; border: 5px solid #202020; border-radius: 28px; background: var(--surface); box-shadow: 0 16px 35px rgba(17,17,17,.15); }
+.mini-phone::before { content: ""; position: absolute; z-index: 12; top: 5px; left: 50%; transform: translateX(-50%); width: 70px; height: 15px; border-radius: 20px; background: #202020; }
+.mini-header { height: 44px; padding: 11px 9px 0; display: flex; align-items: center; justify-content: space-between; background: var(--white); border-bottom: 1px solid var(--border); }
+.mini-header > strong { font: 700 9px "Sora"; }.mini-header > span { width: 10px; }
+.mini-header .logo { transform: scale(.54); transform-origin: left center; width: 67px; }
+.mini-header > div { display: flex; align-items: center; gap: 7px; }
+.mini-avatar { display: inline-block; width: 18px; height: 18px; border-radius: 50%; background: url("https://images.unsplash.com/photo-1547839918-5ed99eac4175?auto=format&fit=crop&w=100&q=80") center/cover; }
+.mini-body { height: calc(100% - 86px); padding: 7px; overflow: hidden; }
+.mini-nav { position: absolute; bottom: 0; left: 0; right: 0; height: 42px; display: grid; grid-template-columns: repeat(5,1fr); background: var(--white); border-top: 1px solid var(--border); }
+.mini-nav > div { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--tertiary); }
+.mini-nav span { font-size: 5px; }.mini-nav .on { color: #8a6d00; font-weight: 800; }
+.mini-nav > div:nth-child(3) .icon { box-sizing: content-box; padding: 4px; margin-top: -9px; border: 2px solid var(--white); border-radius: 50%; color: var(--ink); background: var(--yellow); }
+.mini-greet { display: flex; align-items: center; gap: 6px; padding: 7px; border: 1px solid #f0e3b2; border-radius: 10px; background: linear-gradient(var(--white),#fffcf0); }
+.mini-greet > img { width: 29px; height: 29px; object-fit: cover; border-radius: 50%; border: 1px solid var(--yellow); }
+.mini-greet p { flex: 1; margin: 0; min-width: 0; }.mini-greet p > * { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.mini-greet p span,.mini-greet p small { color: var(--secondary); font-size: 5px; }.mini-greet p strong { font-size: 7px; margin: 1px 0; }
+.mini-greet p i { display: block; height: 3px; margin-top: 3px; border-radius: 5px; background: linear-gradient(90deg,var(--yellow) 80%,var(--border) 80%); }.mini-greet > b { font-size: 6px; }
+.mini-section { display: flex; align-items: center; justify-content: space-between; margin: 10px 2px 6px; }
+.mini-section strong { font: 700 9px "Sora"; }.mini-section span { color: #8a6d00; font-size: 6px; font-weight: 700; }
+.mini-ranks { display: grid; grid-template-columns: repeat(3,1fr); gap: 5px; }
+.mini-ranks > div { position: relative; padding: 5px 2px; text-align: center; background: var(--white); border: 1px solid var(--border); border-radius: 8px; }
+.mini-ranks b { position: absolute; left: 3px; width: 11px; height: 11px; border-radius: 50%; background: var(--yellow); font-size: 6px; line-height: 11px; }
+.mini-ranks img { width: 28px; height: 28px; object-fit: cover; border-radius: 50%; }.mini-ranks span { display: block; font-size: 5px; margin-top: 2px; }
+.mini-quick { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 6px; }
+.mini-quick div { display: flex; align-items: center; gap: 5px; padding: 7px; border: 1px solid var(--border); border-radius: 8px; background: var(--white); color: #8a6d00; }
+.mini-quick strong { color: var(--ink); font-size: 6px; }
+.mini-feed { padding: 6px; border: 1px solid var(--border); border-radius: 9px; background: var(--white); }
+.mini-feed p { display: flex; align-items: center; gap: 4px; margin: 0 0 4px; font-size: 6px; }.mini-feed > img { width: 100%; height: 82px; object-fit: cover; border-radius: 6px; }
+.mini-search { display: flex; align-items: center; gap: 4px; height: 25px; padding: 0 7px; color: var(--secondary); background: var(--white); border: 1px solid var(--border); border-radius: 8px; font-size: 6px; }
+.mini-chips { display: flex; gap: 4px; margin: 6px 0; }.mini-chips > * { padding: 4px 7px; border: 1px solid var(--border); border-radius: 6px; background: var(--white); font-size: 5px; }.mini-chips b { background: var(--yellow); }
+.mini-tabs { display: flex; justify-content: space-around; margin: 0 0 6px; border-bottom: 1px solid var(--border); }
+.mini-tabs > * { padding: 5px 3px; color: var(--secondary); font-size: 6px; }.mini-tabs b { color: var(--ink); border-bottom: 2px solid var(--yellow); }
+.mini-person { display: flex; align-items: center; gap: 5px; min-height: 39px; margin-bottom: 4px; padding: 4px; border: 1px solid var(--border); border-radius: 8px; background: var(--white); }
+.mini-person img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }.mini-person p { flex: 1; margin: 0; min-width: 0; }
+.mini-person p strong,.mini-person p span { display: block; font-size: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }.mini-person p span { color: var(--secondary); font-size: 5px; margin-top: 2px; }
+.mini-person > b { padding: 4px 6px; border-radius: 5px; background: var(--yellow); font-size: 5px; }.mini-person > small { color: var(--secondary); font-size: 5px; }
+.mini-create > div { display: flex; align-items: center; gap: 7px; padding: 7px 4px; border-bottom: 1px solid var(--border); background: var(--white); }
+.mini-create i { width: 25px; height: 25px; display: grid; place-items: center; border-radius: 50%; color: var(--white); }.mini-create p { margin: 0; }
+.mini-create strong,.mini-create span { display: block; font-size: 7px; }.mini-create span { color: var(--secondary); font-size: 5px; margin-top: 2px; }
+.mini-profile { display: flex; gap: 7px; padding: 8px; border: 1px solid #f0e3b2; border-radius: 10px; background: var(--yellow-soft); }.mini-profile img { width: 35px; height: 35px; object-fit: cover; border-radius: 50%; }
+.mini-profile p { margin: 0; }.mini-profile p > * { display: block; font-size: 6px; }.mini-profile p span { color: var(--secondary); margin: 2px 0; }.mini-profile p b { color: #8a6d00; }
+.mini-menu { margin-top: 6px; overflow: hidden; border: 1px solid var(--border); border-radius: 9px; background: var(--white); }
+.mini-menu > div { display: flex; align-items: center; gap: 7px; min-height: 31px; padding: 0 7px; border-bottom: 1px solid var(--border-soft); }
+.mini-menu span { flex: 1; font-size: 6px; }
+.mini-card-list > div { display: flex; gap: 6px; margin-bottom: 5px; padding: 5px; border: 1px solid var(--border); border-radius: 8px; background: var(--white); }
+.mini-card-list img { width: 65px; height: 48px; object-fit: cover; border-radius: 6px; }.mini-card-list p { flex: 1; margin: 0; }
+.mini-card-list p > * { display: block; font-size: 6px; }.mini-card-list p span { color: var(--secondary); margin: 3px 0; font-size: 5px; }.mini-card-list p b { display: inline-block; padding: 3px 4px; border-radius: 4px; background: var(--yellow); font-size: 5px; }
+.mini-profile-hero { position: relative; margin: -7px -7px 26px; }.mini-profile-hero > img { width: 100%; height: 105px; object-fit: cover; }
+.mini-profile-hero > span { position: absolute; left: 10px; bottom: -22px; padding: 2px; border-radius: 50%; background: var(--white); }.mini-profile-hero span img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
+.mini-profile-title > * { display: block; }.mini-profile-title strong { font: 700 9px "Sora"; }.mini-profile-title span { color: var(--secondary); font-size: 6px; margin: 3px 0; }.mini-profile-title b,.mini-add { display: inline-block; padding: 4px 8px; border-radius: 5px; background: var(--yellow); font-size: 6px; }
+.mini-about { padding: 8px; border: 1px solid var(--border); border-radius: 9px; background: var(--white); }.mini-about > strong { font: 700 9px "Sora"; }.mini-about p { color: var(--secondary); font-size: 6px; line-height: 1.5; }
+.mini-about > span { display: flex; justify-content: space-between; padding: 5px 0; border-top: 1px solid var(--border-soft); color: var(--secondary); font-size: 6px; }.mini-about span b { color: var(--ink); }
+.mini-add { display: block; width: max-content; margin: 0 0 6px auto; }
+.exit-prototype { position: fixed; z-index: 100; top: 18px; left: 18px; display: flex; align-items: center; gap: 7px; padding: 10px 13px; border: 1px solid var(--border); border-radius: 99px; background: var(--white); box-shadow: var(--shadow-up); font-size: 11px; font-weight: 700; }
+@media (max-width: 600px) {
+  .showcase-hero { padding-top: 38px; }.showcase-title { letter-spacing: -1.5px; }.scroll-hint { display: none; }
+  .role-section { padding-top: 34px; }.showcase-card { flex-basis: 236px; }.mini-phone { height: 500px; }
+  .exit-prototype { top: auto; bottom: 86px; left: 12px; }
+}
+
+/* =====================================================================
+   Stitch "Remix of SX new Design" restyle
+   Applied on top of the v3 tokens. Palette + chrome from the Stitch
+   project (projects/1477700871665175405). No new component colours.
+   ===================================================================== */
+:root{
+  --yellow:#FFB800;
+  --yellow-deep:#E5A500;
+  --yellow-light:#FFF8E7;
+  --yellow-soft:#FFF8E7;
+  --ink:#111827;
+  --text:#111827;
+  --secondary:#6B7280;
+  --tertiary:#9CA3AF;
+  --surface:#F7F9FC;
+  --border:#E8EAED;
+  --border-soft:#EFF1F4;
+}
+body{background:#e8eaed}
+.phone{background:var(--surface)}
+
+/* Per-role accent (refine the chrome as per the active role) */
+:root{--rc:#FFB800}
+body[data-role="athlete"]{--rc:#F59E0B}
+body[data-role="coach"]{--rc:#8A6AEA}
+body[data-role="academy"]{--rc:#03B94C}
+body[data-role="organizer"]{--rc:#FB802E}
+body[data-role="scout"]{--rc:#3B82F6}
+body[data-role="admin"]{--rc:#EF4444}
+
+/* iOS status bar (Stitch chrome) - a fixed band so it reserves no flow
+   space; the phone gets matching top padding and the sticky topbar/rolebar
+   offsets below shift down by its height. */
+.phone{padding-top:31px}
+.statusbar{position:fixed;top:0;left:50%;transform:translateX(-50%);width:min(430px,100%);height:31px;box-sizing:border-box;z-index:22;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:var(--white);color:#000;font:600 13px "Inter",sans-serif}
+.statusbar .sb-icons{display:flex;align-items:center;gap:5px}
+.statusbar .sbbat{width:23px;height:11px;border:1.5px solid #000;border-radius:3px;position:relative;display:inline-block}
+.statusbar .sbbat::after{content:"";position:absolute;left:1px;top:1px;bottom:1px;width:14px;background:#000;border-radius:1px}
+/* shift sticky chrome down by the 31px status bar */
+.topbar{top:31px}
+
+/* Wordmark tagline under the logo */
+.topbar .logo::after{content:"Let's Defeat History";position:absolute;left:1px;top:23px;font:700 6px/1 "Inter",sans-serif;letter-spacing:1.2px;color:var(--tertiary);text-transform:uppercase;white-space:nowrap}
+
+/* Rolebar: role-tinted ID badge */
+.rolebar .rid{background:var(--rc,#FFB800)}
+.rolebar a{color:var(--rc,#FFB800)}
+/* =====================================================================
+   All-screens gallery (hub landing + #screens) - role-grouped, live frames
+   ===================================================================== */
+body.gal-wide{background:#EEF0F3}
+body.gal-wide .app-shell{display:block}
+body.gal-wide .phone{max-width:none;width:100%;min-height:100vh;background:transparent;box-shadow:none;padding:0;position:static;overflow:visible}
+body.gal-wide .statusbar{display:none}
+.gal{font-family:Inter,system-ui,-apple-system,sans-serif;color:#111827;padding-bottom:56px}
+.gal *{box-sizing:border-box}
+.gal-hero{background:linear-gradient(135deg,#111 0%,#1a1a1a 45%,#8a6d00 135%);color:#fff;padding:56px 32px 50px;position:relative;overflow:hidden}
+.gal-hero::after{content:"";position:absolute;inset:0;background:radial-gradient(900px 420px at 12% 8%,rgba(255,184,0,.30),transparent 60%);pointer-events:none}
+.gal-hero-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1}
+.gal-brand{display:flex;align-items:center;gap:9px;font-family:Sora;font-weight:800;font-size:18px;margin-bottom:22px}
+.gal-mark{width:34px;height:34px;border-radius:9px;background:#FFB800;color:#111;display:grid;place-items:center;font-family:Sora;font-weight:800}
+.gal-x{color:#FFB800}
+.gal-pill{display:inline-flex;align-items:center;gap:8px;padding:6px 13px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);border-radius:99px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px}
+.gal-hero h1{font-family:Sora;font-size:clamp(34px,5vw,58px);font-weight:800;letter-spacing:-1.5px;line-height:1.03;margin:0 0 14px;max-width:840px}
+.gal-hero h1 em{font-style:normal;color:#FFB800}
+.gal-hero p{max-width:700px;color:rgba(255,255,255,.8);font-size:15px;line-height:1.6;margin:0 0 26px}
+.gal-cta{display:flex;gap:10px;flex-wrap:wrap}
+.gal-btn{padding:13px 20px;border-radius:12px;font-size:13px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:none;font-family:inherit}
+.gal-btn.p{background:#FFB800;color:#161300;box-shadow:0 10px 22px -8px rgba(255,184,0,.6)}
+.gal-btn.g{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.22)}
+.gal-stats{max-width:1200px;margin:-30px auto 0;padding:0 32px;position:relative;z-index:2}
+.gal-stats-inner{display:grid;grid-template-columns:repeat(4,1fr);background:#fff;border:1px solid #E8EAED;border-radius:16px;overflow:hidden;box-shadow:0 20px 40px -18px rgba(15,23,42,.18)}
+.gal-stat{padding:18px 14px;text-align:center;border-right:1px solid #E8EAED}
+.gal-stat:last-child{border-right:none}
+.gal-stat b{display:block;font-family:Sora;font-size:26px;font-weight:800;letter-spacing:-1px}
+.gal-stat b i{font-style:normal;color:#E5A500}
+.gal-stat span{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:#6B7280;font-weight:700}
+.gal-wrap{max-width:1200px;margin:0 auto;padding:0 32px}
+.gal-kicker{font-family:Sora;font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#8a6d00;margin:46px 0 8px}
+.gal-h2{font-family:Sora;font-size:clamp(24px,3.4vw,34px);font-weight:800;letter-spacing:-1px;margin:0 0 8px}
+.gal-sub{color:#6B7280;font-size:14px;max-width:700px;line-height:1.6;margin:0 0 22px}
+.gal-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(236px,1fr));gap:14px;margin-top:18px}
+.gal-tile{display:flex;gap:12px;align-items:flex-start;padding:16px;background:#fff;border:1px solid #E8EAED;border-radius:14px;text-decoration:none;color:inherit;transition:.18s;cursor:pointer}
+.gal-tile:hover{transform:translateY(-3px);box-shadow:0 18px 34px -18px rgba(15,23,42,.28);border-color:#E5A500}
+.gal-ticon{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;flex:0 0 auto;background:var(--rb,#FFF8E7);color:var(--rc,#8a6d00)}
+.gal-tile b{display:block;font-family:Sora;font-size:14px}
+.gal-tile small{color:#6B7280;font-size:11.5px}
+.gal-tile u{display:block;text-decoration:none;color:#9CA3AF;font-size:10.5px;margin-top:5px}
+.gal-tabs{position:sticky;top:0;z-index:30;display:flex;gap:8px;overflow-x:auto;padding:12px 0;background:rgba(238,240,243,.92);backdrop-filter:blur(10px);border-bottom:1px solid #E8EAED;scrollbar-width:none}
+.gal-tabs::-webkit-scrollbar{display:none}
+.gal-tab{padding:8px 14px;border-radius:99px;border:1px solid #E8EAED;background:#fff;font:700 12px Inter,sans-serif;color:#6B7280;cursor:pointer;white-space:nowrap;font-family:inherit}
+.gal-tab.on{background:#111;color:#fff;border-color:#111}
+.gal-section{scroll-margin-top:64px;padding-top:34px}
+.gal-sh{display:flex;align-items:center;gap:14px;margin-bottom:6px;flex-wrap:wrap}
+.gal-sh .gal-ticon{width:48px;height:48px;border-radius:12px}
+.gal-sh h2{font-family:Sora;font-size:24px;font-weight:800;letter-spacing:-.7px;margin:0}
+.gal-tag{padding:4px 10px;border:1px solid #E8EAED;background:#fff;border-radius:99px;font-size:11px;font-weight:700;color:#6B7280}
+.gal-desc{color:#6B7280;font-size:13px;line-height:1.6;max-width:780px;margin:0 0 18px}
+.gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(206px,1fr));gap:18px}
+.gal-card{background:#fff;border:1px solid #E8EAED;border-radius:18px;overflow:hidden;text-decoration:none;color:inherit;display:flex;flex-direction:column;transition:.2s;box-shadow:0 1px 3px rgba(16,18,21,.05)}
+.gal-card:hover{transform:translateY(-4px);box-shadow:0 22px 40px -20px rgba(15,23,42,.35);border-color:#E5A500}
+.gal-frame{position:relative;width:100%;aspect-ratio:430/900;background:#0E0F12;overflow:hidden;border-radius:17px 17px 0 0}
+.gal-frame::before{content:"";position:absolute;top:7px;left:50%;transform:translateX(-50%);width:80px;height:6px;border-radius:99px;background:#1a1d22;z-index:3}
+.gal-scale{position:absolute;top:0;left:0;width:430px;height:900px;transform-origin:top left;pointer-events:none;background:#F7F9FC;border-radius:17px 17px 0 0;overflow:hidden}
+.gal-scale .rolebar{display:none}
+.gal-meta{padding:11px 13px 13px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.gal-id{font:800 12px Sora,sans-serif}
+.gal-name{font-size:11.5px;color:#6B7280;display:block;margin-top:2px}
+.gal-badge{font-size:9px;font-weight:800;padding:3px 7px;border-radius:5px;letter-spacing:.3px;flex:0 0 auto}
+.gal-badge.p0{background:rgba(34,197,94,.14);color:#15803D}
+.gal-badge.p1{background:rgba(59,130,246,.14);color:#1D4ED8}
+.gal-badge.p2{background:rgba(107,114,128,.14);color:#6B7280}
+@media (max-width:640px){
+  .gal-hero{padding:40px 18px 40px}
+  .gal-wrap,.gal-stats{padding-left:18px;padding-right:18px}
+  .gal-stats-inner{grid-template-columns:repeat(2,1fr)}
+  .gal-grid{grid-template-columns:1fr 1fr;gap:12px}
+  .gal-section{padding-top:26px}
+}
+</style>
+<style>
+  /* v2 extensions — tokens inherited from ../styles.css, no new palette */
+  .rolebar{position:sticky;top:95px;z-index:19;background:#111;color:#fff;display:flex;gap:6px;align-items:center;padding:8px 12px;overflow-x:auto;scrollbar-width:none}
+  .rolebar select{background:#222;color:#fff;border:1px solid #444;border-radius:9px;font-size:11px;font-weight:700;padding:7px 9px}
+  .rolebar .rid{font:800 10px "Sora";background:var(--yellow);color:#111;border-radius:7px;padding:5px 8px;white-space:nowrap}
+  .rolebar .pri{font-size:9px;font-weight:800;border-radius:99px;padding:4px 8px;white-space:nowrap}
+  .pri.p0{background:#dcfce7;color:#15803d}.pri.p1{background:#e3efff;color:#1d4ed8}.pri.p2{background:#f3f4f6;color:#6b7280}
+  .rolebar a{color:var(--yellow);font-size:10px;font-weight:700;white-space:nowrap}
+  .auth-wrap{min-height:70vh;display:flex;flex-direction:column;justify-content:center;gap:12px}
+  .auth-logo{text-align:center;padding:26px 0 6px}
+  .auth-logo .logo{font-size:34px}
+  .tagline{text-align:center;font:800 12px "Sora";letter-spacing:3px;color:var(--secondary)}
+  .card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:var(--shadow)}
+  .field{margin:10px 0}
+  .field label{display:block;font-size:10px;font-weight:700;color:var(--secondary);margin-bottom:6px}
+  .input{min-height:46px;display:flex;align-items:center;gap:8px;background:var(--white);border:1.5px solid var(--border);border-radius:13px;padding:0 14px;font-size:12px;color:var(--secondary)}
+  .input b{color:var(--ink)}.input input{border:0;outline:0;flex:1;font-size:12px}
+  .otp-row{display:flex;gap:8px;justify-content:center;margin:14px 0}
+  .otp{width:44px;height:52px;border:1.5px solid var(--border);border-radius:12px;display:grid;place-items:center;font:800 18px "Sora";background:#fff}
+  .otp.fill{border-color:var(--yellow-deep);background:var(--yellow-soft)}
+  .check-row{display:flex;gap:9px;align-items:flex-start;font-size:11px;color:var(--secondary)}
+  .check{width:20px;height:20px;border-radius:6px;background:var(--yellow);display:grid;place-items:center;color:#111;font-size:12px;font-weight:800;flex:0 0 auto}
+  .btn-row{display:flex;gap:8px;margin-top:12px}
+  .btn-row .primary{flex:1}
+  .ghost{min-height:46px;display:inline-flex;align-items:center;justify-content:center;padding:0 18px;border-radius:14px;border:1px solid var(--border);background:#fff;font-size:12px;font-weight:700;flex:1}
+  .or{display:flex;align-items:center;gap:10px;color:var(--tertiary);font-size:10px;margin:12px 0}
+  .or::before,.or::after{content:"";flex:1;height:1px;background:var(--border)}
+  .steps{font-size:10px;color:var(--secondary);margin-bottom:8px}
+  .sheet{background:#fff;border-radius:20px 20px 0 0;padding:14px 16px 22px;box-shadow:var(--shadow-up)}
+  .handle{width:44px;height:5px;border-radius:99px;background:var(--border);margin:0 auto 12px}
+  .bubble{max-width:78%;padding:10px 13px;border-radius:14px;font-size:11px;line-height:1.5}
+  .bubble.me{background:var(--yellow-soft);border:1px solid #f0e3b2;margin-left:auto;border-bottom-right-radius:4px}
+  .bubble.them{background:#fff;border:1px solid var(--border);border-bottom-left-radius:4px}
+  .chat-day{text-align:center;font-size:9px;color:var(--tertiary);margin:12px 0}
+  .chat-input{position:sticky;bottom:0;display:flex;gap:8px;padding:10px;background:#fff;border-top:1px solid var(--border)}
+  .tbl{width:100%;border-collapse:collapse;font-size:10px}
+  .tbl th{text-align:left;color:var(--secondary);font-size:9px;padding:8px;border-bottom:1px solid var(--border)}
+  .tbl td{padding:9px 8px;border-bottom:1px solid var(--border-soft)}
+  .bar{height:8px;border-radius:99px;background:#edeff2;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--yellow)}
+  .bar.g i{background:var(--green)}.bar.b i{background:var(--blue)}
+  .podium{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:end;text-align:center;margin:12px 0}
+  .podium .p{background:#fff;border:1px solid var(--border);border-radius:14px;padding:10px 4px}
+  .podium .p.first{background:linear-gradient(#fff,var(--yellow-light));border-color:#f0e3b2}
+  .admin-tabs{display:flex;gap:6px;overflow-x:auto;padding:10px 0;scrollbar-width:none}
+  .admin-tabs a{font-size:10px;font-weight:700;padding:8px 12px;border-radius:99px;border:1px solid var(--border);background:#fff;color:var(--secondary);text-decoration:none;white-space:nowrap}
+  .admin-tabs a.on{background:#111;color:#fff;border-color:#111}
+  .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+  .kpi{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px}
+  .kpi strong{font:800 20px "Sora"}.kpi span{font-size:9px;color:var(--secondary)}
+  .note{font-size:10px;color:var(--secondary);background:var(--yellow-soft);border:1px solid #f0e3b2;border-radius:12px;padding:10px 12px;margin:10px 0}
+  .prog-list .row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border-soft);font-size:11px}
+  .prog-list .row:last-child{border:0}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--yellow)}
+  .top-back{display:flex;align-items:center;gap:10px}
+  .flow-nav{display:flex;gap:8px;overflow-x:auto;padding:10px 14px;background:#fff;border-bottom:1px solid var(--border);scrollbar-width:none}
+  .flow-nav a{font-size:10px;font-weight:700;color:var(--secondary);text-decoration:none;white-space:nowrap;padding:6px 10px;border-radius:99px;border:1px solid var(--border)}
+  .flow-nav a.on{color:#111;background:var(--yellow-light);border-color:#f0e3b2}
+  .pilltabs{display:flex;gap:8px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none}
+  .pilltab{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 16px;border-radius:12px;background:#fff;border:1px solid var(--border);font-size:11px;font-weight:600;color:var(--secondary);white-space:nowrap}
+  .pilltab.on{background:var(--yellow);border-color:var(--yellow-deep);color:#111;font-weight:800}
+  .dropchips{display:flex;gap:8px;overflow-x:auto;margin:10px 0;scrollbar-width:none}
+  .dropchip{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 12px;border-radius:11px;background:#fff;border:1px solid var(--border);font-size:11px;color:var(--secondary);white-space:nowrap}
+  .agrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .acard{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+  .acard .ph{position:relative;height:128px}.acard .ph img{width:100%;height:100%;object-fit:cover}
+  .acard .bkm{position:absolute;top:8px;right:8px;width:28px;height:28px;display:grid;place-items:center;background:rgba(255,255,255,.92);border-radius:8px;color:var(--secondary)}
+  .acard .bd{padding:9px 10px 10px}.acard .bd strong{font-size:11px;display:flex;align-items:center;gap:3px}
+  .acard .bd p{margin:3px 0;font-size:9px;color:var(--secondary)}
+  .acard .meta{display:flex;align-items:center;gap:8px;font-size:9px;color:var(--secondary);margin:5px 0 8px}
+  .acard .primary{width:100%;min-height:34px;font-size:10px}
+  .ctile{display:flex;gap:12px;background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:var(--shadow)}
+  .ctile .ci{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;flex:0 0 auto}
+  .ctile strong{font-size:12px}.ctile p{margin:3px 0 0;font-size:9px;color:var(--secondary);line-height:1.5}
+  .tilegrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .tilegrid .ctile{align-items:flex-start}
+  .tilegrid .ctile .chev{margin-left:auto}
+  .qpost{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
+  .qpost div{background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px 4px;text-align:center;font-size:9px;font-weight:600}
+  .rail{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+  .rail .acard{flex:0 0 150px}
+  .evdate{position:absolute;left:8px;top:8px;background:var(--yellow);border-radius:10px;text-align:center;padding:5px 9px}
+  .evdate b{display:block;font:800 15px "Sora";line-height:1}.evdate span{font-size:8px;font-weight:800}
+  .typechip{display:inline-block;font-size:8px;font-weight:800;border-radius:6px;padding:3px 8px;background:#dcfce7;color:#15803d}
+  .stathead{background:linear-gradient(140deg,#fff,var(--yellow-soft));border:1px solid #f0e3b2;border-radius:18px;padding:14px}
+  .stathead .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px;text-align:center}
+  .stathead .row3 b{font:800 16px "Sora"}.stathead .row3 span{font-size:9px;color:var(--secondary)}
+  .mrow{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid var(--border);border-radius:16px;padding:12px;margin-bottom:9px;box-shadow:var(--shadow)}
+  .mrow .mi{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex:0 0 auto}
+  .mrow b{font-size:12px}.mrow p{margin:2px 0 0;font-size:9px;color:var(--secondary)}
+  .mrow .chev{margin-left:auto;color:var(--tertiary);align-self:center}
+  .podium3{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:8px;align-items:end;text-align:center;margin:12px 0}
+  .podium3 .p{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px 6px}
+  .podium3 .p.w{background:linear-gradient(#fff,var(--yellow-light));border-color:var(--yellow-deep)}
+  .podium3 img{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--yellow)}
+  .podium3 b{font-size:10px}.podium3 small{color:var(--secondary);font-size:8px}
+  .medal{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;font:800 12px "Sora";color:#fff;background:#9ca3af}
+  .medal.g{background:#F5B400;color:#111}.medal.b{background:#D97706}
+  .strip5{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;text-align:center}
+  .strip5 div{flex:0 0 62px}.strip5 img{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid var(--yellow)}
+  .strip5 b{font-size:8px;display:block}.strip5 span{font-size:8px;color:var(--secondary)}
+  .rnk{position:relative;display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--yellow);font:800 10px "Sora"}
+  .subtiles{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px;text-align:center}
+  .subtiles div{background:var(--surface);border:1px solid var(--border-soft);border-radius:10px;padding:7px 2px;font-size:8px;color:var(--secondary)}
+  .feedtabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin:12px 0;overflow-x:auto;scrollbar-width:none}
+  .feedtabs span{flex:0 0 auto;padding:10px 10px 9px;color:var(--secondary);font-size:10px;font-weight:600;border-bottom:2px solid transparent;white-space:nowrap}
+  .feedtabs span.on{color:var(--ink);border-bottom-color:var(--yellow);font-weight:800}
+  .sh{font-size:8px;font-weight:800;color:#111;background:#fff;border-radius:6px;padding:4px 7px;white-space:nowrap}
+  .sh.only{background:transparent;color:#bbb;border:1px solid #444}
+  @media (max-width:600px){.rolebar{top:95px}}
 </style>
 </head>
-<body style="background:#f4f5f7">
-<div class="wrap">
-<div class="hero">
-<div class="logo" style="color:#fff">Sport<span>X</span><i></i></div>
-<h1>New design, full MVP.<br><em>129 screens · 6 roles · one system.</em></h1>
-<p>Built from <code>new_design_docs/</code> (wireframes 01–06 + inventory + MVP list), styled with the v3 design system (<code>../styles.css</code> tokens: yellow gradient CTA, Sora + Inter, 430px phone, bottom nav, toasts). Click any screen to open it live in the <b>clickable prototype</b>.</p>
-<div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
-<a class="primary" style="text-decoration:none;color:#111" href="app.html">Open clickable prototype →</a>
-<a class="primary" style="text-decoration:none;color:#111;background:#fff" href="../index.html">← Back to v3 Phase-1</a>
-</div>
-<div class="badges"><span>94 × P0 MVP</span><span>25 × P1 MVP+</span><span>10 × P2 post-MVP</span><span>6 roles</span><span>12 user flows</span></div>
-</div>
-
-<div class="sys"><b>How to review (5 min):</b> ① pick a role below → ② open its <b>Home</b> → ③ follow the journey chips (onboard → discover → register/enquire → chat). Role switcher inside the prototype remembers your role. <b>Design system:</b> <code>--yellow #FFC107</code>, gradient <code>#FFD54A → #FFC107 → #F5B400</code>, <code>--ink #111</code>, radius 8–18/99, Sora + Inter, 430px <code>.phone</code>. No new colors introduced.</div>
-
-<div class="sys"><b>Common modules — build once, reuse everywhere.</b> <small style="color:var(--secondary)">In the prototype every screen carries a chip: <b>SHARED · ALL ROLES</b>, <b>EVENT MODULE</b>, or <b>ROLE ONLY</b>, so you can see reuse while clicking.</small>
-<table class="mx">
-<tr><th>Module</th><th>Screens</th><th class="c">Ath</th><th class="c">Coa</th><th class="c">Acd</th><th class="c">Org</th><th class="c">Sct</th><th>Reuse rule</th></tr>
-<tr><td><b>Auth core</b></td><td>A.1–A.5, A.10</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td><small>Identical for all. A.9 guardian only for U-18 athletes.</small></td></tr>
-<tr><td><b>Discovery</b></td><td>S.2–S.7</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td><small>Same shell; category tab pre-selected per role.</small></td></tr>
-<tr><td><b>Social + messaging</b></td><td>S.8–S.10, S.12, S.16–S.20, S.26–S.30</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td><small>S.8 tiles + S.15 rows adapt per role (adaptive, not identical).</small></td></tr>
-<tr><td><b>Profiles</b></td><td>D.1–D.5</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td><small>Own profile editable; Shortlist CTA on D.1 for scouts only.</small></td></tr>
-<tr><td><b>Transactions</b></td><td>D.6–D.13</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td><small>Same screens; primary CTA varies (Register / Enquire / Manage / Apply).</small></td></tr>
-<tr><td><b>Event module</b></td><td>OR.5–OR.8</td><td class="c n">–</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c n">–</td><td><small>One module, three owners. Coach use is P1.</small></td></tr>
-<tr><td><b>Program form</b></td><td>CO.5 + D.11</td><td class="c n">–</td><td class="c y">✓</td><td class="c y">✓</td><td class="c n">–</td><td class="c n">–</td><td><small>One form, two owners; athletes enquire via D.12.</small></td></tr>
-<tr><td><b>Trust & safety</b></td><td>A.10, S.22–S.26, AT.10</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td class="c y">✓</td><td><small>Identical; minors get stricter defaults (AT.10).</small></td></tr>
-</table>
-<div style="font-size:11px;margin-top:10px"><b>Role-only (build per role):</b> <code>AT.*</code> athlete portfolio · <code>CO.*</code> coach workspace · <code>AC.*</code> academy ops · <code>OR.*</code> organizer lifecycle · <code>SC.*</code> scouting pipeline · <code>AD.*</code> admin console. <b>Flow additions in this pass:</b> wizard step pills (CO.1, AC.1, OR.5), empty states (S.5, S.20), user-detail actions (AD.3), labeled coach stats (D.2), tab deep-links (D.1–D.6, OR.6).</div></div>
-
-<div class="grid" id="roles"></div>
-
-<div class="sys"><b>Flows covered (§12 inventory):</b> 12.1 onboarding (A.1→A.2→A.3→A.4→guardian→wizard→home) · 12.2 discovery (S.2→S.5/S.4→S.3→D.x) · 12.3 trial registration (D.6→D.7→D.8→AT.9) · 12.4 scholarship apply (D.9→D.10→AT.8) · 12.5 portfolio (D.1→AT.6→AT.3/AT.4/S.11/S.10→A.10) · 12.7 connections &amp; chat (S.19→S.18, S.26/S.23) · 12.9 programs + enquiries (CO.4→CO.5→D.12→S.18) · 12.10 academy trials (AC.6→OR.5→OR.6→OR.7→OR.8) · 12.12 organizer lifecycle (OR.2→OR.5→OR.6→OR.7→OR.9→OR.11→OR.12) · 12.13 scouting (SC.4→SC.6/SC.10→SC.8→SC.5→SC.7→SC.13) · 12.14 report &amp; moderation · 12.15 admin verification &amp; content · 12.16 notification routing.</div>
+<body>
+<div class="app-shell"><div class="phone" id="phone"></div>
+<div class="toast" id="toast" style="display:none"></div>
 </div>
 <script>
-const G=(ids)=>ids.map(([id,t,p])=>'<a href="app.html#'+id.toLowerCase().replace(".","")+'">'+id+' <small>'+t+'</small><span class="pri '+p.toLowerCase()+'">'+p+'</span></a>').join("");
-const ROLES=[
-{t:"Athlete / Parent",s:"66 screens · P0 52",j:"Onboard (guardian if U-18) → profile → discover → register / apply / enquire → chat.",g:[["A.1","Splash","P0"],["A.2","Role select","P0"],["A.3","Sign up","P0"],["A.4","OTP","P0"],["A.9","Guardian consent","P0"],["AT.2","Preferences","P0"],["A.5","Login","P0"],["AT.1","Home","P0"],["D.1","Profile","P0"],["AT.6","Checklist","P0"],["AT.3","Edit profile","P0"],["AT.4","Sports","P0"],["AT.5","Achievements","P0"],["S.2","Explore","P0"],["S.3","Category list","P0"],["S.4","Filters","P0"],["D.6","Event detail","P0"],["D.7","Register","P0"],["D.9","Opportunity","P0"],["D.10","Apply","P0"],["D.3","Academy","P0"],["D.2","Coach","P0"],["D.11","Program","P0"],["D.12","Enquire","P0"],["S.8","Create","P0"],["S.9","Post","P0"],["S.17","Inbox","P0"],["S.18","Chat","P0"],["S.16","Notifications","P0"],["S.15","More","P0"],["S.22","Settings","P0"],["A.10","Verification","P0"]]},
-{t:"Coach",s:"59 screens · P0 47",j:"Onboard with credentials → publish programs → enquiries → chat → posts, events (P1).",g:[["CO.1","Setup","P0"],["CO.2","Home","P0"],["D.2","Profile","P0"],["CO.3","Edit","P0"],["CO.4","Programs","P0"],["CO.5","Program form","P0"],["D.11","Program detail","P0"],["OR.5","Event form","P0"],["OR.6","Manage","P0"],["OR.7","Registrations","P0"],["OR.8","Registrant","P0"],["CO.6","My events","P1"],["CO.7","Opportunities","P1"],["CO.8","Go live","P2"],["S.6","Leaderboard","P0"]]},
-{t:"Academy",s:"66 screens · P0 51",j:"Onboard listing → programs + facilities → trials → registrants → scholarships → enquiries.",g:[["AC.1","Setup","P0"],["AC.2","Home","P0"],["D.3","Profile","P0"],["AC.3","Edit","P0"],["AC.4","Programs","P0"],["D.11","Program","P0"],["AC.6","Events/Trials","P0"],["OR.5","Event form","P0"],["OR.6","Manage","P0"],["OR.7","Registrations","P0"],["OR.8","Registrant","P0"],["AC.7","Facilities","P0"],["AC.8","Facility form","P0"],["AC.9","Scholarships","P0"],["AC.5","Our athletes","P1"],["AC.10","Invite","P1"],["AC.11","Staff","P2"],["AC.12","Collabs","P2"]]},
-{t:"Event Organizer",s:"63 screens · P0 45",j:"Onboard → create event → publish → approve registrants → schedule → results → analytics.",g:[["OR.1","Setup","P0"],["OR.2","Home","P0"],["D.4","Profile","P0"],["OR.3","Edit","P0"],["OR.4","My events","P0"],["OR.5","Event form","P0"],["D.6","Detail","P0"],["OR.6","Manage","P0"],["OR.7","Registrations","P0"],["OR.8","Registrant","P0"],["OR.9","Schedule","P1"],["OR.10","Gallery","P1"],["OR.11","Results","P1"],["OR.14","Announce","P1"],["OR.12","Analytics","P1"],["OR.13","Venues","P1"],["OR.15","Promote","P2"],["OR.16","Team","P2"],["OR.17","Collabs","P2"]]},
-{t:"Talent Scout",s:"57 screens · P0 45",j:"Onboard → discover → shortlist + note → report → contact (guardian for minors) → scouting calls.",g:[["SC.1","Setup","P0"],["SC.2","Home","P0"],["D.5","Profile","P0"],["SC.3","Edit","P0"],["SC.4","Discover","P0"],["SC.6","Shortlist sheet","P0"],["SC.5","Shortlisted","P0"],["SC.10","Observation","P0"],["SC.13","Contact","P0"],["SC.11","Opportunities","P0"],["SC.12","Scouting call","P0"],["SC.8","Talent report","P1"],["SC.9","My reports","P1"],["SC.7","Compare","P1"]]},
-{t:"Admin (web)",s:"12 screens · P0 10",j:"Login 2FA → dashboard → verification → moderation → users → content → master + expiry.",g:[["AD.1","Login","P0"],["AD.2","Dashboard","P0"],["AD.4","Verification","P0"],["AD.7","Moderation","P0"],["AD.8","Mod. detail","P0"],["AD.3","Users","P0"],["AD.5","Content","P0"],["AD.6","Record edit","P0"],["AD.9","Master","P0"],["AD.10","Expiry","P0"],["AD.11","Points","P1"],["AD.12","Broadcast","P1"]]},
-{t:"Shared shell (all roles)",s:"S.1–S.30 · D.1–D.17",j:"Bottom nav Home/Explore/Create/Community/More · header search + bell + avatar · toasts + sticky CTAs.",g:[["S.2","Explore all","P0"],["S.3","Category","P0"],["S.4","Filter sheet","P0"],["S.5","Search","P0"],["S.6","Leaderboard","P0"],["S.7","Points info","P1"],["S.8","Create","P0"],["S.9","New post","P0"],["S.10","Upload media","P0"],["S.11","Achievement form","P0"],["S.27","Post detail","P0"],["S.28","Media viewer","P0"],["S.12","Network","P1"],["S.13","Groups","P2"],["S.19","Connections","P0"],["S.17","Inbox","P0"],["S.18","Chat","P0"],["S.16","Notifications","P0"],["S.20","Saved","P0"],["S.21","Activity","P1"],["S.26","Report sheet","P0"],["S.23","Blocked","P0"],["S.24","Help","P0"],["S.25","About","P0"],["S.29","Logout","P0"],["S.30","Share","P1"],["D.13","Facility","P0"],["D.14","Reviews","P1"],["D.15","Write review","P1"],["D.16","Map","P2"],["D.17","Team","P2"]]}
+/* ============ SportX v3.2 — full MVP prototype ============
+   Design system: ../styles.css tokens (yellow gradient CTA, Sora+Inter, 430px phone).
+   Layouts: faithful to new_design_docs wireframes (A/S/D/AT/CO/AC/OR/SC/AD).
+   Hash: #a1 #at1 #co2 #ac2 #or2 #sc2 #ad2 #s2 #d6 ... (lowercase, no dot) */
+const P = {
+  cricket:"https://images.unsplash.com/photo-1732315797079-fe90763b8bd9?auto=format&fit=crop&w=900&q=82",
+  football:"https://images.unsplash.com/photo-1625990637351-ee0e5e9ba5e5?auto=format&fit=crop&w=900&q=82",
+  player:"https://images.unsplash.com/photo-1547839918-5ed99eac4175?auto=format&fit=crop&w=700&q=82",
+  stadium:"https://images.unsplash.com/photo-1644664750583-1cf0430098ff?auto=format&fit=crop&w=900&q=82"
+};
+const PEOPLE = [
+  {n:"Arjun Patel",r:"Cricket · All-rounder",img:P.player},
+  {n:"Priya Sharma",r:"State Level Athlete",img:P.football},
+  {n:"Karan Joshi",r:"Cricket · Batter",img:P.cricket},
+  {n:"Neha Patel",r:"Football · Striker",img:P.stadium}
 ];
-document.getElementById("roles").innerHTML=ROLES.map(r=>'<div class="role-card"><h2>'+r.t+'</h2><p>'+r.s+'</p><div class="journey">'+r.j+'</div><div class="links">'+G(r.g)+'</div></div>').join("");
+const I = {
+  home:'<path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9"/><path d="M9 20v-7h6v7"/>',
+  compass:'<circle cx="12" cy="12" r="9"/><path d="m15 9-2 4-4 2 2-4 4-2Z"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>', users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/>',
+  message:'<path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>', chev:'<path d="m9 18 6-6-6-6"/>', arrow:'<path d="m15 18-6-6 6-6"/>',
+  star:'<path d="m12 2 3 6 7 .9-5 4.8 1.3 6.8-6.3-3.3-6.3 3.3L7 13.7 2 9l7-.9L12 2Z"/>',
+  map:'<path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>',
+  cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',
+  trophy:'<path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 6H3v2a4 4 0 0 0 4 4M17 6h4v2a4 4 0 0 1-4 4"/>',
+  bkm:'<path d="M6 3h12v18l-6-4-6 4V3Z"/>', share:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/>',
+  edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>',
+  acad:'<path d="m3 10 9-6 9 6"/><path d="M5 10v9h14v-9M9 19v-5h6v5"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  chart:'<path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/>', shield:'<path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/>'
+};
+const ic=(n,s)=>'<svg class="icon" width="'+(s||20)+'" height="'+(s||20)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">'+I[n]+"</svg>";
+let ROLE = localStorage.getItem("sx_role")||"athlete";
+const ROLES={athlete:"Athlete",coach:"Coach",academy:"Academy",organizer:"Organizer",scout:"Scout",admin:"Admin"};
+const HOME={athlete:"at1",coach:"co2",academy:"ac2",organizer:"or2",scout:"sc2",admin:"ad2"};
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.style.display="block";clearTimeout(t._h);t._h=setTimeout(()=>t.style.display="none",1800)}
+function go(h){location.hash=h}
+/* ----- shared chrome ----- */
+function topbar(o){o=o||{};let l=o.back?'<div class="tap icon-tap" data-go="'+(o.backTo||HOME[ROLE])+'">'+ic("arrow")+'</div>':o.title?'<div class="topbar-spacer"></div>':'<div class="logo">Sport<span>X</span><i></i></div>';
+let r='<div class="top-actions">';if(o.msg)r+='<div class="tap icon-tap" data-go="s17">'+ic("message",18)+'</div>';if(o.bell)r+='<div class="tap icon-tap notification-button" data-go="s16">'+ic("bell",18)+'<b>3</b></div>';
+if(!o.back&&!o.title)r+='<img class="avatar avatar-small" src="'+PEOPLE[0].img+'" data-go="d1" style="cursor:pointer" alt=""/>';if(o.back&&!o.bell)r+='<div class="topbar-spacer"></div>';return '<div class="topbar">'+l+(o.title?'<div class="topbar-title">'+o.title+'</div>':"")+r+'</div></div>'}
+function sharedTag(id){const p=id.split(".")[0];if(p==="A"||p==="S"||p==="D")return["SHARED · ALL ROLES",1];if(["OR.5","OR.6","OR.7","OR.8"].indexOf(id)>=0)return["EVENT MODULE · ORG+ACD+COA",1];if(id==="CO.5")return["PROGRAM FORM · COA+ACD",1];if(p==="AT")return["ATHLETE ONLY",0];if(p==="CO")return["COACH ONLY",0];if(p==="AC")return["ACADEMY ONLY",0];if(p==="OR")return["ORGANIZER ONLY",0];if(p==="SC")return["SCOUT ONLY",0];if(p==="AD")return["ADMIN ONLY",0];return["",0]}
+function rolebar(id,pri){const st=sharedTag(id);return '<div class="rolebar"><select id="roleSel">'+Object.keys(ROLES).map(k=>'<option value="'+k+'"'+(k===ROLE?" selected":"")+'>'+ROLES[k]+'</option>').join("")+'</select><span class="rid">'+id+'</span>'+(st[0]?'<span class="sh'+(st[1]?"":" only")+'">'+st[0]+'</span>':"")+'<span class="pri '+pri.toLowerCase()+'">'+pri+'</span><a href="#gallery">Hub</a><a href="#screens">All screens</a></div>'}
+function bottomNav(active){if(ROLE==="admin")return '<div class="bottom-nav">'+[["Dash","ad2","home"],["Users","ad3","users"],["Verif.","ad4","shield"],["Content","ad5","grid"],["More","ad2","grid"]].map(x=>'<div class="tap nav-item'+(active===x[1]?" nav-active":"")+'" data-go="'+x[1]+'"><div class="nav-icon">'+ic(x[2],20)+'</div><span>'+x[0]+'</span></div>').join("")+'</div>';
+const items=[["Home",HOME[ROLE],"home"],["Explore","s2","compass"],["Create","s8","plus"],["Community","s12","users"],["More","s15","grid"]];let a=active;if(["d1","d2","d3","d4","d5","co4","co5","ac4","ac6","ac7","or4","or6","sc5","at8","at9"].includes(active))a="s15";
+return '<div class="bottom-nav">'+items.map(x=>'<div class="tap nav-item'+(a===x[1]?" nav-active":"")+(x[1]==="s8"?" create-nav":"")+'" data-go="'+x[1]+'"><div class="nav-icon">'+ic(x[2],x[1]==="s8"?24:20)+'</div><span>'+x[0]+'</span></div>').join("")+'</div>'}
+function page(id,pri,title,back,inner,opts){opts=opts||{};const nonav=["s16","s17","s18","d6","d9","a1","a2","a3","a4","a5","ad1"].includes(id);
+return rolebar(id,pri)+topbar({title:title,back:back,backTo:opts.backTo,bell:opts.bell,msg:opts.msg})+'<main class="page'+(back?" subpage":"")+'">'+inner+'</main>'+(nonav?"":bottomNav(id))+(opts.sticky?'<div class="sticky-action">'+opts.sticky+'</div>':"")}
+const primary=(t,go2)=>'<div class="tap primary" '+(go2?'data-go="'+go2+'"':'data-toast="'+t+'"')+'>'+t+'</div>';
+const chip=(t,on,go2)=>'<div class="tap chip'+(on?" chip-active":"")+'" '+(go2?'data-go="'+go2+'"':'data-toast="'+t+'"')+'>'+t+'</div>';
+const search=(ph)=>'<div class="search">'+ic("search",18)+'<span>'+(ph||"Search athletes, sport, city")+'</span></div>';
+const sec=(t,a)=>'<div class="section-head"><div>'+t+'</div>'+(a?'<div class="tap see-all" data-toast="'+a+'">'+a+ic("chev",13)+'</div>':"")+'</div>';
+const personRow=(p,act,tg)=>'<div class="person-row"><img class="avatar" src="'+p.img+'" alt=""/><div class="person-copy"><strong>'+p.n+'<span class="verified">✓</span></strong><p>'+p.r+'</p><span>'+ic("star",11)+' 4.8 · Ahmedabad</span></div><div class="tap primary primary-compact" data-go="'+(tg||"d1")+'">'+(act||"Follow")+'</div></div>';
+const acadCard=(t,l,img,tg)=>'<div class="tap academy-card" data-go="'+(tg||"d3")+'"><img src="'+img+'" alt=""/><div class="academy-info"><div class="verified-line"><strong>'+t+'</strong><span class="verified">✓</span></div><p>'+ic("map",12)+l+'</p><div class="card-bottom"><span>'+ic("star",12)+'4.8 (320)</span><span class="text-link">View Details</span></div></div></div>';
+const field=(l,ph)=>'<div class="field"><label>'+l+'</label><div class="input"><b style="flex:1;color:var(--secondary)">'+ph+'</b></div></div>';
+const feedCard=(img)=>'<div class="feed-card"><div class="feed-author"><img class="avatar avatar-small" src="'+PEOPLE[1].img+'" alt=""/><div><strong>Priya Sharma</strong><span>State Level Athlete · Throwball · Gujarat · 2h ago</span></div><div class="tap" data-toast="Post options">⋮</div></div><p>Another great practice session today! Consistency creates progress 💪<br>#Throwball #Training #NeverGiveUp</p><div style="display:grid;grid-template-columns:1.4fr 1fr;gap:6px"><img src="'+P.football+'" style="width:100%;height:150px;object-fit:cover;border-radius:12px" alt=""/><div style="display:grid;grid-template-rows:1fr 1fr;gap:6px"><img src="'+P.cricket+'" style="width:100%;height:72px;object-fit:cover;border-radius:12px" alt=""/><img src="'+P.stadium+'" style="width:100%;height:72px;object-fit:cover;border-radius:12px" alt=""/></div></div><div class="feed-actions"><span>♥ 256</span><span>♡ 18</span><span>'+ic("share",15)+' 12</span><span class="tap" data-toast="Post saved" style="margin-left:auto">🔖</span></div></div>';
+function railAthlete(p,cta,tg){return '<div class="acard"><div class="ph"><img src="'+p.img+'" alt=""/><span class="bkm">⋮</span></div><div class="bd"><strong>'+p.n+'<span class="verified">✓</span></strong><p>'+p.r+'</p><div class="tap primary" data-go="'+(tg||"d1")+'">'+(cta||"Follow")+'</div></div></div>'}
+function railAcad(t,l,img,tg){return '<div class="acard"><div class="ph"><img src="'+img+'" alt=""/><span class="bkm">⋮</span></div><div class="bd"><strong>'+t+'</strong><p>'+l+'</p><div class="tap primary" data-go="'+(tg||"d3")+'">View</div></div></div>'}
+function railEvent(d,m,t,l,type,img){return '<div class="acard"><div class="ph"><img src="'+(img||P.football)+'" alt=""/><span class="evdate"><b>'+d+'</b><span>'+m+'</span></span><span class="bkm">⋮</span></div><div class="bd"><strong>'+t+'</strong><p>📍 '+l+'</p><span class="typechip">'+type+'</span></div></div>'}
+function athleteGridCard(p,sport,loc,age,pos,t,v){return '<div class="acard"><div class="ph"><img src="'+p.img+'" alt=""/><span class="bkm">'+ic("bkm",14)+'</span></div><div class="bd"><strong>'+p.n+'<span class="verified">✓</span></strong><p>'+sport+' · '+loc+'<br>'+age+' · '+pos+'</p><div class="meta"><span>🏆 '+t+'</span><span>🎬 '+v+'</span></div><div class="tap primary" data-go="d1">Follow</div></div></div>'}
+function strip5(){const t=[["Arjun Patel","2,450",P.player],["Priya Sharma","2,180",P.football],["Karan Joshi","1,960",P.cricket],["Sneha Verma","1,820",P.stadium],["Dev Mehta","1,650",P.player]];return '<div class="strip5">'+t.map((x,i)=>'<div><span class="rnk">'+(i+1)+'</span><br><img src="'+x[2]+'" alt=""/><b>'+x[0]+'</b><span>'+x[1]+' pts</span></div>').join("")+'</div>'}
+function feedTabsBar(){return '<div class="feedtabs"><span class="on">For You</span><span>Following</span><span>Athletes</span><span>Coaches</span><span>Academies</span><span>Events</span></div>'}
+function wsteps(steps,cur){return '<div class="horizontal chips" style="margin:2px 0 10px">'+steps.map((s,i)=>'<span class="chip'+(i===cur?" chip-active":"")+'"'+(i<cur?' style="background:var(--yellow-soft);border-color:var(--yellow-deep)"':"")+'>'+(i<cur?"✓ ":"")+(i+1)+". "+s+'</span>').join("")+'</div>'}
+function emptyBox(t,s,c,g){return '<div class="card" style="text-align:center;padding:26px 14px"><div style="font-size:30px">🗂</div><b>'+t+'</b><p style="font-size:10px;color:var(--secondary)">'+s+'</p><div class="tap primary primary-compact" data-go="'+g+'" style="margin-top:10px;display:inline-flex">'+c+'</div></div>'}
+
+/* ================= SCREENS ================= */
+const VIEWS={};
+/* ============ All-screens gallery: catalogue + live phone frames ============ */
+let PENDING_SEC=null;
+const C = {
+  "A.1":["Splash","P0"],"A.2":["Role Selection","P0"],"A.3":["Sign Up","P0"],"A.4":["OTP Verification","P0"],"A.5":["Login","P0"],"A.6":["Reset Password","P1"],"A.7":["Language","P1"],"A.8":["Permissions","P1"],"A.9":["Guardian Consent","P0"],"A.10":["Verification","P0"],
+  "AT.1":["Athlete Home","P0"],"AT.2":["Preferences","P0"],"AT.3":["Edit Profile","P0"],"AT.4":["Manage Sports","P0"],"AT.5":["Achievements","P0"],"AT.6":["Checklist","P0"],"AT.7":["View as Public","P1"],"AT.8":["My Opportunities","P0"],"AT.9":["My Registrations","P0"],"AT.10":["Guardian Controls","P0"],
+  "CO.1":["Coach Setup","P0"],"CO.2":["Coach Home","P0"],"CO.3":["Edit Coach","P0"],"CO.4":["My Programs","P0"],"CO.5":["Program Form","P0"],"CO.6":["My Events","P1"],"CO.7":["My Opportunities","P1"],"CO.8":["Go Live","P2"],
+  "AC.1":["Academy Setup","P0"],"AC.2":["Academy Home","P0"],"AC.3":["Edit Academy","P0"],"AC.4":["Programs","P0"],"AC.5":["Our Athletes","P1"],"AC.6":["Events / Trials","P0"],"AC.7":["Facilities","P0"],"AC.8":["Facility Form","P0"],"AC.9":["Scholarships","P0"],"AC.10":["Invite Athlete","P1"],"AC.11":["Staff","P2"],"AC.12":["Collaborations","P2"],
+  "OR.1":["Organizer Setup","P0"],"OR.2":["Organizer Home","P0"],"OR.3":["Edit Organizer","P0"],"OR.4":["My Events","P0"],"OR.5":["Event Form","P0"],"OR.6":["Manage Event","P0"],"OR.7":["Registrations","P0"],"OR.8":["Registrant","P0"],"OR.9":["Schedule","P1"],"OR.10":["Gallery","P1"],"OR.11":["Results","P1"],"OR.12":["Analytics","P1"],"OR.13":["Venues","P1"],"OR.14":["Announcement","P1"],"OR.15":["Promote","P2"],"OR.16":["Team","P2"],"OR.17":["Collaborations","P2"],
+  "SC.1":["Scout Setup","P0"],"SC.2":["Scout Home","P0"],"SC.3":["Edit Scout","P0"],"SC.4":["Discover","P0"],"SC.5":["Shortlisted","P0"],"SC.6":["Shortlist Sheet","P0"],"SC.7":["Compare","P1"],"SC.8":["Talent Report","P1"],"SC.9":["My Reports","P1"],"SC.10":["Observation","P0"],"SC.11":["Scouting Opps","P0"],"SC.12":["Scouting Call","P0"],"SC.13":["Contact","P0"],
+  "AD.1":["Admin Login","P0"],"AD.2":["Dashboard","P0"],"AD.3":["Users","P0"],"AD.4":["Verification Q","P0"],"AD.5":["Content","P0"],"AD.6":["Record Edit","P0"],"AD.7":["Moderation","P0"],"AD.8":["Mod. Detail","P0"],"AD.9":["Master Data","P0"],"AD.10":["Expiry Rules","P0"],"AD.11":["Points Config","P1"],"AD.12":["Broadcast","P1"],
+  "S.1":["Home Shell","P0"],"S.2":["Explore All","P0"],"S.3":["Category List","P0"],"S.4":["Filter Sheet","P0"],"S.5":["Search","P0"],"S.6":["Leaderboard","P0"],"S.7":["Points Info","P1"],"S.8":["Create","P0"],"S.9":["New Post","P0"],"S.10":["Upload Media","P0"],"S.11":["Achievement Form","P0"],"S.12":["Network","P1"],"S.13":["Groups","P2"],"S.14":["Group Detail","P2"],"S.15":["More Menu","P0"],"S.16":["Notifications","P0"],"S.17":["Inbox","P0"],"S.18":["Chat","P0"],"S.19":["Connections","P0"],"S.20":["Saved","P0"],"S.21":["Activity","P1"],"S.22":["Settings","P0"],"S.23":["Blocked","P0"],"S.24":["Help","P0"],"S.25":["About","P0"],"S.26":["Report Sheet","P0"],"S.27":["Post Detail","P0"],"S.28":["Media Viewer","P0"],"S.29":["Logout","P0"],"S.30":["Share Sheet","P1"],
+  "D.1":["Athlete Profile","P0"],"D.2":["Coach Profile","P0"],"D.3":["Academy Profile","P0"],"D.4":["Organizer Profile","P0"],"D.5":["Scout Profile","P0"],"D.6":["Event Detail","P0"],"D.7":["Reg. Form","P0"],"D.8":["Confirmation","P0"],"D.9":["Opportunity","P0"],"D.10":["Apply Form","P0"],"D.11":["Program Detail","P0"],"D.12":["Enquiry Form","P0"],"D.13":["Facility Detail","P0"],"D.14":["Reviews","P1"],"D.15":["Write Review","P1"],"D.16":["Map View","P2"],"D.17":["Team Page","P2"]
+};
+const SECTIONS = [
+  { key:"auth", name:"Auth & Onboarding", icon:"lock", color:"#6B7280", bg:"rgba(107,114,128,.12)", tag:"10 screens &middot; A.1-A.10", desc:"Entry for every persona. Splash, role selection, sign-up, OTP, login, guardian consent and verification.", ids:["A.1","A.2","A.3","A.4","A.9","A.5","A.6","A.7","A.8","A.10"] },
+  { key:"athlete", name:"Athlete / Parent", icon:"user", color:"#F59E0B", bg:"rgba(245,158,11,.14)", tag:"10 screens &middot; AT.1-AT.10", desc:"Home and portfolio: preferences, edit profile, multi-sport, achievements, checklist, public preview, opportunities, registrations, guardian controls.", ids:["AT.2","AT.1","AT.3","AT.4","AT.5","AT.6","AT.7","AT.8","AT.9","AT.10"] },
+  { key:"coach", name:"Coach", icon:"award", color:"#8A6AEA", bg:"rgba(138,106,234,.14)", tag:"8 screens &middot; CO.1-CO.8", desc:"Credentials onboarding, home, edit profile, training programs and form, events, opportunities, go live.", ids:["CO.1","CO.2","CO.3","CO.4","CO.5","CO.6","CO.7","CO.8"] },
+  { key:"academy", name:"Academy", icon:"building", color:"#03B94C", bg:"rgba(3,185,76,.14)", tag:"12 screens &middot; AC.1-AC.12", desc:"Listing onboarding, home, edit, programs, events and trials, facilities and form, scholarships, athletes and invites, staff, collaborations.", ids:["AC.1","AC.2","AC.3","AC.4","AC.5","AC.6","AC.7","AC.8","AC.9","AC.10","AC.11","AC.12"] },
+  { key:"organizer", name:"Organizer", icon:"cal", color:"#FB802E", bg:"rgba(251,128,46,.14)", tag:"17 screens &middot; OR.1-OR.17", desc:"Event lifecycle: setup, home, edit, my events, event form, management, registrations, schedule, gallery, results, analytics, venues, announcements.", ids:["OR.1","OR.2","OR.3","OR.4","OR.5","OR.6","OR.7","OR.8","OR.9","OR.10","OR.11","OR.12","OR.13","OR.14","OR.15","OR.16","OR.17"] },
+  { key:"scout", name:"Scout", icon:"eye", color:"#3B82F6", bg:"rgba(59,130,246,.14)", tag:"13 screens &middot; SC.1-SC.13", desc:"Talent pipeline: setup, home, edit, discover, shortlist sheet, pipeline, compare, observation, talent report, reports, scouting calls, contact.", ids:["SC.1","SC.2","SC.3","SC.4","SC.6","SC.5","SC.7","SC.10","SC.8","SC.9","SC.13","SC.11","SC.12"] },
+  { key:"admin", name:"Admin", icon:"shield", color:"#EF4444", bg:"rgba(239,68,68,.12)", tag:"12 screens &middot; AD.1-AD.12", desc:"Back-office web dashboard: 2FA login, KPIs, verification queue, moderation and detail, users, content, master data, expiry rules, points, broadcast.", ids:["AD.1","AD.2","AD.4","AD.7","AD.8","AD.3","AD.5","AD.6","AD.9","AD.10","AD.11","AD.12"] },
+  { key:"shared", name:"Shared Shell", icon:"compass", color:"#06B6D4", bg:"rgba(6,182,212,.12)", tag:"30 screens &middot; S.1-S.30", desc:"Cross-role shell: bottom-nav Home/Explore/Create/Community/More, explore, filters, search, leaderboard, create, network, connections, chat, notifications, saved, settings, safety.", ids:["S.1","S.2","S.3","S.4","S.5","S.6","S.7","S.8","S.9","S.10","S.11","S.27","S.28","S.12","S.13","S.14","S.19","S.17","S.18","S.16","S.15","S.20","S.21","S.22","S.23","S.24","S.25","S.26","S.29","S.30"] },
+  { key:"detail", name:"Detail & Forms", icon:"clipboard", color:"#B4880A", bg:"rgba(255,193,7,.16)", tag:"17 screens &middot; D.1-D.17", desc:"Profiles for all five roles, event and trial plus registration, opportunity and apply, program and enquiry, facility, reviews, map, team.", ids:["D.1","D.2","D.3","D.4","D.5","D.6","D.7","D.8","D.9","D.10","D.11","D.12","D.13","D.14","D.15","D.16","D.17"] }
+];
+Object.assign(I,{
+  lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  building:'<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01"/>',
+  eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+  award:'<circle cx="12" cy="8" r="6"/><path d="m8.2 13.5-1.7 8L12 19l5.5 2.5-1.7-8"/>',
+  clipboard:'<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>'
+});
+function galHash(id){return "#"+id.toLowerCase().replace(".","")}
+function galTotal(){return SECTIONS.reduce(function(a,s){return a+s.ids.length},0)}
+function galP0(){return SECTIONS.reduce(function(a,s){return a+s.ids.filter(function(id){return C[id][1]==="P0"}).length},0)}
+
+/* ---- Hub landing ---- */
+VIEWS.gallery=function(){
+  var total=galTotal(), p0=galP0();
+  var tiles=SECTIONS.map(function(s){
+    var p0c=s.ids.filter(function(id){return C[id][1]==="P0"}).length;
+    return '<a class="gal-tile" style="--rc:'+s.color+';--rb:'+s.bg+'" href="#screens" data-rol="'+s.key+'"><span class="gal-ticon">'+ic(s.icon,20)+'</span><span style="flex:1;min-width:0"><b>'+s.name+'</b><small>'+s.ids.length+' screens &middot; '+p0c+' P0</small><u>'+s.tag+'</u></span></a>';
+  }).join("");
+  return '<div class="gal">'
+    +'<header class="gal-hero"><div class="gal-hero-inner">'
+    +'<div class="gal-brand"><span class="gal-mark">SX</span><span>Sport<span class="gal-x">X</span> v3.2</span></div>'
+    +'<div class="gal-pill">Stitch "Remix of SX new Design" &middot; 129 screens &middot; 6 roles</div>'
+    +'<h1>Every role, <em>one system.</em></h1>'
+    +'<p>The full MVP from new_design_docs, restyled to the Stitch look and grouped by role. Each card below is the real screen rendered live in a 430px phone frame.</p>'
+    +'<div class="gal-cta"><a class="gal-btn p" href="#screens">Browse all '+total+' screens</a><a class="gal-btn g" href="#'+HOME[ROLE]+'">Open prototype</a><a class="gal-btn g" href="#a1">Start flow (A.1)</a></div>'
+    +'</div></header>'
+    +'<div class="gal-stats"><div class="gal-stats-inner">'
+    +'<div class="gal-stat"><b>'+total+'</b><span>Live screens</span></div>'
+    +'<div class="gal-stat"><b>9</b><span>Sections</span></div>'
+    +'<div class="gal-stat"><b>'+p0+'</b><span>P0 MVP</span></div>'
+    +'<div class="gal-stat"><b>430<i>px</i></b><span>Phone frame</span></div>'
+    +'</div></div>'
+    +'<div class="gal-wrap">'
+    +'<div class="gal-kicker">Choose a workspace</div>'
+    +'<h2 class="gal-h2">Grouped by role, refined per role.</h2>'
+    +'<p class="gal-sub">Tap a role to jump straight to its live screens. Every screen opens full-size in the clickable prototype.</p>'
+    +'<div class="gal-tiles">'+tiles+'</div>'
+    +'</div></div>';
+};
+
+/* ---- Full all-screens gallery ---- */
+VIEWS.screens=function(){
+  var total=galTotal();
+  var tabs='<button class="gal-tab on" data-filter="all">All '+total+'</button>'+SECTIONS.map(function(s){return '<button class="gal-tab" data-filter="'+s.key+'">'+s.name+' <span style="opacity:.55">'+s.ids.length+'</span></button>'}).join("");
+  var secs=SECTIONS.map(function(s){
+    var cards=s.ids.map(function(id,i){
+      var t=C[id][0], p=C[id][1];
+      return '<a class="gal-card" href="'+galHash(id)+'" data-sec="'+s.key+'"><div class="gal-frame" data-id="'+id.toLowerCase().replace(".","")+'"></div><div class="gal-meta"><span><span class="gal-id">'+id+'</span><span class="gal-name">'+(i+1)+'. '+t+'</span></span><span class="gal-badge '+p.toLowerCase()+'">'+p+'</span></div></a>';
+    }).join("");
+    return '<section class="gal-section" id="sec-'+s.key+'" data-sec="'+s.key+'">'
+      +'<div class="gal-sh" style="--rc:'+s.color+';--rb:'+s.bg+'"><span class="gal-ticon">'+ic(s.icon,22)+'</span><h2>'+s.name+'</h2><span class="gal-tag">'+s.tag+'</span></div>'
+      +'<p class="gal-desc">'+s.desc+'</p>'
+      +'<div class="gal-grid">'+cards+'</div></section>';
+  }).join("");
+  return '<div class="gal">'
+    +'<header class="gal-hero"><div class="gal-hero-inner">'
+    +'<div class="gal-brand"><span class="gal-mark">SX</span><span>Sport<span class="gal-x">X</span> v3.2</span></div>'
+    +'<div class="gal-pill">'+total+' screens &middot; 9 sections &middot; live phone frames</div>'
+    +'<h1>All <em>'+total+'</em> screens.</h1>'
+    +'<p>Every screen, restyled to the Stitch look and grouped by role. Tap any card to open it live in the prototype.</p>'
+    +'<div class="gal-cta"><a class="gal-btn p" href="#gallery">Role overview</a><a class="gal-btn g" href="#'+HOME[ROLE]+'">Open prototype</a></div>'
+    +'</div></header>'
+    +'<div class="gal-wrap"><div class="gal-tabs">'+tabs+'</div>'+secs+'</div></div>';
+};
+
+/* ---- live phone frames: lazy fill + responsive scale ---- */
+var galRO=(typeof ResizeObserver!=='undefined')?new ResizeObserver(function(es){es.forEach(function(e){scaleFrame(e.target)})}):null;
+var galIO=null;
+function scaleFrame(f){var s=f.querySelector('.gal-scale');if(!s)return;var w=f.clientWidth||f.getBoundingClientRect().width;if(!w)return;s.style.transform='scale('+(w/430)+')';}
+function scaleFrames(){document.querySelectorAll('.gal-frame').forEach(scaleFrame);}
+function galFill(f){if(f.dataset.filled)return;var id=f.dataset.id;var v=(id==='s1')?VIEWS[HOME[ROLE]]:VIEWS[id];if(typeof v!=='function')return;f.dataset.filled='1';f.innerHTML='<div class="gal-scale">'+statusBar()+v()+'</div>';scaleFrame(f);}
+function observeFrames(){
+  var frames=document.querySelectorAll('.gal-frame');
+  if(typeof IntersectionObserver==='undefined'){frames.forEach(galFill);scaleFrames();return;}
+  if(galIO)galIO.disconnect();
+  galIO=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){galFill(e.target);if(galRO)galRO.observe(e.target);galIO.unobserve(e.target);}})},{rootMargin:'450px'});
+  frames.forEach(function(f){galIO.observe(f)});
+}
+window.addEventListener('resize',function(){if(document.body.classList.contains('gal-wide'))scaleFrames();});
+document.addEventListener('click',function(e){
+  var f=e.target.closest('[data-filter]');
+  if(f){var k=f.dataset.filter;document.querySelectorAll('.gal-tab').forEach(function(b){b.classList.toggle('on',b===f)});document.querySelectorAll('.gal-section').forEach(function(s){s.style.display=(k==='all'||s.dataset.sec===k)?'':'none'});requestAnimationFrame(function(){observeFrames();scaleFrames();});return;}
+  var r=e.target.closest('[data-rol]');
+  if(r){PENDING_SEC='sec-'+r.dataset.rol;}
+});
+/* ---- A: auth ---- */
+VIEWS.a1=()=>rolebar("A.1","P0")+'<main class="page"><div class="auth-wrap"><div class="auth-logo"><div class="logo">Sport<span>X</span><i></i></div><div class="tagline">LET\'S DEFEAT HISTORY</div></div><div style="text-align:center;color:var(--secondary);font-size:11px">( loader . . . )</div>'+primary("Continue","a2")+'</div></main>';
+VIEWS.a2=()=>page("A.2","P0",null,false,'<h2 style="font-family:Sora">Welcome to SportX</h2><p style="color:var(--secondary);font-size:12px">Who are you?</p><div class="kpi-grid">'+["Athlete / Parent","Coach","Academy","Organizer","Talent Scout"].map((r,i)=>'<div class="tap kpi" data-toast="'+r+' selected" style="'+(i===0?"border-color:var(--yellow-deep);background:var(--yellow-soft)":"")+'"><strong style="font-size:13px">'+r+'</strong><br><span>Role '+(i+1)+' of 5</span></div>').join("")+'</div>'+primary("Continue","a3")+'<div style="text-align:center;margin-top:10px;font-size:11px">Already a member? <b data-go="a5" style="color:#8a6d00;cursor:pointer">Login</b></div>');
+VIEWS.a3=()=>page("A.3","P0","Create account",true,field("Role","Athlete (change)")+field("Phone / Email","+91 ...")+field("Password (optional)","••••••")+'<div class="check-row"><span class="check">✓</span><span>I accept Terms &amp; Privacy</span></div><div class="btn-row">'+primary("Send OTP","a4")+'</div><div class="or">or</div>'+primary("Continue with Google","a4"));
+VIEWS.a4=()=>page("A.4","P0","Verify",true,'<p style="font-size:12px">Enter the 6-digit code sent to<br><b>+91 98XXXXXX10</b></p><div class="otp-row">'+["4","2","_","_","_","_"].map((d,i)=>'<div class="otp'+(i<2?" fill":"")+'">'+d+'</div>').join("")+'</div><div style="text-align:center;font-size:11px;color:var(--secondary)">Resend code in 00:28</div><div class="btn-row">'+primary("Verify","a9")+'</div><div style="text-align:center;font-size:11px;margin-top:8px">Wrong number? <b style="color:#8a6d00">Edit</b></div>',{backTo:"a3"});
+VIEWS.a5=()=>page("A.5","P0",null,false,'<div class="auth-logo"><div class="logo">Sport<span>X</span><i></i></div><p style="font-family:Sora;font-weight:700;margin:6px 0 0">Welcome back</p></div><div class="tabs"><div class="tap tab-active">OTP</div><div class="tap">Password</div></div>'+field("Phone / Email","+91 ...")+primary("Get OTP",HOME[ROLE])+'<div style="display:flex;justify-content:space-between;font-size:11px;margin-top:10px"><b data-go="a6" style="color:#8a6d00;cursor:pointer">Forgot password?</b><b data-go="a3" style="color:#8a6d00;cursor:pointer">New here? Create account</b></div>');
+VIEWS.a6=()=>page("A.6","P1","Reset password",true,field("Phone / Email","+91 ...")+primary("Send OTP","a5")+'<div class="note">After OTP — set new password + confirm, then Reset password.</div>',{backTo:"a5"});
+VIEWS.a7=()=>page("A.7","P1","Language",true,["English","Hindi","Gujarati"].map((l,i)=>'<div class="tap person-row" data-toast="'+l+'"><span style="flex:1;font-size:12px">'+(i===1?"(o) ":"( ) ")+l+'</span></div>').join("")+primary("Apply",HOME[ROLE]));
+VIEWS.a8=()=>page("A.8","P1",null,false,'<div class="card" style="text-align:center">📍<p style="font-size:12px"><b>Find academies and trials near you</b></p>'+primary("Allow location",HOME[ROLE])+'<br><br>🔔<p style="font-size:12px"><b>Get updates on registrations</b></p>'+primary("Allow notifications",HOME[ROLE])+'<div style="margin-top:12px;font-size:11px;color:var(--secondary)" data-go="'+HOME[ROLE]+'" class="tap">Skip for now</div></div>');
+VIEWS.a9=()=>page("A.9","P0","Guardian consent",true,'<div class="note">Shown only when DOB is under 18. Guardian must verify by OTP.</div>'+field("Guardian name","Full name")+field("Guardian phone","+91 ...")+field("Relationship","Parent")+ '<div class="check-row"><span class="check">✓</span><span>I consent to my child\'s profile on SportX</span></div><div class="btn-row">'+primary("Send OTP to guardian","at2")+'</div>',{backTo:"a4"});
+VIEWS.a10=()=>page("A.10","P0","Get verified",true,'<div class="card"><span class="status-pill">Pending review</span><br><br>'+field("ID proof","id_front.jpg [+ Upload]")+field("Organization / club proof","[+ Upload]")+field("Notes (optional)","...")+'</div><div class="btn-row">'+primary("Submit for review","d1")+'</div><div class="note">Status: Not started → Pending → Verified / Rejected (with reason). Blue ✓ shows on profile, cards, search.</div>');
+/* ---- role onboarding ---- */
+VIEWS.at2=()=>page("AT.2","P0","Onboarding",true,'<div class="steps">Step 1 of 2</div><h3 style="font-family:Sora">Pick your sport(s)</h3><div class="horizontal chips">'+chip("Cricket",1)+chip("Football")+chip("Badminton")+chip("Athletics")+chip("Throwball")+chip("More")+'</div>'+field("Date of birth","dd/mm/yyyy")+field("Level","Beginner / District / State")+field("City","Ahmedabad")+'<div class="btn-row">'+primary("Continue","at1")+'</div>',{backTo:"a4"});
+VIEWS.co1=()=>page("CO.1","P0","Coach setup",true,'<div class="steps">Step 2 of 4 · Credentials</div>'+wsteps(["Profile","Credentials","Sports & Fees","Review"],1)+field("Certification","BCCI Level 2")+field("Upload proof","[+ Upload]")+field("Experience","12 years")+field("Sports","Cricket")+field("Specialization","Batting, Fitness")+field("Age groups","U-10, U-14, U-19")+field("Fee range","₹ __ – ₹ __")+'<div class="btn-row"><div class="ghost" data-go="a4">Back</div>'+primary("Next","co2")+'</div>');
+VIEWS.ac1=()=>page("AC.1","P0","Academy setup",true,'<div class="steps">Step 3 of 5 · Facilities</div>'+wsteps(["Basic Info","Sports & Age","Facilities","Fees & Photos","Review"],2)+field("Academy name","Motera Cricket Academy")+field("Sports","Cricket")+field("Age range","U-8 to U-19")+field("Facilities","Grounds · Nets · Gym")+field("Address","Motera, Ahmedabad")+field("Fees","₹ __ / month")+field("Photos","[+] [+] [+]")+'<div class="btn-row"><div class="ghost" data-go="a4">Back</div>'+primary("Next","ac2")+'</div>');
+VIEWS.or1=()=>page("OR.1","P0","Organizer setup",true,'<div class="steps">Step 1 of 2</div>'+field("Organization","Raj Sports Events")+field("Logo","[+ Upload]")+field("Event types","Tournament · Trial")+field("Sports","Cricket · Football")+field("Location","Ahmedabad")+field("Website","rajsportsevents.in")+field("Established","2023")+'<div class="btn-row">'+primary("Finish","or2")+'</div>');
+VIEWS.sc1=()=>page("SC.1","P0","Scout setup",true,'<div class="steps">Step 1 of 2</div>'+field("Organization","Independent")+field("Sports focus","Cricket · Football")+field("Experience","8 years")+field("Availability","Pan Gujarat")+field("Languages","Eng · Hin · Guj")+field("Location","Ahmedabad")+'<div class="btn-row">'+primary("Finish","sc2")+'</div>');
+/* ---- homes ---- */
+function homeShell(hello,role,tiles,reco){return '<div class="tap greet-card" data-go="d1"><img class="avatar" src="'+PEOPLE[0].img+'" alt=""/><div class="greet-copy"><span>Good morning,</span><strong>'+hello+'</strong><p>Complete your profile to get more opportunities</p><div class="progress"><i></i></div></div><div style="text-align:right;flex:0 0 auto"><b style="font:800 11px Sora">60%</b><div class="tap primary primary-compact" data-go="at6" style="margin-top:6px">Complete Now</div></div></div><div class="role-line"><span class="role-badge">'+role+'</span><span>Ahmedabad, Gujarat</span></div>'+sec("🏆 Leaderboard","View all")+'<div class="horizontal chips">'+chip("All Sports",1)+chip("Cricket")+chip("Football")+chip("Throwball")+chip("Badminton")+'</div>'+strip5()+'<div class="quick-grid">'+tiles.map(t=>'<div class="tap quick-tile" data-go="'+t.go+'"><i class="tile-icon '+t.c+'">'+ic(t.i)+'</i><strong>'+t.t+'</strong><span>'+t.s+'</span><div class="subtiles">'+t.sub.map(s=>"<div>"+s+"</div>").join("")+"</div></div>").join("")+'</div>'+feedTabsBar()+feedCard(P.cricket)+(reco?sec("Recommended Athletes for You","See all")+'<div class="rail">'+PEOPLE.map(p=>railAthlete(p)).join("")+"</div>":"")}
+VIEWS.at1=()=>page("AT.1","P0",null,false,homeShell("Hi, Rahul!","ATHLETE",[{t:"Opportunities",i:"trophy",c:"yellow",go:"s2",s:"Trials · Tournaments<br>Scholarships · Sponsorships",sub:["Trials","Tournaments","Scholarships","Sponsorships"]},{t:"Academy, Coach & Training Centre",i:"acad",c:"blue",go:"s2",s:"Find Academies · Coaches · Training Centres",sub:["Academies","Coaches","Training","Centres"]}],true),{bell:1,msg:1});
+VIEWS.co2=()=>page("CO.2","P0",null,false,homeShell("Hi, Coach Rohit!","COACH",[{t:"Opportunities",i:"trophy",c:"yellow",go:"s2",s:"Trials · Tournaments<br>Scholarships · Sponsorships",sub:["Trials","Tournaments","Scholarships","Sponsors"]},{t:"Academy, Coach & Training Centre",i:"acad",c:"blue",go:"s2",s:"Find Academies · Athletes · Training Centres",sub:["Academies","Athletes","Training","More"]}],false)+'<div class="card" style="margin-top:10px"><b style="font-size:11px">Recent enquiries</b><div class="prog-list"><div class="row"><span class="dot"></span><span style="flex:1">Aman: Fee for U-14?</span><b style="color:#8a6d00" data-go="s17" class="tap">Reply</b></div></div></div>',{bell:1,msg:1});
+VIEWS.ac2=()=>page("AC.2","P0",null,false,homeShell("Hi, Motera Cricket Academy!","ACADEMY",[{t:"Opportunities",i:"trophy",c:"yellow",go:"or4",s:"Trials · Tournaments<br>Scholarships · Sponsorships",sub:["Trials","Tournaments","Scholarships","Sponsors"]},{t:"Find Talent",i:"users",c:"blue",go:"s2",s:"Connect with Athletes · Coaches · Staff",sub:["Athletes","Coaches","Staff","More"]}],false)+'<div class="kpi-grid"><div class="kpi"><strong>12</strong><span>Enquiries</span></div><div class="kpi"><strong>120</strong><span>Registrations</span></div></div>',{bell:1,msg:1});
+VIEWS.or2=()=>page("OR.2","P0",null,false,'<div class="tap greet-card" data-go="d4"><img class="avatar" src="'+P.stadium+'" alt=""/><div class="greet-copy"><span>Good morning,</span><strong>Hi, Raj Sports Events!</strong><p>75% complete</p><div class="progress"><i></i></div></div><b>75%</b>'+ic("chev",18)+'</div>'+sec("Upcoming Events","View All")+'<div class="card"><b>NOV 20–22 · Gujarat Youth Football</b><p style="font-size:10px;color:var(--secondary)">Registrations Open · 320 Registered</p><div class="bar"><i style="width:64%"></i></div></div><div class="kpi-grid"><div class="kpi"><strong>320+</strong><span>Events</span></div><div class="kpi"><strong>12K+</strong><span>Players</span></div></div><div class="horizontal chips">'+chip("Create Event",0,"or5")+chip("Registrations",0,"or7")+chip("Analytics",0,"or12")+'</div>'+feedCard(P.football),{bell:1,msg:1});
+VIEWS.sc2=()=>page("SC.2","P0",null,false,'<div class="greet-card"><img class="avatar" src="'+PEOPLE[0].img+'" alt=""/><div class="greet-copy"><span>Hi, Sameer!</span><strong>Find the next big talent</strong><p>65% complete</p><div class="progress"><i style="width:65%"></i></div></div></div>'+sec("Top Talents (This Week)")+'<div class="podium">'+["Riya S.","Karan P.","Karan M."].map((n,i)=>'<div class="p'+(i===1?" first":"")+'"><img class="avatar" style="width:44px;height:44px" src="'+PEOPLE[i].img+'" alt=""/><br><b style="font-size:10px">'+n+'</b></div>').join("")+'</div><div class="horizontal chips">'+chip("Discover",0,"sc4")+chip("Trials",0,"sc11")+chip("Top Perf.",0,"s6")+chip("Shortlist",0,"sc5")+'</div>'+sec("Upcoming Trials & Events")+'<div class="card"><b style="font-size:11px">20–22 Nov · Gujarat Youth Trial</b><br><span class="status-pill">Registrations Open</span> <b style="color:#8a6d00;font-size:10px" data-go="d6" class="tap">View</b></div><div style="height:10px"></div>'+feedCard(P.player),{bell:1,msg:1});
+/* ---- shared shell S ---- */
+VIEWS.s2=()=>page("S.2","P0",null,false,search("Search athletes, coaches, academies...")+'<div class="horizontal chips">'+chip("All",1)+chip("🧍 Athletes",0,"s3")+chip("🎓 Coaches",0,"s3")+chip("🏛 Academies",0,"s3")+chip("📅 Events",0,"s3")+'</div>'+sec("Popular Athletes","See All")+'<div class="rail">'+PEOPLE.map(p=>railAthlete(p)).join("")+'</div>'+sec("Coaches","See All")+'<div class="rail">'+PEOPLE.map(p=>railAthlete({n:p.n,r:"Cricket Coach",img:p.img},"Connect","d2")).join("")+'</div>'+sec("Academies","See All")+'<div class="rail">'+railAcad("Elite Cricket Academy","Ahmedabad · Residential",P.cricket)+railAcad("Game On Sports Centre","Surat · Multi-Sports",P.football)+railAcad("Shakti Sports Academy","Vadodara · Football",P.stadium)+railAcad("Rise Training Centre","Bharuch · Athletics",P.player)+'</div>'+sec("Events","See All")+'<div class="rail">'+railEvent("12","OCT","Gujarat U-19 Cricket Trials","Ahmedabad","Trial")+railEvent("18","OCT","State Throwball Tournament","Vadodara","Tournament")+railEvent("25","OCT","Open Athletics Meet","Surat","Event")+'</div>'+sec("Opportunities","See All")+'<div class="card">🏆 <b>Sports Scholarship 2026</b><p style="font-size:10px;color:var(--secondary)">Sports Authority of India · <span class="typechip">Scholarship</span> Nationwide</p></div><div class="card" style="margin-top:8px">💼 <b>Brand Sponsorship Opportunity</b><p style="font-size:10px;color:var(--secondary)">PlayFit Sports · <span class="typechip" style="background:#FFF3D6;color:#8a6d00">Sponsorship</span> India</p></div>',{bell:1,msg:1});
+VIEWS.s3=()=>page("S.3","P0","Explore",true,search("Search athletes by name, sport, location...")+'<div class="horizontal chips">'+chip("All")+chip("Athletes",1)+chip("Coaches")+chip("Academies")+chip("Events")+'</div><div class="dropchips">'+["Sport","State","Age Group","Position"].map(x=>'<span class="dropchip">'+x+' ▾</span>').join("")+'<span class="dropchip">☰ More Filters</span></div><div style="display:flex;justify-content:space-between;align-items:center;margin:8px 2px"><b>1,248 Athletes</b><span style="font-size:10px;color:var(--secondary)">⇅ Most Relevant ▾</span></div><div class="agrid">'+athleteGridCard(PEOPLE[0],"Cricket","Gujarat","U-19","All-rounder",12,5)+athleteGridCard(PEOPLE[1],"Throwball","Gujarat","U-17","Spiker",8,6)+athleteGridCard(PEOPLE[2],"Football","Surat","U-18","Midfielder",10,4)+athleteGridCard(PEOPLE[3],"Athletics","Gujarat","U-20","Sprinter",15,7)+athleteGridCard({n:"Dev Mehta",r:"",img:P.player},"Badminton","Ahmedabad","U-19","Singles",9,3)+athleteGridCard({n:"Riya Desai",r:"",img:P.stadium},"Volleyball","Vadodara","U-17","Attacker",11,5)+'</div>',{backTo:"s2",bell:1});
+VIEWS.s4=()=>page("S.4","P0",null,false,'<div class="sheet"><div class="handle"></div><div style="display:flex;justify-content:space-between"><b>Filters</b><span style="color:#8a6d00;font-size:11px">Reset</span></div>'+field("Sport","Cricket · Football +")+field("State/City","Gujarat")+field("Age group","U-10 · U-14 · U-19")+field("Position","Any")+field("Level","District · State")+field("Price","==")+field("Date","Any")+field("Sort by","Relevant · Nearest")+'<div class="btn-row">'+primary("Show 124 results","s3")+'</div></div>');
+VIEWS.s5=()=>page("S.5","P0",null,false,'<div class="input"><b style="flex:1">Search…</b> ✕</div><div class="card" style="margin-top:10px"><b style="font-size:11px">Recent</b><p style="font-size:11px;color:var(--secondary)">– Cricket academy Motera<br>– U-14 trials</p></div><div class="card" style="margin-top:8px"><b style="font-size:11px">Athletes (3)</b>'+personRow(PEOPLE[0],"View","d1")+'<b style="font-size:11px">Coaches (2) · Academies (4) · Events (1)</b></div><div style="height:8px"></div>'+emptyBox("No results for “cricket academy under 5k”","Try another sport, city, or clear the filters","Clear filters","s2"));
+VIEWS.s6=()=>page("S.6","P0","Leaderboard",true,'<div class="pilltabs"><span class="pilltab on">👤 Athletes</span><span class="pilltab">🎓 Coaches</span><span class="pilltab">🏛 Academies</span><span class="pilltab">👥 Teams</span><span class="pilltab">🏆 Events</span></div><div class="dropchips">'+["All Sports","🏏 Cricket","⚽ Football","🏸 Badminton","🏃 Athletics","🏐 Throwball","••• More"].map((x,i)=>'<span class="dropchip"'+(i===0?' style="background:var(--yellow-light);border-color:var(--yellow-deep);color:#111;font-weight:800"':"")+'>'+x+'</span>').join("")+'</div><div class="horizontal chips">'+chip("📍 India")+chip("👥 All Age Groups")+'</div><h3 style="font-family:Sora;margin:8px 0 0">🏆 Top Athletes</h3><p style="font-size:10px;color:var(--secondary);margin:0 0 4px">Based on performance, achievements and overall activity</p><div class="podium3"><div class="p"><span class="medal">🥈</span><br><img src="'+P.football+'" alt=""/><br><b>Priya Sharma <span class="verified">✓</span></b><br><small>Throwball · Gujarat<br><b>1,250 pts</b></small><br><div class="tap primary primary-compact" data-go="d1">View Profile</div></div><div class="p w"><span class="medal g">🥇</span><br><img src="'+P.player+'" alt=""/><br><b>Arjun Patel <span class="verified">✓</span></b><br><small>Cricket · Gujarat<br><b>1,480 pts</b></small><br><div class="tap primary primary-compact" data-go="d1">View Profile</div></div><div class="p"><span class="medal b">🥉</span><br><img src="'+P.cricket+'" alt=""/><br><b>Sneha Verma <span class="verified">✓</span></b><br><small>Badminton · Maharashtra<br><b>1,120 pts</b></small><br><div class="tap primary primary-compact" data-go="d1">View Profile</div></div></div><table class="tbl"><tr><th>#</th><th>Athlete</th><th>Sport · Location</th><th>Points</th><th></th></tr>'+[["4","Rohit Mehta ✓","Football · Surat","980"],["5","Kavya Desai ✓","Athletics · Vadodara","920"],["6","Dev Patel","Volleyball · Ahmedabad","890"],["7","Ishita Singh","Basketball · Rajkot","860"],["8","Manav Joshi ✓","Hockey · Gandhinagar","820"],["9","Riya Mehta","Swimming · Mumbai","780"],["10","Karan Shah","Table Tennis · Ahmedabad","760"]].map(r=>"<tr><td><b>"+r[0]+"</b></td><td>"+r[1]+"</td><td>"+r[2]+"</td><td><b>"+r[3]+"</b></td><td><span class='tap' data-toast='Followed' style='color:#8a6d00;font-weight:800'>Follow</span></td></tr>").join("")+'</table><br><div class="tap ghost" data-toast="Full leaderboard">View Full Leaderboard ›</div><div class="note" data-go="s7" style="cursor:pointer">ⓘ How points work →</div>');
+VIEWS.s7=()=>page("S.7","P1","How points work",true,'<div class="card"><p style="font-size:11px">Points come from:<br>– Verified achievements<br>– Profile completeness<br>– Activity (posts, events)<br><br>Seasons reset every 6 months</p>'+primary("Got it","s6")+'</div>');
+const CREATE_TILES={
+athlete:[["Create Post","Share updates, photos, videos or thoughts with the community","s9","#FDE8E8","📄"],["Add Achievement","Add your medals, certificates, records and milestones","s11","#DFF5E3","🏆"],["Upload Media","Share photos and videos from training, matches or events","s10","#E3EFFF","🖼"],["Create Event","Add a trial, tournament, camp or sports event","or5","#FFF3D6","📅"],["Create Opportunity","Post scholarship, sponsorship or tryout opportunity","sc12","#ECE6FB","💼"],["Find / Add Team","Create or list your team and find team members","d17","#FDE8E8","👥"],["Add Academy","List your academy, coaching centre or training facility","ac1","#DFF5E3","🏛"],["Add Coaching Service","List your coaching services and connect with athletes","co1","#E3EFFF","🎯"]],
+coach:[["Create Post","Share coaching insights, updates or announcements","s9","#ECE6FB","📝"],["Add Training Program","Create and list your training program","co5","#DFF5E3","📅"],["Create Event","Post trials, tournaments or camps","or5","#FDE8E8","🏆"],["Share Achievement","Add your coaching achievements and certificates","s11","#DFF5E3","🏅"],["Add Opportunity","Post scholarships, sponsorships or openings","sc12","#E3EFFF","🏛"],["Upload Photo / Video","Share training moments, drills or tips","s10","#FDE8E8","📷"],["Go Live / Webinar","Host a live training session","co8","#ECE6FB","🎥"],["Poll","Create a poll for your community","s12","#E3EFFF","📊"]],
+academy:[["Create Post","Share updates, achievements, or announcements","s9","#ECE6FB","📝"],["Add Training Program","Create and list your training programs","co5","#DFF5E3","📅"],["Create Event / Trial","Post trials, tournaments or camps","or5","#FDE8E8","🏆"],["Post Scholarship / Opportunity","List scholarships or sponsorships","sc12","#E3EFFF","🏛"],["Add Facility / Venue","Showcase your facilities, grounds, courts","ac8","#FFF3D6","📍"],["Recruit Staff","Post coach or staff openings","ac11","#FDE8E8","👤"],["Upload Photos / Videos","Share training moments, infrastructure","s10","#FDE8E8","🖼"],["Go Live / Webinar","Host live sessions or open trials","co8","#ECE6FB","🎥"],["Create Poll","Get feedback from community","s12","#E3EFFF","📊"]],
+organizer:[["Create Event","Post trials, tournaments or camps","or5","#FDE8E8","📅"],["Create Opportunity","Post scholarships or sponsorships","sc12","#FFF3D6","🏆"],["Add Venue","List your ground, court or facility","or13","#DFF5E3","📍"],["Post Announcement","Share important updates","or14","#FDE8E8","📣"],["Upload Photo / Video","Share event highlights","s10","#FDE8E8","📷"],["Go Live / Stream","Live streaming for your event","co8","#ECE6FB","🎥"],["Create Poll","Get feedback from participants","s12","#E3EFFF","📊"],["Add Staff / Organiser","Add team members to your event","or16","#DFF5E3","👥"]],
+scout:[["Add Talent Shortlist","Save promising athletes","sc6","#E3EFFF","⭐"],["Create Talent Report","Generate detailed evaluation report","sc8","#DFF5E3","📝"],["Add Scouting Opportunity","Post trials, scholarships or scouting calls","sc12","#FFF3D6","🏆"],["Add Event / Trial","Post upcoming selection events","or5","#FDE8E8","📅"],["Upload Photo / Video","Share match footage or athlete clips","s10","#FDE8E8","📷"],["Add Observation","Record notes and feedback","sc10","#ECE6FB","👥"],["Share Opportunity","Share with community or organization","d9","#E3EFFF","🤝"],["Create Poll","Get feedback from other scouts","s12","#E3EFFF","📊"],["Go Live / Stream","Live scout session or trial event","co8","#FDE8E8","🎥"]],
+admin:[["Broadcast Update","Send a platform announcement","ad12","#ECE6FB","📣"],["Add Record","Create an academy, coach or event record","ad6","#DFF5E3","➕"]]};
+VIEWS.s8=()=>{const tiles=CREATE_TILES[ROLE]||CREATE_TILES.athlete;return page("S.8","P0","Create",false,'<p style="text-align:center;color:var(--secondary);font-size:11px;margin:0 0 10px">Share, Add or Create on SportX</p><div class="tilegrid">'+tiles.map(t=>'<div class="tap ctile" data-go="'+t[2]+'"><span class="ci" style="background:'+t[3]+';font-size:22px">'+t[4]+'</span><div style="flex:1"><strong>'+t[0]+'</strong><p>'+t[1]+'</p></div><span style="color:var(--tertiary)">›</span></div>').join("")+'</div><div class="card" style="margin-top:12px"><b>Quick Post Options</b><p style="font-size:10px;color:var(--secondary)">Share something quickly</p><div class="qpost">'+["🖼<br>Photo","🎥<br>Video","📝<br>Text","📊<br>Poll","🏆<br>Achievement"].map(x=>"<div>"+x+"</div>").join("")+"</div></div>")};
+VIEWS.s9=()=>page("S.9","P0",null,false,'<div style="display:flex;justify-content:space-between;align-items:center"><b>✕ New post</b>'+chip("Post",1,"s27")+'</div><div class="card" style="margin-top:10px"><div class="person-row" style="border:0;box-shadow:none;padding:0"><img class="avatar" src="'+PEOPLE[0].img+'"/><div class="person-copy"><strong>Akshay Pandya</strong><p>Public</p></div></div>'+field("What's on your mind?","Write…")+field("#hashtags","#cricket")+'<div class="horizontal chips">'+chip("[img]")+chip("[img]")+chip("[ + ]")+'</div><div class="horizontal chips">'+chip("Photo")+chip("Video")+chip("Tag sport")+'</div></div>');
+VIEWS.s10=()=>page("S.10","P0","Upload media",true,'<div class="card">[ + Choose photos / videos ]<br><br>[img] [vid▶] [img]</div>'+field("Caption","…")+field("Sport","Cricket")+'<div class="note">Uploading 2 of 3 …</div><div class="bar"><i style="width:66%"></i></div><br>'+primary("Upload","d1"));
+VIEWS.s11=()=>page("S.11","P0","Add achievement",true,field("Title","District Throwball 2024")+field("Type","Medal · Certificate · Record")+field("Sport","Cricket")+field("Level","District")+field("Year","2026")+field("Certificate","[+ Upload]")+field("Description","…")+'<div class="btn-row">'+primary("Save","at5")+'</div>');
+VIEWS.s12=()=>page("S.12","P1",null,false,'<div class="tabs"><div class="tap tab-active">Network</div><div class="tap">Groups</div><div class="tap">Events</div></div>'+search("Search people, groups")+'<div class="horizontal chips">'+chip("Athletes",1)+chip("Coaches")+chip("Academies")+'</div>'+sec("Suggested for you")+personRow(PEOPLE[1],"Follow")+personRow(PEOPLE[2],"Follow")+acadCard("Motera Academy","2.5 km",P.cricket),{bell:1,msg:1});
+VIEWS.s13=()=>page("S.13","P2",null,false,'<div class="tabs"><div class="tap">Network</div><div class="tap tab-active">Groups</div><div class="tap">Events</div></div><div class="card"><b>Cricket Coaches India</b><p style="font-size:10px;color:var(--secondary)">2.4K members</p>'+chip("Join",0,"s14")+'</div><div class="card" style="margin-top:8px"><b>Youth Training &amp; Dev</b><p style="font-size:10px;color:var(--secondary)">1.8K members</p>'+chip("Join",0,"s14")+'</div>',{bell:1});
+VIEWS.s14=()=>page("S.14","P2","Cricket Coaches India",true,'<p style="font-size:11px;color:var(--secondary)">2.4K members</p><div class="tabs"><div class="tap tab-active">About</div><div class="tap">Posts</div><div class="tap">Members</div></div>'+chip("Join",1)+'<div style="height:10px"></div>'+feedCard(P.cricket));
+VIEWS.s15=()=>{const rows=ROLE==="coach"?[["My Profile","d2"],["My Training Programs","co4"],["My Events","co6"],["My Opportunities","at8"],["Saved","s20"],["Settings & Privacy","s22"],["Help & Support","s24"],["About SportX","s25"]]:ROLE==="academy"?[["My Profile","d3"],["Training Programs","ac4"],["Events / Trials","ac6"],["Facilities","ac7"],["Our Athletes","ac5"],["Saved","s20"],["Settings & Privacy","s22"],["Help & Support","s24"]]:ROLE==="organizer"?[["My Profile","d4"],["My Events","or4"],["Venues","or13"],["Analytics","or12"],["Saved","s20"],["Settings & Privacy","s22"],["Help & Support","s24"]]:ROLE==="scout"?[["My Profile","d5"],["Shortlisted Talents","sc5"],["Scouting Reports","sc9"],["Opportunities","sc11"],["Saved","s20"],["Settings & Privacy","s22"],["Help & Support","s24"]]:[["My Profile","d1"],["My Opportunities","at8"],["My Activity","s21"],["Achievements & Certificates","at5"],["Saved","s20"],["Settings & Privacy","s22"],["Help & Support","s24"],["About SportX","s25"]];
+if(ROLE==="athlete"){return page("S.15","P0","More",false,'<div style="text-align:center;color:var(--secondary);font-size:10px">Manage • Explore • Get Support</div><div class="stathead" style="margin-top:10px"><div style="display:flex;gap:12px;align-items:center"><img class="avatar" style="width:64px;height:64px" src="'+PEOPLE[2].img+'" alt=""/><div style="flex:1;min-width:0"><strong style="font-size:15px">Akshay Pandya <span class="verified">✓</span></strong><br><span style="font-size:10px;color:var(--secondary)">Athlete<br>📍 Ahmedabad, Gujarat</span></div><div class="tap ghost" data-go="d1" style="flex:0 0 auto;min-height:36px;font-size:10px">View Profile ›</div></div><div class="row3"><div><b>12</b><span>Posts</span></div><div><b>5</b><span>Connections</span></div><div><b>68%</b><span>Profile Complete</span></div></div></div><div style="height:10px"></div>'+[["My Profile","View and edit your profile, verification and profile completion","👤","#E3EFFF","d1"],["My Opportunities","View applied, saved and created opportunities","💼","#FDE8E8","at8"],["My Activity","My posts, achievements, events and applications","📋","#DFF5E3","s21"],["My Achievements & Certificates","Manage your achievements, medals, records and certificates","🏆","#FFF3D6","at5"],["Saved","Saved athletes, coaches, academies, posts and opportunities","🔖","#ECE6FB","s20"],["Settings & Privacy","Account settings, privacy, notifications and security","⚙️","#E3EFFF","s22"],["Help & Support","FAQs, report a problem, contact SportX","❓","#FDE8E8","s24"],["About SportX","About us, terms & policies, community guidelines","ⓘ","#DFF5E3","s25"]].map(r=>'<div class="tap mrow" data-go="'+r[4]+'"><span class="mi" style="background:'+r[3]+';font-size:20px">'+r[2]+'</span><div style="flex:1;min-width:0"><b>'+r[0]+'</b><p>'+r[1]+'</p></div><span class="chev">›</span></div>').join("")+'<div class="tap mrow" data-toast="Logged out" style="color:var(--red)"><span class="mi" style="background:#FDE8E8;font-size:20px">🚪</span><div style="flex:1"><b>Logout</b><p>Sign out from your account</p></div><span class="chev">›</span></div>')};return page("S.15","P0","More",false,'<div class="tap profile-summary" data-go="d1"><img class="avatar" src="'+PEOPLE[0].img+'"/><div><strong>Akshay Pandya ✓</strong><span>'+ROLES[ROLE]+' · Ahmedabad</span><b>View Profile ›</b></div></div><div class="menu-card">'+rows.map(r=>'<div class="tap menu-row" data-go="'+r[1]+'"><span>'+r[0]+'</span>'+ic("chev",17)+'</div>').join("")+'<div class="tap menu-row logout" data-toast="Logged out"><span>Logout</span></div></div>')};
+VIEWS.s16=()=>page("S.16","P0","Notifications",true,'<div class="pilltabs"><span class="pilltab on">🔔 All</span><span class="pilltab">👥 People</span><span class="pilltab">💼 Opportunities</span><span class="pilltab">📅 Events</span><span class="pilltab">@ Mentions</span></div><div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0"><b>Today</b><span style="font-size:10px;color:var(--blue)">Mark all as read</span></div><div class="notification-row"><b></b><img class="avatar avatar-small" src="'+PEOPLE[1].img+'" alt=""/><div><strong>Priya Sharma</strong> started following you.<span>2 minutes ago</span></div><div class="tap primary primary-compact" data-toast="Followed back">Follow back</div></div><div class="notification-row"><b></b><i>🏆</i><div>Your achievement <strong>“District Cricket Championship 2025”</strong> got 25 likes.<span>18 minutes ago</span></div><img src="'+P.cricket+'" style="width:56px;height:44px;border-radius:8px;object-fit:cover" alt=""/></div><div class="notification-row"><b></b><i>📅</i><div><strong>New sponsorship opportunity</strong> matching your profile.<span>Sports Equipment Brand · Open for applications · 1 hour ago</span></div><img src="'+P.stadium+'" style="width:56px;height:44px;border-radius:8px;object-fit:cover" alt=""/></div><div class="notification-row"><b></b><i>📅</i><div><strong>Ahmedabad Football Trials 2026</strong> is happening near you.<span>12 Jan 2026 · Ahmedabad · 2 hours ago</span></div><img src="'+P.football+'" style="width:56px;height:44px;border-radius:8px;object-fit:cover" alt=""/></div><b>Yesterday</b><div class="notification-row"><i>♥</i><div><strong>Rohit Mehta</strong> liked your post.<span>Yesterday, 7:30 PM</span></div><img src="'+P.player+'" style="width:56px;height:44px;border-radius:8px;object-fit:cover" alt=""/></div><b>This Week</b><div class="notification-row"><i>💬</i><div><strong>Sneha Verma</strong> commented on your post.<span>“Great performance! 🔥” · 2 days ago</span></div></div><b>Earlier</b><div class="notification-row"><i>@</i><div>You were mentioned in a post by <strong>Karan Joshi</strong>.<span>“@Akshay check this opportunity.” · 5 days ago</span></div></div><div class="notification-row"><i>'+ic("shield",16)+'</i><div>Your profile verification is <strong>under review</strong>.<span>1 week ago</span></div><span style="color:var(--tertiary)">›</span></div>',{backTo:HOME[ROLE]});
+VIEWS.s17=()=>page("S.17","P0","Messages",true,'<div class="tabs"><div class="tap tab-active">Chats</div><div class="tap">Requests (2)</div></div>'+search("Search messages")+PEOPLE.map((p,i)=>'<div class="tap chat-row" data-go="s18"><img class="avatar" src="'+p.img+'"/><div><strong>'+p.n+'</strong><p>'+(i%2?"Fees for U-14?":"Thank you for the…")+'</p></div><span>'+(i<2?"10:42":"Yesterday")+(i===0?'<b>2</b>':"")+'</span></div>').join(""),{backTo:HOME[ROLE]});
+VIEWS.s18=()=>page("S.18","P0",null,true,'<div class="top-back"><img class="avatar avatar-small" src="'+PEOPLE[2].img+'"/><b>Karan Joshi</b><span style="margin-left:auto">⋯</span></div><div class="chat-day">Today</div><div class="bubble me">When is next batch?</div><div style="height:8px"></div><div class="bubble them">Monday 6 AM</div><div class="note">Only for accepted connections or enquiry threads. Overflow: Report / Block.</div><div class="chat-input"><div class="input" style="flex:1"><b style="flex:1;color:var(--secondary)">Type a message</b></div><div class="tap primary" data-toast="Sent">➤</div></div>',{backTo:"s17"});
+VIEWS.s19=()=>page("S.19","P0","Connections",true,'<div class="tabs"><div class="tap">Followers</div><div class="tap">Following</div><div class="tap tab-active">Connections</div><div class="tap">Requests</div></div><b style="font-size:11px">Requests (3)</b>'+personRow(PEOPLE[1],"Accept")+personRow(PEOPLE[2],"Accept")+'<b style="font-size:11px">Connected (5)</b>'+personRow(PEOPLE[0],"Message","s18"));
+VIEWS.s20=()=>page("S.20","P0","Saved",true,'<div class="tabs"><div class="tap tab-active">Athletes</div><div class="tap">Coaches</div><div class="tap">Academies</div><div class="tap">Posts</div><div class="tap">Opps</div></div><div class="card">⭐ Motera Academy · Cricket · 2.5 km <b style="color:#8a6d00" data-go="d3" class="tap">View</b></div><div style="height:8px"></div>'+emptyBox("No saved opportunities yet","Scholarships and sponsorships you bookmark will appear here","Discover opportunities","s2"));
+VIEWS.s21=()=>page("S.21","P1","My activity",true,'<div class="tabs"><div class="tap tab-active">Posts</div><div class="tap">Achievements</div><div class="tap">Events</div><div class="tap">Applied</div></div>'+feedCard(P.cricket)+'<div class="card" style="margin-top:8px">Application: <span class="status-pill">Pending</span></div>');
+VIEWS.s22=()=>page("S.22","P0","Settings",true,'<div class="card"><b>Account</b><p style="font-size:11px">› Phone / Email<br>› Change password</p><b>Privacy</b>'+field("Profile visibility","Public")+field("Who can message","Connections")+'<b>Notifications</b><p style="font-size:11px">Push [ON] · Language: English ›<br>Blocked users ›</p><p style="color:var(--red);font-size:11px">Delete account</p></div>');
+VIEWS.s23=()=>page("S.23","P0","Blocked users",true,personRow({n:"Name One",r:"Blocked",img:P.player},"Unblock")+personRow({n:"Name Two",r:"Blocked",img:P.football},"Unblock")+'<div class="card">My reports<br><span style="font-size:10px">Report #112 – Under review</span></div>');
+VIEWS.s24=()=>page("S.24","P0","Help & Support",true,'<div class="menu-card"><div class="tap menu-row" data-toast="FAQs"><span>FAQs</span>'+ic("chev",17)+'</div><div class="tap menu-row" data-toast="Report"><span>Report a problem</span>'+ic("chev",17)+'</div><div class="tap menu-row" data-toast="Contact"><span>Contact SportX</span>'+ic("chev",17)+'</div></div>'+primary("Email support"));
+VIEWS.s25=()=>page("S.25","P0","About",true,'<div class="menu-card">'+["About us","Terms & conditions","Privacy policy","Community guidelines"].map(x=>'<div class="tap menu-row" data-toast="'+x+'"><span>'+x+'</span>'+ic("chev",17)+'</div>').join("")+'</div><div style="text-align:center;color:var(--tertiary);font-size:10px;margin-top:10px">v1.0.0</div>');
+VIEWS.s26=()=>page("S.26","P0",null,false,'<div class="sheet"><div class="handle"></div><b>Report this post/user/listing</b><p style="font-size:11px;color:var(--secondary)">Reason</p>'+["Fake or misleading","Stale / expired","Inappropriate","Suspicious activity"].map(r=>'<div class="check-row" style="margin:8px 0"><span class="check" style="background:#fff;border:1px solid var(--border)"></span><span>'+r+'</span></div>').join("")+field("Notes","…")+primary("Submit report","s23")+'<div class="note">Thanks. We\'ll review it.</div></div>');
+VIEWS.s27=()=>page("S.27","P0","Post",true,'<div class="feed-author"><img class="avatar avatar-small" src="'+PEOPLE[1].img+'"/><div><strong>Priya Sharma ✓</strong><span>State Level Athlete · 2h</span></div><span>⋯</span></div><p style="font-size:11px">Text and #hashtags</p><img src="'+P.football+'" style="width:100%;border-radius:12px" alt=""/><div class="feed-actions"><span>♥ 256</span><span>♡ 18</span><span>⇪ 12</span></div><div class="card" style="margin-top:10px"><b style="font-size:11px">Comments</b><p style="font-size:11px">Sneha: Great!</p><div class="input"><b style="flex:1;color:var(--secondary)">Add a comment…</b> ➤</div></div>');
+VIEWS.s28=()=>page("S.28","P0",null,false,'<div style="background:#111;color:#fff;border-radius:16px;padding:30px 10px;text-align:center"><div style="font-size:12px">✕ &nbsp;···</div><img src="'+P.cricket+'" style="width:100%;border-radius:12px;margin:12px 0" alt=""/><div style="font-size:11px">‹ swipe › &nbsp; 1 / 7 &nbsp;&nbsp; [share] [report]</div></div>');
+VIEWS.s29=()=>page("S.29","P0",null,false,'<div class="card" style="text-align:center;margin-top:60px"><b>Logout?</b><p style="font-size:11px;color:var(--secondary)">You can log in anytime.</p><div class="btn-row"><div class="ghost" data-go="'+HOME[ROLE]+'">Cancel</div>'+primary("Logout","a5")+'</div></div>');
+VIEWS.s30=()=>page("S.30","P1",null,false,'<div class="sheet"><div class="handle"></div><b>Share</b><div class="horizontal chips">'+chip("WhatsApp")+chip("Copy link")+chip("More")+'</div><div class="input"><b style="flex:1">sportx.in/p/akshay-pandya</b></div></div>');
+/* ---- D details ---- */
+function profileHero(cover,ava){return '<div class="profile-hero"><img src="'+cover+'" alt=""/><div class="profile-avatar"><img src="'+ava+'" alt=""/></div></div>'}
+VIEWS.d1=()=>page("D.1","P0",null,true,profileHero(P.cricket,P.player)+'<div class="profile-title"><strong>Akshay Pandya <span class="verified">✓</span></strong><p>Cricket Player • Athlete</p><p>'+ic("map",13)+' Ahmedabad, Gujarat</p></div><div class="stathead" style="margin-top:10px"><div class="row3" style="grid-template-columns:repeat(5,1fr);margin-top:0;gap:4px"><div><b>12</b><span>Posts</span></div><div><b>5</b><span>Connections</span></div><div><b>3</b><span>Sports</span></div><div><b>4</b><span>Achieve.</span></div><div><b>68%</b><span>Complete</span></div></div><div class="bar" style="margin-top:8px"><i style="width:68%"></i></div></div><p style="font-size:11px;color:var(--secondary)">Aspiring athlete and sports enthusiast. Passionate about cricket and sports development. Believes in discipline, consistency and continuous learning. 🚀</p><div class="profile-actions" style="grid-template-columns:1fr 1fr 1fr">'+primary("✎ Edit","at3")+chip("⇪ Share")+chip("👁 Public",0,"at7")+'</div><div class="tabs"><div class="tap tab-active">Overview</div><div class="tap" data-go="s21">Posts</div><div class="tap" data-go="at5">Achv</div><div class="tap" data-go="s10">Media</div><div class="tap" data-go="s19">Conn.</div></div><section class="content-card">'+sec("👤 About")+ '<div class="details">'+[["👤 Full Name","Akshay Pandya"],["💼 Role","Athlete (Cricket)"],["📍 Location","Ahmedabad, Gujarat"],["🎂 Age Group","18 – 21 years"],["🎓 College","B.Com, Ahmedabad"],["💡 Interests","Cricket, Fitness"]].map(x=>"<div><span>"+x[0]+"</span><strong>"+x[1]+"</strong></div>").join("")+'</div>'+sec("🏏 Sports")+ '<div class="card" style="box-shadow:none"><b>🏏 Cricket</b> <span class="status-pill" style="background:var(--yellow-light);color:#8a6d00">Primary Sport</span><div class="details"><div><span>Playing Role</span><strong>Batsman</strong></div><div><span>Playing Level</span><strong>College / District</strong></div><div><span>Experience</span><strong>5+ years</strong></div></div></div><div class="tap ghost" data-go="at4" style="margin-top:8px">＋ Add Another Sport</div>'+sec("🖼 Media")+ '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"><img src="'+P.cricket+'" style="width:100%;height:76px;object-fit:cover;border-radius:10px" alt=""/><img src="'+P.football+'" style="width:100%;height:76px;object-fit:cover;border-radius:10px" alt=""/><img src="'+P.stadium+'" style="width:100%;height:76px;object-fit:cover;border-radius:10px" alt=""/><img src="'+P.player+'" style="width:100%;height:76px;object-fit:cover;border-radius:10px" alt=""/><img src="'+P.cricket+'" style="width:100%;height:76px;object-fit:cover;border-radius:10px" alt=""/><div class="tap" data-go="s28" style="height:76px;border-radius:10px;background:#111;color:#fff;display:grid;place-items:center;font-weight:800">+4</div></div>'+sec("🏆 Achievements")+ '<div class="prog-list"><div class="row"><span>🏆</span><span style="flex:1"><b>District Cricket Championship 2025</b><br><span style="color:var(--secondary);font-size:9px">Team Winner · Gujarat</span></span><span>⋮</span></div><div class="row"><span>📜</span><span style="flex:1"><b>NCC B Certificate (A Grade)</b><br><span style="color:var(--secondary);font-size:9px">NCC · 2024</span></span><span>⋮</span></div><div class="row"><span>🥇</span><span style="flex:1"><b>U-19 State Camp Selection</b><br><span style="color:var(--secondary);font-size:9px">GCA · 2024</span></span><span>⋮</span></div></div><div class="tap ghost" data-go="s11" style="margin-top:8px">＋ Add Achievement</div>'+sec("🔗 Social Links")+ '<div style="display:flex;gap:18px;font-size:10px"><span>📸<br>Instagram</span><span>💼<br>LinkedIn</span><span>▶️<br>YouTube</span></div>'+sec("👥 Connections")+ '<div style="display:flex;gap:10px;align-items:center">'+["Rohit<br>Coach","Priya<br>Athlete","Karan<br>Player","Sneha<br>Player"].map((x,i)=>'<div style="text-align:center;font-size:8px"><img class="avatar" style="width:44px;height:44px" src="'+PEOPLE[i].img+'" alt=""/><br>'+x+'</div>').join("")+'<div class="tap" data-go="s19" style="font-size:10px;font-weight:800;color:#8a6d00">+12<br>More</div></div></section><div class="btn-row"><div class="ghost" data-go="s19">Follow</div><div class="ghost" data-go="s19">Connect</div><div class="ghost" data-go="s18">Message</div></div><div class="note">Visitors see Follow/Connect/Message — scouts also see Shortlist.</div>',{backTo:"s2",bell:1});
+VIEWS.d2=()=>page("D.2","P0",null,true,profileHero(P.football,P.player)+'<div class="profile-title"><strong>Rohit Mehta <span class="verified">✓</span></strong><p>Cricket Coach · BCCI Level 2</p><p>Ahmedabad, Gujarat</p><p><b>8</b> Programs · <b>5.2K</b> Followers · <b>4.8★</b> (210)</p></div><div class="profile-actions">'+primary("Edit Profile","co3")+chip("Message",0,"s18")+'</div><div class="tabs"><div class="tap tab-active">About</div><div class="tap" data-go="s21">Posts</div><div class="tap" data-go="co4">Programs</div><div class="tap" data-go="co7">Achv</div></div><section class="content-card"><div class="details">'+[["Experience","12+ years"],["Specialization","Batting, Fielding"],["Age group","U-10 … Open"],["Languages","Hindi, English"]].map(x=>"<div><span>"+x[0]+"</span><strong>"+x[1]+"</strong></div>").join("")+'</div>'+sec("PROGRAMS")+'<div class="card">Beginner Cricket · ₹5,000 <b data-go="d11" class="tap" style="color:#8a6d00">View</b></div></section><div class="btn-row"><div class="ghost" data-go="s19">Follow</div><div class="ghost" data-go="s19">Connect</div></div>',{backTo:"s2"});
+VIEWS.d3=()=>page("D.3","P0",null,true,profileHero(P.cricket,P.stadium)+'<div class="profile-title"><strong>Motera Cricket Academy <span class="verified">✓</span></strong><p>★ 4.8 (320 reviews)</p><p>Sports Academy · Cricket · Motera, Ahmedabad</p></div><div class="btn-row"><div class="ghost" data-go="s19">Follow</div><div class="ghost" data-go="s18">Message</div></div><div class="tabs"><div class="tap tab-active">About</div><div class="tap" data-go="d11">Programs</div><div class="tap" data-go="d13">Facilities</div><div class="tap" data-go="d6">Events</div><div class="tap" data-go="d14">Reviews</div></div><section class="content-card"><div class="details">'+[["Sports","Cricket"],["Age group","U-8 to U-19"],["Coaches","12+"],["Facilities","3 Grounds, Nets, Gym"],["Established","2018"]].map(x=>"<div><span>"+x[0]+"</span><strong>"+x[1]+"</strong></div>").join("")+'</div></section>',{backTo:"s2",sticky:primary("Enquire","d12"),bell:1});
+VIEWS.d4=()=>page("D.4","P0",null,true,profileHero(P.football,P.stadium)+'<div class="profile-title"><strong>Raj Sports Events <span class="verified">✓</span></strong><p>Event Organizer · Ahmedabad</p><p>12 Events · 5.2K Part. · 15 Collab.</p></div><div class="profile-actions">'+primary("Edit Profile","or3")+chip("Share")+'</div><div class="tabs"><div class="tap tab-active">About</div><div class="tap" data-go="or4">Events</div><div class="tap" data-go="or13">Venues</div><div class="tap" data-go="or16">Team</div><div class="tap" data-go="s10">Media</div></div><section class="content-card"><div class="details">'+[["Event types","Tournaments, Trials"],["Sports","Cricket, Football"],["Established","2023"],["Website","rajsportsevents.in"]].map(x=>"<div><span>"+x[0]+"</span><strong>"+x[1]+"</strong></div>").join("")+'</div></section>',{backTo:"s2"});
+VIEWS.d5=()=>page("D.5","P0",null,true,profileHero(P.stadium,P.player)+'<div class="profile-title"><strong>Sameer Desai <span class="verified">✓</span></strong><p>Talent Scout · 4.8 (120) · Ahmedabad</p></div><div class="profile-actions">'+primary("Edit Profile","sc3")+chip("Share")+'</div><div class="tabs"><div class="tap tab-active">About</div><div class="tap" data-go="sc5">Shortlisted</div><div class="tap" data-go="sc9">Reports</div><div class="tap" data-go="s21">Activity</div></div><section class="content-card"><div class="details">'+[["Organization","Independent Scout"],["Sports focus","Cricket, Football"],["Experience","8+ years"],["Availability","Pan Gujarat / India"],["Languages","Eng, Hin, Guj"]].map(x=>"<div><span>"+x[0]+"</span><strong>"+x[1]+"</strong></div>").join("")+'</div></section><div class="note">Own view adds Shortlisted + Reports (private). Public sees About + Activity only.</div>',{backTo:"s2"});
+VIEWS.d6=()=>page("D.6","P0",null,true,'<img src="'+P.football+'" style="width:100%;border-radius:16px" alt=""/><p style="font-size:10px;color:var(--secondary)">NOV 20–22 2026</p><h3 style="font-family:Sora;margin:4px 0">Gujarat Youth Football Champ.</h3><p style="font-size:11px">Ahmedabad · Football · U-14, U-17</p><span class="status-pill">Registrations Open</span><p style="font-size:11px">320 Registered (500 slots)</p><div class="bar"><i style="width:64%"></i></div><p style="font-size:11px">Fee: ₹500 / team · Organizer: <b data-go="d4" class="tap" style="color:#8a6d00">Raj Sports Events ›</b></p><div class="tabs"><div class="tap tab-active">Overview</div><div class="tap" data-go="or9">Schedule</div><div class="tap" data-go="or10">Gallery</div></div><section class="content-card"><p>Eligibility / documents …</p></section>',{backTo:"s2",sticky:primary("Register Now","d7")});
+VIEWS.d7=()=>page("D.7","P0","Register",true,field("Event","Gujarat Youth Football")+field("Name","…")+field("DOB","dd/mm/yyyy")+field("Category","U-17")+field("Team (opt.)","…")+field("Age proof","[+ Upload]")+field("ID","[+ Upload]")+'<div class="check-row"><span class="check">✓</span><span>I agree to event rules</span></div><p style="font-size:11px">Fee ₹500 – pay at venue</p>',{sticky:primary("Submit registration","d8"),backTo:"d6"});
+VIEWS.d8=()=>page("D.8","P0",null,false,'<div class="card" style="text-align:center;margin-top:40px"><div style="font-size:34px">✓</div><b>Registration submitted</b><p style="font-size:11px;color:var(--secondary)">Status: Pending approval<br>Gujarat Youth Football · Nov 20–22 · Ahmedabad</p>'+primary("View My Registrations","at9")+primary("Back to Home",HOME[ROLE])+'</div>');
+VIEWS.d9=()=>page("D.9","P0",null,true,'<span class="status-pill">Scholarship</span><h3 style="font-family:Sora">Gujarat Sports Scholarship 2026</h3><p style="font-size:11px">Provider: Sports Authority<br>Amount: ₹50,000<br>Deadline: 30 Nov 2026</p><section class="content-card"><b>Eligibility</b><p>– Age 14–19, state level</p><b>Benefits</b><p>– Coaching + kit</p></section>',{backTo:"s2",sticky:primary("Apply Now","d10")});
+VIEWS.d10=()=>page("D.10","P0","Apply",true,'<div class="note">Profile attached: Akshay P. ✓</div>'+field("Pitch","Tell them why you…")+field("Documents","[+ Upload]")+'<div class="check-row"><span class="check">✓</span><span>Share my profile with provider</span></div>',{sticky:primary("Submit application","at8"),backTo:"d9"});
+VIEWS.d11=()=>page("D.11","P0",null,true,'<img src="'+P.cricket+'" style="width:100%;border-radius:16px" alt=""/><h3 style="font-family:Sora">Beginner Cricket Program</h3><p style="font-size:11px">by <b data-go="d3" class="tap" style="color:#8a6d00">Motera Cricket Academy ›</b><br>U-10 – U-14 · 3 Months · Offline · ₹5,000<br>Schedule: Mon/Wed/Fri 6 AM</p><section class="content-card"><b>About this program …</b><p>Fundamentals, fitness, match practice.</p></section>',{backTo:"s2",sticky:primary("Enquire","d12")});
+VIEWS.d12=()=>page("D.12","P0","Enquire",true,field("To","Motera Cricket Academy")+field("About","Beginner Cricket Program")+field("Preferred batch","Morning")+'<div class="field"><label>Message</label><div class="input" style="min-height:90px"><b style="color:var(--secondary)">…</b></div></div><div class="note">Submitting creates a chat thread (S.18) with the provider.</div>',{sticky:primary("Send enquiry","s18"),backTo:"d11"});
+VIEWS.d13=()=>page("D.13","P0","Facility",true,'<img src="'+P.player+'" style="width:100%;border-radius:16px" alt=""/><p style="font-size:10px">1 / 5</p><h3 style="font-family:Sora">Indoor Nets</h3><p style="font-size:11px">Type: Indoor · 4 practice lanes<br>Amenities: lights, bowling machine<br>Location: Motera, Ahmedabad</p>');
+VIEWS.d14=()=>page("D.14","P1","Reviews",true,'<h3>4.8 ★★★★★ (320)</h3><p style="font-size:11px">5 ▓▓▓▓▓▓▓▓▓<br>4 ▓▓▓</p>'+personRow(PEOPLE[0],"★ 5")+'<p style="font-size:11px">"Great coaching"</p>'+personRow(PEOPLE[1],"★ 4")+'<p style="font-size:11px">"Good facilities"</p>'+primary("Write a review","d15"));
+VIEWS.d15=()=>page("D.15","P1","Write review",true,'<p>Rating ★ ★ ★ ★ ★</p><div class="field"><label>Review</label><div class="input" style="min-height:90px"></div></div><div class="note">Allowed only after a verified interaction.</div>'+primary("Submit","d14"));
+VIEWS.d16=()=>page("D.16","P2","Near me",true,'<div class="card" style="text-align:center;min-height:200px">o &nbsp; o<br>o &nbsp; (you) &nbsp; o<br><span style="font-size:10px">[ List ]</span></div><div class="note">Map sheet: academy cards</div>'+acadCard("Motera Cricket Academy","2.5 km",P.cricket));
+VIEWS.d17=()=>page("D.17","P2","Team",true,'<div class="card">[logo] Team Name<br>Members (8) · Open spots (2)</div>'+primary("Request to join","s12"));
+/* ---- AT ---- */
+VIEWS.at3=()=>page("AT.3","P0","Edit profile",true,field("Full name","Akshay Pandya")+field("Role","Cricket Player")+field("Location","Ahmedabad")+field("Age group","U-19")+field("College","…")+field("Interests","Batting · Fitness")+field("Bio","…")+field("Social: IG / LI / YT","…"),{sticky:primary("Save","d1")});
+VIEWS.at4=()=>page("AT.4","P0","Sports",true,'<div class="card"><b>Cricket (Primary)</b><p style="font-size:10px">Role: All-rounder · Level: State · Exp: 6 yrs</p><div class="btn-row"><div class="ghost" data-toast="Edit">Edit</div><div class="ghost" data-toast="Delete">Del</div></div></div><div class="card" style="margin-top:8px">[ Football card ]</div><br>'+chip("+ Add",1));
+VIEWS.at5=()=>page("AT.5","P0","Achievements",true,'<div class="card">🏆 District Throwball Championship 2024 …</div><div class="card" style="margin-top:8px">📜 NCC B Certificate</div><br>'+primary("+ Add","s11"));
+VIEWS.at6=()=>page("AT.6","P0","Complete your profile",true,'<p>68%</p><div class="bar"><i style="width:68%"></i></div><div class="menu-card">'+[["Basic details","✓"],["Primary sport","✓"],["Add achievement ›","at5"],["Upload media ›","s10"],["Verification ›","a10"]].map(x=>'<div class="tap menu-row" data-go="'+x[1]+'"><span>'+x[0]+'</span>'+ic("chev",17)+'</div>').join("")+'</div>');
+VIEWS.at7=()=>page("AT.7","P1",null,false,'<div class="note">[ Banner: You\'re viewing as public ]</div>'+profileHero(P.cricket,P.player)+'<div class="profile-title"><strong>Akshay Pandya ✓</strong><p>Read-only public view</p></div>'+primary("Back to editing","at3"));
+VIEWS.at8=()=>page("AT.8","P0","My Opportunities",true,'<div class="tabs"><div class="tap tab-active">Applied</div><div class="tap">Saved</div><div class="tap">Created</div></div><div class="card">State Scholarship · <span class="status-pill">Pending</span> <b data-go="d9" class="tap" style="color:#8a6d00">View</b></div><div class="card" style="margin-top:8px">Sponsor Call · <span class="status-pill">Shortlisted</span></div>');
+VIEWS.at9=()=>page("AT.9","P0","My Registrations",true,'<div class="tabs"><div class="tap tab-active">Upcoming</div><div class="tap">Past</div></div><div class="card">U-14 Cricket Trials · 12 Nov · Ahmedabad<br><span class="status-pill">Approved</span> <b data-go="d6" class="tap" style="color:#8a6d00">View</b> <b class="tap" data-toast="Cancelled" style="color:var(--red)">Cancel</b></div>');
+VIEWS.at10=()=>page("AT.10","P0","Guardian controls",true,'<div class="card"><p style="font-size:11px">Consent: Verified (guardian OTP)</p></div>'+field("Who can message","Connections")+field("Profile visible","Followers")+field("Show location","OFF")+field("Leaderboard name","First + initial"));
+/* ---- CO ---- */
+VIEWS.co3=()=>page("CO.3","P0","Edit profile",true,field("Name, photo, cover","…")+field("Level / certification","BCCI Level 2")+field("Experience","12")+field("Specialization chips","Batting · Fitness")+field("Age groups","U-10 · U-14 · U-19")+field("Languages","Hindi, English")+field("Summary","…"),{sticky:primary("Save","d2")});
+VIEWS.co4=()=>page("CO.4","P0","My Training Programs",true,'<div class="tabs"><div class="tap tab-active">Active</div><div class="tap">Drafts</div><div class="tap">Past</div></div><div class="card">Beginner Cricket Program<br><span style="font-size:10px">U-10–U-14 · 3 mo · Offline · ₹5,000</span> <b data-go="d11" class="tap" style="color:#8a6d00">View</b></div><div class="card" style="margin-top:8px">1-on-1 Coaching · ₹1,500/session</div>',{sticky:primary("+ Add Program","co5")});
+VIEWS.co5=()=>page("CO.5","P0","New program",true,field("Title","…")+field("Sport","Cricket")+field("Age","U-10 · U-14 · All")+field("Duration","3 months")+field("Mode","Offline · Online")+field("Price","₹ __ per month")+field("Schedule","…")+field("About","…")+'<div class="btn-row"><div class="ghost" data-toast="Saved draft">Save draft</div>'+primary("Publish","co4")+'</div>');
+VIEWS.co6=()=>page("CO.6","P1","My Events",true,'<div class="tabs"><div class="tap tab-active">Upcoming</div><div class="tap">Ongoing</div><div class="tap">Completed</div></div><div class="card">[ event card ]</div><br>'+primary("+ Create Event","or5"));
+VIEWS.co7=()=>page("CO.7","P1","My Opportunities",true,'<div class="note">Reuses AT.8 + AT.5 layouts.</div><div class="card">State Scholarship · Pending</div>');
+VIEWS.co8=()=>page("CO.8","P2","Go live",true,field("Title","…")+field("Date","Now / schedule")+primary("Start session","s12"));
+/* ---- AC ---- */
+VIEWS.ac3=()=>page("AC.3","P0","Edit academy",true,field("Logo, cover, gallery","…")+field("Name, sports, age range","…")+field("Facilities chips","…")+field("Staff count, established","…")+field("Address + map pin","…")+field("Fees, timings","…"),{sticky:primary("Save","d3")});
+VIEWS.ac4=()=>page("AC.4","P0","Training Programs",true,'<div class="note">Same as CO.4 / CO.5, owned by the academy.</div><div class="card">Beginner Cricket · ₹5,000 <b data-go="d11" class="tap" style="color:#8a6d00">View</b></div>',{sticky:primary("+ Add Program","co5")});
+VIEWS.ac5=()=>page("AC.5","P1","Our Athletes",true,'<div class="horizontal chips">'+chip("All",1)+chip("U-8")+chip("U-10")+chip("U-14")+chip("U-16")+'</div>'+search("Search athletes")+personRow({n:"Karan Joshi",r:"U-16 · Batsman · 4.5",img:P.cricket},"View Profile")+personRow(PEOPLE[1],"View Profile")+'<br>'+primary("+ Invite athlete","ac10"));
+VIEWS.ac6=()=>page("AC.6","P0","Events / Trials",true,'<div class="tabs"><div class="tap tab-active">Upcoming</div><div class="tap">Past</div></div><div class="card">12 Nov · Open Trials U14<br>Ahmedabad · 120 Registered <b data-go="or6" class="tap" style="color:#8a6d00">View</b></div>',{sticky:primary("+ Create Event","or5")});
+VIEWS.ac7=()=>page("AC.7","P0","Facilities",true,'<div class="horizontal chips">'+chip("All",1)+chip("Grounds")+chip("Indoor")+chip("Gym")+chip("Other")+'</div><div class="card">[img] Main Cricket Ground<br>Outdoor · Full size <b data-go="d13" class="tap" style="color:#8a6d00">View</b></div>',{sticky:primary("+ Add Facility","ac8")});
+VIEWS.ac8=()=>page("AC.8","P0","Add facility",true,field("Name","…")+field("Type","Ground · Indoor · Gym")+field("Size / lanes","…")+field("Amenities","Lights · Parking")+field("Images","[+] [+]"),{sticky:primary("Save","ac7")});
+VIEWS.ac9=()=>page("AC.9","P0","My Scholarships",true,chip("+ Post opportunity",1,"sc12")+'<div class="tabs"><div class="tap tab-active">Active</div><div class="tap">Closed</div></div><div class="card">Merit Scholarship · 12 apps<br>Deadline 30 Nov <b data-go="or7" class="tap" style="color:#8a6d00">Review</b></div>');
+VIEWS.ac10=()=>page("AC.10","P1","Invite athlete",true,search("Search by name / phone")+personRow({n:"Karan J.",r:"U-16",img:P.cricket},"Invite")+'<p style="font-size:11px">Pending invites: 2</p>');
+VIEWS.ac11=()=>page("AC.11","P2","Staff",true,personRow({n:"Coach Rohan",r:"Head Coach",img:P.player},"View")+'<br>'+primary("Post opening","s12"));
+VIEWS.ac12=()=>page("AC.12","P2","Collaborations",true,'<div class="card">[ partner org cards ]</div>');
+/* ---- OR ---- */
+VIEWS.or3=()=>page("OR.3","P0","Edit profile",true,field("Logo, cover, name","…")+field("Event types, sports","…")+field("Location, website, established","…"),{sticky:primary("Save","d4")});
+VIEWS.or4=()=>page("OR.4","P0","My Events",true,'<div class="tabs"><div class="tap tab-active">Upcoming</div><div class="tap">Ongoing</div><div class="tap">Completed</div></div><div class="card">Nov 20–22 · Gujarat Youth Football<br>320 Registered <b data-go="or6" class="tap" style="color:#8a6d00">Manage</b></div>',{sticky:primary("+ Create Event","or5")});
+VIEWS.or5=()=>page("OR.5","P0",null,true,'<div class="steps">Step 2 of 5 · Dates &amp; venue</div>'+wsteps(["Basics","Dates & Venue","Eligibility","Fees & Slots","Review"],1)+'<h3 style="font-family:Sora">Create / Edit Event</h3><div class="horizontal chips">'+chip("Tournament",1)+chip("Trial")+chip("Camp")+'</div>'+field("Sport","Football")+field("Start","20 Nov 2026")+field("End","22 Nov 2026")+field("Venue","Pick venue")+field("Categories","U-14 · U-17")+field("Fee","₹500 per team")+field("Slots","500")+field("Docs required","Age proof · ID")+'<div class="btn-row"><div class="ghost" data-toast="Saved draft">Save draft</div>'+primary("Next","or6")+'</div>');
+VIEWS.or6=()=>page("OR.6","P0",null,true,'<img src="'+P.football+'" style="width:100%;border-radius:16px" alt=""/><p style="font-size:10px">NOV 20–22 2026 · Gujarat Youth Football Champ.</p><span class="status-pill">Registrations Open</span><p style="font-size:11px">320 / 500 slots</p><div class="bar"><i style="width:64%"></i></div><p style="font-size:11px">Fee ₹500/team</p><div class="tabs"><div class="tap tab-active">Overview</div><div class="tap" data-go="or7">Registrations</div><div class="tap" data-go="or9">Schedule</div><div class="tap" data-go="or10">Gallery</div></div><div class="btn-row"><div class="ghost" data-toast="Shared">Share</div><div class="ghost" data-toast="Closed">Close registrations</div></div>',{sticky:primary("Manage Event","or7")});
+VIEWS.or7=()=>page("OR.7","P0","Registrations",true,'<div class="tabs"><div class="tap tab-active">All (320)</div><div class="tap">Approved (280)</div><div class="tap">Pending (30)</div></div>'+search("Search participants")+'<div class="card">☑ Aarav Patel · U-17 · <span class="status-pill">Approved</span></div><div class="card" style="margin-top:8px">☐ <span class="tap" data-go="or8" style="color:#8a6d00"><b>Riya Mehta · U-17 · ( Pending ) ›</b></span></div><div class="btn-row"><div class="ghost" data-toast="Approved">Approve</div><div class="ghost" data-toast="Rejected">Reject</div></div>'+primary("Export List"));
+VIEWS.or8=()=>page("OR.8","P0","Registrant",true,'<div class="card"><b>Riya Mehta · <span class="status-pill">Pending</span></b><p style="font-size:11px">DOB 12/04/2010 · U-17<br>Phone, Email, Team</p><p style="font-size:11px">Documents: [ age proof.pdf ]</p></div><div class="btn-row"><div class="ghost" data-toast="Rejected">Reject</div>'+primary("Approve","or7")+'</div>',{backTo:"or7"});
+VIEWS.or9=()=>page("OR.9","P1","Schedule",true,'<div class="card"><b>Day 1 – 20 Nov</b><p style="font-size:11px">09:00 Match 1 · Team A v B<br>11:00 Match 2</p><b>Day 2 – 21 Nov</b></div><br>'+chip("+ Add slot",1));
+VIEWS.or10=()=>page("OR.10","P1","Gallery",true,'<div class="card">[img][img][img]<br>[img][vid▶][img]</div><br>'+chip("+ Upload",1));
+VIEWS.or11=()=>page("OR.11","P1","Results",true,'<table class="tbl"><tr><th>Match</th><th>Score</th><th>Winner</th></tr><tr><td>A v B</td><td>2-1</td><td>A</td></tr></table><br>'+chip("Upload bracket")+primary("Publish results","or6"));
+VIEWS.or12=()=>page("OR.12","P1","Analytics",true,field("Event","Gujarat Youth Football")+'<div class="horizontal chips">'+chip("7D")+chip("30D",1)+chip("3M")+chip("1Y")+'</div><div class="kpi-grid"><div class="kpi"><strong>12,450</strong><span>Views</span></div><div class="kpi"><strong>320</strong><span>Regs</span></div></div><div class="card">Inquiries: 86<br>Registrations over time<br>__/––– (line chart)<br>Top sources: Direct 42% · Instagram 28%</div>');
+VIEWS.or13=()=>page("OR.13","P1","My Venues",true,'<div class="card">[img] Gujarat Stadium Ground<br>Outdoor · 5,000 cap. <b data-go="d13" class="tap" style="color:#8a6d00">View</b></div><br>'+chip("+ Add",1));
+VIEWS.or14=()=>page("OR.14","P1","Announcement",true,field("To","Gujarat Youth Football")+field("Title","…")+'<div class="field"><label>Message</label><div class="input" style="min-height:90px"></div></div>'+primary("Post","s27"));
+VIEWS.or15=()=>page("OR.15","P2","Promote",true,field("Placement","Home · Explore")+field("Duration","7 days"));
+VIEWS.or16=()=>page("OR.16","P2","Team",true,'<div class="card">Co-organizer · Admin</div><br>'+chip("+ Invite",1));
+VIEWS.or17=()=>page("OR.17","P2","Collaborations",true,'<div class="card">[ partner cards ]</div>');
+/* ---- SC ---- */
+VIEWS.sc3=()=>page("SC.3","P0","Edit profile",true,field("Name, photo, cover","…")+field("Organization","…")+field("Sports focus chips","…")+field("Experience","8")+field("Availability","Pan Gujarat")+field("Summary","…"),{sticky:primary("Save","d5")});
+VIEWS.sc4=()=>page("SC.4","P0","Discover",true,search("Search athletes")+'<div class="horizontal chips">'+chip("All",1)+chip("Cricket")+chip("Football")+chip("Athletics")+'</div><div class="horizontal chips">'+chip("Age")+chip("Position")+chip("Level")+'</div><div class="card"><b>Aarav Patel ✓</b><p style="font-size:10px">16 · Cricket · Gujarat · ★ 4.8 (320)<br>Right Hand Bat · All-rounder</p>'+primary("View Profile","d1")+'</div><div class="card" style="margin-top:8px">[ next card ]</div>');
+VIEWS.sc5=()=>page("SC.5","P0","Shortlisted Talents",true,'<div class="tabs"><div class="tap tab-active">All (46)</div><div class="tap">Under Review (22)</div><div class="tap">Final (12)</div></div>'+search("Search shortlisted")+'<div class="card">☑ Aarav Patel<br><span style="font-size:10px">Cricket · U-17 · State · <span class="status-pill">High Potential</span></span></div><div class="card" style="margin-top:8px">☐ Riya Shah · <span class="status-pill">Under Review</span></div><br>'+primary("Compare Talents","sc7"));
+VIEWS.sc6=()=>page("SC.6","P0",null,false,'<div class="sheet"><div class="handle"></div><b>Shortlist Aarav Patel</b><br><br><span style="font-size:10px">Status</span><div class="horizontal chips">'+chip("Under Review")+chip("Good")+chip("High",1)+'</div><span style="font-size:10px">Tags</span><div class="horizontal chips">'+chip("Batting",1)+chip("Fitness")+'</div>'+field("Private note","…")+primary("Save to Shortlist","sc5")+'</div>');
+VIEWS.sc7=()=>page("SC.7","P1","Compare",true,'<table class="tbl"><tr><th></th><th>Aarav</th><th>Riya</th></tr><tr><td>Technical</td><td>8.5</td><td>7.8</td></tr><tr><td>Fitness</td><td>8.0</td><td>8.2</td></tr><tr><td>Awareness</td><td>7.5</td><td>7.0</td></tr><tr><td>Mental</td><td>8.0</td><td>7.5</td></tr><tr><td>Overall</td><td><b>8.2</b></td><td><b>7.6</b></td></tr></table><div class="btn-row"><div class="ghost" data-toast="Removed">Remove</div>'+primary("Open report","sc8")+'</div>');
+VIEWS.sc8=()=>page("SC.8","P1",null,true,'<b>✕ Talent Report</b><div class="card" style="margin-top:8px"><b>Aarav Patel · U-16 Cricket · ★ 4.8 (320)</b></div><div class="tabs"><div class="tap tab-active">Overview</div><div class="tap">Performance</div><div class="tap">Potential</div><div class="tap">Notes</div></div><section class="content-card"><b>KEY INFORMATION</b><div class="details"><div><span>Position</span><strong>All Rounder</strong></div><div><span>Batting</span><strong>Right Hand</strong></div><div><span>Level</span><strong>State</strong></div></div><b>SCOUTING ASSESSMENT</b>'+[["Technical",8.5],["Fitness",8.0],["Awareness",7.5],["Mental",8.0],["Overall",8.2]].map(x=>'<div style="font-size:10px;margin:6px 0">'+x[0]+' '+x[1]+'<div class="bar"><i style="width:'+(x[1]*10)+'%"></i></div></div>').join("")+'<p>Conclusion …</p></section>',{sticky:primary("Save to Shortlist","sc5")});
+VIEWS.sc9=()=>page("SC.9","P1","My Reports",true,search("Search")+'<div class="card">Aarav Patel · Overall 8.2<br><span style="font-size:10px">12 Oct 2026</span> <b data-go="sc8" class="tap" style="color:#8a6d00">Open</b></div>');
+VIEWS.sc10=()=>page("SC.10","P0","Observation",true,field("Athlete","Aarav Patel")+field("Rating","★ ★ ★ ★ ★")+field("Note","…")+field("Attach","[+ photo / video]"),{sticky:primary("Save","sc5")});
+VIEWS.sc11=()=>page("SC.11","P0","Scouting Opportunities",true,'<div class="tabs"><div class="tap tab-active">All</div><div class="tap">Trials</div><div class="tap">Scholarships</div><div class="tap">Camps</div></div><div class="card">[img] State Level Cricket Trials U-19 · 5 Dec<br><span class="status-pill">Registrations Open</span> <b data-go="d6" class="tap" style="color:#8a6d00">View</b></div>',{sticky:primary("New scouting call","sc12")});
+VIEWS.sc12=()=>page("SC.12","P0","New scouting call",true,'<div class="horizontal chips">'+chip("Trial",1)+chip("Scholarship")+chip("Camp")+'</div>'+field("Sport","Cricket")+field("Age","U-14 · U-17 · U-19")+field("Date","__/__/____")+field("Location","…")+field("Details","…"),{sticky:primary("Publish","sc11")});
+VIEWS.sc13=()=>page("SC.13","P0","Contact",true,'<div class="note">To: Aarav Patel (U-16) · Note: sent to guardian. For U-18 the request goes to the guardian first.</div><div class="horizontal chips">'+chip("Trial invite",1)+chip("Enquiry")+'</div>'+field("Message","…"),{sticky:primary("Send request","s18")});
+/* ---- AD ---- */
+function adminShell(id,pri,inner){return rolebar(id,pri)+topbar({title:"SportX Admin"})+'<main class="page"><div class="admin-tabs">'+[["Dash","ad2"],["Users","ad3"],["Verif.","ad4"],["Content","ad5"],["Moder.","ad7"],["Master","ad9"],["Expiry","ad10"],["Points","ad11"],["Broadcast","ad12"]].map(x=>'<a href="#'+x[1]+'" class="'+(id===x[1].toUpperCase().replace("AD","AD.")?"on":"")+'">'+x[0]+'</a>').join("")+'</div>'+inner+'</main>'}
+VIEWS.ad1=()=>rolebar("AD.1","P0")+'<main class="page"><div class="card" style="margin-top:40px;text-align:center"><h3 style="font-family:Sora">SportX Admin</h3>'+field("Email","…")+field("Password","…")+field("2FA code","…···")+'<div class="btn-row">'+primary("Login","ad2")+'</div></div></main>';
+VIEWS.ad2=()=>adminShell("AD.2","P0",'<div class="kpi-grid">'+[["12.4K","Users"],["38","Verifications"],["14","Reports"],["92","Events"]].map(x=>'<div class="kpi"><strong>'+x[0]+'</strong><br><span>'+x[1]+'</span></div>').join("")+'</div><div class="card">New users by role<br>▅▅ ▅▅ | ▅▅▅</div><div class="card" style="margin-top:8px">Recent activity …</div>');
+VIEWS.ad3=()=>adminShell("AD.3","P0",'<h3 style="font-family:Sora">Users</h3>'+search("Search")+'<table class="tbl"><tr><th>Name</th><th>Role</th><th>Status</th><th></th></tr><tr><td>Akshay</td><td>Athlete</td><td>Active</td><td><b class="tap" data-toast="User detail below" style="color:#8a6d00">View</b></td></tr><tr><td>Motera</td><td>Academy</td><td>Active</td><td><b class="tap" data-toast="User detail below" style="color:#8a6d00">View</b></td></tr></table><div class="card" style="margin-top:10px"><b>Akshay Pandya · Athlete · <span class="status-pill">Active</span></b><div class="details"><div><span>Joined</span><strong>12 Oct 2026</strong></div><div><span>Reports</span><strong>0 open</strong></div><div><span>Verification</span><strong>Verified ✓</strong></div></div><div class="btn-row"><div class="ghost" data-toast="Verification opened" style="flex:1">Verify</div><div class="ghost" data-toast="User suspended" style="flex:1">Suspend</div><div class="ghost" data-toast="User banned" style="flex:1;color:var(--red)">Ban</div></div></div>');
+VIEWS.ad4=()=>adminShell("AD.4","P0",'<h3 style="font-family:Sora">Verification Requests (38)</h3><table class="tbl"><tr><th>Name</th><th>Role</th><th>Docs</th><th>Action</th></tr><tr><td>Rohit</td><td>Coach</td><td>[open]</td><td><b class="tap" data-toast="Approved" style="color:green">Approve</b></td></tr></table><div class="note">Reject needs a reason.</div>');
+VIEWS.ad5=()=>adminShell("AD.5","P0",'<h3 style="font-family:Sora">Content</h3>'+search("Search")+'<table class="tbl"><tr><th>Name</th><th>City</th><th>Status</th><th>Created</th></tr><tr><td>Motera</td><td>Ahd.</td><td>Live</td><td>12 Oct</td></tr></table><div class="btn-row"><div class="ghost" data-toast="Edit">Edit</div><div class="ghost" data-toast="Delete">Delete</div>'+primary("+ Add","ad6")+'</div>');
+VIEWS.ad6=()=>adminShell("AD.6","P0",'<h3 style="font-family:Sora">Edit record</h3>'+field("Name","…")+field("City","Ahmedabad")+field("Status","Live")+'<div class="btn-row"><div class="ghost" data-toast="Deleted" style="color:var(--red)">Delete</div>'+primary("Save","ad5")+'</div>');
+VIEWS.ad7=()=>adminShell("AD.7","P0",'<h3 style="font-family:Sora">Reports (14)</h3><div class="horizontal chips">'+chip("Open",1)+chip("Resolved")+'</div><table class="tbl"><tr><th>#</th><th>Type</th><th>Reason</th><th></th></tr><tr><td>1</td><td>Post</td><td>Misleading</td><td><b data-go="ad8" class="tap" style="color:#8a6d00">Open</b></td></tr><tr><td>2</td><td>User</td><td>Abuse</td><td><b style="color:#8a6d00">Open</b></td></tr></table>');
+VIEWS.ad8=()=>adminShell("AD.8","P0",'<h3 style="font-family:Sora">Report #112</h3><div class="card">Reason: Fake listing<br>Reporter: Name · Target: Listing<br>[ content preview ]</div><div class="btn-row"><div class="ghost" data-toast="Approved">Approve</div><div class="ghost" data-toast="Removed">Remove</div><div class="ghost" data-toast="Warned">Warn</div></div>'+primary("Suspend user","ad3"));
+VIEWS.ad9=()=>adminShell("AD.9","P0",'<h3 style="font-family:Sora">Master data</h3><div class="tabs"><div class="tap tab-active">Sports</div><div class="tap">Cities</div><div class="tap">Age groups</div><div class="tap">Positions</div></div><div class="card">Cricket [edit] [x]<br>Football [edit] [x]</div><br>'+chip("+ Add",1));
+VIEWS.ad10=()=>adminShell("AD.10","P0",'<h3 style="font-family:Sora">Expiry rules</h3><div class="card">Events: close 1 day after end date<br>Opportunities: at deadline</div><br><div class="btn-row">'+chip("+ Add rule",1)+chip("Edit")+'</div>');
+VIEWS.ad11=()=>adminShell("AD.11","P1",'<h3 style="font-family:Sora">Points rules</h3><div class="card">Verified achievement +50<br>Event participation +20<br>Post +2</div>'+field("Season length","6 months")+'<div class="btn-row"><div class="ghost" data-toast="Season reset">Reset season</div>'+primary("Save","ad2")+'</div>');
+VIEWS.ad12=()=>adminShell("AD.12","P1",'<h3 style="font-family:Sora">New broadcast</h3><div class="horizontal chips">'+chip("All",1)+chip("Athletes")+chip("Coaches")+'</div>'+field("Title","…")+'<div class="field"><label>Message</label><div class="input" style="min-height:90px"></div></div><div class="horizontal chips">'+chip("Now",1)+chip("Schedule")+'</div><br>'+primary("Send","ad2"));
+/* S.1 home shell -> redirect to role home */
+VIEWS.s1=()=>{location.hash=HOME[ROLE];return""};
+/* ---- router ---- */
+const TITLES={};
+function statusBar(){return '<div class="statusbar"><span>9:41</span><div class="sb-icons"><svg width="17" height="11" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="8" width="2.5" height="4" rx=".5"/><rect x="4" y="5" width="2.5" height="7" rx=".5"/><rect x="8" y="2.5" width="2.5" height="9.5" rx=".5"/><rect x="12" y="0" width="2.5" height="12" rx=".5"/></svg><svg width="15" height="11" viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.5C5.2 2.5 2.7 3.7 1 5.7L8 14.5 15 5.7C13.3 3.7 10.8 2.5 8 2.5Z"/></svg><span class="sbbat"></span></div></div>'}
+function render(){let h=(location.hash||"#gallery").replace("#","").toLowerCase();if(!VIEWS[h])h=HOME[ROLE];const wide=(h==="gallery"||h==="screens");document.body.dataset.role=ROLE;document.body.classList.toggle("gal-wide",wide);
+document.getElementById("phone").innerHTML=(wide?"":statusBar())+VIEWS[h]();window.scrollTo(0,0);if(wide){requestAnimationFrame(function(){observeFrames();scaleFrames();if(PENDING_SEC){var el=document.getElementById(PENDING_SEC);if(el)el.scrollIntoView();PENDING_SEC=null;}});}
+const sel=document.getElementById("roleSel");if(sel)sel.onchange=e=>{ROLE=e.target.value;localStorage.setItem("sx_role",ROLE);location.hash=HOME[ROLE];render()};}
+document.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(g){location.hash=g.dataset.go;render();return}const t=e.target.closest("[data-toast]");if(t){toast(t.dataset.toast)}});
+window.addEventListener("hashchange",render);render();
 </script>
 </body>
 </html>

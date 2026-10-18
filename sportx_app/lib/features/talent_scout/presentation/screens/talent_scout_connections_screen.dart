@@ -49,7 +49,6 @@ class _TalentScoutConnectionsScreenState extends ConsumerState<TalentScoutConnec
           backgroundColor: Colors.white,
           surfaceTintColor: Colors.white,
           elevation: 0,
-          automaticallyImplyLeading: false,
           title: Text('My Connections',
             style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
           bottom: PreferredSize(

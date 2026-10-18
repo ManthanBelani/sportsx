@@ -54,7 +54,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget build(BuildContext context) {
     final async = ref.watch(conversationDetailProvider(widget.chatId));
     final currentUserId = ref.watch(authProvider).user?.id.toString();
-
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
@@ -116,9 +115,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(message.body, style: GoogleFonts.inter(color: isMe ? AppColors.ink : AppColors.textPrimary, fontSize: 14)),
-            if (message.createdAt != null) ...[
+            if (shortChatTime(message.createdAt).isNotEmpty) ...[
               const SizedBox(height: 4),
-              Text(message.createdAt!,
+              Text(shortChatTime(message.createdAt),
                   style: GoogleFonts.inter(color: isMe ? AppColors.primaryDarker : AppColors.textTertiary, fontSize: 11)),
             ],
           ],

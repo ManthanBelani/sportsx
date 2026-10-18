@@ -38,7 +38,6 @@ class _TalentScoutShortlistScreenState extends ConsumerState<TalentScoutShortlis
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
         elevation: 0,
-        automaticallyImplyLeading: false,
         title: Text('My Shortlist',
             style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         bottom: PreferredSize(preferredSize: const Size.fromHeight(1), child: Container(height: 1, color: AppColors.border)),

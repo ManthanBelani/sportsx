@@ -7,6 +7,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/notifications/presentation/providers/notifications_provider.dart';
 
 /// Handles FCM foreground/background display and token sync.
@@ -91,6 +92,23 @@ class PushNotificationService {
     }
   }
 
+  /// Only fire user-scoped refreshes when a session actually exists —
+  /// previously these ran unconditionally and produced 401 spam.
+  static bool _isAuthed(dynamic ref) {
+    try {
+      return ref.read(authProvider).status == AuthStatus.authenticated;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static void _refreshBell(dynamic ref) {
+    if (!_isAuthed(ref)) return;
+    try {
+      ref.read(notificationsProvider.notifier).load();
+    } catch (_) {}
+  }
+
   static Future<void> init(WidgetRef ref) async {
     final messaging = FirebaseMessaging.instance;
 
@@ -107,9 +125,7 @@ class PushNotificationService {
     try {
       final initial = await messaging.getInitialMessage();
       if (initial != null) {
-        try {
-          await ref.read(notificationsProvider.notifier).load();
-        } catch (_) {}
+        _refreshBell(ref);
         _deepLink(initial);
       }
     } catch (_) {}
@@ -117,23 +133,20 @@ class PushNotificationService {
     // Refresh in-app bell when a push arrives in foreground + show visible banner.
     _onMessageSub?.cancel();
     _onMessageSub = FirebaseMessaging.onMessage.listen((RemoteMessage msg) async {
-      try {
-        await ref.read(notificationsProvider.notifier).load();
-      } catch (_) {}
+      _refreshBell(ref);
       await _showLocal(msg);
     });
 
     // Background/banners taps → reload + deep link.
     _onMessageOpenedSub?.cancel();
     _onMessageOpenedSub = FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage msg) {
-      try {
-        ref.read(notificationsProvider.notifier).load();
-      } catch (_) {}
+      _refreshBell(ref);
       _deepLink(msg);
     });
 
-    // Keep server token fresh
+    // Keep server token fresh (authenticated sessions only)
     FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
+      if (!_isAuthed(ref)) return;
       try {
         final dio = ref.read(dioProvider);
         final deviceType = defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';

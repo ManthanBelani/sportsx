@@ -12,12 +12,18 @@ import 'package:sportx_app/features/auth/presentation/screens/role_selection_scr
 import 'package:sportx_app/features/auth/presentation/screens/sign_up_screen.dart';
 import 'package:sportx_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:sportx_app/features/auth/presentation/screens/otp_screen.dart';
+import 'package:sportx_app/features/auth/presentation/screens/forgot_password_screen.dart';
+import 'package:sportx_app/features/auth/presentation/screens/language_screen.dart';
+import 'package:sportx_app/features/auth/presentation/screens/permissions_primer_screen.dart';
+import 'package:sportx_app/features/auth/presentation/screens/guardian_consent_screen.dart';
+import 'package:sportx_app/features/auth/presentation/screens/verification_screen.dart';
 import 'package:sportx_app/features/home/presentation/screens/home_screen.dart';
 import 'package:sportx_app/features/saved/presentation/screens/saved_screen.dart';
 import 'package:sportx_app/features/athlete/presentation/screens/profile_screen.dart';
 import 'package:sportx_app/features/onboarding/presentation/screens/onboarding_sport_age_screen.dart';
 import 'package:sportx_app/features/onboarding/presentation/screens/onboarding_skill_location_screen.dart';
 import 'package:sportx_app/features/home/presentation/screens/discover_screen.dart';
+import 'package:sportx_app/features/home/presentation/screens/explore_screen.dart';
 import 'package:sportx_app/features/search/presentation/screens/search_filter_screen.dart';
 import 'package:sportx_app/features/academy/presentation/screens/academy_directory_screen.dart';
 import 'package:sportx_app/features/academy/presentation/screens/academy_detail_screen.dart';
@@ -29,6 +35,12 @@ import 'package:sportx_app/features/tournament/presentation/screens/tournament_d
 import 'package:sportx_app/features/tournament/presentation/screens/tournament_detail_screen.dart';
 import 'package:sportx_app/features/tournament/presentation/screens/tournament_calendar_screen.dart';
 import 'package:sportx_app/shared/presentation/screens/enquire_screen.dart';
+import 'package:sportx_app/shared/presentation/screens/media_viewer_screen.dart';
+import 'package:sportx_app/shared/presentation/screens/leaderboard_info_screen.dart';
+import 'package:sportx_app/shared/presentation/screens/groups_screen.dart';
+import 'package:sportx_app/shared/presentation/screens/reviews_screen.dart';
+import 'package:sportx_app/shared/presentation/screens/map_view_screen.dart';
+import 'package:sportx_app/shared/presentation/screens/team_screen.dart';
 import 'package:sportx_app/features/trial/presentation/screens/trial_registration_screen.dart';
 import 'package:sportx_app/features/tournament/presentation/screens/tournament_registration_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/registration_confirmation_screen.dart';
@@ -68,20 +80,42 @@ import 'package:sportx_app/features/notifications/presentation/screens/notificat
 import 'package:sportx_app/features/settings/presentation/screens/settings_screen.dart';
 import 'package:sportx_app/features/settings/presentation/screens/help_support_screen.dart';
 import 'package:sportx_app/core/session_scope.dart';
+import 'package:sportx_app/shared/providers/role_config_provider.dart';
 import 'package:sportx_app/features/settings/presentation/screens/legal_screen.dart';
 import 'package:sportx_app/features/settings/presentation/screens/social_links_screen.dart';
 import 'package:sportx_app/features/sports_venue/presentation/screens/sports_venue_list_screen.dart';
 import 'package:sportx_app/features/sports_venue/presentation/screens/sports_venue_detail_screen.dart';
 import 'package:sportx_app/features/social/presentation/screens/create_post_screen.dart';
-import 'package:sportx_app/features/social/presentation/screens/community_feed_screen.dart';
+import 'package:sportx_app/features/social/presentation/screens/community_screen.dart';
 import 'package:sportx_app/features/chat/presentation/screens/chat_list_screen.dart';
 import 'package:sportx_app/features/chat/presentation/screens/chat_screen.dart';
 import 'package:sportx_app/features/athlete/presentation/screens/edit_profile_screen.dart';
 import 'package:sportx_app/features/athlete/presentation/screens/add_achievement_screen.dart';
 import 'package:sportx_app/features/athlete/presentation/screens/media_gallery_screen.dart';
+import 'package:sportx_app/features/athlete/presentation/screens/manage_sports_screen.dart';
+import 'package:sportx_app/features/athlete/presentation/screens/achievements_screen.dart';
+import 'package:sportx_app/features/athlete/presentation/screens/profile_completion_screen.dart';
+import 'package:sportx_app/features/athlete/presentation/screens/view_as_public_screen.dart';
+import 'package:sportx_app/features/athlete/presentation/screens/guardian_controls_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/add_credential_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/edit_facilities_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/showcase_athletes_screen.dart';
+import 'package:sportx_app/features/coach/presentation/screens/coach_go_live_screen.dart';
+import 'package:sportx_app/features/academy/presentation/screens/invite_athlete_screen.dart';
+import 'package:sportx_app/features/academy/presentation/screens/academy_staff_screen.dart';
+import 'package:sportx_app/features/academy/presentation/screens/academy_collaborations_screen.dart';
+import 'package:sportx_app/features/organizer/presentation/screens/schedule_editor_screen.dart';
+import 'package:sportx_app/features/organizer/presentation/screens/post_announcement_screen.dart';
+import 'package:sportx_app/features/organizer/presentation/screens/promote_event_screen.dart';
+import 'package:sportx_app/features/organizer/presentation/screens/organizer_team_screen.dart';
+import 'package:sportx_app/features/talent_scout/presentation/screens/compare_talents_screen.dart';
+import 'package:sportx_app/features/talent_scout/presentation/screens/talent_report_screen.dart';
+import 'package:sportx_app/features/admin/presentation/screens/admin_record_edit_screen.dart';
+import 'package:sportx_app/features/admin/presentation/screens/admin_master_data_screen.dart';
+import 'package:sportx_app/features/admin/presentation/screens/admin_expiry_rules_screen.dart';
+import 'package:sportx_app/features/admin/presentation/screens/admin_leaderboard_config_screen.dart';
+import 'package:sportx_app/features/admin/presentation/screens/admin_content_list_screen.dart';
+import 'package:sportx_app/features/admin/presentation/screens/admin_content_picker_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/coach_profile_detail_screen.dart';
 import 'package:sportx_app/features/search/presentation/screens/universal_search_screen.dart';
 import 'package:sportx_app/features/connections/presentation/screens/my_connections_screen.dart';
@@ -123,8 +157,8 @@ import 'package:sportx_app/features/talent_scout/presentation/screens/observatio
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_connection_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_connections_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_profile_screen.dart';
-import 'package:sportx_app/features/talent_scout/presentation/widgets/scout_shell.dart';
-import 'package:sportx_app/features/social/presentation/screens/create_sheet.dart';
+import 'package:sportx_app/features/social/presentation/screens/create_screen.dart';
+import 'package:sportx_app/features/more/presentation/screens/more_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/my_applications_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/application_status_screen.dart';
 import 'package:sportx_app/features/connections/presentation/screens/network_screen.dart';
@@ -215,14 +249,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       final authState = ref.read(authProvider);
       final status = authState.status;
       final role = authState.user?.role;
-      const authScreens = ['/splash', '/landing', '/role-selection', '/sign-up', '/login', '/verify-otp', '/admin/login'];
+      const authScreens = ['/splash', '/landing', '/role-selection', '/sign-up', '/login', '/verify-otp', '/forgot-password', '/admin/login'];
       const onboardingScreens = [
         '/onboarding-1', '/onboarding-2',
         '/coach-onboarding', '/academy-onboarding',
         '/organizer-onboarding', '/sponsor-onboarding',
-        '/scout-onboarding',
+        '/scout-onboarding', '/guardian-consent',
       ];
-      const shellRouteScreens = ['/home', '/universal-search', '/saved', '/network', '/activity-hub', '/profile'];
 
       if (status == AuthStatus.authenticated) {
         final onboardingRoute = _onboardingRouteFor(role);
@@ -230,11 +263,9 @@ final routerProvider = Provider<GoRouter>((ref) {
 
         // Needs onboarding → force the user through their role onboarding first.
         if (authState.needsOnboarding && onboardingRoute != null) {
-          if (loc == onboardingRoute) {
-            return null;
-          }
+          // Allow any onboarding step (including guardian consent) to render.
           if (onboardingScreens.contains(loc)) {
-            return onboardingRoute;
+            return null;
           }
           return onboardingRoute;
         }
@@ -244,12 +275,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           return dashboardRoute;
         }
 
-        // Redirect non-athlete roles away from shell route screens to their dashboard.
-        if (role != null && role != 'athlete' && shellRouteScreens.contains(loc)) {
-          return dashboardRoute;
-        }
-
-        // Redirect away from athlete profile screen if not an athlete.
+        // v3.2: every signed-in role shares the unified MainShell, so the old
+        // "non-athlete roles bounced off shell screens" guard is gone. The one
+        // exception is /profile — athlete-specific — which lands non-athletes
+        // on their dashboard instead.
         if (loc == '/profile' && role != null && role != 'athlete') {
           return dashboardRoute;
         }
@@ -282,17 +311,60 @@ final routerProvider = Provider<GoRouter>((ref) {
           role: extra?['role'] as String? ?? 'athlete',
         );
       }),
+      GoRoute(path: '/forgot-password', builder: (context, state) => const ForgotPasswordScreen()),
+      GoRoute(path: '/language', builder: (context, state) => const LanguageScreen()),
+      GoRoute(path: '/permissions', builder: (context, state) => const PermissionsPrimerScreen()),
+      GoRoute(path: '/guardian-consent', builder: (context, state) => const GuardianConsentScreen()),
+      GoRoute(path: '/verification', builder: (context, state) => const VerificationScreen()),
+      GoRoute(path: '/manage-sports', builder: (context, state) => const ManageSportsScreen()),
+      GoRoute(path: '/achievements', builder: (context, state) => const AchievementsScreen()),
+      GoRoute(path: '/profile-completion', builder: (context, state) => const ProfileCompletionScreen()),
+      GoRoute(path: '/view-as-public', builder: (context, state) => const ViewAsPublicScreen()),
+      GoRoute(path: '/guardian-controls', builder: (context, state) => const GuardianControlsScreen()),
+      GoRoute(path: '/leaderboard-info', builder: (context, state) => const LeaderboardInfoScreen()),
+      GoRoute(path: '/groups', builder: (context, state) => const GroupsScreen()),
+      GoRoute(path: '/group-detail', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return GroupDetailScreen(
+          name: extra?['name'] as String? ?? 'Group',
+          groupId: extra?['id'] as String?,
+        );
+      }),
+      GoRoute(path: '/reviews', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return ReviewsListScreen(
+          title: extra?['title'] as String? ?? 'Reviews',
+          average: (extra?['average'] as num?)?.toDouble() ?? 4.6,
+        );
+      }),
+      GoRoute(path: '/write-review', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return WriteReviewScreen(title: extra?['title'] as String? ?? '');
+      }),
+      GoRoute(path: '/map-view', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return MapViewScreen(title: extra?['title'] as String? ?? 'Nearby');
+      }),
+      GoRoute(path: '/team', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return TeamScreen(
+          name: extra?['name'] as String? ?? 'Team',
+          sport: extra?['sport'] as String? ?? 'Football',
+          coach: extra?['coach'] as String? ?? 'Coach',
+          openSpots: extra?['openSpots'] as int? ?? 0,
+        );
+      }),
+      GoRoute(path: '/media-viewer', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        final media = (extra?['media'] as List?)?.cast<String>() ?? const <String>[];
+        return MediaViewerScreen(
+          media: media,
+          initialIndex: extra?['index'] as int? ?? 0,
+          title: extra?['title'] as String?,
+        );
+      }),
       GoRoute(path: '/onboarding-1', builder: (context, state) => const OnboardingSportAgeScreen()),
       GoRoute(path: '/onboarding-2', builder: (context, state) => const OnboardingSkillLocationScreen()),
-      GoRoute(path: '/academies', builder: (context, state) => const AcademyDirectoryScreen()),
-      GoRoute(path: '/academy-detail/:id', builder: (context, state) => AcademyDetailScreen(id: state.pathParameters['id']!)),
-      GoRoute(path: '/coaches', builder: (context, state) => const CoachDirectoryScreen()),
-      GoRoute(path: '/coach-detail/:id', builder: (context, state) => CoachDetailScreen(id: state.pathParameters['id']!)),
-      GoRoute(path: '/trials', builder: (context, state) => const TrialDirectoryScreen()),
-      GoRoute(path: '/trial-detail/:id', builder: (context, state) => TrialDetailScreen(id: state.pathParameters['id']!)),
-      GoRoute(path: '/tournaments', builder: (context, state) => const TournamentDirectoryScreen()),
-      GoRoute(path: '/tournament-calendar', builder: (context, state) => const TournamentCalendarScreen()),
-      GoRoute(path: '/tournament-detail/:id', builder: (context, state) => TournamentDetailScreen(id: state.pathParameters['id']!)),
       GoRoute(path: '/enquire/:subjectType/:subjectId/:title', builder: (context, state) => EnquireScreen(
         subjectType: state.pathParameters['subjectType']!,
         subjectId: int.parse(state.pathParameters['subjectId']!),
@@ -311,16 +383,55 @@ final routerProvider = Provider<GoRouter>((ref) {
           venue: extra?['venue'] as String?,
         );
       }),
-      GoRoute(path: '/coach-dashboard', builder: (context, state) => const CoachDashboardScreen()),
-      GoRoute(path: '/coach-enquiry-inbox', builder: (context, state) => const CoachEnquiryInboxScreen()),
+      GoRoute(path: '/coach-go-live', builder: (context, state) => const CoachGoLiveScreen()),
+      GoRoute(path: '/academy-invite-athlete', builder: (context, state) => const InviteAthleteScreen()),
+      GoRoute(path: '/academy-staff', builder: (context, state) => const AcademyStaffScreen()),
+      GoRoute(path: '/academy-collaborations', builder: (context, state) => const AcademyCollaborationsScreen()),
+      GoRoute(path: '/schedule-editor', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return ScheduleEditorScreen(
+            eventTitle: extra?['title'] as String? ?? 'Event');
+      }),
+      GoRoute(path: '/post-announcement', builder: (context, state) => const PostAnnouncementScreen()),
+      GoRoute(path: '/promote-event', builder: (context, state) => const PromoteEventScreen()),
+      GoRoute(path: '/organizer-team', builder: (context, state) => const OrganizerTeamScreen()),
+      GoRoute(path: '/event-gallery', builder: (context, state) => const MediaGalleryScreen()),
+      GoRoute(path: '/my-collaborations', builder: (context, state) => const AcademyCollaborationsScreen()),
+      GoRoute(path: '/scout-compare', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return CompareTalentsScreen(
+            athletes: (extra?['athletes'] as List?)?.cast<CompareAthlete>() ??
+                const []);
+      }),
+      GoRoute(path: '/talent-report', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return TalentReportScreen(
+          athleteName: extra?['name'] as String? ?? 'Athlete',
+          meta: extra?['meta'] as String? ?? '',
+        );
+      }),
+      GoRoute(path: '/admin/content', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return AdminContentListScreen(
+            category: extra?['category'] as String? ?? 'academies');
+      }),
+      GoRoute(path: '/admin/content/picker', builder: (context, state) => const AdminContentPickerScreen()),
+      GoRoute(path: '/admin/records/edit', builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return AdminRecordEditScreen(
+          recordType: extra?['type'] as String? ?? 'Record',
+          initial: extra?['initial'] as Map<String, dynamic>?,
+        );
+      }),
+      GoRoute(path: '/admin/master-data', builder: (context, state) => const AdminMasterDataScreen()),
+      GoRoute(path: '/admin/expiry-rules', builder: (context, state) => const AdminExpiryRulesScreen()),
+      GoRoute(path: '/admin/leaderboard-config', builder: (context, state) => const AdminLeaderboardConfigScreen()),
+      GoRoute(path: '/coach-profile-edit', builder: (context, state) => const CoachProfileEditScreen()),
       GoRoute(path: '/coach-enquiry-detail', builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
         return CoachEnquiryDetailScreen(id: extra?['id'] as String? ?? '');
       }),
-      GoRoute(path: '/coach-profile-edit', builder: (context, state) => const CoachProfileEditScreen()),
-      GoRoute(path: '/academy-dashboard', builder: (context, state) => const AcademyDashboardScreen()),
       GoRoute(path: '/organizer-dashboard', builder: (context, state) => const OrganizerDashboardScreen()),
-      GoRoute(path: '/enquiry-inbox', builder: (context, state) => const EnquiryInboxScreen()),
       GoRoute(path: '/enquiry-detail', builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
         return EnquiryDetailScreen(id: extra?['id'] as String? ?? '');
@@ -335,19 +446,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       // sponsorships/scholarships now live under unified /opportunities.
       GoRoute(path: '/sponsor-onboarding', redirect: (_, __) => '/role-selection'),
       GoRoute(path: '/scout-onboarding', builder: (context, state) => const TalentScoutOnboardingScreen()),
-      ShellRoute(
-        builder: (context, state, child) => ScoutShell(child: child),
-        routes: [
-          GoRoute(path: '/scout-dashboard', builder: (context, state) => const TalentScoutDashboardScreen()),
-          GoRoute(path: '/scout-discovery', builder: (context, state) => const TalentScoutAthleteDiscoveryScreen()),
-          GoRoute(path: '/scout-shortlist', builder: (context, state) => const TalentScoutShortlistScreen()),
-          GoRoute(path: '/scout-connections', builder: (context, state) => const TalentScoutConnectionsScreen()),
-          GoRoute(path: '/scout-profile', builder: (context, state) => const TalentScoutProfileScreen()),
-        ],
-      ),
-      GoRoute(path: '/scout-athlete/:id', builder: (context, state) => TalentScoutAthleteProfileViewScreen(athleteId: state.pathParameters['id']!)),
+      // v3.2: scout hub screens render inside the unified shell (bottom nav
+      // everywhere); connect/management flows stay outside with a back button.
       GoRoute(path: '/scout-connect/:athleteId', builder: (context, state) => TalentScoutConnectionScreen(athleteId: state.pathParameters['athleteId']!)),
-      GoRoute(path: '/leaderboard', builder: (context, state) => const LeaderboardScreen()),
       GoRoute(path: '/observations', builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
         return ObservationsScreen(athleteProfileId: extra?['athleteProfileId'] as String?);
@@ -412,14 +513,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/my-trials', builder: (context, state) => const MyTrialsManagementScreen()),
       GoRoute(path: '/my-tournaments', builder: (context, state) => const MyTournamentsManagementScreen()),
       GoRoute(path: '/my-sponsorships', redirect: (_, __) => '/my-opportunities'),
-      GoRoute(path: '/my-registrations', builder: (context, state) => const MyRegistrationsScreen()),
-      GoRoute(path: '/coach-enrollments', builder: (context, state) => const CoachEnrollmentScreen()),
-      GoRoute(path: '/my-coaching-enrollments', builder: (context, state) => const MyCoachingEnrollmentsScreen()),
-      GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
-      GoRoute(
-          path: '/notification-preferences',
-          builder: (context, state) => const NotificationPreferencesScreen()),
-      GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
       GoRoute(path: '/social-links', builder: (context, state) => const SocialLinksScreen()),
       GoRoute(path: '/help-support', builder: (context, state) => const HelpSupportScreen()),
       GoRoute(path: '/legal', builder: (context, state) {
@@ -431,25 +524,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/sponsorships', redirect: (_, __) => '/opportunities'),
       GoRoute(path: '/sponsorship-detail/:id', redirect: (_, __) => '/opportunities'),
       GoRoute(path: '/apply-sponsor/:id', redirect: (_, __) => '/opportunities'),
-      GoRoute(path: '/opportunities', builder: (context, state) => const OpportunityListScreen()),
-      GoRoute(path: '/opportunity-detail/:id', builder: (context, state) => OpportunityDetailScreen(opportunityId: state.pathParameters['id']!)),
-      GoRoute(path: '/my-opportunities', builder: (context, state) => const MyOpportunitiesScreen()),
       GoRoute(
           path: '/opportunity-applications/:id',
           builder: (context, state) =>
               OpportunityApplicationsScreen(opportunityId: state.pathParameters['id']!)),
       GoRoute(path: '/post-opportunity', builder: (context, state) => const PostOpportunityScreen()),
-      GoRoute(path: '/programs', builder: (context, state) => const ProgramListScreen()),
-      GoRoute(path: '/program-detail/:id', builder: (context, state) => ProgramDetailScreen(programId: state.pathParameters['id']!)),
-      GoRoute(path: '/my-programs', builder: (context, state) => const MyProgramsScreen()),
       GoRoute(path: '/post-program', builder: (context, state) => const PostProgramScreen()),
-      GoRoute(path: '/facilities', builder: (context, state) => const FacilityListScreen()),
       GoRoute(path: '/post-facility', builder: (context, state) => const PostFacilityScreen()),
-      GoRoute(path: '/sports-venues', builder: (context, state) => const SportsVenueListScreen()),
-      GoRoute(path: '/sports-venue-detail/:id', builder: (context, state) => SportsVenueDetailScreen(id: state.pathParameters['id']!)),
       GoRoute(path: '/create-post', builder: (context, state) => const CreatePostScreen()),
-      GoRoute(path: '/community', builder: (context, state) => const CommunityFeedScreen()),
-      GoRoute(path: '/chat-list', builder: (context, state) => const ChatListScreen()),
       GoRoute(path: '/chat-screen', builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
         return ChatScreen(
@@ -467,14 +549,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/sponsor-directory-coach', redirect: (_, __) => '/opportunities'),
       GoRoute(path: '/coach-profile-detail/:id', builder: (context, state) => CoachProfileDetailScreen(coachId: state.pathParameters['id']!)),
       GoRoute(path: '/search-filter', builder: (context, state) => const SearchFilterScreen()),
-      GoRoute(path: '/my-connections', builder: (context, state) => const MyConnectionsScreen()),
-      GoRoute(path: '/connection-requests', builder: (context, state) => const ConnectionRequestsScreen()),
-      GoRoute(path: '/scout-requests', builder: (context, state) => const ScoutRequestsScreen()),
-      GoRoute(path: '/scout-directory', builder: (context, state) => const ScoutDirectoryScreen()),
-      GoRoute(path: '/athlete-directory', builder: (context, state) => const AthleteDirectoryScreen()),
       GoRoute(path: '/discover', builder: (context, state) => const DiscoverScreen()),
       GoRoute(path: '/opportunities-legacy', redirect: (_, __) => '/opportunities'),
-      GoRoute(path: '/my-applications', builder: (context, state) => const MyApplicationsScreen()),
       GoRoute(path: '/application-status', builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
         return ApplicationStatusScreen(
@@ -496,13 +572,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/sponsors', redirect: (_, __) => '/opportunities'),
       GoRoute(path: '/admin/analytics', builder: (context, state) => const AdminAnalyticsScreen()),
       GoRoute(path: '/admin/settings', builder: (context, state) => const AdminSettingsScreen()),
-      GoRoute(path: '/view-profile', builder: (context, state) {
-        final extra = state.extra as Map<String, dynamic>?;
-        return ViewProfileScreen(
-          type: extra?['type'] as String? ?? 'athlete',
-          id: extra?['id'] as String? ?? '',
-        );
-      }),
       GoRoute(path: '/post-detail/:id', builder: (context, state) => PostDetailScreen(postId: state.pathParameters['id']!)),
       GoRoute(path: '/admin/login', builder: (context, state) => const AdminLoginScreen()),
       GoRoute(path: '/admin/dashboard', builder: (context, state) => const AdminDashboardScreen()),
@@ -529,14 +598,79 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state, child) => MainShell(child: child),
         routes: [
           GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+          // v3.2: role dashboards render INSIDE the unified shell, so
+          // coach / academy / organizer / scout get the same bottom nav.
+          GoRoute(path: '/coach-dashboard', builder: (context, state) => const CoachDashboardScreen()),
+          GoRoute(path: '/academy-dashboard', builder: (context, state) => const AcademyDashboardScreen()),
+          GoRoute(path: '/organizer-dashboard', builder: (context, state) => const OrganizerDashboardScreen()),
+          GoRoute(path: '/scout-dashboard', builder: (context, state) => const TalentScoutDashboardScreen()),
           GoRoute(path: '/universal-search', builder: (context, state) => const UniversalSearchScreen()),
           GoRoute(path: '/saved', builder: (context, state) => const SavedScreen()),
           GoRoute(path: '/activity-hub', builder: (context, state) => const ActivityHubScreen()),
           GoRoute(path: '/network', builder: (context, state) => const NetworkScreen()),
           GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
+          // Hub pages & detail screens also render inside the unified shell so
+          // the bottom nav stays visible on every main page (D.x-style chrome);
+          // editors/flow screens stay outside and get a back button instead.
+          GoRoute(path: '/academies', builder: (context, state) => const AcademyDirectoryScreen()),
+          GoRoute(path: '/academy-detail/:id', builder: (context, state) => AcademyDetailScreen(id: state.pathParameters['id']!)),
+          GoRoute(path: '/coaches', builder: (context, state) => const CoachDirectoryScreen()),
+          GoRoute(path: '/coach-detail/:id', builder: (context, state) => CoachDetailScreen(id: state.pathParameters['id']!)),
+          GoRoute(path: '/trials', builder: (context, state) => const TrialDirectoryScreen()),
+          GoRoute(path: '/trial-detail/:id', builder: (context, state) => TrialDetailScreen(id: state.pathParameters['id']!)),
+          GoRoute(path: '/tournaments', builder: (context, state) => const TournamentDirectoryScreen()),
+          GoRoute(path: '/tournament-calendar', builder: (context, state) => const TournamentCalendarScreen()),
+          GoRoute(path: '/tournament-detail/:id', builder: (context, state) => TournamentDetailScreen(id: state.pathParameters['id']!)),
+          GoRoute(path: '/leaderboard', builder: (context, state) => const LeaderboardScreen()),
+          GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
+          GoRoute(
+              path: '/notification-preferences',
+              builder: (context, state) => const NotificationPreferencesScreen()),
+          GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
+          GoRoute(path: '/opportunities', builder: (context, state) => const OpportunityListScreen()),
+          GoRoute(path: '/opportunity-detail/:id', builder: (context, state) => OpportunityDetailScreen(opportunityId: state.pathParameters['id']!)),
+          GoRoute(path: '/my-opportunities', builder: (context, state) => const MyOpportunitiesScreen()),
+          GoRoute(
+              path: '/opportunity-applications/:id',
+              builder: (context, state) =>
+                  OpportunityApplicationsScreen(opportunityId: state.pathParameters['id']!)),
+          GoRoute(path: '/my-applications', builder: (context, state) => const MyApplicationsScreen()),
+          GoRoute(path: '/my-registrations', builder: (context, state) => const MyRegistrationsScreen()),
+          GoRoute(path: '/coach-enrollments', builder: (context, state) => const CoachEnrollmentScreen()),
+          GoRoute(path: '/my-coaching-enrollments', builder: (context, state) => const MyCoachingEnrollmentsScreen()),
+          GoRoute(path: '/programs', builder: (context, state) => const ProgramListScreen()),
+          GoRoute(path: '/program-detail/:id', builder: (context, state) => ProgramDetailScreen(programId: state.pathParameters['id']!)),
+          GoRoute(path: '/my-programs', builder: (context, state) => const MyProgramsScreen()),
+          GoRoute(path: '/facilities', builder: (context, state) => const FacilityListScreen()),
+          GoRoute(path: '/sports-venues', builder: (context, state) => const SportsVenueListScreen()),
+          GoRoute(path: '/sports-venue-detail/:id', builder: (context, state) => SportsVenueDetailScreen(id: state.pathParameters['id']!)),
+          GoRoute(path: '/chat-list', builder: (context, state) => const ChatListScreen()),
+          GoRoute(path: '/my-connections', builder: (context, state) => const MyConnectionsScreen()),
+          GoRoute(path: '/connection-requests', builder: (context, state) => const ConnectionRequestsScreen()),
+          GoRoute(path: '/scout-requests', builder: (context, state) => const ScoutRequestsScreen()),
+          GoRoute(path: '/scout-directory', builder: (context, state) => const ScoutDirectoryScreen()),
+          GoRoute(path: '/athlete-directory', builder: (context, state) => const AthleteDirectoryScreen()),
+          GoRoute(path: '/scout-discovery', builder: (context, state) => const TalentScoutAthleteDiscoveryScreen()),
+          GoRoute(path: '/scout-shortlist', builder: (context, state) => const TalentScoutShortlistScreen()),
+          GoRoute(path: '/scout-connections', builder: (context, state) => const TalentScoutConnectionsScreen()),
+          GoRoute(path: '/scout-profile', builder: (context, state) => const TalentScoutProfileScreen()),
+          GoRoute(path: '/scout-athlete/:id', builder: (context, state) => TalentScoutAthleteProfileViewScreen(athleteId: state.pathParameters['id']!)),
+          GoRoute(path: '/coach-enquiry-inbox', builder: (context, state) => const CoachEnquiryInboxScreen()),
+          GoRoute(path: '/enquiry-inbox', builder: (context, state) => const EnquiryInboxScreen()),
+          GoRoute(path: '/view-profile', builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>?;
+            return ViewProfileScreen(
+              type: extra?['type'] as String? ?? 'athlete',
+              id: extra?['id'] as String? ?? '',
+            );
+          }),
           // v3 wireframe IA aliases (Explore / Community / More)
-          GoRoute(path: '/explore', redirect: (_, __) => '/universal-search'),
-          GoRoute(path: '/more', redirect: (_, __) => '/profile'),
+          GoRoute(path: '/explore', builder: (_, _) => const ExploreScreen()),
+          GoRoute(path: '/community', builder: (context, state) => const CommunityScreen()),
+          // S.15 More / account hub — shared shell screen, role-driven rows.
+          GoRoute(path: '/more', builder: (context, state) => const MoreScreen()),
+          // S.8 Create — full tab (the FAB itself), role-driven action grid.
+          GoRoute(path: '/create', builder: (context, state) => const CreateScreen()),
         ],
       ),
     ],
@@ -571,11 +705,11 @@ class MainShell extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                _buildNavItem(context, role, 0, LucideIcons.house, 'Home', selected == 0),
-                _buildNavItem(context, role, 1, LucideIcons.compass, 'Explore', selected == 1),
-                _buildFab(context, role, selected == 2),
-                _buildNavItem(context, role, 3, LucideIcons.users, 'Community', selected == 3),
-                _buildNavItem(context, role, 4, LucideIcons.user, 'More', selected == 4),
+                _buildNavItem(context, ref, role, 0, LucideIcons.house, 'Home', selected == 0),
+                _buildNavItem(context, ref, role, 1, LucideIcons.compass, 'Explore', selected == 1),
+                _buildFab(context, () => context.go('/create')),
+                _buildNavItem(context, ref, role, 3, LucideIcons.users, 'Community', selected == 3),
+                _buildNavItem(context, ref, role, 4, LucideIcons.grid2x2, 'More', selected == 4),
               ],
             ),
           ),
@@ -584,52 +718,68 @@ class MainShell extends ConsumerWidget {
     );
   }
 
-  Widget _buildFab(BuildContext context, String? role, bool selected) {
+  Widget _buildFab(BuildContext context, VoidCallback onTap) {
     return GestureDetector(
-      onTap: () => showCreateSheet(context),
+      onTap: onTap,
       child: Container(
-        width: 58,
-        height: 58,
+        width: 47,
+        height: 47,
         margin: const EdgeInsets.only(top: 0),
-        transform: Matrix4.translationValues(0, -18, 0),
+        transform: Matrix4.translationValues(0, -28, 0),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFFFFD54A), Color(0xFFFFC107), Color(0xFFF0AD00)],
+            colors: [Color(0xFFFFD54A), Color(0xFFFFC107), Color(0xFFF5B400)],
           ),
-          border: Border.all(color: Colors.white, width: 2),
+          border: Border.all(color: Colors.white, width: 3),
           boxShadow: const [
-            BoxShadow(color: Color(0x8CFFC107), blurRadius: 22, offset: Offset(0, 10)),
-            BoxShadow(color: Color(0x2E111111), blurRadius: 8, offset: Offset(0, 3)),
+            BoxShadow(color: Color(0x8CFFC107), blurRadius: 18, offset: Offset(0, 7)),
           ],
         ),
         alignment: Alignment.center,
-        child: Icon(selected ? LucideIcons.bookmark : LucideIcons.plus,
-            color: AppColors.ink, size: 26),
+        child: const Icon(LucideIcons.plus, color: AppColors.ink, size: 24),
       ),
     );
   }
 
+  // v3 .nav-item — icon 22 above an 8px label; the active tab gets a yellow
+  // underline bar (18x3, .nav-active .nav-icon::after) and dark-gold colour.
   Widget _buildNavItem(
-      BuildContext context, String? role, int index, IconData icon, String label, bool isSelected) {
+      BuildContext context, WidgetRef ref, String? role, int index, IconData icon, String label, bool isSelected) {
     final color = isSelected ? AppColors.primaryDarker : AppColors.textTertiary;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => _onItemTapped(index, context, role),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 6),
+      onTap: () => _onItemTapped(index, context, ref, role),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 9),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon,
-                color: isSelected ? AppColors.yellowDeep : AppColors.textTertiary, size: 22),
+            SizedBox(
+              height: 28,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, color: color, size: 22),
+                  const SizedBox(height: 3),
+                  Container(
+                    width: 18,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: isSelected ? AppColors.yellow : Colors.transparent,
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 4),
             Text(
               label,
               style: GoogleFonts.inter(
-                fontSize: 10.5,
+                fontSize: 8,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                 color: color,
               ),
@@ -642,26 +792,33 @@ class MainShell extends ConsumerWidget {
 
   int _calculateSelectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
-    if (location.startsWith('/home')) return 0;
+    // v3.2 dashboards all live inside the shell → always the Home tab.
+    if (location.startsWith('/home') ||
+        location.startsWith('/coach-dashboard') ||
+        location.startsWith('/academy-dashboard') ||
+        location.startsWith('/organizer-dashboard') ||
+        location.startsWith('/scout-dashboard')) {
+      return 0;
+    }
     if (location.startsWith('/search') || location.startsWith('/universal-search') || location.startsWith('/explore')) return 1;
-    if (location.startsWith('/saved')) return 2;
+    if (location.startsWith('/create')) return 2;
     if (location.startsWith('/network') || location.startsWith('/community') || location.startsWith('/activity-hub')) return 3;
     if (location.startsWith('/profile') || location.startsWith('/more')) return 4;
     return 0;
   }
 
-  void _onItemTapped(int index, BuildContext context, String? role) {
+  void _onItemTapped(int index, BuildContext context, WidgetRef ref, String? role) {
     switch (index) {
-      case 0: context.go('/home'); break;
+      case 0:
+        // Home → the active role's dashboard (`/home`, `/coach-dashboard`, …).
+        context.go(ref.read(roleConfigProvider).homeRoute);
+        break;
       case 1: context.go('/explore'); break;
-      case 2: context.go('/saved'); break;
+      case 2: context.go('/create'); break;
       case 3: context.go('/community'); break;
       case 4:
-        if (role == 'athlete') {
-          context.go('/more');
-        } else {
-          context.go(_dashboardRouteFor(role));
-        }
+        // S.15 More / account hub — same destination for every role.
+        context.go('/more');
         break;
     }
   }

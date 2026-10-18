@@ -103,7 +103,6 @@ class _TalentScoutAthleteDiscoveryScreenState
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
         elevation: 0,
-        automaticallyImplyLeading: false,
         title: const Text(
           'Discover Athletes',
           style: TextStyle(
