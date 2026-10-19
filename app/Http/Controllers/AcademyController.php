@@ -42,6 +42,11 @@ class AcademyController extends Controller
             'website' => 'nullable|url',
             'logo_media_id' => 'nullable|exists:media_items,id',
             'cover_media_id' => 'nullable|exists:media_items,id',
+            // Spec §3 #4 — Academy Type
+            'academy_type' => 'sometimes|nullable|in:private,club,school,college,government',
+            // Spec §3 #7 — Sports/Training Offered
+            'sports_offered' => 'nullable|array|max:30',
+            'sports_offered.*' => 'nullable|string|max:100',
             'sports' => 'nullable|array',
             'sports.*' => 'exists:sports,id',
             'listing_status' => 'in:draft,published,closed',

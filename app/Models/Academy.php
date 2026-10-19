@@ -18,6 +18,7 @@ class Academy extends Model
         'contact_number', 'google_maps_url', 'facilities', 'fee_range',
         'timings', 'age_groups', 'year_established', 'achievements', 'email', 'website',
         'head_coach_id', 'logo_media_id', 'cover_media_id', 'verification_badge', 'listing_status',
+        'academy_type', 'sports_offered',
     ];
 
     protected $casts = [
@@ -26,6 +27,7 @@ class Academy extends Model
         'achievements' => 'array',
         'year_established' => 'integer',
         'verification_badge' => 'boolean',
+        'sports_offered' => 'array',
     ];
 
     public function owner(): BelongsTo
