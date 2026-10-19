@@ -45,6 +45,22 @@ class _AcademyProfilePostingScreenState extends ConsumerState<AcademyProfilePost
   final Set<int> _sportIds = {};
   final Set<String> _facilities = {};
   final Set<String> _ageGroups = {};
+  String? _academyType;
+  final Set<String> _sportsOffered = {};
+
+  static const _academyTypes = [
+    ('private', 'Private'),
+    ('club', 'Club'),
+    ('school', 'School'),
+    ('college', 'College'),
+    ('government', 'Government'),
+  ];
+
+  static const _sportsOfferedOptions = [
+    'Batting', 'Bowling', 'Fielding', 'Wicketkeeping',
+    'Fitness', 'Strength & Conditioning', 'Speed & Agility',
+    'Technique', 'Match Practice', 'Video Analysis', 'Mental Training',
+  ];
   bool _saving = false;
   bool _prefilled = false;
   int? _logoMediaId;
@@ -87,6 +103,12 @@ class _AcademyProfilePostingScreenState extends ConsumerState<AcademyProfilePost
     _ageGroups.addAll(a.ageGroups);
     _logoUrl = a.logoUrl;
     _coverUrl = a.coverImageUrl;
+    final type = (a.academyType ?? '').toString();
+    if (type.isNotEmpty) _academyType = type;
+    _sportsOffered.clear();
+    for (final s in (a.sportsOffered as List? ?? [])) {
+      _sportsOffered.add(s.toString());
+    }
   }
 
   Future<void> _save() async {
@@ -114,6 +136,8 @@ class _AcademyProfilePostingScreenState extends ConsumerState<AcademyProfilePost
         if (_timings.text.trim().isNotEmpty) 'timings': _timings.text.trim(),
         if (_logoMediaId != null) 'logo_media_id': _logoMediaId,
         if (_coverMediaId != null) 'cover_media_id': _coverMediaId,
+        if (_academyType != null) 'academy_type': _academyType,
+        if (_sportsOffered.isNotEmpty) 'sports_offered': _sportsOffered.toList(),
       });
       ref.invalidate(myAcademyProvider);
       if (mounted) {
@@ -282,6 +306,49 @@ class _AcademyProfilePostingScreenState extends ConsumerState<AcademyProfilePost
                       },
                     ),
                     const SizedBox(height: 32),
+
+                    // ── Spec §3 mandatory fields ──────────────────────────────
+                    _label('Academy Type'),
+                    DropdownButtonFormField<String>(
+                      initialValue: _academyType,
+                      isExpanded: true,
+                      decoration: const InputDecoration(hintText: 'Select type'),
+                      items: _academyTypes
+                          .map((t) => DropdownMenuItem(value: t.$1, child: Text(t.$2)))
+                          .toList(),
+                      onChanged: (v) => setState(() => _academyType = v),
+                    ),
+                    const SizedBox(height: 20),
+
+                    _label('Sports / Training Offered'),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _sportsOfferedOptions.map((s) {
+                        final isOn = _sportsOffered.contains(s);
+                        return FilterChip(
+                          label: Text(s),
+                          selected: isOn,
+                          showCheckmark: false,
+                          backgroundColor: Colors.white,
+                          selectedColor: AppColors.yellowTint,
+                          side: BorderSide(color: isOn ? AppColors.yellowDeep : AppColors.border),
+                          labelStyle: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: isOn ? AppColors.primaryDarker : AppColors.textSecondary,
+                          ),
+                          onSelected: (v) => setState(() {
+                            if (v) {
+                              _sportsOffered.add(s);
+                            } else {
+                              _sportsOffered.remove(s);
+                            }
+                          }),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 32),
+
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton(

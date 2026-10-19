@@ -34,6 +34,23 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
   String? _logoUrl;
   int? _coverMediaId;
   String? _coverUrl;
+  String? _academyType;
+  final Set<String> _sportsOffered = {};
+
+  static const _academyTypes = [
+    ('private', 'Private'),
+    ('club', 'Club'),
+    ('school', 'School'),
+    ('college', 'College'),
+    ('government', 'Government'),
+  ];
+
+  // Spec §3 #7 — Sports/Training Offered
+  static const _sportsOfferedOptions = [
+    'Batting', 'Bowling', 'Fielding', 'Wicketkeeping',
+    'Fitness', 'Strength & Conditioning', 'Speed & Agility',
+    'Technique', 'Match Practice', 'Video Analysis', 'Mental Training',
+  ];
 
   @override
   void dispose() {
@@ -63,6 +80,9 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
         if (_fee.text.trim().isNotEmpty) 'fee_range': _fee.text.trim(),
         if (_logoMediaId != null) 'logo_media_id': _logoMediaId,
         if (_coverMediaId != null) 'cover_image_media_id': _coverMediaId,
+        // Spec §3 mandatory fields
+        if (_academyType != null) 'academy_type': _academyType,
+        if (_sportsOffered.isNotEmpty) 'sports_offered': _sportsOffered.toList(),
       });
       ref.read(authProvider.notifier).markOnboardingComplete();
       await ref.read(authProvider.notifier).refreshUser();
@@ -158,6 +178,48 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
                   }).toList(),
                 ),
                 const SizedBox(height: 16),
+                // ── Spec §3 mandatory fields ──────────────────────────────────────
+                _label('Academy Type'),
+                DropdownButtonFormField<String>(
+                  initialValue: _academyType,
+                  isExpanded: true,
+                  decoration: _dec('Select type'),
+                  items: _academyTypes
+                      .map((t) => DropdownMenuItem(value: t.$1, child: Text(t.$2)))
+                      .toList(),
+                  onChanged: (v) => setState(() => _academyType = v),
+                ),
+                const SizedBox(height: 16),
+
+                _label('Sports / Training Offered'),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _sportsOfferedOptions.map((s) {
+                    final isOn = _sportsOffered.contains(s);
+                    return FilterChip(
+                      label: Text(s),
+                      selected: isOn,
+                      showCheckmark: false,
+                      backgroundColor: Colors.white,
+                      selectedColor: AppColors.yellowTint,
+                      side: BorderSide(color: isOn ? AppColors.yellowDeep : AppColors.border),
+                      labelStyle: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: isOn ? AppColors.primaryDarker : AppColors.textSecondary,
+                      ),
+                      onSelected: (v) => setState(() {
+                        if (v) {
+                          _sportsOffered.add(s);
+                        } else {
+                          _sportsOffered.remove(s);
+                        }
+                      }),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 16),
+
                 _label('Fee Range (optional)'),
                 TextFormField(controller: _fee, decoration: _dec('e.g. ₹2,000 – ₹5,000/mo')),
                 const SizedBox(height: 28),

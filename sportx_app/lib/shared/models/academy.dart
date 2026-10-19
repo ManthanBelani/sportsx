@@ -29,6 +29,8 @@ class Academy {
   final String? timings;
   final List<String> facilities;
   final List<String> ageGroups;
+  final String? academyType;
+  final List<String> sportsOffered;
   final List<Sport> sports;
   final String status;
   final City? city;
@@ -56,6 +58,8 @@ class Academy {
     this.timings,
     this.facilities = const [],
     this.ageGroups = const [],
+    this.academyType,
+    this.sportsOffered = const [],
     this.sports = const [],
     required this.status,
     this.city,
@@ -87,6 +91,8 @@ class Academy {
       timings: json['timings'] as String?,
       facilities: _toStringList(json['facilities']),
       ageGroups: _toStringList(json['age_groups']),
+      academyType: json['academy_type'] as String?,
+      sportsOffered: _toStringList(json['sports_offered']),
       sports: (json['sports'] as List? ?? [])
           .map((s) => s is Map && s['sport'] is Map ? Sport.fromJson(s['sport'] as Map<String, dynamic>) : null)
           .whereType<Sport>()

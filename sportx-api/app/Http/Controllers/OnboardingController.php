@@ -101,6 +101,11 @@ class OnboardingController extends Controller
             'website' => 'nullable|url',
             'logo_media_id' => 'nullable|exists:media_items,id',
             'cover_media_id' => 'nullable|exists:media_items,id',
+            // Spec §3 #4 — Academy Type (Private, Club, School, College, Govt.)
+            'academy_type' => 'sometimes|nullable|in:private,club,school,college,government',
+            // Spec §3 #7 — Sports/Training Offered (array of strings)
+            'sports_offered' => 'nullable|array|max:30',
+            'sports_offered.*' => 'nullable|string|max:100',
             'sports' => 'required|array|min:1',
             'sports.*' => 'exists:sports,id',
         ]);
