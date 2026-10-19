@@ -106,7 +106,7 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
       if (mounted) context.go('/coach-dashboard');
     } catch (e) {
       if (mounted) {
-        SnackBarUtils.showError(context, e is DioException ? ApiException.fromDio(e as DioException) : e);
+        SnackBarUtils.showError(context, e is DioException ? ApiException.fromDio(e) : e);
       }
     } finally {
       if (mounted) setState(() => _saving = false);

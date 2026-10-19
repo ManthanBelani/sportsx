@@ -103,7 +103,8 @@ final conversationDetailProvider =
   final resp = await ref.watch(dioProvider).get('/conversations/$id');
   final body = resp.data['data'] as Map<String, dynamic>;
   final messages = (body['messages'] as List? ?? []).cast<Map<String, dynamic>>();
-  return messages.map(ChatMessage.fromJson).toList();
+  // API returns newest first; reverse for chronological display (oldest first)
+  return messages.map(ChatMessage.fromJson).toList().reversed.toList();
 });
 
 Future<bool> sendMessage(WidgetRef ref, String conversationId, String body) async {

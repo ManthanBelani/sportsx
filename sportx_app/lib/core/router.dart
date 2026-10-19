@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/features/social/presentation/widgets/create_bottom_sheet.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/services/push_notification_service.dart';
 import 'package:sportx_app/features/auth/presentation/screens/splash_screen.dart';
@@ -21,6 +22,7 @@ import 'package:sportx_app/features/home/presentation/screens/home_screen.dart';
 import 'package:sportx_app/features/saved/presentation/screens/saved_screen.dart';
 import 'package:sportx_app/features/athlete/presentation/screens/profile_screen.dart';
 import 'package:sportx_app/features/onboarding/presentation/screens/onboarding_sport_age_screen.dart';
+import 'package:sportx_app/features/onboarding/presentation/screens/multi_step_onboarding_screen.dart';
 import 'package:sportx_app/features/onboarding/presentation/screens/onboarding_skill_location_screen.dart';
 import 'package:sportx_app/features/home/presentation/screens/discover_screen.dart';
 import 'package:sportx_app/features/home/presentation/screens/explore_screen.dart';
@@ -97,6 +99,7 @@ import 'package:sportx_app/features/athlete/presentation/screens/achievements_sc
 import 'package:sportx_app/features/athlete/presentation/screens/profile_completion_screen.dart';
 import 'package:sportx_app/features/athlete/presentation/screens/view_as_public_screen.dart';
 import 'package:sportx_app/features/athlete/presentation/screens/guardian_controls_screen.dart';
+import 'package:sportx_app/features/athlete/presentation/screens/athlete_leaderboard_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/add_credential_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/edit_facilities_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/showcase_athletes_screen.dart';
@@ -319,6 +322,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/manage-sports', builder: (context, state) => const ManageSportsScreen()),
       GoRoute(path: '/achievements', builder: (context, state) => const AchievementsScreen()),
       GoRoute(path: '/profile-completion', builder: (context, state) => const ProfileCompletionScreen()),
+      GoRoute(path: '/athlete-leaderboard', builder: (context, state) => const AthleteLeaderboardScreen()),
       GoRoute(path: '/view-as-public', builder: (context, state) => const ViewAsPublicScreen()),
       GoRoute(path: '/guardian-controls', builder: (context, state) => const GuardianControlsScreen()),
       GoRoute(path: '/leaderboard-info', builder: (context, state) => const LeaderboardInfoScreen()),
@@ -365,6 +369,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       }),
       GoRoute(path: '/onboarding-1', builder: (context, state) => const OnboardingSportAgeScreen()),
       GoRoute(path: '/onboarding-2', builder: (context, state) => const OnboardingSkillLocationScreen()),
+      GoRoute(path: '/onboarding', builder: (context, state) => const MultiStepOnboardingScreen()),
       GoRoute(path: '/enquire/:subjectType/:subjectId/:title', builder: (context, state) => EnquireScreen(
         subjectType: state.pathParameters['subjectType']!,
         subjectId: int.parse(state.pathParameters['subjectId']!),
@@ -707,7 +712,7 @@ class MainShell extends ConsumerWidget {
               children: [
                 _buildNavItem(context, ref, role, 0, LucideIcons.house, 'Home', selected == 0),
                 _buildNavItem(context, ref, role, 1, LucideIcons.compass, 'Explore', selected == 1),
-                _buildFab(context, () => context.go('/create')),
+                _buildFab(context, () => CreateBottomSheet.show(context, ref)),
                 _buildNavItem(context, ref, role, 3, LucideIcons.users, 'Community', selected == 3),
                 _buildNavItem(context, ref, role, 4, LucideIcons.grid2x2, 'More', selected == 4),
               ],

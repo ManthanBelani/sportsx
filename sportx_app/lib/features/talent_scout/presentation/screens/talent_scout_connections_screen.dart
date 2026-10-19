@@ -158,12 +158,14 @@ class _TalentScoutConnectionsScreenState extends ConsumerState<TalentScoutConnec
               Row(children: [
                 Expanded(child: SecondaryButton(label: 'Decline', onPressed: () async {
                   final ok = await ref.read(scoutConnectionProvider.notifier).rejectIncoming(connId);
-                  if (mounted) SnackBarUtils.showSuccess(context, ok ? 'Request declined' : ref.read(scoutConnectionProvider).error ?? 'Failed');
+                  if (!context.mounted) return;
+                  SnackBarUtils.showSuccess(context, ok ? 'Request declined' : ref.read(scoutConnectionProvider).error ?? 'Failed');
                 })),
                 const SizedBox(width: 12),
                 Expanded(child: PrimaryButton(label: 'Accept', onPressed: () async {
                   final ok = await ref.read(scoutConnectionProvider.notifier).acceptIncoming(connId);
-                  if (mounted) SnackBarUtils.showSuccess(context, ok ? 'Connected with $name — you can now chat' : ref.read(scoutConnectionProvider).error ?? 'Failed');
+                  if (!context.mounted) return;
+                  SnackBarUtils.showSuccess(context, ok ? 'Connected with $name — you can now chat' : ref.read(scoutConnectionProvider).error ?? 'Failed');
                 })),
               ]),
             ]),

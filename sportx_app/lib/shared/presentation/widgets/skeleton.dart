@@ -21,6 +21,20 @@ class SkeletonBox extends StatelessWidget {
   }
 }
 
+/// Simple rectangular skeleton with shimmer
+class SkeletonWidget extends StatelessWidget {
+  final double height;
+  final double radius;
+  const SkeletonWidget.rectangular({super.key, required this.height, this.radius = 12});
+
+  @override
+  Widget build(BuildContext context) {
+    return ShimmerSkeleton(
+      child: SkeletonBox(width: double.infinity, height: height, borderRadius: radius),
+    );
+  }
+}
+
 class ShimmerSkeleton extends StatelessWidget {
   final Widget child;
   const ShimmerSkeleton({super.key, required this.child});

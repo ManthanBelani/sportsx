@@ -1,9 +1,74 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/core/config/api_config.dart';
 import 'package:sportx_app/core/utils/storage_service.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+
+/// Interceptor to deduplicate identical GET requests in-flight.
+/// Prevents multiple identical API calls from firing simultaneously.
+class DeduplicationInterceptor extends Interceptor {
+  final Map<String, Completer<Response>> _pending = {};
+
+  String _getKey(RequestOptions options) {
+    // Only deduplicate GET requests
+    if (options.method != 'GET') return '';
+    // Create a key from path + sorted query parameters
+    final query = options.queryParameters.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
+    final queryString = query.map((e) => '${e.key}=${e.value}').join('&');
+    return '${options.path}?$queryString';
+  }
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    final key = _getKey(options);
+    if (key.isEmpty) {
+      handler.next(options);
+      return;
+    }
+
+    if (_pending.containsKey(key)) {
+      // Return the existing in-flight request's future
+      _pending[key]!.future.then((response) {
+        handler.resolve(response);
+      }).catchError((error) {
+        handler.reject(error as DioException);
+      });
+      return;
+    }
+
+    // Create new completer for this request
+    final completer = Completer<Response>();
+    _pending[key] = completer;
+
+    // Continue with the request normally
+    handler.next(options);
+  }
+
+  @override
+  void onResponse(Response response, ResponseInterceptorHandler handler) {
+    // Check if this response is for a deduplicated request
+    final key = _getKey(response.requestOptions);
+    if (key.isNotEmpty && _pending.containsKey(key)) {
+      final completer = _pending.remove(key)!;
+      completer.complete(response);
+    }
+    handler.next(response);
+  }
+
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    // Check if this error is for a deduplicated request
+    final key = _getKey(err.requestOptions);
+    if (key.isNotEmpty && _pending.containsKey(key)) {
+      final completer = _pending.remove(key)!;
+      completer.completeError(err);
+    }
+    handler.next(err);
+  }
+}
 
 final dioProvider = Provider<Dio>((ref) {
   final dio = Dio(BaseOptions(
@@ -14,6 +79,7 @@ final dioProvider = Provider<Dio>((ref) {
     headers: {'Accept': 'application/json'},
   ));
 
+  dio.interceptors.add(DeduplicationInterceptor());
   dio.interceptors.add(AuthInterceptor(ref));
   if (kDebugMode) {
     dio.interceptors.add(LogInterceptor(

@@ -71,7 +71,7 @@ class _CoachProfilePostingScreenState extends ConsumerState<CoachProfilePostingS
         context.pop();
       }
     } catch (e) {
-      if (mounted) SnackBarUtils.showError(context, e is DioException ? ApiException.fromDio(e as DioException) : e);
+      if (mounted) SnackBarUtils.showError(context, e is DioException ? ApiException.fromDio(e) : e);
     } finally {
       if (mounted) setState(() => _saving = false);
     }

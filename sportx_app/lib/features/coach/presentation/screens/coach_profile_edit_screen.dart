@@ -172,7 +172,7 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
     setState(() => _uploadingPhoto = true);
     try {
       final media = await pickAndUploadMedia(context, ref, mediaType: 'photo');
-      if (media == null) return;
+      if (!mounted || media == null) return;
       // Optimistic local preview
       setState(() {
         _uploadedPhotoMediaId = media.mediaId;
@@ -180,7 +180,13 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
       });
       // Immediately persist so photo syncs across dashboard/home without requiring Save
       try {
-        await ref.read(dioProvider).put('/me/coach-profile', data: {'photo_media_id': media.mediaId});
+        await ref.read(dioProvider).put(
+          '/me/coach-profile',
+          data: buildCoachProfilePayload(
+            {'photo_media_id': media.mediaId},
+            ref.read(coachProvider).coachProfile,
+          ),
+        );
         await ref.read(coachProvider.notifier).loadCoachProfile();
         // Clear local override to rely on authoritative provider value (prevents stale cache)
         if (mounted) {

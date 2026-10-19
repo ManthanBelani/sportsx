@@ -41,6 +41,7 @@ class _AddCredentialScreenState extends ConsumerState<AddCredentialScreen> {
     final picker = ImagePicker();
     try {
       final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+      if (!mounted) return;
       if (pickedFile != null) {
         setState(() => _certificateFile = File(pickedFile.path));
       }

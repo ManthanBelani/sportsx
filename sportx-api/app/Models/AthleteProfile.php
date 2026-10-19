@@ -26,6 +26,7 @@ class AthleteProfile extends Model
         'experience',
         'age_group_id',
         'skill_level',
+        'bio',
         'city_id',
         'photo_media_id',
     ];

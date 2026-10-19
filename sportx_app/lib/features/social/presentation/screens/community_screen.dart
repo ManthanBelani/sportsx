@@ -8,10 +8,13 @@ import 'package:sportx_app/shared/providers/providers.dart';
 import 'package:sportx_app/shared/presentation/widgets/home_kit.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/features/social/presentation/providers/groups_provider.dart';
+import 'package:sportx_app/features/social/presentation/providers/test_data_provider.dart';
+import 'package:sportx_app/features/social/presentation/providers/posts_provider.dart';
+import 'package:sportx_app/features/social/presentation/widgets/community_feed.dart';
 
-/// S.12 Community — Network / Groups / Events tabs per design: search entry,
-/// People/Academies chips, suggested person rows + acadCard (Network tab),
-/// group list cards (Groups), event list rows (Events).
+/// S.12 Community — Network / Groups / Events / Feed tabs per design
 class CommunityScreen extends ConsumerWidget {
   const CommunityScreen({super.key});
 
@@ -64,7 +67,7 @@ class _CommunityTabsState extends State<_CommunityTabs> {
     return Column(
       children: [
         KitTabBar(
-          labels: const ['Network', 'Groups', 'Events'],
+          labels: const ['Network', 'Groups', 'Events', 'Feed'],
           activeIndex: _tab,
           onChanged: (i) => setState(() => _tab = i),
         ),
@@ -90,8 +93,10 @@ class _CommunityTabsState extends State<_CommunityTabs> {
           const _SuggestedSection(),
         ] else if (_tab == 1)
           const _GroupsSection()
+        else if (_tab == 2)
+          const _EventsSection()
         else
-          const _EventsSection(),
+          const _FeedSection(),
       ],
     );
   }
@@ -114,10 +119,7 @@ class _SuggestedSection extends ConsumerWidget {
           onActionTap: () => context.push('/network'),
         ),
         athletes.when(
-          loading: () => const Center(child: Padding(
-            padding: EdgeInsets.all(18),
-            child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)),
-          )),
+          loading: () => const _SuggestedSkeleton(),
           error: (_, _) => emptyHint('Could not load suggestions right now.'),
           data: (state) {
             if (state.isEmpty) return emptyHint('More athletes will appear here as they join SportX.');
@@ -153,6 +155,20 @@ class _SuggestedSection extends ConsumerWidget {
         ),
         const SizedBox(height: 100),
       ],
+    );
+  }
+}
+
+class _SuggestedSkeleton extends StatelessWidget {
+  const _SuggestedSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: List.generate(4, (index) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: SkeletonWidget.rectangular(height: 70, radius: 14),
+      )),
     );
   }
 }
@@ -225,85 +241,179 @@ class _AcademyWideCard extends StatelessWidget {
   }
 }
 
-// ─── Groups tab (S.13) ──────────────────────────────────────────────────────
+// ─── Groups tab (Dynamic) ─────────────────────────────────────────────────────
 
-class _GroupsSection extends StatelessWidget {
+class _GroupsSection extends ConsumerWidget {
   const _GroupsSection();
 
-  static const _groups = [
-    (name: 'Cricket Coaches India', detail: 'Coaching community · Ask, share drills'),
-    (name: 'Youth Training & Development', detail: 'Trainers and academies · Programs'),
-    (name: 'Trial Alerts Gujarat', detail: 'Scouts and athletes · Trials near you'),
-  ];
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final groupsAsync = ref.watch(groupsProvider);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SectionHeadV3(
           title: 'Popular groups',
-          actionText: 'My network',
-          onActionTap: () => context.push('/network'),
+          actionText: 'See all',
+          onActionTap: () => context.push('/groups'),
         ),
-        for (final g in _groups) ...[
-          Container(
-            padding: const EdgeInsets.all(13),
-            margin: const EdgeInsets.only(bottom: 9),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: AppColors.border),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: SportXShadows.e1,
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.yellowTint,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  alignment: Alignment.center,
-                  child: const Icon(LucideIcons.usersRound, size: 20, color: AppColors.primaryDarker),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(g.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                              fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.ink)),
-                      const SizedBox(height: 3),
-                      Text(g.detail,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(fontSize: 10, color: AppColors.textSecondary)),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                SportXChip(
-                  label: 'Join',
-                  icon: LucideIcons.plus,
-                  onTap: () => context.push('/network'),
-                ),
-              ],
-            ),
+        groupsAsync.when(
+          loading: () => _GroupsSkeleton(),
+          error: (e, _) => Column(
+            children: [
+              emptyHint('Could not load groups.'),
+              const SizedBox(height: 8),
+              OutlinedButton(
+                onPressed: () => ref.invalidate(groupsProvider),
+                child: const Text('Retry'),
+              ),
+            ],
           ),
-        ],
-        emptyHint('Group spaces are opening up gradually — join your network to stay in the loop.'),
-        const SizedBox(height: 100),
+          data: (groups) {
+            if (groups.isEmpty) {
+              return emptyHint('No groups yet. Be the first to create one!');
+            }
+            return Column(
+              children: [
+                for (final g in groups.take(6)) _GroupCard(group: g),
+                if (groups.length > 6)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: OutlinedButton(
+                      onPressed: () => context.push('/groups'),
+                      child: Text('View all ${groups.length} groups'),
+                    ),
+                  ),
+                const SizedBox(height: 100),
+              ],
+            );
+          },
+        ),
       ],
     );
   }
 }
 
-// ─── Events tab ─────────────────────────────────────────────────────────────
+class _GroupsSkeleton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: List.generate(3, (index) => Padding(
+        padding: const EdgeInsets.only(bottom: 9),
+        child: SkeletonWidget.rectangular(height: 70, radius: 16),
+      )),
+    );
+  }
+}
+
+class _GroupCard extends ConsumerWidget {
+  final Group group;
+  const _GroupCard({required this.group});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final typeColors = {
+      'coaching': AppColors.coach,
+      'athletes': AppColors.academy,
+      'trials': AppColors.organizer,
+      'general': AppColors.primary,
+    };
+    final typeIcons = {
+      'coaching': LucideIcons.dumbbell,
+      'athletes': LucideIcons.users,
+      'trials': LucideIcons.flag,
+      'general': LucideIcons.usersRound,
+    };
+
+    return Container(
+      padding: const EdgeInsets.all(13),
+      margin: const EdgeInsets.only(bottom: 9),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: SportXShadows.e1,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: (typeColors[group.type] ?? AppColors.primary).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            alignment: Alignment.center,
+            child: Icon(
+              typeIcons[group.type] ?? LucideIcons.usersRound,
+              size: 20,
+              color: typeColors[group.type] ?? AppColors.primary,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(group.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                              fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.ink)),
+                    ),
+                    if (group.memberCount > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(99),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(LucideIcons.users, size: 10, color: AppColors.textTertiary),
+                            const SizedBox(width: 2),
+                            Text(
+                              '${group.memberCount}',
+                              style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(group.description,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(fontSize: 10, color: AppColors.textSecondary)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          SportXChip(
+            label: group.isMember ? 'Joined' : 'Join',
+            icon: group.isMember ? LucideIcons.check : LucideIcons.plus,
+            selected: group.isMember,
+            onTap: () async {
+              if (group.isMember) {
+                await leaveGroup(ref, group.id);
+              } else {
+                await joinGroup(ref, group.id);
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Events tab ───────────────────────────────────────────────────────────────
 
 class _EventsSection extends ConsumerWidget {
   const _EventsSection();
@@ -417,6 +527,136 @@ class _EventWideRow extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ─── Feed tab ─────────────────────────────────────────────────────────────────
+
+class _FeedSection extends ConsumerWidget {
+  const _FeedSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return _FeedSectionContent();
+  }
+}
+
+class _FeedSectionContent extends StatefulWidget {
+  const _FeedSectionContent();
+
+  @override
+  State<_FeedSectionContent> createState() => _FeedSectionContentState();
+}
+
+class _FeedSectionContentState extends State<_FeedSectionContent> {
+  final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      // Could trigger pagination here
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer(
+      builder: (context, WidgetRef ref, _) {
+        // Use combined provider (test data + real API)
+        final postsAsync = ref.watch(combinedPostsProvider);
+
+        return RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(combinedPostsProvider);
+            ref.invalidate(postsFeedProvider);
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SectionHeadV3(
+                title: 'Community Feed',
+                actionText: 'Create Post',
+                onActionTap: () => context.push('/create-post'),
+              ),
+              postsAsync.when(
+                loading: () => _FeedSkeleton(),
+                error: (e, _) => Column(
+                  children: [
+                    emptyHint('Could not load feed.'),
+                    const SizedBox(height: 8),
+                    OutlinedButton(
+                      onPressed: () {
+                        ref.invalidate(combinedPostsProvider);
+                        ref.invalidate(postsFeedProvider);
+                      },
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+                data: (posts) {
+                  if (posts.isEmpty) {
+                    return Column(
+                      children: [
+                        emptyHint('No posts yet. Be the first to share!'),
+                        const SizedBox(height: 16),
+                        PrimaryButton(
+                          label: 'Create Post',
+                          icon: LucideIcons.plus,
+                          onPressed: () => context.push('/create-post'),
+                        ),
+                        const SizedBox(height: 100),
+                      ],
+                    );
+                  }
+                  return Column(
+                    children: [
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: posts.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final post = posts[index];
+                      return CommunityPostCard(
+                        post: post,
+                        onLike: () => togglePostLike(ref, post.id),
+                        onComment: () => context.push('/post-detail/${post.id}'),
+                        onOpen: () => context.push('/post-detail/${post.id}'),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 100),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  });
+  }
+}
+
+class _FeedSkeleton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: List.generate(3, (index) => Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: SkeletonWidget.rectangular(height: 180, radius: 16),
+      )),
     );
   }
 }

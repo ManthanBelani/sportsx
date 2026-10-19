@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 
@@ -21,46 +23,52 @@ class _ShowcaseAthletesScreenState extends ConsumerState<ShowcaseAthletesScreen>
   List<Map<String, dynamic>> _selectedAthletes = [];
   bool _isSearching = false;
   bool _isSaving = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSelectedAthletes();
-  }
+  String? _searchError;
+  Timer? _debounce;
+  int _searchSeq = 0;
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
-  void _loadSelectedAthletes() {
-    final coachState = ref.read(coachProvider);
-    setState(() {
-      _selectedAthletes = List<Map<String, dynamic>>.from(coachState.showcaseAthletes);
-    });
+  /// Called whenever the coach profile finishes loading, so the selection stays
+/// in sync with the server rather than being snapshotted before any fetch runs.
+void _syncSelectedFromProvider(List<Map<String, dynamic>> showcase) {
+  if (!mounted || _isSaving) return;
+  setState(() {
+    _selectedAthletes = showcase.map((e) => Map<String, dynamic>.from(e)).toList();
+  });
   }
 
-  Future<void> _searchAthletes(String query) async {
+  /// Debounced so we don't fire an API call on every keystroke.
+  void _onSearchChanged(String query) {
+    _debounce?.cancel();
     if (query.trim().isEmpty) {
       setState(() {
         _searchResults = [];
+        _searchError = null;
         _isSearching = false;
       });
       return;
     }
-
     setState(() => _isSearching = true);
+    _debounce = Timer(const Duration(milliseconds: 350), () => _runSearch(query));
+  }
 
-    try {
-      final results = await ref.read(coachProvider.notifier).searchAthletes(query);
-      setState(() {
-        _searchResults = results;
-        _isSearching = false;
-      });
-    } catch (e) {
-      setState(() => _isSearching = false);
-    }
+  Future<void> _runSearch(String query) async {
+    final seq = ++_searchSeq;
+    final result = await ref.read(coachProvider.notifier).searchAthletes(query);
+    // Ignore if the user typed again or left the screen while this was in flight.
+    if (!mounted || seq != _searchSeq) return;
+
+    setState(() {
+      _searchResults = result.rows;
+      _searchError = result.error;
+      _isSearching = false;
+    });
   }
 
   void _toggleAthleteSelection(Map<String, dynamic> athlete) {
@@ -100,6 +108,12 @@ class _ShowcaseAthletesScreenState extends ConsumerState<ShowcaseAthletesScreen>
   @override
   Widget build(BuildContext context) {
     final coachState = ref.watch(coachProvider);
+    // Keep the selection in sync once the profile arrives (or is refetched).
+    if (!coachState.isLoading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _syncSelectedFromProvider(coachState.showcaseAthletes);
+      });
+    }
     if (coachState.isLoading && _selectedAthletes.isEmpty && _searchResults.isEmpty && _searchController.text.isEmpty) {
       return Scaffold(
         backgroundColor: AppColors.surface,
@@ -131,7 +145,7 @@ class _ShowcaseAthletesScreenState extends ConsumerState<ShowcaseAthletesScreen>
             padding: const EdgeInsets.all(16),
             child: TextField(
               controller: _searchController,
-              onChanged: _searchAthletes,
+              onChanged: _onSearchChanged,
               decoration: InputDecoration(
                 hintText: 'Search athletes to showcase...',
                 prefixIcon: const Icon(LucideIcons.search),
@@ -140,7 +154,7 @@ class _ShowcaseAthletesScreenState extends ConsumerState<ShowcaseAthletesScreen>
                         icon: const Icon(LucideIcons.x, size: 20),
                         onPressed: () {
                           _searchController.clear();
-                          _searchAthletes('');
+                          _onSearchChanged('');
                         },
                       )
                     : null,
@@ -197,6 +211,26 @@ class _ShowcaseAthletesScreenState extends ConsumerState<ShowcaseAthletesScreen>
                   final isSelected = _isAthleteSelected(athlete);
                   return _buildAthleteTile(athlete, isSelected);
                 },
+              ),
+            )
+          else if (_searchError != null)
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(LucideIcons.alertCircle, size: 40, color: AppColors.error),
+                      const SizedBox(height: 12),
+                      Text(
+                        _searchError!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: AppColors.error, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             )
           else if (_searchController.text.isNotEmpty)

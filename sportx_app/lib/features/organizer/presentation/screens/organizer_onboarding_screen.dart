@@ -8,6 +8,7 @@ import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
+import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
@@ -21,10 +22,15 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
   final _name = TextEditingController();
   final _regNo = TextEditingController();
   final _website = TextEditingController();
+  final _desc = TextEditingController();
   String _type = 'State Sports Association';
   bool _saving=false;
   int? _docMediaId;
   String? _docName;
+  int? _logoMediaId;
+  int? _cityId;
+  final Set<int> _sportIds = {};
+  final Set<String> _eventTypes = {};
 
   final _types = [
     'State Sports Association',
@@ -33,6 +39,24 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
     'School/College Sports Dept',
     'Other',
   ];
+
+  // Spec §5 #5 — Event Types.
+  static const _eventTypeOptions = [
+    'tournament', 'trial', 'championship', 'camp',
+    'league', 'workshop', 'sports_meet', 'marathon', 'other',
+  ];
+
+  static String _eventTypeLabel(String v) => switch (v) {
+        'tournament' => 'Tournament',
+        'trial' => 'Trial',
+        'championship' => 'Championship',
+        'camp' => 'Camp',
+        'league' => 'League',
+        'workshop' => 'Workshop',
+        'sports_meet' => 'Sports Meet',
+        'marathon' => 'Marathon',
+        _ => 'Other',
+      };
 
   String _mapTypeToApi(String ui){
     switch(ui){
@@ -45,7 +69,15 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
   }
 
   @override
-  void dispose(){ _name.dispose(); _regNo.dispose(); _website.dispose(); super.dispose(); }
+  void dispose(){ _name.dispose(); _regNo.dispose(); _website.dispose(); _desc.dispose(); super.dispose(); }
+
+  Future<void> _pickLogo() async {
+    final media = await pickAndUploadMedia(context, ref, mediaType: 'photo');
+    if (media != null && mounted) {
+      setState(() => _logoMediaId = media.mediaId);
+      SnackBarUtils.showSuccess(context, 'Logo uploaded');
+    }
+  }
 
   Future<void> _pickDoc() async {
     final media = await pickAndUploadMedia(context, ref, mediaType: 'document');
@@ -68,6 +100,13 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
         'registration_number': _regNo.text.trim().isEmpty? null: _regNo.text.trim(),
         'website': _website.text.trim().isEmpty? null: _website.text.trim(),
         if (_docMediaId != null) 'verification_doc_media_id': _docMediaId,
+        // Spec §5 mandatory fields — collected at onboarding so the profile
+        // starts complete rather than being filled in piecemeal later.
+        if (_logoMediaId != null) 'logo_media_id': _logoMediaId,
+        if (_cityId != null) 'city_id': _cityId,
+        if (_sportIds.isNotEmpty) 'sports': _sportIds.toList(),
+        if (_eventTypes.isNotEmpty) 'event_types': _eventTypes.toList(),
+        if (_desc.text.trim().isNotEmpty) 'description': _desc.text.trim(),
       });
       if (mounted){
         await ref.read(authProvider.notifier).refreshUser();
@@ -77,7 +116,7 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
         context.go('/organizer-dashboard');
       }
     } catch(e){
-      if (mounted) SnackBarUtils.showError(context, e is DioException ? ApiException.fromDio(e as DioException) : e);
+      if (mounted) SnackBarUtils.showError(context, e is DioException ? ApiException.fromDio(e) : e);
     } finally{ if (mounted) setState(()=> _saving=false); }
   }
 
@@ -130,6 +169,108 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
               _label('Website (optional)'),
               TextField(controller: _website, decoration: const InputDecoration(hintText: 'https://')),
               const SizedBox(height:16),
+
+              // ── Spec §5 mandatory fields ────────────────────────────────────
+              _label('Logo'),
+              InkWell(
+                onTap: _pickLogo,
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: _logoMediaId != null ? AppColors.success : AppColors.border),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  alignment: Alignment.center,
+                  child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Icon(_logoMediaId != null ? LucideIcons.checkCircle : LucideIcons.imagePlus,
+                        size: 20, color: _logoMediaId != null ? AppColors.success : AppColors.textTertiary),
+                    const SizedBox(width: 10),
+                    Text(_logoMediaId != null ? 'Logo uploaded — tap to change' : 'Upload logo',
+                        style: GoogleFonts.inter(fontSize: 12.5, color: AppColors.textSecondary)),
+                  ]),
+                ),
+              ),
+              const SizedBox(height:16),
+
+              _label('Primary Sport'),
+              Consumer(builder: (context, ref, _) {
+                final sports = ref.watch(metaProvider).sports.where((s) => s.isActive).toList();
+                if (sports.isEmpty) {
+                  return Text('No sports available', style: GoogleFonts.inter(fontSize: 13, color: AppColors.textTertiary));
+                }
+                return Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: sports.map((s) {
+                    final isOn = _sportIds.contains(s.id);
+                    return FilterChip(
+                      label: Text(s.name),
+                      selected: isOn,
+                      showCheckmark: false,
+                      backgroundColor: Colors.white,
+                      selectedColor: AppColors.yellowTint,
+                      side: BorderSide(color: isOn ? AppColors.yellowDeep : AppColors.border),
+                      labelStyle: GoogleFonts.inter(fontSize: 12, color: isOn ? AppColors.primaryDarker : AppColors.textSecondary),
+                      onSelected: (v) => setState(() {
+                        if (v) { _sportIds.add(s.id); } else { _sportIds.remove(s.id); }
+                      }),
+                    );
+                  }).toList(),
+                );
+              }),
+              const SizedBox(height:16),
+
+              _label('City'),
+              Consumer(builder: (context, ref, _) {
+                final cities = ref.watch(metaProvider).cities.where((c) => c.isActive).toList();
+                return DropdownButtonFormField<int?>(
+                  initialValue: _cityId,
+                  isExpanded: true,
+                  decoration: const InputDecoration(hintText: 'Select city'),
+                  items: [
+                    const DropdownMenuItem(value: null, child: Text('Not set')),
+                    ...cities.map((c) => DropdownMenuItem(
+                          value: c.id,
+                          child: Text(c.state.isEmpty ? c.name : '${c.name}, ${c.state}'),
+                        )),
+                  ],
+                  onChanged: (v) => setState(() => _cityId = v),
+                );
+              }),
+              const SizedBox(height:16),
+
+              _label('Event Types'),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _eventTypeOptions.map((e) {
+                  final isOn = _eventTypes.contains(e);
+                  return FilterChip(
+                    label: Text(_eventTypeLabel(e)),
+                    selected: isOn,
+                    showCheckmark: false,
+                    backgroundColor: Colors.white,
+                    selectedColor: AppColors.yellowTint,
+                    side: BorderSide(color: isOn ? AppColors.yellowDeep : AppColors.border),
+                    labelStyle: GoogleFonts.inter(fontSize: 12, color: isOn ? AppColors.primaryDarker : AppColors.textSecondary),
+                    onSelected: (v) => setState(() {
+                      if (v) { _eventTypes.add(e); } else { _eventTypes.remove(e); }
+                    }),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height:16),
+
+              _label('Short Description'),
+              TextField(
+                controller: _desc,
+                maxLines: 3,
+                decoration: const InputDecoration(hintText: '2–3 lines about your organization'),
+              ),
+              const SizedBox(height:16),
+
               _label('Verification Documents'),
               InkWell(
                 onTap: _pickDoc,

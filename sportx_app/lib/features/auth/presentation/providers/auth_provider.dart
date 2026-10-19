@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sportx_app/core/services/push_notification_service.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/storage_service.dart';
 import 'package:sportx_app/shared/models/user.dart';
@@ -43,8 +44,9 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   final Dio _dio;
   final StorageService _storage;
+  final Ref _ref;
 
-  AuthNotifier(this._dio, this._storage) : super(AuthState()) {
+  AuthNotifier(this._dio, this._storage, this._ref) : super(AuthState()) {
     checkAuth();
   }
 
@@ -274,7 +276,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
     if (mounted) {
       state = AuthState(status: AuthStatus.authenticated, user: user, needsOnboarding: needsOnboarding);
     }
-    await _registerFcmToken();
+    // Use new guarded token registration
+    await PushNotificationService.registerTokenOnAuth(_ref);
+    // Process any pending notifications from background
+    await PushNotificationService.processPendingNotifications(_ref);
     if (!mounted) {
       return;
     }
@@ -355,6 +360,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> logout() async {
     await _unregisterFcmToken();
+    // Clear token registration guard for next session
+    PushNotificationService.clearTokenRegistration();
     if (!mounted) {
       return;
     }
@@ -463,5 +470,5 @@ class AuthNotifier extends StateNotifier<AuthState> {
 }
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier(ref.watch(dioProvider), ref.watch(storageServiceProvider));
+  return AuthNotifier(ref.watch(dioProvider), ref.watch(storageServiceProvider), ref);
 });

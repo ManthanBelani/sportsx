@@ -132,6 +132,7 @@ RoleConfig roleConfigFor(SportXRole role) {
         moreRows: [
           MoreRow(label: 'My Profile', icon: LucideIcons.user, route: '/profile'),
           MoreRow(label: 'Profile Completion', icon: LucideIcons.listChecks, route: '/profile-completion'),
+          MoreRow(label: 'Leaderboard', icon: LucideIcons.trophy, route: '/athlete-leaderboard'),
           MoreRow(label: 'Manage Sports', icon: LucideIcons.dumbbell, route: '/manage-sports'),
           MoreRow(label: 'Achievements', icon: LucideIcons.award, route: '/achievements'),
           MoreRow(label: 'My Opportunities', icon: LucideIcons.megaphone, route: '/my-opportunities'),

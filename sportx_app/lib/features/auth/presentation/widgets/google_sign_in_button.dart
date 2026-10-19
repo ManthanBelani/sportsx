@@ -7,13 +7,14 @@ import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
-/// Shared "Continue with Google" button (Phase 1).
+/// Shared "Continue with Google" button.
 ///
 /// The role must be captured *before* the button on sign-up — it drives
 /// approval routing on the backend. On login the role is omitted.
 class GoogleSignInButton extends ConsumerStatefulWidget {
   final String? role;
-  const GoogleSignInButton({super.key, this.role});
+  final bool isSignUp;
+  const GoogleSignInButton({super.key, this.role, this.isSignUp = false});
 
   @override
   ConsumerState<GoogleSignInButton> createState() => _GoogleSignInButtonState();
@@ -47,22 +48,56 @@ class _GoogleSignInButtonState extends ConsumerState<GoogleSignInButton> {
         }
         return;
       }
+      // Only send role on sign-up, not on login
+      final roleToSend = widget.isSignUp ? widget.role : null;
       await ref
           .read(authProvider.notifier)
-          .signInWithGoogle(idToken: idToken, role: widget.role);
+          .signInWithGoogle(idToken: idToken, role: roleToSend);
       if (!mounted) return;
       final state = ref.read(authProvider);
       if (state.status == AuthStatus.authenticated) {
         context.go('/home');
       } else if (state.status == AuthStatus.error) {
-        SnackBarUtils.showError(context, state.error ?? 'Google sign-in failed');
+        _handleAuthError(state.error ?? 'Google sign-in failed');
       }
-    } catch (_) {
-      if (mounted) {
-        SnackBarUtils.showError(context, 'Google sign-in failed. Try again.');
-      }
+    } catch (e) {
+      _handleGoogleSignInError(e);
     } finally {
       if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  void _handleGoogleSignInError(Object error) {
+    if (!mounted) return;
+    final errorStr = error.toString().toLowerCase();
+    
+    // Check for common Google Sign-In error patterns
+    if (errorStr.contains('network') || errorStr.contains('connection') || errorStr.contains('socket')) {
+      SnackBarUtils.showError(context, 'Network error. Please check your connection.');
+    } else if (errorStr.contains('canceled') || errorStr.contains('cancelled') || errorStr.contains('user_canceled')) {
+      // User dismissed — silent, not an error
+    } else if (errorStr.contains('sign_in_failed') || errorStr.contains('signin_failed')) {
+      SnackBarUtils.showError(context, 'Sign in failed. Please try again.');
+    } else if (errorStr.contains('platform') || errorStr.contains('api_not_available')) {
+      SnackBarUtils.showError(context, 'Google sign-in not available. Please try again.');
+    } else if (errorStr.contains('developer_error') || errorStr.contains('invalid_client')) {
+      SnackBarUtils.showError(context, 'Google sign-in configuration error. Please contact support.');
+    } else {
+      SnackBarUtils.showError(context, 'Google sign-in failed. Please try again.');
+    }
+  }
+
+  void _handleAuthError(String error) {
+    if (!mounted) return;
+    final lower = error.toLowerCase();
+    if (lower.contains('connection') || lower.contains('network') || lower.contains('timeout')) {
+      SnackBarUtils.showError(context, 'Connection error. Please check your internet.');
+    } else if (lower.contains('unauthorized') || lower.contains('invalid token') || lower.contains('token expired')) {
+      SnackBarUtils.showError(context, 'Session expired. Please try again.');
+    } else if (lower.contains('permission') || lower.contains('forbidden') || lower.contains('403')) {
+      SnackBarUtils.showError(context, 'Access denied. Please contact support.');
+    } else {
+      SnackBarUtils.showError(context, error);
     }
   }
 

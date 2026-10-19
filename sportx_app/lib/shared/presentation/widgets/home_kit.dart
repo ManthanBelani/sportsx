@@ -269,8 +269,11 @@ class CompactPrimaryButton extends StatelessWidget {
           border: Border.all(color: const Color(0x2E785000)),
         ),
         alignment: Alignment.center,
-        child: Text(label,
-            style: GoogleFonts.inter(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.ink)),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(label,
+              style: GoogleFonts.inter(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.ink)),
+        ),
       ),
     );
   }
@@ -1148,7 +1151,13 @@ class PersonRowCard extends StatelessWidget {
           ]),
         ),
         const SizedBox(width: 8),
-        CompactPrimaryButton(label: ctaLabel, onTap: onTap),
+        // FIX: Wrap CTA in Flexible + ConstrainedBox to prevent overflow
+        Flexible(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 88),
+            child: CompactPrimaryButton(label: ctaLabel, onTap: onTap),
+          ),
+        ),
       ]),
     );
   }
