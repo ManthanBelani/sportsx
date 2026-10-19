@@ -22,33 +22,35 @@ class OrganizerProfileController extends Controller
 
         $validated = $request->validate([
             'organization_name' => 'sometimes|required|string|max:150',
-            'org_type' => 'sometimes|required|in:federation,club,other,state_association,district_association,private_club,school_college',
+            'org_type' => 'sometimes|required|in:event_company,individual,club,college,federation,ngo,other',
             'registration_number' => 'nullable|string|max:100',
             'website' => 'nullable|url|max:255',
             'verification_doc_media_id' => 'nullable|integer|exists:media_items,id',
+            'logo_media_id' => 'nullable|integer|exists:media_items,id',
+            'cover_media_id' => 'nullable|integer|exists:media_items,id',
+            'city_id' => 'nullable|exists:cities,id',
+            'description' => 'nullable|string|max:2000',
+            // Spec §5 #5: Tournament, Trial, Championship, Camp, League, Workshop,
+            // Sports Meet, Marathon, Other.
+            'event_types' => 'nullable|array|max:20',
+            'event_types.*' => 'string|max:50',
+            'sports' => 'nullable|array',
+            'sports.*' => 'exists:sports,id',
         ]);
-
-        $typeMap = [
-            'state_association' => 'federation',
-            'district_association' => 'federation',
-            'private_club' => 'club',
-            'school_college' => 'other',
-        ];
-        if (isset($validated['org_type']) && isset($typeMap[$validated['org_type']])) {
-            $validated['org_type'] = $typeMap[$validated['org_type']];
-        }
 
         $fillable = $profile->getFillable();
         $persist = array_intersect_key($validated, array_flip($fillable));
-        // website/registration_number may not be in fillable on older DB — ignore gracefully
-        if (empty($persist) && !empty($validated)) {
-            // at minimum try organization_name/org_type
-            $persist = array_intersect_key($validated, array_flip(['organization_name','org_type']));
+
+        // Sync sports when supplied (spec §5 #4).
+        if (isset($validated['sports']) && is_array($validated['sports'])) {
+            $profile->sports()->sync($validated['sports']);
         }
 
         $profile->update($persist);
 
-        return response()->json(['data' => $profile->fresh()]);
+        return response()->json([
+            'data' => $profile->fresh(['city', 'logo', 'cover', 'sports']),
+        ]);
     }
 
     /**

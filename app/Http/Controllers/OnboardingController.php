@@ -27,6 +27,10 @@ class OnboardingController extends Controller
             'sports.*' => 'exists:sports,id',
             'age_group_id' => 'required|exists:age_groups,id',
             'skill_level' => 'required|in:beginner,intermediate,advanced,competitive',
+            // Spec mandatory #8. Accepted and validated, but not hard-required yet so
+            // existing clients that predate this field keep working. Flip to
+            // 'required|string' once the Flutter client always sends it.
+            'bio' => 'sometimes|nullable|string|max:500',
             'city_id' => 'required|exists:cities,id',
             'phone' => 'nullable|string|max:20',
             'photo_media_id' => 'nullable|exists:media_items,id',
