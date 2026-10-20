@@ -32,10 +32,26 @@ class TournamentController extends Controller
 
     public function show(Request $request, string $id)
     {
-        $tournament = Tournament::published()->with(['sport', 'city', 'organizer', 'categories.ageGroup', 'results'])->findOrFail($id);
+        $tournament = Tournament::with(['sport', 'city', 'organizer', 'categories.ageGroup', 'results'])->findOrFail($id);
+
+        $isOwn = false;
+        // This route is public, so the default guard is "web" and a Bearer
+        // token would be ignored. Resolve the SANCTUM user explicitly so
+        // organizers can still view their own draft tournaments and so the
+        // registration_status block works for authenticated athletes.
+        $viewer = auth('sanctum')->user();
+        if ($viewer) {
+            if ($viewer->isAdmin()) {
+                $isOwn = true;
+            } elseif ($viewer->organizerProfile) {
+                $isOwn = (int) $tournament->organizer_id === (int) $viewer->organizerProfile->id;
+            }
+            $isOwn = $isOwn || (int) $tournament->organizer_id === (int) $viewer->id;
+        }
+        abort_unless($tournament->status === 'published' || $isOwn, 404);
 
         $data = $tournament->toArray();
-        $data['registration_status'] = $this->registrationStatus($tournament, $request->user());
+        $data['registration_status'] = $this->registrationStatus($tournament, $viewer);
 
         return response()->json(['data' => $data]);
     }

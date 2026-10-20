@@ -16,7 +16,23 @@ class FCMService
     public function __construct()
     {
         $this->projectId = (string) (config('services.fcm.project_id') ?? env('FCM_PROJECT_ID', '') ?? '');
-        $this->credentialsPath = (string) (config('services.fcm.credentials_path') ?? env('FCM_CREDENTIALS_PATH', '') ?? '');
+        $path = (string) (config('services.fcm.credentials_path') ?? env('FCM_CREDENTIALS_PATH', '') ?? '');
+        if ($path && !file_exists($path)) {
+            if (file_exists(base_path($path))) {
+                $path = base_path($path);
+            } elseif (file_exists(storage_path($path))) {
+                $path = storage_path($path);
+            } elseif (file_exists(storage_path('app/' . $path))) {
+                $path = storage_path('app/' . $path);
+            }
+        }
+        if (empty($path) || !file_exists($path)) {
+            $candidates = glob(storage_path('app/*firebase*.json'));
+            if (!empty($candidates)) {
+                $path = $candidates[0];
+            }
+        }
+        $this->credentialsPath = $path;
     }
 
     public function isEnabled(): bool
@@ -84,7 +100,12 @@ class FCMService
         } catch (\Exception $e) {
             Log::error('FCM access token exception', ['error' => $e->getMessage()]);
 
-            return ['success' => false, 'message' => $e->getMessage(), 'sent' => [], 'failed' => array_fill_keys($tokens, 'auth_error')];
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
+                'sent' => [],
+                'failed' => array_fill_keys($tokens, 'auth_error: ' . $e->getMessage()),
+            ];
         }
 
         foreach ($tokens as $token) {
@@ -102,8 +123,15 @@ class FCMService
             ];
 
             try {
-                $response = Http::withToken($accessToken)
-                    ->post("https://fcm.googleapis.com/v1/projects/{$this->projectId}/messages:send", $message);
+                $ca = $this->getCaBundlePath();
+                $http = Http::withToken($accessToken);
+                if ($ca === false) {
+                    $http = $http->withoutVerifying();
+                } elseif (is_string($ca)) {
+                    $http = $http->withOptions(['verify' => $ca]);
+                }
+
+                $response = $http->post("https://fcm.googleapis.com/v1/projects/{$this->projectId}/messages:send", $message);
 
                 if ($response->successful()) {
                     $sent[] = $token;
@@ -113,7 +141,7 @@ class FCMService
                     Log::warning('FCM per-token send failed', ['status' => $response->status(), 'code' => $code]);
                 }
             } catch (\Exception $e) {
-                $failed[$token] = 'transport_error';
+                $failed[$token] = 'transport_error: ' . $e->getMessage();
                 Log::error('FCM per-token exception', ['error' => $e->getMessage()]);
             }
         }
@@ -147,8 +175,9 @@ class FCMService
         if (str_contains($code, 'SENDER_ID_MISMATCH')) {
             return 'SENDER_ID_MISMATCH';
         }
-        if (str_contains($code, 'UNAVAILABLE') || str_contains($code, 'INTERNAL') || str_contains($code, 'DEADLINE')) {
-            return 'TRANSIENT';
+        if (str_contains($code, 'PERMISSION_DENIED')) {
+            $msg = (string) ($response->json('error.message') ?? '');
+            return 'PERMISSION_DENIED: ' . ($msg ?: 'Enable Firebase Cloud Messaging API in Google Cloud Console');
         }
 
         return $code !== '' ? $code : 'SEND_FAILED';
@@ -196,6 +225,17 @@ class FCMService
         }
     }
 
+    protected function getCaBundlePath(): string|bool
+    {
+        if (file_exists(storage_path('cacert.pem'))) {
+            return storage_path('cacert.pem');
+        }
+        if (file_exists('D:/php84/cacert.pem')) {
+            return 'D:/php84/cacert.pem';
+        }
+        return app()->isLocal() ? false : true;
+    }
+
     private function getAccessToken(): string
     {
         $cacheKey = 'fcm_access_token';
@@ -205,10 +245,26 @@ class FCMService
             return $token;
         }
 
-        $scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
+        $scopes = [
+            'https://www.googleapis.com/auth/cloud-platform',
+            'https://www.googleapis.com/auth/firebase.messaging',
+        ];
 
         $credentials = new ServiceAccountCredentials($scopes, $this->credentialsPath);
-        $token = $credentials->fetchAccessTokenWithAssertion();
+
+        // Build Guzzle client configured with CA bundle or local development SSL fallback
+        $ca = $this->getCaBundlePath();
+        $guzzleOptions = [];
+        if ($ca === false) {
+            $guzzleOptions['verify'] = false;
+        } elseif (is_string($ca)) {
+            $guzzleOptions['verify'] = $ca;
+        }
+
+        $client = new \GuzzleHttp\Client($guzzleOptions);
+        $httpHandler = \Google\Auth\HttpHandler\HttpHandlerFactory::build($client);
+
+        $token = $credentials->fetchAuthToken($httpHandler);
 
         if (isset($token['access_token'])) {
             $expiresIn = $token['expires_in'] ?? 3600;
@@ -216,6 +272,7 @@ class FCMService
             return $token['access_token'];
         }
 
-        throw new \RuntimeException('Failed to fetch FCM access token');
+        $errorMsg = $token['error_description'] ?? $token['error'] ?? 'Unknown error';
+        throw new \RuntimeException('Failed to fetch FCM access token: ' . $errorMsg);
     }
 }

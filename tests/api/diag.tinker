@@ -1,0 +1,8 @@
+echo Schema::getColumnListing('coaching_enrollments') ? implode(',', Schema::getColumnListing('coaching_enrollments')) : 'n/a';
+echo PHP_EOL;
+foreach (App\Models\CoachingEnrollment::all() as $e) {
+  echo $e->id . '|' . implode('=', array_slice(Schema::getColumnListing('coaching_enrollments'),0,0)) . json_encode($e->toArray()) . PHP_EOL;
+}
+foreach (App\Models\AthleteProfile::whereIn('user_id', [3,4,5])->get() as $a) {
+  echo 'ath_profile=' . $a->id . '|user=' . $a->user_id . PHP_EOL;
+}

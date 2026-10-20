@@ -135,7 +135,11 @@ class RegistrationController extends Controller
 
     public function trialShow(Request $request, TrialRegistration $registration)
     {
-        $this->authorizeOwner($request, $registration->trial);
+        $user = $request->user();
+        $isOwnAthlete = $registration->athlete->user_id === $user->id;
+        if (! $isOwnAthlete) {
+            $this->authorizeOwner($request, $registration->trial);
+        }
 
         return response()->json(['data' => $registration->load(['athlete.user', 'athlete.sports', 'documents.media'])]);
     }

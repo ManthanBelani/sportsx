@@ -29,6 +29,7 @@ class AthleteProfile extends Model
         'bio',
         'city_id',
         'photo_media_id',
+        'cover_media_id',
     ];
 
     protected $appends = ['connections_count'];
@@ -83,6 +84,12 @@ class AthleteProfile extends Model
     public function photo(): BelongsTo
     {
         return $this->belongsTo(MediaItem::class, 'photo_media_id');
+    }
+
+    /// Profile banner — kept separate from the profile photo and the gallery.
+    public function cover(): BelongsTo
+    {
+        return $this->belongsTo(MediaItem::class, 'cover_media_id');
     }
 
     public function mediaItems(): MorphMany

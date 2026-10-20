@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Schema;
 
 class ProfileController extends Controller
 {
@@ -11,8 +12,8 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         $profile = match ($user->role) {
-            'athlete' => $user->athleteProfile?->load(['sports', 'ageGroup', 'city', 'photo', 'achievements', 'mediaItems']),
-            'coach' => $user->coachProfile?->load(['sport', 'city', 'photo', 'academy', 'mediaItems']),
+            'athlete' => $user->athleteProfile?->load(['sports', 'ageGroup', 'city', 'photo', 'cover', 'achievements', 'mediaItems']),
+            'coach' => $user->coachProfile?->load(['sport', 'city', 'photo', 'cover', 'academy', 'mediaItems']),
             'academy' => $user->academies?->load(['city', 'sports.sport', 'logo', 'cover']),
             'organizer' => $user->organizerProfile,
             'sponsor' => $user->sponsorProfile?->load('logo'),
@@ -56,11 +57,16 @@ class ProfileController extends Controller
                 'experience' => 'nullable|string',
                 'achievements' => 'nullable|array',
                 'photo_media_id' => 'nullable|integer|exists:media_items,id',
+                'cover_media_id' => 'nullable|integer|exists:media_items,id',
             ]);
 
             $profile = $user->athleteProfile()->first();
             abort_unless($profile, 404, 'Athlete profile not found.');
-            $profile->update(Arr::except($validated, ['achievements']));
+            $updateData = Arr::except($validated, ['achievements']);
+            if (! Schema::hasColumn('athlete_profiles', 'cover_media_id')) {
+                unset($updateData['cover_media_id']);
+            }
+            $profile->update($updateData);
             $user->update(['name' => $validated['full_name']]);
 
             if (isset($validated['achievements'])) {
@@ -70,7 +76,7 @@ class ProfileController extends Controller
                 }
             }
 
-            return response()->json(['data' => $profile->fresh(['sports', 'achievements', 'photo'])]);
+            return response()->json(['data' => $profile->fresh(['sports', 'achievements', 'photo', 'cover'])]);
         }
 
         if ($user->role === 'coach') {
@@ -83,10 +89,23 @@ class ProfileController extends Controller
                 'achievements' => 'nullable|array',
                 'achievements.*.text' => 'nullable|string',
                 'achievements.*.title' => 'nullable|string',
+                'photo_media_id' => 'nullable|integer|exists:media_items,id',
+                'cover_media_id' => 'nullable|integer|exists:media_items,id',
             ]);
 
             $profile = $user->coachProfile()->first();
             abort_unless($profile, 404, 'Coach profile not found.');
+
+            // Always persist the plain fields (profile photo / cover photo /
+            // contact details) — they are independent of the achievements blob.
+            $updateData = Arr::except($validated, ['achievements']);
+            if (! Schema::hasColumn('coach_profiles', 'cover_media_id')) {
+                unset($updateData['cover_media_id']);
+            }
+            if (! empty($updateData)) {
+                $profile->update($updateData);
+            }
+
             if (isset($validated['achievements'])) {
                 // Normalize achievements to consistent shape {text, title?, description?, year?}
                 $normalized = array_map(fn ($a) => is_string($a) ? ['text' => $a] : $a, $validated['achievements']);
@@ -94,20 +113,66 @@ class ProfileController extends Controller
                 if (isset($validated['full_name'])) {
                     $user->update(['name' => $validated['full_name']]);
                 }
-            } else {
-                // No achievements-only update should not overwrite other fields accidentally
-                $updateData = Arr::except($validated, ['achievements']);
-                if (! empty($updateData)) {
-                    $profile->update($updateData);
-                }
             }
 
-            $fresh = $profile->fresh()->load(['sport', 'city', 'photo', 'mediaItems']);
+            $fresh = $profile->fresh()->load(['sport', 'city', 'photo', 'cover', 'mediaItems']);
             $fresh->setAttribute('media_items', $fresh->mediaItems);
             return response()->json(['data' => $fresh]);
         }
 
         return response()->json(['data' => null, 'message' => 'Not implemented for this role'], 501);
+    }
+
+    /**
+     * PUT /me/profile/images — set the profile photo and/or the cover photo.
+     *
+     * Both slots are independent from each other and from the media gallery:
+     * uploading gallery media never changes them, they are only changed when
+     * the owner explicitly picks an image here.
+     */
+    public function updateImages(Request $request)
+    {
+        $validated = $request->validate([
+            'photo_media_id' => 'nullable|integer|exists:media_items,id',
+            'cover_media_id' => 'nullable|integer|exists:media_items,id',
+        ]);
+
+        $user = $request->user();
+
+        // [profile, primary image column, cover image column] per role.
+        [$profile, $photoColumn, $coverColumn] = match ($user->role) {
+            'athlete' => [$user->athleteProfile, 'photo_media_id', 'cover_media_id'],
+            'coach' => [$user->coachProfile, 'photo_media_id', 'cover_media_id'],
+            'academy' => [$user->academies, 'logo_media_id', 'cover_media_id'],
+            'organizer' => [$user->organizerProfile, 'logo_media_id', 'cover_media_id'],
+            'sponsor' => [$user->sponsorProfile, 'logo_media_id', null],
+            default => [null, null, null],
+        };
+        abort_unless($profile, 404, 'Profile not found.');
+
+        if ($coverColumn && ! Schema::hasColumn($profile->getTable(), $coverColumn)) {
+            abort(422, 'Cover photo is not available yet. Please run the latest database migrations.');
+        }
+
+        if ($photoColumn && array_key_exists('photo_media_id', $validated)) {
+            $profile->{$photoColumn} = $validated['photo_media_id'];
+        }
+        if ($coverColumn && array_key_exists('cover_media_id', $validated)) {
+            $profile->{$coverColumn} = $validated['cover_media_id'];
+        }
+        $profile->save();
+
+        $fresh = $profile->fresh();
+        // Only eager-load the relations this role actually has.
+        $relations = array_values(array_filter(
+            ['photo', 'cover', 'logo'],
+            fn ($relation) => method_exists($fresh, $relation)
+        ));
+        if ($relations) {
+            $fresh->load($relations);
+        }
+
+        return response()->json(['data' => $fresh]);
     }
 
     public function updateSports(Request $request)

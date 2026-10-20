@@ -64,7 +64,9 @@ class OpportunityController extends Controller
     {
         $opportunity = Opportunity::with(['sport', 'ageGroup', 'logo'])->findOrFail($id);
 
-        $viewer = $request->user();
+        // Public route → default guard is "web"; resolve the SANCTUM user so
+        // authenticated viewers still see applied/saved state.
+        $viewer = auth('sanctum')->user();
         $isOwner = $viewer && ((int) $viewer->id === (int) $opportunity->created_by_user_id || $viewer->isAdmin());
 
         abort_unless($opportunity->status === 'published' || $isOwner, 404);
@@ -238,7 +240,10 @@ class OpportunityController extends Controller
         $validated = $request->validate(['type' => 'nullable|in:applied,saved,created']);
 
         $user = $request->user();
-        $tab = $validated['type'] ?? 'applied';
+        // Athletes default to their applications; providers (academy/coach/
+        // organizer/scout) have no athlete profile, so default to their
+        // created listings instead of 403ing on the "applied" tab.
+        $tab = $validated['type'] ?? ($user->athleteProfile ? 'applied' : 'created');
 
         if ($tab === 'applied') {
             $athlete = $user->athleteProfile;

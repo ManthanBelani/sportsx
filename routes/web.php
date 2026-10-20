@@ -75,6 +75,7 @@ Route::prefix('panel')->name('admin.')->group(function () {
         // Notifications
         Route::get('/notifications', [AdminPanelController::class, 'notifications'])->name('notifications');
         Route::post('/notifications/broadcast', [AdminPanelController::class, 'broadcast'])->name('notifications.broadcast');
+        Route::post('/notifications/test', [AdminPanelController::class, 'sendTestNotification'])->name('notifications.test');
 
         // System Settings
         Route::get('/settings', [AdminPanelController::class, 'settings'])->name('settings');

@@ -35,7 +35,9 @@ class TrialController extends Controller
         $trial = Trial::published()->with(['sport', 'city', 'academy', 'postedBy'])->findOrFail($id);
 
         $data = $trial->toArray();
-        $data['registration_status'] = $this->registrationStatus($trial, $request->user());
+        // Public route → default guard is "web"; resolve the SANCTUM user so
+        // authenticated athletes still see their own registration status.
+        $data['registration_status'] = $this->registrationStatus($trial, auth('sanctum')->user());
 
         return response()->json(['data' => $data]);
     }

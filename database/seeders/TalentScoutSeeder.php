@@ -3,34 +3,78 @@
 namespace Database\Seeders;
 
 use App\Models\TalentScoutProfile;
-use App\Models\User;
+use Database\Seeders\Support\SeedLookup;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
+/**
+ * Talent scout profiles for every seeded scout.
+ *
+ * The DB stores the role as `talent_scout` while the API canonicalises it to
+ * `scout` (see App\Support\UserRoles).
+ */
 class TalentScoutSeeder extends Seeder
 {
     public function run(): void
     {
-        $user = User::updateOrCreate(
-            ['email' => 'kiran@scout.test'],
+        $scouts = [
             [
-            'name' => 'Kiran Patel',
-            'password' => Hash::make('password'),
-            'role' => 'talent_scout',
-            'email_verified_at' => now(),
-            'status' => 'active',
-            ]
-        );
+                'email' => 'kiran@scout.test',
+                'organization' => 'Elite Talent Agency',
+                'affiliation' => 'Gujarat Cricket Association',
+                'sports_specialization' => ['Cricket', 'Badminton'],
+                'experience_years' => 12,
+                'city' => 'Ahmedabad',
+                'bio' => 'Experienced talent scout with a passion for discovering young athletes across India.',
+                'listing_status' => true,
+            ],
+            [
+                'email' => 'scout2@sportx.test',
+                'organization' => 'Metro Sports Scouting Cell',
+                'affiliation' => 'Maharashtra Football Association',
+                'sports_specialization' => ['Football', 'Athletics', 'Basketball'],
+                'experience_years' => 7,
+                'city' => 'Mumbai',
+                'bio' => 'Scouts emerging multi-sport talent for city and state level academies.',
+                'listing_status' => true,
+            ],
+            [
+                'email' => 'scout.pending@sportx.test',
+                'organization' => 'New Scout Agency',
+                'affiliation' => null,
+                'sports_specialization' => ['Swimming'],
+                'experience_years' => 2,
+                'city' => 'Surat',
+                'bio' => 'New scout profile awaiting admin approval.',
+                'listing_status' => false,
+            ],
+        ];
 
-        TalentScoutProfile::updateOrCreate(
-            ['user_id' => $user->id],
-            [
-            'organization' => 'Elite Talent Agency',
-            'affiliation' => 'Gujarat Cricket Association',
-            'sports_specialization' => [1, 3],
-            'experience_years' => 12,
-            'city_id' => 1,
-            'bio' => 'Experienced talent scout with a passion for discovering young athletes across India.',
-        ]);
+        $created = 0;
+
+        foreach ($scouts as $row) {
+            $userId = SeedLookup::userId($row['email']);
+
+            if (! $userId) {
+                $this->command->warn("User {$row['email']} not found. Run UserSeeder first.");
+                continue;
+            }
+
+            TalentScoutProfile::updateOrCreate(
+                ['user_id' => $userId],
+                [
+                    'organization' => $row['organization'],
+                    'affiliation' => $row['affiliation'],
+                    'sports_specialization' => SeedLookup::sportIds($row['sports_specialization']),
+                    'experience_years' => $row['experience_years'],
+                    'city_id' => SeedLookup::cityId($row['city']),
+                    'bio' => $row['bio'],
+                    'listing_status' => $row['listing_status'],
+                ]
+            );
+
+            $created++;
+        }
+
+        $this->command->info('Talent scout profiles seeded: '.$created);
     }
 }

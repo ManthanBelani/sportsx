@@ -1,0 +1,4495 @@
+{
+  "meta": {
+    "base": "http://127.0.0.1:8000",
+    "flags": {
+      "destructive": true,
+      "cleanup": true
+    },
+    "finished_at": "2026-10-20T06:21:37.825Z"
+  },
+  "created": {
+    "organizerProfileId": 1,
+    "createdUserId": 26,
+    "orgTrialId": 9,
+    "orgTournamentId": 11,
+    "opportunityTrId": 8,
+    "myNewTrialRegId": 4,
+    "myTournRegId": null,
+    "ath2TournRegId": null,
+    "pendingEnrollmentId": 4,
+    "rejectEnrollmentId": 5,
+    "coachTrialId": 10,
+    "programTrId": 8,
+    "facilityId": 8,
+    "achievementTrId": 3,
+    "uploadedMediaId": 51,
+    "reportId": 2,
+    "pendingConnectionId": 12,
+    "myPostId": 4,
+    "myCommentId": 3,
+    "enquiryTrId": 5,
+    "opportunityAppId": 7,
+    "scoutConnectionsCount": 3,
+    "scoutConnectionId": 3
+  },
+  "results": [
+    {
+      "suite": "Boot",
+      "method": "POST",
+      "name": "login athlete",
+      "path": "login athlete",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Boot",
+      "method": "POST",
+      "name": "login athlete2",
+      "path": "login athlete2",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Boot",
+      "method": "POST",
+      "name": "login coach",
+      "path": "login coach",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Boot",
+      "method": "POST",
+      "name": "login academy",
+      "path": "login academy",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Boot",
+      "method": "POST",
+      "name": "login organizer",
+      "path": "login organizer",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Boot",
+      "method": "POST",
+      "name": "login sponsor",
+      "path": "login sponsor",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Boot",
+      "method": "POST",
+      "name": "login scout",
+      "path": "login scout",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Admin",
+      "method": "POST",
+      "name": "POST /admin/login",
+      "path": "/admin/login",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "api root manifest",
+      "path": "/",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /health",
+      "path": "/health",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /system/health",
+      "path": "/system/health",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /meta/sports",
+      "path": "/meta/sports",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /meta/cities",
+      "path": "/meta/cities",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /meta/age-groups",
+      "path": "/meta/age-groups",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /meta/positions",
+      "path": "/meta/positions",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /meta/facilities",
+      "path": "/meta/facilities",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /meta/trending-searches",
+      "path": "/meta/trending-searches",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /academies",
+      "path": "/academies",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /academies/{id}",
+      "path": "/academies/1",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /coaches",
+      "path": "/coaches",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /coaches/{id}",
+      "path": "/coaches/1",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /trials",
+      "path": "/trials",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /trials/{id}",
+      "path": "/trials/4",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /tournaments",
+      "path": "/tournaments",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /tournaments/{id}",
+      "path": "/tournaments/4",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /tournaments/{id}/results (public)",
+      "path": "/tournaments/4/results",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /opportunities?type=scholarship",
+      "path": "/opportunities?type=scholarship",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /opportunities?type=sponsorship",
+      "path": "/opportunities?type=sponsorship",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /opportunities/{id}",
+      "path": "/opportunities/1",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /programs",
+      "path": "/programs",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /programs/{id}",
+      "path": "/programs/1",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /sports-venues",
+      "path": "/sports-venues",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /sports-venues/{id}",
+      "path": "/sports-venues/1",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /explore",
+      "path": "/explore",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /search?q=cricket",
+      "path": "/search?q=cricket",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /organizers/{id} (public card)",
+      "path": "/organizers/1",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /scholarships → 410 (legacy gone)",
+      "path": "/scholarships",
+      "expected": [
+        410
+      ],
+      "status": 410,
+      "ok": true,
+      "state": "pass",
+      "note": "Scholarships and sponsorships are now opportunities. Use GET /api/v1/opportunities instead."
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /scholarships/{id} → 410",
+      "path": "/scholarships/1",
+      "expected": [
+        410
+      ],
+      "status": 410,
+      "ok": true,
+      "state": "pass",
+      "note": "Scholarships and sponsorships are now opportunities. Use GET /api/v1/opportunities instead."
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /sponsorships → 410 (legacy gone)",
+      "path": "/sponsorships",
+      "expected": [
+        410
+      ],
+      "status": 410,
+      "ok": true,
+      "state": "pass",
+      "note": "Scholarships and sponsorships are now opportunities. Use GET /api/v1/opportunities instead."
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /sponsorships/{id} → 410",
+      "path": "/sponsorships/1",
+      "expected": [
+        410
+      ],
+      "status": 410,
+      "ok": true,
+      "state": "pass",
+      "note": "Scholarships and sponsorships are now opportunities. Use GET /api/v1/opportunities instead."
+    },
+    {
+      "suite": "Public",
+      "method": "GET",
+      "name": "GET /unknown-route → 404",
+      "path": "/definitely-not-a-route",
+      "expected": [
+        404
+      ],
+      "status": 404,
+      "ok": true,
+      "state": "pass",
+      "note": "Endpoint not found."
+    },
+    {
+      "suite": "Auth",
+      "method": "POST",
+      "name": "POST /auth/login (bad password)",
+      "path": "/auth/login",
+      "expected": [
+        401
+      ],
+      "status": 401,
+      "ok": true,
+      "state": "pass",
+      "note": "Invalid credentials"
+    },
+    {
+      "suite": "Auth",
+      "method": "POST",
+      "name": "POST /auth/login (unknown email)",
+      "path": "/auth/login",
+      "expected": [
+        401
+      ],
+      "status": 401,
+      "ok": true,
+      "state": "pass",
+      "note": "Invalid credentials"
+    },
+    {
+      "suite": "Auth",
+      "method": "POST",
+      "name": "POST /auth/register (validation → 422)",
+      "path": "/auth/register",
+      "expected": [
+        422
+      ],
+      "status": 422,
+      "ok": true,
+      "state": "pass",
+      "note": "The given data was invalid."
+    },
+    {
+      "suite": "Auth",
+      "method": "POST",
+      "name": "POST /auth/register (sponsor role → 410)",
+      "path": "/auth/register",
+      "expected": [
+        410
+      ],
+      "status": 410,
+      "ok": true,
+      "state": "pass",
+      "note": "Sponsor accounts are no longer offered. Providers list scholarships and sponsorships as opportunities instead."
+    },
+    {
+      "suite": "Auth",
+      "method": "POST",
+      "name": "POST /auth/register (valid athlete → 201)",
+      "path": "/auth/register",
+      "expected": [
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": "Registration successful."
+    },
+    {
+      "suite": "Auth",
+      "method": "POST",
+      "name": "POST /auth/forgot-password (200)",
+      "path": "/auth/forgot-password",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": "If an account exists, a reset link has been sent"
+    },
+    {
+      "suite": "Auth",
+      "method": "POST",
+      "name": "POST /auth/send-otp (bad channel → 422)",
+      "path": "/auth/send-otp",
+      "expected": [
+        422
+      ],
+      "status": 422,
+      "ok": true,
+      "state": "pass",
+      "note": "The given data was invalid."
+    },
+    {
+      "suite": "Auth",
+      "method": "GET",
+      "name": "GET /auth/me (no token → 401)",
+      "path": "/auth/me",
+      "expected": [
+        401
+      ],
+      "status": 401,
+      "ok": true,
+      "state": "pass",
+      "note": "Unauthenticated."
+    },
+    {
+      "suite": "Auth",
+      "method": "GET",
+      "name": "GET /me/profile (no token → 401)",
+      "path": "/me/profile",
+      "expected": [
+        401
+      ],
+      "status": 401,
+      "ok": true,
+      "state": "pass",
+      "note": "Unauthenticated."
+    },
+    {
+      "suite": "Auth",
+      "method": "GET",
+      "name": "GET /admin/dashboard (no token → 401)",
+      "path": "/admin/dashboard",
+      "expected": [
+        401
+      ],
+      "status": 401,
+      "ok": true,
+      "state": "pass",
+      "note": "Unauthenticated."
+    },
+    {
+      "suite": "Auth",
+      "method": "GET",
+      "name": "GET /me/activity (forged token → 401)",
+      "path": "/me/activity",
+      "expected": [
+        401
+      ],
+      "status": 401,
+      "ok": true,
+      "state": "pass",
+      "note": "Unauthenticated."
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC athlete → coach-profile",
+      "path": "/me/coach-profile",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC athlete → academy profile",
+      "path": "/me/academy",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC athlete → organizer profile",
+      "path": "/me/organizer",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC athlete → academy facilities",
+      "path": "/me/facilities",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC athlete → coach enrollments inbox",
+      "path": "/coach/enrollments",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC athlete → scout profile",
+      "path": "/me/scout-profile",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC athlete → scout shortlist",
+      "path": "/me/scout-shortlist",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC athlete → organizer analytics",
+      "path": "/me/organizer/analytics",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "POST",
+      "name": "RBAC athlete → program create",
+      "path": "/me/programs",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Only coach or academy accounts can post programs."
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC athlete → admin dashboard",
+      "path": "/admin/dashboard",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC athlete → admin users",
+      "path": "/admin/users",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC athlete → admin settings",
+      "path": "/admin/settings",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC athlete → admin verification queue",
+      "path": "/admin/verification",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "PATCH",
+      "name": "RBAC athlete → admin verification approve",
+      "path": "/admin/verification/1/approve",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC coach → academy profile",
+      "path": "/me/academy",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC coach → academy facilities",
+      "path": "/me/facilities",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC coach → organizer profile",
+      "path": "/me/organizer",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC coach → scouts directory (athlete only)",
+      "path": "/scouts",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC coach → athlete discovery",
+      "path": "/athletes",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC coach → observations (scout only)",
+      "path": "/observations",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Scout profile required."
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC coach → admin users",
+      "path": "/admin/users",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "POST",
+      "name": "RBAC coach → trial registration (athlete only)",
+      "path": "/trials/4/register",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "POST",
+      "name": "RBAC coach → coaching enrollment start (athlete only)",
+      "path": "/coaches/1/enroll",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC academy → coach-profile",
+      "path": "/me/coach-profile",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC academy → scout profile",
+      "path": "/me/scout-profile",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC academy → organizer profile",
+      "path": "/me/organizer",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC organizer → coach-profile",
+      "path": "/me/coach-profile",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC organizer → academy facilities",
+      "path": "/me/facilities",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC sponsor → scouts directory (athlete only)",
+      "path": "/scouts",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC sponsor → scout profile",
+      "path": "/me/scout-profile",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC sponsor → coach enrollments",
+      "path": "/coach/enrollments",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "POST",
+      "name": "RBAC sponsor → opportunity apply (athlete only)",
+      "path": "/opportunities/1/apply",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC scout → coach enrollments",
+      "path": "/coach/enrollments",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC scout → academy facilities",
+      "path": "/me/facilities",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "RBAC Guard",
+      "method": "GET",
+      "name": "RBAC athlete2 → coach-profile",
+      "path": "/me/coach-profile",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Insufficient permissions"
+    },
+    {
+      "suite": "Organizer",
+      "method": "GET",
+      "name": "GET /auth/me",
+      "path": "/auth/me",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Organizer",
+      "method": "GET",
+      "name": "GET /me/organizer",
+      "path": "/me/organizer",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Organizer",
+      "method": "PUT",
+      "name": "PUT /me/organizer",
+      "path": "/me/organizer",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Organizer",
+      "method": "GET",
+      "name": "GET /me/organizer/analytics",
+      "path": "/me/organizer/analytics",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Organizer",
+      "method": "GET",
+      "name": "GET /me/events (all)",
+      "path": "/me/events?filter=all",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Organizer",
+      "method": "POST",
+      "name": "POST /me/events?type=trial",
+      "path": "/me/events?type=trial",
+      "expected": [
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Organizer",
+      "method": "PUT",
+      "name": "PUT /me/events/{trial}",
+      "path": "/me/events/9?type=trial",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Organizer",
+      "method": "POST",
+      "name": "POST /me/events/{trial}/publish",
+      "path": "/me/events/9/publish?type=trial",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Organizer",
+      "method": "GET",
+      "name": "GET /events/{trial} (show)",
+      "path": "/events/9",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Organizer",
+      "method": "POST",
+      "name": "POST /me/events?type=tournament",
+      "path": "/me/events?type=tournament",
+      "expected": [
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Organizer",
+      "method": "PUT",
+      "name": "PUT /me/events/{tournament}",
+      "path": "/me/events/11?type=tournament",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Organizer",
+      "method": "GET",
+      "name": "GET /tournaments/{id} (fetch created cat)",
+      "path": "/tournaments/11",
+      "expected": [
+        200
+      ],
+      "status": 404,
+      "ok": false,
+      "state": "fail",
+      "note": "Endpoint not found."
+    },
+    {
+      "suite": "Organizer",
+      "method": "PUT",
+      "name": "PUT /me/tournaments/{id}/categories",
+      "path": "/me/tournaments/11/categories",
+      "expected": [
+        200
+      ],
+      "status": 500,
+      "ok": false,
+      "state": "fail",
+      "note": "SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '11-1' for key 'tournament_categories_tournament_id_age_group_id_unique' (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: sportx_dev, SQL: insert into `tournament_categories` (`name`, `capacity`, `age_group_id`, `tournament_id`, `updated_at`, `created_at`) values (Open TR, 40, 1, 11, 2026-10-20 06:18:10, 2026-10-20 06:18:10))"
+    },
+    {
+      "suite": "Organizer",
+      "method": "POST",
+      "name": "POST /me/events/{tournament}/publish",
+      "path": "/me/events/11/publish?type=tournament",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Organizer",
+      "method": "PUT",
+      "name": "PUT /tournaments/{id}/capacity (owner)",
+      "path": "/tournaments/11/capacity",
+      "expected": [
+        200
+      ],
+      "status": 422,
+      "ok": false,
+      "state": "fail",
+      "note": "The given data was invalid."
+    },
+    {
+      "suite": "Organizer",
+      "method": "GET",
+      "name": "GET /tournaments/{id}/capacity (owner)",
+      "path": "/tournaments/11/capacity",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Organizer",
+      "method": "POST",
+      "name": "POST /me/opportunities (scholarship TR)",
+      "path": "/me/opportunities",
+      "expected": [
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Organizer",
+      "method": "PUT",
+      "name": "PUT /me/opportunities/{id}",
+      "path": "/me/opportunities/8",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Organizer",
+      "method": "POST",
+      "name": "POST /me/opportunities/{id}/publish",
+      "path": "/me/opportunities/8/publish",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Organizer",
+      "method": "GET",
+      "name": "GET /me/opportunities",
+      "path": "/me/opportunities",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Organizer",
+      "method": "GET",
+      "name": "GET /me/home (any role can)",
+      "path": "/me/home",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "POST",
+      "name": "POST /trials/{trial}/register (athlete)",
+      "path": "/trials/9/register",
+      "expected": [
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": "Registration request submitted successfully"
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "GET",
+      "name": "GET /me/registrations/trials (mine)",
+      "path": "/me/registrations/trials",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "GET",
+      "name": "GET /trials/{trial}/registrations (owner)",
+      "path": "/trials/9/registrations",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "GET",
+      "name": "GET /trials/{trial}/pending-requests (owner)",
+      "path": "/trials/9/pending-requests",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "POST",
+      "name": "POST /registrations/trials/{reg}/verify (owner)",
+      "path": "/registrations/trials/4/verify",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": "Trial registration approved"
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "PATCH",
+      "name": "PATCH /registrations/trials/{reg}/approve (owner)",
+      "path": "/registrations/trials/4/approve",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": "Trial registration approved"
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "GET",
+      "name": "GET /registrations/trials/{reg} (detail)",
+      "path": "/registrations/trials/4",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "GET",
+      "name": "GET /registrations/trials/{reg}/ics",
+      "path": "/registrations/trials/4/ics",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": "BEGIN:VCALENDAR VERSION:2.0 PRODID:-//SportX//Event Calendar//EN CALSCALE:GREGORIAN BEGIN:VEVENT UID:trial-4@s"
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "POST",
+      "name": "POST /tournaments/{t}/register (athlete)",
+      "path": "/tournaments/11/register",
+      "expected": [
+        200
+      ],
+      "status": 422,
+      "ok": false,
+      "state": "fail",
+      "note": "The given data was invalid."
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "GET",
+      "name": "GET /me/registrations/tournaments (athlete)",
+      "path": "/me/registrations/tournaments",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "POST",
+      "name": "POST /tournaments/{t}/register (athlete2)",
+      "path": "/tournaments/11/register",
+      "expected": [
+        200
+      ],
+      "status": 422,
+      "ok": false,
+      "state": "fail",
+      "note": "The given data was invalid."
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "GET",
+      "name": "GET /me/registrations/tournaments (athlete2)",
+      "path": "/me/registrations/tournaments",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "GET",
+      "name": "GET /tournaments/{t}/pending-requests (owner)",
+      "path": "/tournaments/11/pending-requests",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "PATCH",
+      "name": "PATCH /registrations/tournaments/{reg}/approve (owner)",
+      "path": "PATCH /registrations/tournaments/{reg}/approve (owner)",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "unresolved context: myTournRegId"
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "PATCH",
+      "name": "PATCH /registrations/tournaments/{reg}/payment (owner)",
+      "path": "PATCH /registrations/tournaments/{reg}/payment (owner)",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "unresolved context: myTournRegId"
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "PATCH",
+      "name": "PATCH /registrations/tournaments/{reg}/reject (ath2, owner)",
+      "path": "PATCH /registrations/tournaments/{reg}/reject (ath2, owner)",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "unresolved context: ath2TournRegId"
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "POST",
+      "name": "POST /events/{t}/registrations/bulk",
+      "path": "/events/11/registrations/bulk?type=tournament",
+      "expected": [
+        200
+      ],
+      "status": 422,
+      "ok": false,
+      "state": "fail",
+      "note": "The given data was invalid."
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "GET",
+      "name": "GET /events/{t}/registrations (owner)",
+      "path": "/events/11/registrations?type=tournament",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "GET",
+      "name": "GET /events/{t}/registrations/export (CSV)",
+      "path": "/events/11/registrations/export?type=tournament",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": "id,athlete,status,payment_status,created_at "
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "GET",
+      "name": "GET /registrations/{reg} (unified)",
+      "path": "GET /registrations/{reg} (unified)",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "unresolved context: myTournRegId"
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "GET",
+      "name": "GET /registrations/tournaments/{reg}/ics",
+      "path": "GET /registrations/tournaments/{reg}/ics",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "unresolved context: myTournRegId"
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "POST",
+      "name": "POST /tournaments/{t}/results (store)",
+      "path": "/tournaments/11/results",
+      "expected": [
+        201
+      ],
+      "status": 422,
+      "ok": false,
+      "state": "fail",
+      "note": "The given data was invalid."
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "POST",
+      "name": "POST /tournaments/{t}/results/{r}/publish",
+      "path": "POST /tournaments/{t}/results/{r}/publish",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "unresolved context: orgResultId"
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "GET",
+      "name": "GET /tournaments/{t}/results (public read-back)",
+      "path": "/tournaments/11/results",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "POST",
+      "name": "POST /tournaments/{t}/results/{r}/unpublish",
+      "path": "POST /tournaments/{t}/results/{r}/unpublish",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "unresolved context: orgResultId"
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "POST",
+      "name": "POST /tournaments/{t}/results/{r}/publish (restore)",
+      "path": "POST /tournaments/{t}/results/{r}/publish (restore)",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "unresolved context: orgResultId"
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "POST",
+      "name": "POST /me/events/{trial}/close (end of life)",
+      "path": "/me/events/9/close?type=trial",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Lifecycle",
+      "method": "POST",
+      "name": "POST /me/events/{tournament}/close (end of life)",
+      "path": "/me/events/11/close?type=tournament",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Enrollment",
+      "method": "POST",
+      "name": "POST /coaches/{coach}/enroll (athlete, session)",
+      "path": "/coaches/1/enroll",
+      "expected": [
+        200,
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": "Enrollment request submitted"
+    },
+    {
+      "suite": "Enrollment",
+      "method": "GET",
+      "name": "GET /me/coaching-enrollments (athlete)",
+      "path": "/me/coaching-enrollments",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Enrollment",
+      "method": "GET",
+      "name": "GET /coach/enrollments (coach inbox)",
+      "path": "/coach/enrollments",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Enrollment",
+      "method": "PATCH",
+      "name": "PATCH /coaching-enrollments/{e}/approve (coach)",
+      "path": "/coaching-enrollments/4/approve",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": "Enrollment approved"
+    },
+    {
+      "suite": "Enrollment",
+      "method": "POST",
+      "name": "POST /coaches/{coach}/enroll (athlete2, monthly)",
+      "path": "/coaches/1/enroll",
+      "expected": [
+        200,
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": "Enrollment request submitted"
+    },
+    {
+      "suite": "Enrollment",
+      "method": "GET",
+      "name": "GET /coach/enrollments (fresh state again)",
+      "path": "/coach/enrollments",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Enrollment",
+      "method": "PATCH",
+      "name": "PATCH /coaching-enrollments/{e}/reject (coach)",
+      "path": "/coaching-enrollments/5/reject",
+      "expected": [
+        200
+      ],
+      "status": 422,
+      "ok": false,
+      "state": "fail",
+      "note": "The given data was invalid."
+    },
+    {
+      "suite": "Enrollment",
+      "method": "GET",
+      "name": "GET /me/coaching-enrollments (athlete2 after reject)",
+      "path": "/me/coaching-enrollments",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "GET",
+      "name": "GET /me/coach-profile",
+      "path": "/me/coach-profile",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "PUT",
+      "name": "PUT /me/coach-profile",
+      "path": "/me/coach-profile",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "GET",
+      "name": "GET /me/events (mine)",
+      "path": "/me/events?filter=all",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "POST",
+      "name": "POST /me/trials (coach trial TR)",
+      "path": "/me/trials",
+      "expected": [
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "PUT",
+      "name": "PUT /me/trials/{id}",
+      "path": "/me/trials/10",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "POST",
+      "name": "POST /me/trials/{id}/publish",
+      "path": "/me/trials/10/publish",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "POST",
+      "name": "POST /me/trials/{id}/close",
+      "path": "/me/trials/10/close",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "POST",
+      "name": "POST /me/programs (program TR)",
+      "path": "/me/programs",
+      "expected": [
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "PUT",
+      "name": "PUT /me/programs/{id}",
+      "path": "/me/programs/8",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "GET",
+      "name": "GET /me/programs",
+      "path": "/me/programs",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "GET",
+      "name": "GET /me/enquiries (coach inbox)",
+      "path": "/me/enquiries",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "GET",
+      "name": "GET /me/activity",
+      "path": "/me/activity",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "GET",
+      "name": "GET /me/completion-checklist",
+      "path": "/me/completion-checklist",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "GET",
+      "name": "GET /me/settings",
+      "path": "/me/settings",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "PUT",
+      "name": "PUT /me/settings (language)",
+      "path": "/me/settings",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "GET",
+      "name": "GET /me/social-links",
+      "path": "/me/social-links",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "PUT",
+      "name": "PUT /me/social-links",
+      "path": "/me/social-links",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "GET",
+      "name": "GET /me/privacy",
+      "path": "/me/privacy",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "PUT",
+      "name": "PUT /me/privacy",
+      "path": "/me/privacy",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "GET",
+      "name": "GET /me/notification-preferences",
+      "path": "/me/notification-preferences",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "PUT",
+      "name": "PUT /me/notification-preferences",
+      "path": "/me/notification-preferences",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "POST",
+      "name": "POST /me/change-password (wrong current → 401)",
+      "path": "/me/change-password",
+      "expected": [
+        401
+      ],
+      "status": 401,
+      "ok": true,
+      "state": "pass",
+      "note": "Current password is incorrect"
+    },
+    {
+      "suite": "Coach",
+      "method": "POST",
+      "name": "POST /me/device-tokens/subscribe",
+      "path": "/me/device-tokens/subscribe",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "POST",
+      "name": "POST /me/device-tokens/test",
+      "path": "/me/device-tokens/test",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "GET",
+      "name": "GET /me/notifications",
+      "path": "/me/notifications",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "POST",
+      "name": "POST /me/notifications/read-all",
+      "path": "/me/notifications/read-all",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "POST",
+      "name": "POST /analytics/events",
+      "path": "/analytics/events",
+      "expected": [
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "POST",
+      "name": "POST /me/recent-searches",
+      "path": "/me/recent-searches",
+      "expected": [
+        200,
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "GET",
+      "name": "GET /me/recent-searches",
+      "path": "/me/recent-searches",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "GET",
+      "name": "GET /leaderboard",
+      "path": "/leaderboard",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "GET",
+      "name": "GET /leaderboard/strip",
+      "path": "/leaderboard/strip",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Coach",
+      "method": "GET",
+      "name": "GET /me/home",
+      "path": "/me/home",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Academy",
+      "method": "GET",
+      "name": "GET /me/academy",
+      "path": "/me/academy",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Academy",
+      "method": "PUT",
+      "name": "PUT /me/academy",
+      "path": "/me/academy",
+      "expected": [
+        200
+      ],
+      "status": 422,
+      "ok": false,
+      "state": "fail",
+      "note": "The given data was invalid."
+    },
+    {
+      "suite": "Academy",
+      "method": "POST",
+      "name": "POST /me/facilities (create TR)",
+      "path": "/me/facilities",
+      "expected": [
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Academy",
+      "method": "PUT",
+      "name": "PUT /me/facilities/{id}",
+      "path": "/me/facilities/8",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Academy",
+      "method": "GET",
+      "name": "GET /me/facilities",
+      "path": "/me/facilities",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Academy",
+      "method": "DELETE",
+      "name": "DELETE /me/facilities/{id} (cleanup own)",
+      "path": "/me/facilities/8",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Academy",
+      "method": "GET",
+      "name": "GET /me/enquiries",
+      "path": "/me/enquiries",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Academy",
+      "method": "GET",
+      "name": "GET /me/home",
+      "path": "/me/home",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Academy",
+      "method": "GET",
+      "name": "GET /me/completion-checklist",
+      "path": "/me/completion-checklist",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Academy",
+      "method": "GET",
+      "name": "GET /me/activity",
+      "path": "/me/activity",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /auth/me",
+      "path": "/auth/me",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /me/profile",
+      "path": "/me/profile",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "PUT",
+      "name": "PUT /me/profile (full shape)",
+      "path": "/me/profile",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "PUT",
+      "name": "PUT /me/profile/sports",
+      "path": "/me/profile/sports",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /me/completion-checklist",
+      "path": "/me/completion-checklist",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /me/home",
+      "path": "/me/home",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /explore (auth)",
+      "path": "/explore",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /search (auth)",
+      "path": "/search?q=football",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /leaderboard",
+      "path": "/leaderboard",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /leaderboard/strip",
+      "path": "/leaderboard/strip",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /athletes (peer discovery)",
+      "path": "/athletes",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /athletes/{id}",
+      "path": "/athletes/1",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /me/settings",
+      "path": "/me/settings",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "PUT",
+      "name": "PUT /me/settings",
+      "path": "/me/settings",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /me/privacy",
+      "path": "/me/privacy",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "PUT",
+      "name": "PUT /me/privacy",
+      "path": "/me/privacy",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /me/social-links",
+      "path": "/me/social-links",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "PUT",
+      "name": "PUT /me/social-links",
+      "path": "/me/social-links",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /me/activity",
+      "path": "/me/activity",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /me/notifications",
+      "path": "/me/notifications",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "PATCH",
+      "name": "PATCH /me/notifications/{n}/read",
+      "path": "/me/notifications/1/read",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /me/notification-preferences",
+      "path": "/me/notification-preferences",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "PUT",
+      "name": "PUT /me/notification-preferences",
+      "path": "/me/notification-preferences",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "POST",
+      "name": "POST /analytics/events",
+      "path": "/analytics/events",
+      "expected": [
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "POST",
+      "name": "POST /me/saved (save opportunity)",
+      "path": "/me/saved",
+      "expected": [
+        200,
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /me/saved",
+      "path": "/me/saved",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "DELETE",
+      "name": "DELETE /me/saved (unsaved)",
+      "path": "/me/saved",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "POST",
+      "name": "POST /me/achievements",
+      "path": "/me/achievements",
+      "expected": [
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "PUT",
+      "name": "PUT /me/achievements/{id}",
+      "path": "/me/achievements/3",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /me/achievements",
+      "path": "/me/achievements",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "DELETE",
+      "name": "DELETE /me/achievements/{id} (cleanup)",
+      "path": "/me/achievements/3",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "POST",
+      "name": "POST /media/upload (png)",
+      "path": "/media/upload",
+      "expected": [
+        200
+      ],
+      "status": 201,
+      "ok": false,
+      "state": "fail",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /me/media",
+      "path": "/me/media",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /media/{id}/signed-url",
+      "path": "/media/51/signed-url",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "DELETE",
+      "name": "DELETE /media/{id} (cleanup own upload)",
+      "path": "/media/51",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "POST",
+      "name": "POST /me/verification (own profile)",
+      "path": "/me/verification",
+      "expected": [
+        200,
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /me/verification",
+      "path": "/me/verification",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /me/guardian-controls",
+      "path": "/me/guardian-controls",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "POST",
+      "name": "POST /reports",
+      "path": "/reports",
+      "expected": [
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /me/reports",
+      "path": "/me/reports",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /observations (not a scout → 403)",
+      "path": "/observations",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Scout profile required."
+    },
+    {
+      "suite": "Athlete",
+      "method": "GET",
+      "name": "GET /scout/dashboard (not a scout → 403)",
+      "path": "/scout/dashboard",
+      "expected": [
+        403
+      ],
+      "status": 403,
+      "ok": true,
+      "state": "pass",
+      "note": "Scout profile required."
+    },
+    {
+      "suite": "Social",
+      "method": "POST",
+      "name": "POST /connections → priya",
+      "path": "/connections",
+      "expected": [
+        200,
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "POST",
+      "name": "POST /me/connections/request (alias route)",
+      "path": "/me/connections/request",
+      "expected": [
+        200
+      ],
+      "status": 409,
+      "ok": false,
+      "state": "fail",
+      "note": "Connection request already exists."
+    },
+    {
+      "suite": "Social",
+      "method": "GET",
+      "name": "GET /me/connections (athlete)",
+      "path": "/me/connections",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "GET",
+      "name": "GET /me/connections/requests (priya)",
+      "path": "/me/connections/requests",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "POST",
+      "name": "POST /me/connections/{id}/accept (priya)",
+      "path": "/me/connections/12/accept",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "GET",
+      "name": "GET /me/connections/count",
+      "path": "/me/connections/count",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "GET",
+      "name": "GET /me/connections/status/{userId}",
+      "path": "/me/connections/status/5",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "POST",
+      "name": "POST /conversations (private w/ coach)",
+      "path": "/conversations",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "POST",
+      "name": "POST /me/conversations (alias route)",
+      "path": "/me/conversations",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "GET",
+      "name": "GET /me/conversations",
+      "path": "/me/conversations",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "GET",
+      "name": "GET /conversations/{id} (athlete)",
+      "path": "/conversations/1",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "GET",
+      "name": "GET /conversations/{id} (coach)",
+      "path": "/conversations/1",
+      "expected": [
+        200
+      ],
+      "status": 403,
+      "ok": false,
+      "state": "fail",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "POST",
+      "name": "POST /conversations/{id}/messages (athlete)",
+      "path": "/conversations/1/messages",
+      "expected": [
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "POST",
+      "name": "POST /conversations/{id}/read (coach)",
+      "path": "/conversations/1/read",
+      "expected": [
+        200
+      ],
+      "status": 403,
+      "ok": false,
+      "state": "fail",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "PUT",
+      "name": "PUT /conversations/{id}/read (coach, alias verb)",
+      "path": "/conversations/1/read",
+      "expected": [
+        200
+      ],
+      "status": 403,
+      "ok": false,
+      "state": "fail",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "POST",
+      "name": "POST /follow/user/{priya}",
+      "path": "/follow/user/5",
+      "expected": [
+        200,
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "GET",
+      "name": "GET /me/following",
+      "path": "/me/following",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "GET",
+      "name": "GET /me/followers (priya)",
+      "path": "/me/followers",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "DELETE",
+      "name": "DELETE /follow/user/{priya} (cleanup)",
+      "path": "/follow/user/5",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "GET",
+      "name": "GET /feed",
+      "path": "/feed",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "GET",
+      "name": "GET /posts (alias)",
+      "path": "/posts",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "POST",
+      "name": "POST /posts",
+      "path": "/posts",
+      "expected": [
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "GET",
+      "name": "GET /posts/{mine}",
+      "path": "/posts/4",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "PATCH",
+      "name": "PATCH /posts/{mine} (edit)",
+      "path": "/posts/4",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "POST",
+      "name": "POST /posts/{mine}/like (priya)",
+      "path": "/posts/4/like",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "GET",
+      "name": "GET /posts/{mine}/comments",
+      "path": "/posts/4/comments",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "POST",
+      "name": "POST /posts/{mine}/comments (priya)",
+      "path": "/posts/4/comments",
+      "expected": [
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "DELETE",
+      "name": "DELETE /comments/{id} (cleanup)",
+      "path": "/comments/3",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "DELETE",
+      "name": "DELETE /posts/{mine}/like (unlike)",
+      "path": "/posts/4/like",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "DELETE",
+      "name": "DELETE /posts/{mine} (cleanup)",
+      "path": "/posts/4",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "POST",
+      "name": "POST /blocks (block runner-bot)",
+      "path": "/blocks",
+      "expected": [
+        200,
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "GET",
+      "name": "GET /blocks",
+      "path": "/blocks",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Social",
+      "method": "DELETE",
+      "name": "DELETE /blocks/{user} (unblock)",
+      "path": "/blocks/26",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": "note: if register block failed earlier this 404s — soft"
+    },
+    {
+      "suite": "Enquiries",
+      "method": "POST",
+      "name": "POST /enquiries (athlete → program TR)",
+      "path": "/enquiries",
+      "expected": [
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Enquiries",
+      "method": "GET",
+      "name": "GET /me/enquiries (athlete inbox)",
+      "path": "/me/enquiries",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Enquiries",
+      "method": "GET",
+      "name": "GET /enquiries/{id} (athlete owner)",
+      "path": "/enquiries/5",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Enquiries",
+      "method": "POST",
+      "name": "POST /enquiries/{id}/messages (coach reply)",
+      "path": "/enquiries/5/messages",
+      "expected": [
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Enquiries",
+      "method": "POST",
+      "name": "POST /enquiries/{id}/messages (admin reply)",
+      "path": "POST /enquiries/{id}/messages (admin reply)",
+      "expected": [
+        201
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Enquiries",
+      "method": "PUT",
+      "name": "PUT /enquiries/{id}/read (athlete)",
+      "path": "/enquiries/5/read",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Enquiries",
+      "method": "POST",
+      "name": "POST /opportunities/{id}/apply (athlete)",
+      "path": "/opportunities/8/apply",
+      "expected": [
+        200,
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Enquiries",
+      "method": "GET",
+      "name": "GET /me/opportunities?type=applied",
+      "path": "/me/opportunities?type=applied",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Sponsor",
+      "method": "GET",
+      "name": "GET /auth/me",
+      "path": "/auth/me",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Sponsor",
+      "method": "GET",
+      "name": "GET /athletes (discovery)",
+      "path": "/athletes",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Sponsor",
+      "method": "GET",
+      "name": "GET /athletes/{id}",
+      "path": "/athletes/1",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Sponsor",
+      "method": "GET",
+      "name": "GET /opportunities/{id}/applications (owner)",
+      "path": "/opportunities/8/applications",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Sponsor",
+      "method": "PATCH",
+      "name": "PATCH /opportunities/{id}/applications/{appId} (review)",
+      "path": "/opportunities/8/applications/7",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Sponsor",
+      "method": "GET",
+      "name": "GET /me/sponsorships → 410 (legacy)",
+      "path": "/me/sponsorships",
+      "expected": [
+        410
+      ],
+      "status": 410,
+      "ok": true,
+      "state": "pass",
+      "note": "Scholarships and sponsorships are now opportunities. Use GET /api/v1/opportunities instead."
+    },
+    {
+      "suite": "Sponsor",
+      "method": "POST",
+      "name": "POST /me/sponsorships → 410 (legacy)",
+      "path": "/me/sponsorships",
+      "expected": [
+        410
+      ],
+      "status": 410,
+      "ok": true,
+      "state": "pass",
+      "note": "Scholarships and sponsorships are now opportunities. Use GET /api/v1/opportunities instead."
+    },
+    {
+      "suite": "Sponsor",
+      "method": "GET",
+      "name": "GET /me/shortlist → 410 (legacy)",
+      "path": "/me/shortlist",
+      "expected": [
+        410
+      ],
+      "status": 410,
+      "ok": true,
+      "state": "pass",
+      "note": "Scholarships and sponsorships are now opportunities. Use GET /api/v1/opportunities instead."
+    },
+    {
+      "suite": "Sponsor",
+      "method": "POST",
+      "name": "POST /me/shortlist → 410 (legacy)",
+      "path": "/me/shortlist",
+      "expected": [
+        410
+      ],
+      "status": 410,
+      "ok": true,
+      "state": "pass",
+      "note": "Scholarships and sponsorships are now opportunities. Use GET /api/v1/opportunities instead."
+    },
+    {
+      "suite": "Sponsor",
+      "method": "GET",
+      "name": "GET /me/applications → 410 (legacy)",
+      "path": "/me/applications",
+      "expected": [
+        410
+      ],
+      "status": 410,
+      "ok": true,
+      "state": "pass",
+      "note": "Scholarships and sponsorships are now opportunities. Use GET /api/v1/opportunities instead."
+    },
+    {
+      "suite": "Talent Scout",
+      "method": "GET",
+      "name": "GET /auth/me",
+      "path": "/auth/me",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Talent Scout",
+      "method": "GET",
+      "name": "GET /me/scout-profile",
+      "path": "/me/scout-profile",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Talent Scout",
+      "method": "PUT",
+      "name": "PUT /me/scout-profile",
+      "path": "/me/scout-profile",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Talent Scout",
+      "method": "GET",
+      "name": "GET /athletes (scout discovery)",
+      "path": "/athletes",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Talent Scout",
+      "method": "GET",
+      "name": "GET /scout/dashboard",
+      "path": "/scout/dashboard",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Talent Scout",
+      "method": "POST",
+      "name": "POST /observations",
+      "path": "/observations",
+      "expected": [
+        201
+      ],
+      "status": 201,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Talent Scout",
+      "method": "GET",
+      "name": "GET /observations",
+      "path": "/observations",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Talent Scout",
+      "method": "POST",
+      "name": "POST /me/scout-shortlist/{athlete}",
+      "path": "/me/scout-shortlist/1",
+      "expected": [
+        200,
+        201
+      ],
+      "status": 409,
+      "ok": false,
+      "state": "fail",
+      "note": "Athlete already shortlisted."
+    },
+    {
+      "suite": "Talent Scout",
+      "method": "GET",
+      "name": "GET /me/scout-shortlist",
+      "path": "/me/scout-shortlist",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Talent Scout",
+      "method": "PATCH",
+      "name": "PATCH /me/scout-shortlist/{athlete}",
+      "path": "/me/scout-shortlist/1",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Talent Scout",
+      "method": "DELETE",
+      "name": "DELETE /me/scout-shortlist/{athlete} (cleanup)",
+      "path": "/me/scout-shortlist/1",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": "Removed from shortlist"
+    },
+    {
+      "suite": "Talent Scout",
+      "method": "POST",
+      "name": "POST /athletes/{id}/connect (scout → ath2)",
+      "path": "/athletes/2/connect",
+      "expected": [
+        200,
+        201,
+        409
+      ],
+      "status": 409,
+      "ok": true,
+      "state": "pass",
+      "note": "Connection already exists."
+    },
+    {
+      "suite": "Talent Scout",
+      "method": "GET",
+      "name": "GET /scout-connection-status/athlete/{id}",
+      "path": "/scout-connection-status/athlete/2",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Talent Scout",
+      "method": "GET",
+      "name": "GET /me/scout-connections (scout)",
+      "path": "/me/scout-connections",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Talent Scout",
+      "method": "GET",
+      "name": "GET /me/scout-connections/incoming",
+      "path": "/me/scout-connections/incoming",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Talent Scout",
+      "method": "POST",
+      "name": "POST /scouts/{scout}/connect (athlete initiate)",
+      "path": "/scouts/1/connect",
+      "expected": [
+        200,
+        201,
+        409
+      ],
+      "status": 409,
+      "ok": true,
+      "state": "pass",
+      "note": "Connection already exists."
+    },
+    {
+      "suite": "Talent Scout",
+      "method": "GET",
+      "name": "GET /me/scout-connection-requests (athlete side)",
+      "path": "/me/scout-connection-requests",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Talent Scout",
+      "method": "POST",
+      "name": "POST /me/scout-connection-requests/{id}/accept (athlete)",
+      "path": "/me/scout-connection-requests/3/accept",
+      "expected": [
+        200,
+        409
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Talent Scout",
+      "method": "GET",
+      "name": "GET /me/scout-connections (after accept)",
+      "path": "/me/scout-connections",
+      "expected": [
+        200
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": ""
+    },
+    {
+      "suite": "Talent Scout",
+      "method": "DELETE",
+      "name": "DELETE /me/scout-connections/{id} (cleanup)",
+      "path": "/me/scout-connections/3",
+      "expected": [
+        200,
+        404
+      ],
+      "status": 200,
+      "ok": true,
+      "state": "pass",
+      "note": "Connection removed."
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/me",
+      "path": "GET /admin/me",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/dashboard",
+      "path": "GET /admin/dashboard",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/verification (queue)",
+      "path": "GET /admin/verification (queue)",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/verification/{id}",
+      "path": "GET /admin/verification/{id}",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "PATCH",
+      "name": "PATCH /admin/verification/{id}/approve",
+      "path": "PATCH /admin/verification/{id}/approve",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/content (picker)",
+      "path": "GET /admin/content (picker)",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/content/trials",
+      "path": "GET /admin/content/trials",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/content/opportunities",
+      "path": "GET /admin/content/opportunities",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/content/trials/{id}",
+      "path": "GET /admin/content/trials/{id}",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/moderation/queue",
+      "path": "GET /admin/moderation/queue",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/moderation/reports/{id}",
+      "path": "GET /admin/moderation/reports/{id}",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "POST",
+      "name": "POST /admin/moderation/reports/{id}/approve",
+      "path": "POST /admin/moderation/reports/{id}/approve",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/expiry-rules",
+      "path": "GET /admin/expiry-rules",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/expiry/monitor",
+      "path": "GET /admin/expiry/monitor",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/categories/sports",
+      "path": "GET /admin/categories/sports",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "POST",
+      "name": "POST /admin/categories/sports (TR sport)",
+      "path": "POST /admin/categories/sports (TR sport)",
+      "expected": [
+        201
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "PUT",
+      "name": "PUT /admin/categories/sports/{id} (rename TR)",
+      "path": "PUT /admin/categories/sports/{id} (rename TR)",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/categories/cities",
+      "path": "GET /admin/categories/cities",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/categories/age-groups",
+      "path": "GET /admin/categories/age-groups",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/categories/positions",
+      "path": "GET /admin/categories/positions",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "DELETE",
+      "name": "DELETE /admin/categories/sports/{id} (cleanup TR)",
+      "path": "DELETE /admin/categories/sports/{id} (cleanup TR)",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/settings",
+      "path": "GET /admin/settings",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "PUT",
+      "name": "PUT /admin/settings (no-op body)",
+      "path": "PUT /admin/settings (no-op body)",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "PUT",
+      "name": "PUT /admin/settings (toggle boolean)",
+      "path": "PUT /admin/settings (toggle boolean)",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "PUT",
+      "name": "PUT /admin/settings (flip back)",
+      "path": "PUT /admin/settings (flip back)",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/email-settings",
+      "path": "GET /admin/email-settings",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/email-settings/diagnostics",
+      "path": "GET /admin/email-settings/diagnostics",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "POST",
+      "name": "POST /admin/email-settings/clear-token-cache",
+      "path": "POST /admin/email-settings/clear-token-cache",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/users",
+      "path": "GET /admin/users",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/users?q=runner-bot",
+      "path": "GET /admin/users?q=runner-bot",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/users/{id}",
+      "path": "GET /admin/users/{id}",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "POST",
+      "name": "POST /admin/users/{id}/approve (runner bot)",
+      "path": "POST /admin/users/{id}/approve (runner bot)",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/opportunities (review queue)",
+      "path": "GET /admin/opportunities (review queue)",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/notifications/stats",
+      "path": "GET /admin/notifications/stats",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/audit-logs",
+      "path": "GET /admin/audit-logs",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/audit-logs/{id}",
+      "path": "GET /admin/audit-logs/{id}",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/registrations/analytics/dashboard",
+      "path": "GET /admin/registrations/analytics/dashboard",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "GET",
+      "name": "GET /admin/registrations/activity-log",
+      "path": "GET /admin/registrations/activity-log",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "POST",
+      "name": "POST /admin/notifications/broadcast (in_app only)",
+      "path": "POST /admin/notifications/broadcast (in_app only)",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "POST",
+      "name": "POST /admin/users/{id}/suspend (runner bot)",
+      "path": "POST /admin/users/{id}/suspend (runner bot)",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Admin",
+      "method": "DELETE",
+      "name": "DELETE /admin/users/{id} (runner bot)",
+      "path": "DELETE /admin/users/{id} (runner bot)",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Cleanup",
+      "method": "DELETE",
+      "name": "DELETE /admin/content/trials/{orgTrial}",
+      "path": "DELETE /admin/content/trials/{orgTrial}",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Cleanup",
+      "method": "DELETE",
+      "name": "DELETE /admin/content/tournaments/{orgTournament}",
+      "path": "DELETE /admin/content/tournaments/{orgTournament}",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Cleanup",
+      "method": "DELETE",
+      "name": "DELETE /admin/content/trials/{coachTrial}",
+      "path": "DELETE /admin/content/trials/{coachTrial}",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Cleanup",
+      "method": "DELETE",
+      "name": "DELETE /admin/content/opportunities/{opportunityTr}",
+      "path": "DELETE /admin/content/opportunities/{opportunityTr}",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Cleanup",
+      "method": "DELETE",
+      "name": "DELETE /admin/content/programs/{programTr}",
+      "path": "DELETE /admin/content/programs/{programTr}",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    },
+    {
+      "suite": "Cleanup",
+      "method": "POST",
+      "name": "POST /admin/logout (last call)",
+      "path": "POST /admin/logout (last call)",
+      "expected": [
+        200
+      ],
+      "status": "SKIP",
+      "state": "skip",
+      "note": "no token for admin"
+    }
+  ]
+}

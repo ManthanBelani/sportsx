@@ -80,6 +80,11 @@ class User extends Authenticatable
         return $this->hasMany(SocialAccount::class);
     }
 
+    public function deviceTokens(): HasMany
+    {
+        return $this->hasMany(UserDeviceToken::class);
+    }
+
     /**
      * Guardian consents recorded for this athlete (minors only).
      *

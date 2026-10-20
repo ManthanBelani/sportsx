@@ -511,9 +511,24 @@ class AdminPanelController extends Controller
         // Role counts for targeting UI
         $roleCounts = User::select('role', \DB::raw('count(*) as cnt'))->where('status','active')->groupBy('role')->pluck('cnt','role');
         $totalActive = User::where('status','active')->count();
-        $fcmEnabled = app(\App\Services\FCMService::class)->isEnabled();
+        $fcmService = app(\App\Services\FCMService::class);
+        $fcmEnabled = $fcmService->isEnabled();
 
-        return view('admin.notifications', ['templates' => $templates, 'sent' => $sent, 'roleCounts' => $roleCounts, 'totalActive' => $totalActive, 'fcmEnabled' => $fcmEnabled]);
+        // Users with active device tokens for the test notification selector
+        $tokenUsers = User::whereHas('deviceTokens', fn ($q) => $q->active())
+            ->with(['deviceTokens' => fn ($q) => $q->active()])
+            ->get(['id', 'name', 'email', 'role']);
+        $totalActiveTokens = \App\Models\UserDeviceToken::active()->count();
+
+        return view('admin.notifications', [
+            'templates' => $templates,
+            'sent' => $sent,
+            'roleCounts' => $roleCounts,
+            'totalActive' => $totalActive,
+            'fcmEnabled' => $fcmEnabled,
+            'tokenUsers' => $tokenUsers,
+            'totalActiveTokens' => $totalActiveTokens,
+        ]);
     }
 
     public function broadcast(Request $request)
@@ -611,6 +626,81 @@ class AdminPanelController extends Controller
         if ($sendInApp) $parts[] = "In-app to {$inAppCount} ({$roleLabel})";
         if ($sendPush) $parts[] = "Push queued to {$pushCount} devices ({$roleLabel})";
         return back()->with('success', 'Broadcast sent: '.implode(' + ', $parts).'.');
+    }
+
+    /**
+     * Send an immediate test push notification directly via FCM (synchronous feedback).
+     */
+    public function sendTestNotification(Request $request)
+    {
+        $data = $request->validate([
+            'target_mode' => 'required|in:token,user,broadcast_test',
+            'device_token' => 'nullable|string|required_if:target_mode,token',
+            'user_id' => 'nullable|integer|required_if:target_mode,user|exists:users,id',
+            'title' => 'required|string|max:120',
+            'body' => 'required|string|max:500',
+            'channel' => 'nullable|string|in:sportx_default,sportx_enquiries,sportx_reminders,sportx_updates,sportx_announcements',
+        ]);
+
+        $fcmService = app(\App\Services\FCMService::class);
+        if (!$fcmService->isEnabled()) {
+            return back()->with('error', 'FCM is not enabled. Please check FCM_PROJECT_ID and FCM_CREDENTIALS_PATH in your .env file.');
+        }
+
+        $tokens = [];
+        $recipientDesc = '';
+
+        if ($data['target_mode'] === 'token') {
+            $tokens = [trim($data['device_token'])];
+            $recipientDesc = 'Custom Device Token (' . substr($tokens[0], 0, 16) . '...)';
+        } elseif ($data['target_mode'] === 'user') {
+            $user = User::findOrFail($data['user_id']);
+            $tokens = \App\Models\UserDeviceToken::where('user_id', $user->id)
+                ->active()
+                ->pluck('token')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+            $recipientDesc = "User {$user->name} ({$user->email})";
+            if (empty($tokens)) {
+                return back()->with('error', "User '{$user->name}' does not have any active device tokens registered. Please open and log into the mobile app with this account first.");
+            }
+        } else {
+            // broadcast_test: send to active tokens (capped to first 10 for safety)
+            $tokens = \App\Models\UserDeviceToken::active()
+                ->pluck('token')
+                ->filter()
+                ->unique()
+                ->take(10)
+                ->values()
+                ->all();
+            $recipientDesc = count($tokens) . ' registered device(s)';
+            if (empty($tokens)) {
+                return back()->with('error', 'No active device tokens found in the database. Open the mobile app and log in so a device token is registered.');
+            }
+        }
+
+        $channel = $data['channel'] ?? 'sportx_default';
+        $payloadData = [
+            'type' => 'test',
+            'category' => $channel,
+            'channel_id' => $channel,
+            'action_url' => '/notifications',
+            'timestamp' => (string) now()->timestamp,
+        ];
+
+        // Send synchronously for immediate test feedback
+        $result = $fcmService->sendPushNotification($tokens, $data['title'], $data['body'], $payloadData);
+
+        if ($result['success'] ?? false) {
+            $count = $result['success_count'] ?? count($result['sent'] ?? []);
+            return back()->with('success', "🎉 Test push notification dispatched successfully to {$recipientDesc}! (Delivered to {$count} device" . ($count > 1 ? 's' : '') . ")");
+        }
+
+        $failures = $result['failed'] ?? [];
+        $failSummary = !empty($failures) ? json_encode($failures) : ($result['message'] ?? 'Unknown error');
+        return back()->with('error', "❌ Push notification dispatch failed: {$failSummary}");
     }
 
     // ── Approvals (legacy — merged into Moderation) ───────────────────────────
