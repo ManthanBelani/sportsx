@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/academy/presentation/providers/academy_provider.dart';
+import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/core/role_config.dart';
 import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
@@ -41,6 +43,7 @@ class MyTrialsManagementScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(myTrialsProvider);
+    final canCreate = canCreateListings(ref.watch(authProvider).user?.role);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -73,22 +76,24 @@ class MyTrialsManagementScreen extends ConsumerWidget {
                       final trial = state.items[i];
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
-                        child: _buildTrialCard(context, ref, trial),
+                        child: _buildTrialCard(context, ref, trial, canCreate),
                       );
                     },
                   ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        onPressed: () => context.push('/post-trial'),
-        icon: const Icon(LucideIcons.plus),
-        label: const Text('New Trial'),
-      ),
+      floatingActionButton: canCreate
+          ? FloatingActionButton.extended(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              onPressed: () => context.push('/post-trial'),
+              icon: const Icon(LucideIcons.plus),
+              label: const Text('New Trial'),
+            )
+          : null,
     );
   }
 
-  Widget _buildTrialCard(BuildContext context, WidgetRef ref, Trial trial) {
+  Widget _buildTrialCard(BuildContext context, WidgetRef ref, Trial trial, bool canCreate) {
     final status = trial.status;
     return Container(
       padding: const EdgeInsets.all(16),
@@ -139,11 +144,11 @@ class MyTrialsManagementScreen extends ConsumerWidget {
               }
             },
             itemBuilder: (_) => [
-              const PopupMenuItem(value: 'edit', child: Text('Edit')),
+              if (canCreate) const PopupMenuItem(value: 'edit', child: Text('Edit')),
               const PopupMenuItem(value: 'registrants', child: Text('View Registrants')),
-              if (status == 'draft')
+              if (canCreate && status == 'draft')
                 const PopupMenuItem(value: 'publish', child: Text('Publish')),
-              if (status == 'published')
+              if (canCreate && status == 'published')
                 const PopupMenuItem(value: 'close', child: Text('Close')),
             ],
           ),

@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/opportunity/presentation/providers/opportunity_provider.dart';
+import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/core/role_config.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
@@ -61,10 +63,11 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
             style: GoogleFonts.sora(
                 fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         actions: [
-          IconButton(
-            icon: const Icon(LucideIcons.plus, color: AppColors.textPrimary),
-            onPressed: () => context.push('/post-opportunity'),
-          ),
+          if (canCreateListings(ref.watch(authProvider).user?.role))
+            IconButton(
+              icon: const Icon(LucideIcons.plus, color: AppColors.textPrimary),
+              onPressed: () => context.push('/post-opportunity'),
+            ),
         ],
       ),
       body: Column(

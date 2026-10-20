@@ -73,43 +73,45 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
                   const SizedBox(height: 10),
                   const RoleLine(badgeLabel: 'COACH'),
                   const LeaderboardSectionV3(),
-                  GridView.count(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    childAspectRatio: 0.62,
-                    children: [
-                      QuickTileV3(
-                        title: 'Opportunities',
-                        subtitle: 'Trials · Tournaments · Scholarships · Sponsorships',
-                        icon: LucideIcons.trophy,
-                        iconBg: AppColors.yellowTint,
-                        iconFg: AppColors.primaryDarker,
-                        onTap: () => context.push('/opportunities'),
-                        subtiles: const [
-                          (label: 'Trials', route: '/trials'),
-                          (label: 'Tournaments', route: '/tournaments'),
-                          (label: 'Scholarships', route: '/scholarships'),
-                          (label: 'Sponsors', route: '/sponsorships'),
-                        ],
-                      ),
-                      QuickTileV3(
-                        title: 'Academy, Coach & Training Centre',
-                        subtitle: 'Find Academies · Athletes · Training Centres',
-                        icon: LucideIcons.school,
-                        iconBg: AppColors.infoLight,
-                        iconFg: AppColors.info,
-                        onTap: () => context.push('/academies'),
-                        subtiles: const [
-                          (label: 'Academies', route: '/academies'),
-                          (label: 'Athletes', route: '/athlete-directory'),
-                          (label: 'Training', route: '/my-programs'),
-                          (label: 'More', route: '/explore'),
-                        ],
-                      ),
-                    ],
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: QuickTileV3(
+                            title: 'Opportunities',
+                            subtitle: 'Trials · Tournaments · Scholarships · Sponsorships',
+                            icon: LucideIcons.trophy,
+                            iconBg: AppColors.yellowTint,
+                            iconFg: AppColors.primaryDarker,
+                            onTap: () => context.push('/opportunities'),
+                            subtiles: const [
+                              (label: 'Trials', route: '/trials'),
+                              (label: 'Tournaments', route: '/tournaments'),
+                              (label: 'Scholarships', route: '/scholarships'),
+                              (label: 'Sponsors', route: '/sponsorships'),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: QuickTileV3(
+                            title: 'Academy, Coach & Training Centre',
+                            subtitle: 'Find Academies · Athletes · Training Centres',
+                            icon: LucideIcons.school,
+                            iconBg: AppColors.infoLight,
+                            iconFg: AppColors.info,
+                            onTap: () => context.push('/academies'),
+                            subtiles: const [
+                              (label: 'Academies', route: '/academies'),
+                              (label: 'Athletes', route: '/athlete-directory'),
+                              (label: 'Training', route: '/my-programs'),
+                              (label: 'More', route: '/explore'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const V3FeedPreview(),
                   _EnquiriesCard(state: ref.watch(enquiryInboxProvider)),

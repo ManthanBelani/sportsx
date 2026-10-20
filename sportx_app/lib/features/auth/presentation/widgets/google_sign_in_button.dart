@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -27,11 +28,22 @@ class _GoogleSignInButtonState extends ConsumerState<GoogleSignInButton> {
     if (_busy) return;
     setState(() => _busy = true);
     try {
-      // Web client id for backend audience check. Provision via
-      // --dart-define=GOOGLE_SERVER_CLIENT_ID=<web-client-id> (Google Cloud
-      // console → Web OAuth client). Empty in dev → native flow still attempted.
-      const serverId = String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID', defaultValue: '');
-      final google = GoogleSignIn(serverClientId: serverId.isEmpty ? null : serverId);
+      // Web client id for backend audience check.
+      // 1. Checked from --dart-define
+      // 2. Checked from .env file (GOOGLE_SERVER_CLIENT_ID)
+      // 3. Fallback to client_type 3 Web Client ID from google-services.json
+      final envServerId = dotenv.env['GOOGLE_SERVER_CLIENT_ID']?.trim() ?? '';
+      const defineServerId = String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID', defaultValue: '');
+      final serverId = defineServerId.isNotEmpty
+          ? defineServerId
+          : (envServerId.isNotEmpty
+              ? envServerId
+              : '241021895160-6ei8d3apdg08od7veagg052scpsg0hfp.apps.googleusercontent.com');
+
+      final google = GoogleSignIn(
+        serverClientId: serverId,
+        scopes: const ['email', 'profile'],
+      );
       final account = await google.signIn();
       if (account == null) {
         // User dismissed the account picker — not an error.

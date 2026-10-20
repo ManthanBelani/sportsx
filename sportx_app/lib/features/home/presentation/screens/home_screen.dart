@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -11,9 +11,9 @@ import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/providers/providers.dart';
 import 'package:sportx_app/theme/colors.dart';
 
-/// AT.1 Athlete home â€” v3 skin (sportsx-design-v3/v2/index.html, homeShell()).
-/// Layout mirrors the prototype: header â†’ greet card â†’ role line â†’
-/// Leaderboard â†’ quick tiles â†’ feed tabs + post â†’ recommended rail.
+/// AT.1 Athlete home — v3 skin (sportsx-design-v3/v2/index.html, homeShell()).
+/// Layout mirrors the prototype: header → greet card → role line →
+/// Leaderboard → quick tiles → feed tabs + post → recommended rail.
 /// Logic unchanged: same providers, same refresh, same routes.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -93,44 +93,48 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   const LeaderboardSectionV3(),
 
-                  // .quick-grid â€” Opportunities + Academy/Coach & Training Centre.
-                  GridView.count(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    childAspectRatio: 0.62,
-                    children: [
-                      QuickTileV3(
-                        title: 'Opportunities',
-                        subtitle: 'Trials Â· Tournaments Â· Scholarships Â· Sponsorships',
-                        icon: LucideIcons.trophy,
-                        iconBg: AppColors.yellowTint,
-                        iconFg: AppColors.primaryDarker,
-                        onTap: () => context.push('/opportunities'),
-                        subtiles: const [
-                          (label: 'Trials', route: '/trials'),
-                          (label: 'Tournaments', route: '/tournaments'),
-                          (label: 'Scholarships', route: '/scholarships'),
-                          (label: 'Sponsorships', route: '/sponsorships'),
-                        ],
-                      ),
-                      QuickTileV3(
-                        title: 'Academy, Coach & Training Centre',
-                        subtitle: 'Find Academies Â· Coaches Â· Training Centres',
-                        icon: LucideIcons.school,
-                        iconBg: AppColors.infoLight,
-                        iconFg: AppColors.info,
-                        onTap: () => context.push('/academies'),
-                        subtiles: const [
-                          (label: 'Academies', route: '/academies'),
-                          (label: 'Coaches', route: '/coaches'),
-                          (label: 'Training', route: '/my-programs'),
-                          (label: 'Centres', route: '/sports-venues'),
-                        ],
-                      ),
-                    ],
+                  // .quick-grid — Opportunities + Academy/Coach & Training Centre.
+                  // Laid out as a row (not a fixed-ratio grid) so each card
+                  // hugs its content instead of leaving empty white space.
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: QuickTileV3(
+                            title: 'Opportunities',
+                            subtitle: 'Trials · Tournaments · Scholarships · Sponsorships',
+                            icon: LucideIcons.trophy,
+                            iconBg: AppColors.yellowTint,
+                            iconFg: AppColors.primaryDarker,
+                            onTap: () => context.push('/opportunities'),
+                            subtiles: const [
+                              (label: 'Trials', route: '/trials'),
+                              (label: 'Tournaments', route: '/tournaments'),
+                              (label: 'Scholarships', route: '/scholarships'),
+                              (label: 'Sponsorships', route: '/sponsorships'),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: QuickTileV3(
+                            title: 'Academy, Coach & Training Centre',
+                            subtitle: 'Find Academies · Coaches · Training Centres',
+                            icon: LucideIcons.school,
+                            iconBg: AppColors.infoLight,
+                            iconFg: AppColors.info,
+                            onTap: () => context.push('/academies'),
+                            subtiles: const [
+                              (label: 'Academies', route: '/academies'),
+                              (label: 'Coaches', route: '/coaches'),
+                              (label: 'Training', route: '/my-programs'),
+                              (label: 'Centres', route: '/sports-venues'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const V3FeedPreview(),
                   const SizedBox(height: 18),
@@ -159,9 +163,9 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ────────────────────────────────────────────────────────────────────────────
 // Recommended people rail (v3 .rail / .acard)
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ────────────────────────────────────────────────────────────────────────────
 
 class _RecommendedRail extends ConsumerWidget {
   const _RecommendedRail();

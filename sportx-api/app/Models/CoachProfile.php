@@ -17,6 +17,7 @@ class CoachProfile extends Model
         'user_id', 'full_name', 'sport_id', 'contact_number', 'experience',
         'qualification', 'certifications', 'academy_id', 'languages', 'email',
         'personal_coaching', 'fee_structure', 'bio', 'city_id', 'photo_media_id',
+        'cover_media_id',
         'listing_status', 'profile_completeness', 'headline', 'location',
         'fee_per_session', 'fee_monthly', 'fee_quarterly', 'availability',
         'achievements',
@@ -56,6 +57,12 @@ class CoachProfile extends Model
     public function photo(): BelongsTo
     {
         return $this->belongsTo(MediaItem::class, 'photo_media_id');
+    }
+
+    /// Profile banner — kept separate from the profile photo and the gallery.
+    public function cover(): BelongsTo
+    {
+        return $this->belongsTo(MediaItem::class, 'cover_media_id');
     }
 
     public function mediaItems(): MorphMany

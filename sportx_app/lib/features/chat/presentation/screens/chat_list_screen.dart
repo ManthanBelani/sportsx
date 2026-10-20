@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/chat/presentation/providers/chat_provider.dart';
+import 'package:sportx_app/features/connections/presentation/widgets/connection_requests_view.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -50,58 +51,37 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
             _tabChip('Requests', 1),
           ]),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: TextField(
-            controller: _searchController,
-            onChanged: (_) => setState(() {}),
-            decoration: InputDecoration(
-              hintText: 'Search conversations...',
-              prefixIcon: const Icon(LucideIcons.search, color: AppColors.textTertiary),
-              suffixIcon: _searchController.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(LucideIcons.x, size: 18, color: AppColors.textSecondary),
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() {});
-                      },
-                    )
-                  : null,
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
-              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+        // Search only applies to conversations, not to connection requests.
+        if (_tab == 0)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (_) => setState(() {}),
+              decoration: InputDecoration(
+                hintText: 'Search conversations...',
+                prefixIcon: const Icon(LucideIcons.search, color: AppColors.textTertiary),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(LucideIcons.x, size: 18, color: AppColors.textSecondary),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {});
+                        },
+                      )
+                    : null,
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.border, width: 1.5)),
+                contentPadding: const EdgeInsets.symmetric(vertical: 12),
+              ),
             ),
           ),
-        ),
         Expanded(
           child: _tab == 1
-              ? ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 16), children: [
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: AppColors.border),
-                        borderRadius: BorderRadius.circular(14)),
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('Connection requests',
-                          style: GoogleFonts.sora(fontWeight: FontWeight.w700, color: AppColors.ink)),
-                      const SizedBox(height: 6),
-                      Text('Accept a request to unlock 1-to-1 chat. Enquiry threads appear here too.',
-                          style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 13)),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: () => context.push('/connection-requests'),
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.yellow,
-                            foregroundColor: AppColors.ink,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                        child: const Text('View requests'),
-                      ),
-                    ]),
-                  ),
-                ])
+              // Connection requests live inline in this tab — no extra push.
+              ? const ConnectionRequestsView()
               : RefreshIndicator(
             onRefresh: () async => ref.invalidate(conversationsProvider),
             child: async.when(

@@ -40,7 +40,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   
   File? _avatarFile;
   String? _existingAvatarUrl;
+  File? _coverFile;
+  String? _existingCoverUrl;
+  int? _coverMediaId;
   bool _isSaving = false;
+
+  // Explicitly cleared slots — an explicit null has to be sent to the API so
+  // the stored profile photo / cover photo is actually removed.
+  bool _photoRemoved = false;
+  bool _coverRemoved = false;
 
   // Required-by-backend fields. These are loaded from the current profile and
   // re-sent on save (PUT /me/profile validates them as required every time).
@@ -75,6 +83,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           final photo = d['photo'] as Map<String, dynamic>?;
           _existingAvatarUrl = photo?['url'] as String?;
           _photoMediaId = photo?['id'] as int?;
+          // Cover photo is a separate slot from the profile photo and the gallery.
+          final cover = d['cover'] as Map<String, dynamic>?;
+          _existingCoverUrl = (cover?['url'] as String?) ?? d['cover_image_url'] as String?;
+          _coverMediaId = (cover?['id'] as int?) ?? d['cover_media_id'] as int?;
           final city = d['city'] as Map<String, dynamic>?;
           if (city?['name'] != null) {
             _locationController.text = (city?['name'] as String?)!;
@@ -105,6 +117,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     super.dispose();
   }
 
+  /// Whether a profile photo is currently set (or was just picked).
+  bool get _hasPhoto =>
+      _avatarFile != null ||
+      (_existingAvatarUrl != null && _existingAvatarUrl!.isNotEmpty) ||
+      _photoMediaId != null;
+
   bool _pickingAvatar = false;
   Future<void> _pickAvatar() async {
     if (_pickingAvatar) return;
@@ -115,10 +133,49 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       setState(() {
         _avatarFile = media.file;
         _photoMediaId = media.mediaId;
+        _photoRemoved = false;
       });
     } finally {
       if (mounted) setState(() => _pickingAvatar = false);
     }
+  }
+
+  /// Removes the profile photo (the media item stays in the gallery).
+  void _removeAvatar() {
+    setState(() {
+      _avatarFile = null;
+      _existingAvatarUrl = null;
+      _photoMediaId = null;
+      _photoRemoved = true;
+    });
+  }
+
+  bool _pickingCover = false;
+  Future<void> _pickCover() async {
+    if (_pickingCover) return;
+    setState(() => _pickingCover = true);
+    try {
+      final media = await pickAndUploadMedia(context, ref, mediaType: 'photo');
+      if (media == null) return;
+      setState(() {
+        _coverFile = media.file;
+        _coverMediaId = media.mediaId;
+        _existingCoverUrl = MediaUtils.resolveUrl(media.url);
+        _coverRemoved = false;
+      });
+    } finally {
+      if (mounted) setState(() => _pickingCover = false);
+    }
+  }
+
+  /// Removes the cover photo (the media item stays in the gallery).
+  void _removeCover() {
+    setState(() {
+      _coverFile = null;
+      _existingCoverUrl = null;
+      _coverMediaId = null;
+      _coverRemoved = true;
+    });
   }
 
   Future<void> _pickDob() async {
@@ -157,7 +214,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         'position': _dominantSide == 'Left' ? 'Left-hand' : 'Right-hand',
         'height': _heightController.text.trim().isNotEmpty ? double.tryParse(_heightController.text.trim()) : null,
         'weight': _weightController.text.trim().isNotEmpty ? double.tryParse(_weightController.text.trim()) : null,
-        if (_photoMediaId != null) 'photo_media_id': _photoMediaId,
+        if (_photoRemoved)
+          'photo_media_id': null
+        else if (_photoMediaId != null)
+          'photo_media_id': _photoMediaId,
+        if (_coverRemoved)
+          'cover_media_id': null
+        else if (_coverMediaId != null)
+          'cover_media_id': _coverMediaId,
       });
 
       // Wire PUT /me/profile/sports (many-to-many) — backend expects {sports:[id]} separately
@@ -228,6 +292,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildAvatarSection(),
+              const SizedBox(height: 16),
+              _buildCoverSection(),
               const SizedBox(height: 24),
               _buildSectionTitle('Basic Information'),
               _buildTextField('Full Name', _nameController),
@@ -298,23 +364,107 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           ),
           const SizedBox(height: 12),
           GestureDetector(
-            onTap: _pickAvatar,
-            child: const Row(
+            onTap: _pickingAvatar ? null : _pickAvatar,
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(LucideIcons.camera, size: 16, color: AppColors.primary),
-                SizedBox(width: 6),
-                Text('Change Photo', style: TextStyle(fontSize: 14, color: AppColors.primary)),
+                const Icon(LucideIcons.camera, size: 16, color: AppColors.primary),
+                const SizedBox(width: 6),
+                Text(_hasPhoto ? 'Change Photo' : 'Add Photo',
+                    style: const TextStyle(fontSize: 14, color: AppColors.primary)),
               ],
             ),
           ),
+          if (_hasPhoto) ...[
+            const SizedBox(height: 10),
+            GestureDetector(
+              onTap: _removeAvatar,
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(LucideIcons.trash2, size: 15, color: AppColors.error),
+                  SizedBox(width: 6),
+                  Text('Remove Photo', style: TextStyle(fontSize: 13, color: AppColors.error)),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
+  /// Cover (banner) photo — a separate slot from the profile photo and from
+  /// the media gallery items.
+  Widget _buildCoverSection() {
+    final hasCover = _coverFile != null ||
+        (_existingCoverUrl != null && _existingCoverUrl!.isNotEmpty);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: _pickingCover ? null : _pickCover,
+          child: Container(
+            height: 120,
+            width: double.infinity,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: hasCover
+                ? _coverFile != null
+                    ? Image.file(_coverFile!, fit: BoxFit.cover, width: double.infinity, height: 120)
+                    : Image.network(
+                        _absoluteUrl(_existingCoverUrl!),
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: 120,
+                        errorBuilder: (_, _, _) => const _CoverPlaceholder(),
+                      )
+                : const _CoverPlaceholder(),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            const Text('Cover Photo',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
+            const Spacer(),
+            if (hasCover) ...[
+              GestureDetector(
+                onTap: _removeCover,
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(LucideIcons.trash2, size: 15, color: AppColors.error),
+                    SizedBox(width: 6),
+                    Text('Remove', style: TextStyle(fontSize: 13, color: AppColors.error)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 14),
+            ],
+            GestureDetector(
+              onTap: _pickingCover ? null : _pickCover,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(LucideIcons.camera, size: 15, color: AppColors.primary),
+                  const SizedBox(width: 6),
+                  Text(hasCover ? 'Change Cover' : 'Add Cover',
+                      style: const TextStyle(fontSize: 13, color: AppColors.primary)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {    return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         title.toUpperCase(),
@@ -588,6 +738,28 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Placeholder shown when no cover photo has been set yet.
+class _CoverPlaceholder extends StatelessWidget {
+  const _CoverPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.surface,
+      alignment: Alignment.center,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(LucideIcons.image, size: 26, color: AppColors.textTertiary),
+          const SizedBox(height: 6),
+          Text('Add a cover photo',
+              style: GoogleFonts.inter(fontSize: 12, color: AppColors.textTertiary)),
         ],
       ),
     );

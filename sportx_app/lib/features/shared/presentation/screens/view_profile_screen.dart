@@ -70,8 +70,20 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
     }
   }
 
+  /// Gallery media of the viewed profile — the profile photo and the cover
+  /// photo are separate slots and are not repeated inside the gallery.
+  List<Map<String, dynamic>> get _galleryMedia {
+    final photoId = (_profileData?['photo'] as Map?)?['id'];
+    final coverId = (_profileData?['cover'] as Map?)?['id'];
+    return (_profileData?['media_items'] as List? ?? [])
+        .whereType<Map>()
+        .map((m) => Map<String, dynamic>.from(m))
+        .where((m) => m['id'] != photoId && m['id'] != coverId)
+        .toList();
+  }
+
   void _showAllMedia() {
-    final mediaItems = _profileData!['media_items'] as List? ?? [];
+    final mediaItems = _galleryMedia;
     final urls = mediaItems
         .whereType<Map>()
         .map((m) => MediaUtils.resolveNullable(
@@ -357,7 +369,9 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
                         Row(
                           children: [
                             Text(
-                              _profileData!['name'] ?? _profileData!['full_name'] ?? 'Profile',
+                              _labelOf(_profileData!['name']) ??
+                                  _labelOf(_profileData!['full_name']) ??
+                                  'Profile',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 20,
@@ -405,14 +419,49 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
     );
   }
 
-  String _getSubtitle() {
-    if (widget.type == 'coach') {
-      return '${_profileData!['specialization'] ?? "Coach"} · ${_profileData!['city']?['name'] ?? "India"}';
+  /// Reads a display label out of a payload value that may be a plain string
+  /// or a related model object (e.g. `age_group` -> {name: "U-16"}).
+  String? _labelOf(dynamic value, {List<String> keys = const ['label', 'name']}) {
+    if (value == null) return null;
+    if (value is Map) {
+      for (final key in keys) {
+        final v = value[key];
+        if (v == null) continue;
+        final text = v.toString().trim();
+        if (text.isNotEmpty) return text;
+      }
+      return null;
     }
-    return '${_profileData!['sport']?['name'] ?? "Athlete"} · ${_profileData!['city']?['name'] ?? "India"}';
+    final text = value.toString().trim();
+    return text.isEmpty ? null : text;
+  }
+
+  String _getSubtitle() {
+    final city = _labelOf(_profileData!['city']) ?? 'India';
+    if (widget.type == 'coach') {
+      final specialization = _labelOf(_profileData!['specialization'], keys: const ['name', 'label']) ?? 'Coach';
+      return '$specialization · $city';
+    }
+    // Athletes carry a `sports` list (coach payloads carry a single `sport`).
+    final sport = _labelOf(_profileData!['sport'], keys: const ['name', 'label']) ??
+        _firstSportName() ??
+        'Athlete';
+    return '$sport · $city';
+  }
+
+  /// Name of the first sport in the `sports` list of an athlete payload.
+  String? _firstSportName() {
+    final sports = _profileData?['sports'];
+    if (sports is! List || sports.isEmpty) return null;
+    for (final s in sports) {
+      final name = _labelOf(s is Map ? (s['sport'] ?? s) : s, keys: const ['name', 'label']);
+      if (name != null) return name;
+    }
+    return null;
   }
 
   Widget _buildProfileInfo() {
+    final ageLabel = _labelOf(_profileData!['age_group']) ?? 'N/A';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -422,7 +471,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
               Icon(LucideIcons.cake, size: 16, color: AppColors.textSecondary),
               const SizedBox(width: 4),
               Text(
-                _profileData!['age_group'] ?? 'N/A',
+                ageLabel,
                 style: TextStyle(color: AppColors.textSecondary),
               ),
             ],
@@ -433,7 +482,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
               Icon(LucideIcons.briefcase, size: 16, color: AppColors.textSecondary),
               const SizedBox(width: 4),
               Text(
-                '${_profileData!['experience'] ?? 0} years experience',
+                '${_labelOf(_profileData!['experience']) ?? 0} years experience',
                 style: TextStyle(color: AppColors.textSecondary),
               ),
             ],
@@ -499,7 +548,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
         Text('About', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
         Text(
-          _profileData!['bio'] ?? 'No bio available.',
+          _labelOf(_profileData!['bio']) ?? 'No bio available.',
           style: Theme.of(context).textTheme.bodyLarge,
         ),
       ],
@@ -640,7 +689,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
   }
 
   Widget _buildMediaGallerySection() {
-    final mediaItems = _profileData!['media_items'] as List? ?? [];
+    final mediaItems = _galleryMedia;
     if (mediaItems.isEmpty) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -666,7 +715,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
           physics: const NeverScrollableScrollPhysics(),
           itemCount: mediaItems.length.clamp(0, 6),
           itemBuilder: (context, index) {
-            final item = mediaItems[index] is Map ? mediaItems[index] as Map : {};
+            final item = mediaItems[index];
             final url = MediaUtils.resolveNullable((item['url'] ?? item['media_url'])?.toString());
             return Container(
               decoration: BoxDecoration(

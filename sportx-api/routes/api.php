@@ -215,6 +215,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/me/profile', [ProfileController::class, 'show'])->middleware('auth:sanctum');
     Route::put('/me/profile', [ProfileController::class, 'update'])->middleware('auth:sanctum');
     Route::put('/me/profile/sports', [ProfileController::class, 'updateSports'])->middleware('auth:sanctum');
+    Route::put('/me/profile/images', [ProfileController::class, 'updateImages'])->middleware('auth:sanctum');
 
     // ── Provider self-service (Phase 2) ──
     Route::get('/me/coach-profile', [CoachProfileController::class, 'show'])->middleware(['auth:sanctum', 'role:coach']);

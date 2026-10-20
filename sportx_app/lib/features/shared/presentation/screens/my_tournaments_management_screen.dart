@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
+import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/core/role_config.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
@@ -16,6 +18,7 @@ class MyTournamentsManagementScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(myTournamentsProvider);
+    final canCreate = canCreateListings(ref.watch(authProvider).user?.role);
     final published = state.items.where((t)=> t.status=='published' || t.status=='active').toList();
     final drafts = state.items.where((t)=> t.status=='draft').toList();
 
@@ -29,14 +32,15 @@ class MyTournamentsManagementScreen extends ConsumerWidget {
         title: Text('My Tournaments',
             style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: FilledButton(
-              onPressed: ()=> context.push('/post-tournament'),
-              style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink, padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8)),
-              child: const Text('+ New', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+          if (canCreate)
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: FilledButton(
+                onPressed: ()=> context.push('/post-tournament'),
+                style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink, padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8)),
+                child: const Text('+ New', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+              ),
             ),
-          ),
         ],
         bottom: PreferredSize(preferredSize: const Size.fromHeight(1), child: Container(height: 1, color: AppColors.border)),
       ),
@@ -54,7 +58,7 @@ class MyTournamentsManagementScreen extends ConsumerWidget {
                         const SizedBox(height: 12),
                         ...published.map((t)=> Padding(
                           padding: const EdgeInsets.only(bottom: 12),
-                          child: _tournamentCard(context, ref, t, true),
+                          child: _tournamentCard(context, ref, t, true, canCreate),
                         )),
                       ],
                       if (drafts.isNotEmpty) ...[
@@ -63,7 +67,7 @@ class MyTournamentsManagementScreen extends ConsumerWidget {
                         const SizedBox(height: 12),
                         ...drafts.map((t)=> Padding(
                           padding: const EdgeInsets.only(bottom: 12),
-                          child: _tournamentCard(context, ref, t, false),
+                          child: _tournamentCard(context, ref, t, false, canCreate),
                         )),
                       ],
                       if (published.isEmpty && drafts.isEmpty)
@@ -74,7 +78,7 @@ class MyTournamentsManagementScreen extends ConsumerWidget {
     );
   }
 
-  Widget _tournamentCard(BuildContext context, WidgetRef ref, dynamic t, bool isPublished) {
+  Widget _tournamentCard(BuildContext context, WidgetRef ref, dynamic t, bool isPublished, bool canCreate) {
     final title = t.title as String;
     final id = t.id.toString();
     final status = t.status as String;
@@ -117,12 +121,12 @@ class MyTournamentsManagementScreen extends ConsumerWidget {
                 }
               },
               itemBuilder: (_) => [
-                const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                if (canCreate) const PopupMenuItem(value: 'edit', child: Text('Edit')),
                 const PopupMenuItem(value: 'registrations', child: Text('Registrations')),
                 const PopupMenuItem(value: 'capacity', child: Text('Capacity')),
                 const PopupMenuItem(value: 'results', child: Text('Results')),
-                if (status=='draft') const PopupMenuItem(value: 'publish', child: Text('Publish')),
-                if (status=='published') const PopupMenuItem(value: 'close', child: Text('Close')),
+                if (canCreate && status=='draft') const PopupMenuItem(value: 'publish', child: Text('Publish')),
+                if (canCreate && status=='published') const PopupMenuItem(value: 'close', child: Text('Close')),
               ],
             ),
           ]),

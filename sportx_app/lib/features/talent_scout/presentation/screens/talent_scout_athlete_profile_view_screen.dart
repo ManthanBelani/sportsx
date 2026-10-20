@@ -88,8 +88,15 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
   List<dynamic> get _achievements => (_athlete!['achievements'] as List?) ?? const [];
   List<dynamic> get _media {
     final m = _athlete!['media'] ?? _athlete!['media_items'] ?? _athlete!['media_gallery'];
-    if (m is List) return m;
-    return const [];
+    if (m is! List) return const [];
+    // The profile photo / cover photo are separate slots — don't repeat them
+    // inside the gallery.
+    final photoId = (_athlete!['photo'] as Map?)?['id'];
+    final coverId = (_athlete!['cover'] as Map?)?['id'];
+    return m
+        .whereType<Map>()
+        .where((e) => e['id'] != photoId && e['id'] != coverId)
+        .toList();
   }
   List<dynamic> get _tournamentHistory => (_athlete!['tournament_history'] as List?) ?? const [];
   List<dynamic> get _performanceStats => (_athlete!['performance_stats'] as List?) ?? const [];

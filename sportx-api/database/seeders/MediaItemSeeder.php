@@ -35,7 +35,7 @@ class MediaItemSeeder extends Seeder
     {
         $athletes = AthleteProfile::take(5)->get();
         foreach ($athletes as $index => $athlete) {
-            MediaItem::updateOrCreate(
+            $media = MediaItem::updateOrCreate(
                 [
                     'owner_type' => AthleteProfile::class,
                     'owner_id' => $athlete->id,
@@ -50,6 +50,12 @@ class MediaItemSeeder extends Seeder
                     'sort_order' => 1,
                 ]
             );
+
+            // Point the profile at its own photo so discovery/leaderboard
+            // cards render an avatar.
+            if (! $athlete->photo_media_id) {
+                $athlete->forceFill(['photo_media_id' => $media->id])->save();
+            }
         }
         $this->command->info('Athlete profile photos seeded');
     }
@@ -58,7 +64,7 @@ class MediaItemSeeder extends Seeder
     {
         $coaches = CoachProfile::take(3)->get();
         foreach ($coaches as $index => $coach) {
-            MediaItem::updateOrCreate(
+            $media = MediaItem::updateOrCreate(
                 [
                     'owner_type' => CoachProfile::class,
                     'owner_id' => $coach->id,
@@ -73,6 +79,10 @@ class MediaItemSeeder extends Seeder
                     'sort_order' => 1,
                 ]
             );
+
+            if (! $coach->photo_media_id) {
+                $coach->forceFill(['photo_media_id' => $media->id])->save();
+            }
         }
         $this->command->info('Coach profile photos seeded');
     }
@@ -81,7 +91,7 @@ class MediaItemSeeder extends Seeder
     {
         $academies = Academy::take(3)->get();
         foreach ($academies as $index => $academy) {
-            MediaItem::updateOrCreate(
+            $cover = MediaItem::updateOrCreate(
                 [
                     'owner_type' => Academy::class,
                     'owner_id' => $academy->id,
@@ -112,6 +122,10 @@ class MediaItemSeeder extends Seeder
                     'size_bytes' => rand(100000, 500000),
                 ]
             );
+
+            if (! $academy->cover_media_id) {
+                $academy->forceFill(['cover_media_id' => $cover->id])->save();
+            }
         }
         $this->command->info('Academy photos seeded');
     }

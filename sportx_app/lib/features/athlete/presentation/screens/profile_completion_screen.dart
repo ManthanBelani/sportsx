@@ -167,33 +167,126 @@ class ProfileCompletionScreen extends ConsumerWidget {
     );
   }
 
-  Map<MandatoryField, dynamic> _extractFieldValues(dynamic profile) {
+  /// Builds the mandatory-field value map from the raw `/me/profile` payload.
+  ///
+  /// The API returns a role-specific JSON object (athlete / coach / academy /
+  /// organizer / sponsor / scout profiles all differ), so every field is read
+  /// by its backend key. Values are normalised to a non-empty `String` or
+  /// `null` so that empty collections (e.g. `sports: []`) count as missing.
+  Map<MandatoryField, dynamic> _extractFieldValues(Map<String, dynamic>? profile) {
     final values = <MandatoryField, dynamic>{};
     if (profile == null) return values;
 
-    // Extract values from profile model
-    // This depends on the actual User/AthleteProfile model structure
-    values[MandatoryField.fullName] = profile.fullName ?? profile.name;
-    values[MandatoryField.dateOfBirth] = profile.dateOfBirth;
-    values[MandatoryField.gender] = profile.gender;
-    values[MandatoryField.phone] = profile.phone;
-    values[MandatoryField.profilePhoto] = profile.profilePhotoUrl;
-    values[MandatoryField.coverPhoto] = profile.coverPhotoUrl;
-    values[MandatoryField.sports] = profile.sports;
-    values[MandatoryField.skillLevel] = profile.skillLevel;
-    values[MandatoryField.city] = profile.city;
-    values[MandatoryField.bio] = profile.bio;
-    values[MandatoryField.socialLinks] = profile.socialLinks;
-    values[MandatoryField.verificationDoc] = profile.verificationDoc;
-    values[MandatoryField.coachingLicense] = profile.coachingLicense;
-    values[MandatoryField.academyLicense] = profile.academyLicense;
-    values[MandatoryField.organizationName] = profile.organizationName;
-    values[MandatoryField.scoutingLicense] = profile.scoutingLicense;
-    values[MandatoryField.companyName] = profile.companyName;
-    values[MandatoryField.taxId] = profile.taxId;
-    values[MandatoryField.website] = profile.website;
+    final photo = _asMap(profile['photo']);
+    final cover = _asMap(profile['cover']);
+    final logo = _asMap(profile['logo']);
+    final city = _asMap(profile['city']);
+    final sport = _asMap(profile['sport']);
+    final socialLinks = _asMap(profile['social_links']);
+
+    // Identity
+    values[MandatoryField.fullName] = _firstString(profile, ['full_name', 'name']);
+    values[MandatoryField.dateOfBirth] = _firstString(profile, ['date_of_birth']);
+    values[MandatoryField.gender] = _firstString(profile, ['gender']);
+    values[MandatoryField.phone] = _firstString(profile, ['phone', 'contact_number']);
+
+    // Media
+    values[MandatoryField.profilePhoto] =
+        _firstString(photo, ['url']) ??
+        _firstString(logo, ['url']) ??
+        _firstIdAsString(profile, ['photo_media_id', 'logo_media_id']);
+    values[MandatoryField.coverPhoto] =
+        _firstString(cover, ['url']) ??
+        _firstIdAsString(profile, ['cover_media_id']);
+
+    // Sports profile
+    final hasSports = (profile['sports'] is List && (profile['sports'] as List).isNotEmpty) ||
+        sport != null ||
+        _firstId(profile, ['sport_id']) != null;
+    values[MandatoryField.sports] = hasSports ? 'yes' : null;
+    values[MandatoryField.skillLevel] = _firstString(profile, ['skill_level']);
+
+    // Location
+    values[MandatoryField.city] =
+        _firstString(city, ['name']) ??
+        _firstString(profile, ['location', 'address']) ??
+        _firstIdAsString(profile, ['city_id']);
+
+    // Bio & links
+    values[MandatoryField.bio] = _firstString(profile, ['bio', 'experience', 'description']);
+    values[MandatoryField.socialLinks] =
+        (socialLinks != null && socialLinks.isNotEmpty) ? 'yes' : null;
+
+    // Verification
+    values[MandatoryField.verificationDoc] =
+        _firstIdAsString(profile, ['verification_doc_media_id']) ??
+        (_firstString(profile, ['verification_status']) == 'verified' ? 'verified' : null);
+
+    // Role specific
+    values[MandatoryField.coachingLicense] =
+        _firstString(profile, ['qualification', 'coaching_license']) ??
+        (_firstList(profile, ['certifications'])?.isNotEmpty == true ? 'certified' : null);
+    values[MandatoryField.academyLicense] =
+        _firstString(profile, ['registration_number', 'academy_license']) ??
+        (profile['verification_badge'] == true ? 'verified' : null);
+    values[MandatoryField.organizationName] =
+        _firstString(profile, ['organization_name', 'organization', 'name']);
+    values[MandatoryField.scoutingLicense] =
+        _firstString(profile, ['affiliation', 'scouting_license']) ??
+        (_firstList(profile, ['sports_specialization'])?.isNotEmpty == true ? 'specialized' : null);
+    values[MandatoryField.companyName] =
+        _firstString(profile, ['brand_name', 'company_name', 'name']);
+    values[MandatoryField.taxId] =
+        _firstString(profile, ['tax_id', 'gst_number', 'gstin', 'registration_number']);
+    values[MandatoryField.website] = _firstString(profile, ['website']);
 
     return values;
+  }
+
+  Map<String, dynamic>? _asMap(dynamic value) {
+    if (value is Map) return Map<String, dynamic>.from(value);
+    return null;
+  }
+
+  /// First non-empty string found under [keys].
+  String? _firstString(Map<String, dynamic>? map, List<String> keys) {
+    if (map == null) return null;
+    for (final key in keys) {
+      final value = map[key];
+      if (value == null) continue;
+      if (value is Map || value is List) continue;
+      final text = value.toString().trim();
+      if (text.isNotEmpty) return text;
+    }
+    return null;
+  }
+
+  /// First non-zero numeric id found under [keys].
+  int? _firstId(Map<String, dynamic>? map, List<String> keys) {
+    if (map == null) return null;
+    for (final key in keys) {
+      final value = map[key];
+      if (value is int && value != 0) return value;
+      if (value is String) {
+        final parsed = int.tryParse(value.trim());
+        if (parsed != null && parsed != 0) return parsed;
+      }
+    }
+    return null;
+  }
+
+  String? _firstIdAsString(Map<String, dynamic>? map, List<String> keys) {
+    final id = _firstId(map, keys);
+    return id?.toString();
+  }
+
+  List<dynamic>? _firstList(Map<String, dynamic>? map, List<String> keys) {
+    if (map == null) return null;
+    for (final key in keys) {
+      final value = map[key];
+      if (value is List) return value;
+    }
+    return null;
   }
 
   IconData _iconForField(MandatoryField field) {

@@ -10,16 +10,16 @@ import 'package:sportx_app/features/talent_scout/presentation/providers/leaderbo
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
-/// v3 design kit â€” pixel-mapped from sportsx-design-v3/v2/index.html (the
+/// v3 design kit — pixel-mapped from sportsx-design-v3/v2/index.html (the
 /// Stitch "Remix of SX new Design" prototype). Shared chrome used by every
 /// role's Home tab and the shell tabs (AT.1 / CO.2 / AC.2 / OR.2 / SC.2).
 /// Pure presentation: no routes or providers except the leaderboard strip.
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // Wordmark + header actions
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 
-/// .logo â€” "SportX" Sora 800 with yellow dot + "LET'S DEFEAT HISTORY" tagline.
+/// .logo — "SportX" Sora 800 with yellow dot + "LET'S DEFEAT HISTORY" tagline.
 class SportXWordmark extends StatelessWidget {
   const SportXWordmark({super.key});
 
@@ -55,7 +55,7 @@ class SportXWordmark extends StatelessWidget {
   }
 }
 
-/// .top-actions â€” message + bell(3) + avatar, shared by all home tabs.
+/// .top-actions — message + bell(3) + avatar, shared by all home tabs.
 class HomeHeaderActions extends StatelessWidget {
   final String? role;
   const HomeHeaderActions({super.key, this.role});
@@ -112,11 +112,11 @@ class _HeaderAvatar extends ConsumerWidget {
       );
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // Greet card (v3) + role line
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 
-/// .greet-card â€” avatar, greeting, subtitle, progress bar, right-side % +
+/// .greet-card — avatar, greeting, subtitle, progress bar, right-side % +
 /// "Complete Now" compact CTA. OR.2 variant has no CTA (chevron instead).
 class GreetCardV3 extends StatelessWidget {
   final String greeting;
@@ -228,7 +228,7 @@ class GreetCardV3 extends StatelessWidget {
   }
 }
 
-/// .progress â€” 6px rounded bar with yellow fill.
+/// .progress — 6px rounded bar with yellow fill.
 class ProgressLine extends StatelessWidget {
   final double progress;
   const ProgressLine({super.key, required this.progress});
@@ -249,7 +249,7 @@ class ProgressLine extends StatelessWidget {
   }
 }
 
-/// .primary.primary-compact â€” 30px tall gradient pill.
+/// .primary.primary-compact — 30px tall gradient pill.
 class CompactPrimaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
@@ -279,7 +279,7 @@ class CompactPrimaryButton extends StatelessWidget {
   }
 }
 
-/// .role-line â€” role badge + city.
+/// .role-line — role badge + city.
 class RoleLine extends StatelessWidget {
   final String badgeLabel;
   final String? location;
@@ -309,11 +309,11 @@ class RoleLine extends StatelessWidget {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // Section header (v3) + leaderboard strip
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 
-/// .section-head â€” Sora 700 16 + "see all" pill.
+/// .section-head — Sora 700 16 + "see all" pill.
 class SectionHeadV3 extends StatelessWidget {
   final String title;
   final String? actionText;
@@ -359,7 +359,7 @@ class SectionHeadV3 extends StatelessWidget {
   }
 }
 
-/// v3 leaderboard â€” sport chips + top-5 avatar strip (AT.1 .strip5).
+/// v3 leaderboard — sport chips + top-5 avatar strip (AT.1 .strip5).
 class LeaderboardSectionV3 extends ConsumerWidget {
   const LeaderboardSectionV3({super.key});
 
@@ -370,7 +370,7 @@ class LeaderboardSectionV3 extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SectionHeadV3(
-            title: 'ðŸ† Leaderboard', actionText: 'View all', onActionTap: () => context.push('/leaderboard')),
+            title: '🏆 Leaderboard', actionText: 'View all', onActionTap: () => context.push('/leaderboard')),
         SizedBox(
           height: 32,
           child: ListView(
@@ -404,7 +404,7 @@ class LeaderboardSectionV3 extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: SportXShadows.e1,
                 ),
-                child: Text('Points live here â€” earn them with achievements, events and activity.',
+                child: Text('Points live here — earn them with achievements, events and activity.',
                     style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondary)),
               );
             }
@@ -497,11 +497,11 @@ class _LbTile extends StatelessWidget {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // Quick tiles (v3) with sub-tiles
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 
-/// .quick-grid .quick-tile â€” icon, title, subtitle and a sub-tile grid.
+/// .quick-grid .quick-tile — icon, title, subtitle and a sub-tile grid.
 class QuickTileV3 extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -560,44 +560,55 @@ class QuickTileV3 extends StatelessWidget {
           ),
           if (subtiles.isNotEmpty) ...[
             const SizedBox(height: 10),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2, mainAxisSpacing: 6, crossAxisSpacing: 6, childAspectRatio: 2.35),
-              itemCount: subtiles.length,
-              itemBuilder: (_, i) {
-                final s = subtiles[i];
-                return GestureDetector(
-                  onTap: () => context.push(s.route),
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      border: Border.all(color: AppColors.borderSoft),
-                      borderRadius: BorderRadius.circular(10),
+            // Sub-tiles are laid out as rows of two equal columns so the card
+            // can size to its content (no leftover white space at the bottom).
+            for (var i = 0; i < subtiles.length; i += 2)
+              Padding(
+                padding: EdgeInsets.only(bottom: i + 2 < subtiles.length ? 6 : 0),
+                child: Row(
+                  children: [
+                    Expanded(child: _subTile(context, subtiles[i])),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: i + 1 < subtiles.length
+                          ? _subTile(context, subtiles[i + 1])
+                          : const SizedBox.shrink(),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Text(s.label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(fontSize: 9.5, color: AppColors.textSecondary)),
-                  ),
-                );
-              },
-            ),
+                  ],
+                ),
+              ),
           ],
         ],
       ),
     );
   }
+
+  Widget _subTile(BuildContext context, ({String label, String route}) s) {
+    return GestureDetector(
+      onTap: () => context.push(s.route),
+      child: Container(
+        height: 30,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          border: Border.all(color: AppColors.borderSoft),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Text(s.label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(fontSize: 9.5, color: AppColors.textSecondary)),
+      ),
+    );
+  }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // Feed tabs + shared post card
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 
-/// .feedtabs â€” For You / Following / Athletes / Coaches / Academies / Events.
+/// .feedtabs — For You / Following / Athletes / Coaches / Academies / Events.
 class FeedTabsBar extends StatelessWidget {
   final int activeIndex;
   final ValueChanged<int>? onChanged;
@@ -638,7 +649,7 @@ class FeedTabsBar extends StatelessWidget {
   }
 }
 
-/// .feed-card â€” shared community post card used by every Home tab.
+/// .feed-card — shared community post card used by every Home tab.
 class PostCardV3 extends StatelessWidget {
   final String author;
   final String authorSub;
@@ -831,9 +842,9 @@ class _Avatar extends StatelessWidget {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Rail cards (Explore / Recommended) â€” .rail .acard
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
+// Rail cards (Explore / Recommended) — .rail .acard
+// ─────────────────────────────────────────────────────────────────────────────
 
 class RailPersonCard extends StatelessWidget {
   final String name;
@@ -859,14 +870,16 @@ class RailPersonCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Stack(children: [
-            _netImage(photoUrl ?? '', height: 96, radius: 0),
-            const Positioned(
-              top: 8,
-              right: 8,
-              child: Icon(LucideIcons.ellipsisVertical, size: 15, color: AppColors.textSecondary),
-            ),
-          ]),
+          Expanded(
+            child: Stack(fit: StackFit.expand, children: [
+              _netImage(photoUrl ?? '', height: 96, radius: 0),
+              const Positioned(
+                top: 8,
+                right: 8,
+                child: Icon(LucideIcons.ellipsisVertical, size: 15, color: AppColors.textSecondary),
+              ),
+            ]),
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(10, 9, 10, 10),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -880,7 +893,7 @@ class RailPersonCard extends StatelessWidget {
                 const _VerifiedDot(),
               ]),
               const SizedBox(height: 3),
-              Text('Sport Â· $role',
+              Text('Sport · $role',
                   maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.inter(fontSize: 9.5, color: AppColors.textSecondary)),
               const SizedBox(height: 8),
               SizedBox(
@@ -930,14 +943,16 @@ class RailAcademyCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Stack(children: [
-            _netImage(photoUrl ?? '', height: 96, radius: 0),
-            const Positioned(
-              top: 8,
-              right: 8,
-              child: Icon(LucideIcons.ellipsisVertical, size: 15, color: AppColors.textSecondary),
-            ),
-          ]),
+          Expanded(
+            child: Stack(fit: StackFit.expand, children: [
+              _netImage(photoUrl ?? '', height: 96, radius: 0),
+              const Positioned(
+                top: 8,
+                right: 8,
+                child: Icon(LucideIcons.ellipsisVertical, size: 15, color: AppColors.textSecondary),
+              ),
+            ]),
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(10, 9, 10, 10),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -1056,7 +1071,7 @@ class RailEventCard extends StatelessWidget {
   }
 }
 
-/// .typechip â€” green for trials/tournaments/events, amber for scholarships.
+/// .typechip — green for trials/tournaments/events, amber for scholarships.
 class TypeChip extends StatelessWidget {
   final String label;
   const TypeChip({super.key, required this.label});
@@ -1077,7 +1092,7 @@ class TypeChip extends StatelessWidget {
   }
 }
 
-/// Green âœ“ circle shown after names (.verified).
+/// Green ✓ circle shown after names (.verified).
 class _VerifiedDot extends StatelessWidget {
   const _VerifiedDot();
 
@@ -1093,11 +1108,11 @@ class _VerifiedDot extends StatelessWidget {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Person row (Network suggestions, Our athletesâ€¦)
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
+// Person row (Network suggestions, Our athletes…)
+// ─────────────────────────────────────────────────────────────────────────────
 
-/// .person-row â€” avatar 45, name + âœ“, role, rating Â· city, trailing CTA.
+/// .person-row — avatar 45, name + ✓, role, rating · city, trailing CTA.
 class PersonRowCard extends StatelessWidget {
   final String name;
   final String role;
@@ -1151,8 +1166,10 @@ class PersonRowCard extends StatelessWidget {
           ]),
         ),
         const SizedBox(width: 8),
-        // FIX: Wrap CTA in Flexible + ConstrainedBox to prevent overflow
-        Flexible(
+        // CTA stays flush with the card's right edge and vertically centred
+        // next to the name/role/rating block (max width guards long labels).
+        Align(
+          alignment: Alignment.centerRight,
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 88),
             child: CompactPrimaryButton(label: ctaLabel, onTap: onTap),
@@ -1163,7 +1180,7 @@ class PersonRowCard extends StatelessWidget {
   }
 }
 
-/// star 4.8 Â· city mini-row.
+/// star 4.8 · city mini-row.
 class RatingLine extends StatelessWidget {
   final double rating;
   final String? city;
@@ -1177,7 +1194,7 @@ class RatingLine extends StatelessWidget {
         const SizedBox(width: 3),
         Text(rating.toStringAsFixed(1), style: GoogleFonts.inter(fontSize: 9.5, fontWeight: FontWeight.w700, color: AppColors.dark)),
         if (city != null && city!.isNotEmpty) ...[
-          const Text(' Â· ', style: TextStyle(color: AppColors.textTertiary)),
+          const Text(' · ', style: TextStyle(color: AppColors.textTertiary)),
           Flexible(
             child: Text(city!,
                 overflow: TextOverflow.ellipsis, style: GoogleFonts.inter(fontSize: 9.5, color: AppColors.textSecondary)),
@@ -1188,9 +1205,9 @@ class RatingLine extends StatelessWidget {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // Coming-soon card (filled while a provider nets nothing back)
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 
 class _EmptyHint extends StatelessWidget {
   final String text;
@@ -1218,7 +1235,7 @@ Widget emptyHint(String text) => _EmptyHint(text: text);
 Widget kitNetImage({required String url, double? width, double? height, double radius = 10}) =>
     _netImage(url, width: width, height: height, radius: radius);
 
-/// v3 `.tabs` â€” flex tab row with yellow underline on the active tab
+/// v3 `.tabs` — flex tab row with yellow underline on the active tab
 /// (S.12 Network/Groups/Events/program lists).
 class KitTabBar extends StatelessWidget {
   final List<String> labels;

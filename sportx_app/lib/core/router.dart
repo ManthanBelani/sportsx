@@ -83,6 +83,7 @@ import 'package:sportx_app/features/settings/presentation/screens/settings_scree
 import 'package:sportx_app/features/settings/presentation/screens/help_support_screen.dart';
 import 'package:sportx_app/core/session_scope.dart';
 import 'package:sportx_app/shared/providers/role_config_provider.dart';
+import 'package:sportx_app/core/role_config.dart';
 import 'package:sportx_app/features/settings/presentation/screens/legal_screen.dart';
 import 'package:sportx_app/features/settings/presentation/screens/social_links_screen.dart';
 import 'package:sportx_app/features/sports_venue/presentation/screens/sports_venue_list_screen.dart';
@@ -283,6 +284,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         // exception is /profile — athlete-specific — which lands non-athletes
         // on their dashboard instead.
         if (loc == '/profile' && role != null && role != 'athlete') {
+          return dashboardRoute;
+        }
+
+        // Listing creation (opportunities, events/trials, tournaments,
+        // programs, venues) belongs to the listing-owner roles — athletes
+        // consume listings, they don't publish them.
+        const listingCreateRoutes = [
+          '/post-opportunity',
+          '/post-trial',
+          '/post-tournament',
+          '/post-program',
+          '/post-facility',
+        ];
+        if (listingCreateRoutes.contains(loc) && !canCreateListings(role)) {
           return dashboardRoute;
         }
 

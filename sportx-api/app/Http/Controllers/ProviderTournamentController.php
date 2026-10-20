@@ -163,13 +163,37 @@ class ProviderTournamentController extends Controller
         ]);
 
         return DB::transaction(function () use ($validated, $tournament) {
-            $existingIds = $tournament->categories()->pluck('id')->toArray();
-
             foreach ($validated['categories'] as $catData) {
                 if (isset($catData['max_teams']) && !isset($catData['capacity'])) $catData['capacity'] = $catData['max_teams'];
                 unset($catData['max_teams']);
-                if (! empty($catData['id']) && in_array($catData['id'], $existingIds)) {
-                    $tournament->categories()->where('id', $catData['id'])->update(collect($catData)->except('id')->toArray());
+
+                // 1) Explicit id wins.
+                $existing = null;
+                if (! empty($catData['id'])) {
+                    $existing = $tournament->categories()->where('id', $catData['id'])->first();
+                }
+
+                // 2) Otherwise match on age_group_id — the (tournament_id,
+                //    age_group_id) unique index makes inserting a duplicate
+                //    age group impossible, so treat it as an update instead.
+                if (! $existing && ! empty($catData['age_group_id'])) {
+                    $existing = $tournament->categories()
+                        ->where('age_group_id', $catData['age_group_id'])
+                        ->first();
+                }
+
+                // 3) Rows created WITHOUT an explicit age group got the
+                //    fallback AgeGroup::first() — that row would collide with
+                //    the duplicate insert below, so match it too.
+                if (! $existing && empty($catData['age_group_id'])) {
+                    $fallbackId = \App\Models\AgeGroup::first()?->id ?? 1;
+                    $existing = $tournament->categories()
+                        ->where('age_group_id', $fallbackId)
+                        ->first();
+                }
+
+                if ($existing) {
+                    $existing->update(collect($catData)->except('id')->toArray());
                 } else {
                     if (empty($catData['age_group_id'])) $catData['age_group_id'] = \App\Models\AgeGroup::first()?->id ?? 1;
                     $tournament->categories()->create($catData);

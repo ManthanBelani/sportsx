@@ -22,6 +22,7 @@ SportXRole? sportXRoleFromId(String? id) {
     case 'organizer':
       return SportXRole.organizer;
     case 'scout':
+    case 'talent_scout':
       return SportXRole.scout;
     case 'sponsor':
       return SportXRole.sponsor;
@@ -31,6 +32,22 @@ SportXRole? sportXRoleFromId(String? id) {
       return null;
   }
 }
+
+/// Role ids allowed to publish listings: opportunities, events/trials,
+/// tournaments, training programs and venues. Athletes *consume* listings,
+/// so they never get these create actions.
+const Set<String> _listingCreatorRoles = {
+  'coach',
+  'academy',
+  'organizer',
+  'scout',
+  'talent_scout',
+  'sponsor',
+  'admin',
+};
+
+/// Whether [roleId] may open create-listing routes such as /post-opportunity.
+bool canCreateListings(String? roleId) => _listingCreatorRoles.contains(roleId);
 
 enum CreatePriority { p0, p1, p2 }
 
@@ -126,8 +143,6 @@ RoleConfig roleConfigFor(SportXRole role) {
           CreateTile(id: 'post', label: 'Create Post', subtitle: 'Share an update with your network', icon: LucideIcons.penLine, tintBg: Color(0xFFE3EFFF), tintFg: AppColors.info, route: '/create-post'),
           CreateTile(id: 'achievement', label: 'Add Achievement', subtitle: 'Medals, records & certificates', icon: LucideIcons.award, tintBg: Color(0xFFDCFCE7), tintFg: Color(0xFF15803D), route: '/add-achievement'),
           CreateTile(id: 'media', label: 'Upload Photo/Video', subtitle: 'Showcase your highlights', icon: LucideIcons.imagePlus, tintBg: Color(0xFFFEE2E2), tintFg: AppColors.error, route: '/media-gallery'),
-          CreateTile(id: 'opportunity', label: 'Create Opportunity', subtitle: 'Scholarships, sponsorships & more', icon: LucideIcons.megaphone, route: '/post-opportunity', priority: CreatePriority.p1),
-          CreateTile(id: 'event', label: 'Create Event', subtitle: 'Post a trial or tournament', icon: LucideIcons.calendarPlus, tintBg: Color(0xFFFCE7F3), tintFg: AppColors.organizer, route: '/post-trial', priority: CreatePriority.p1),
         ],
         moreRows: [
           MoreRow(label: 'My Profile', icon: LucideIcons.user, route: '/profile'),

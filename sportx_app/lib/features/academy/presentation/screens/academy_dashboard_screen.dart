@@ -64,43 +64,45 @@ class AcademyDashboardScreen extends ConsumerWidget {
                   const SizedBox(height: 10),
                   const RoleLine(badgeLabel: 'ACADEMY'),
                   const LeaderboardSectionV3(),
-                  GridView.count(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    childAspectRatio: 0.62,
-                    children: [
-                      QuickTileV3(
-                        title: 'Opportunities',
-                        subtitle: 'Trials · Tournaments · Scholarships · Sponsorships',
-                        icon: LucideIcons.trophy,
-                        iconBg: AppColors.yellowTint,
-                        iconFg: AppColors.primaryDarker,
-                        onTap: () => context.push('/opportunities'),
-                        subtiles: const [
-                          (label: 'Trials', route: '/trials'),
-                          (label: 'Tournaments', route: '/tournaments'),
-                          (label: 'Scholarships', route: '/scholarships'),
-                          (label: 'Sponsors', route: '/sponsorships'),
-                        ],
-                      ),
-                      QuickTileV3(
-                        title: 'Find Talent',
-                        subtitle: 'Connect with Athletes · Coaches · Staff',
-                        icon: LucideIcons.users,
-                        iconBg: AppColors.infoLight,
-                        iconFg: AppColors.info,
-                        onTap: () => context.push('/athlete-directory'),
-                        subtiles: const [
-                          (label: 'Athletes', route: '/athlete-directory'),
-                          (label: 'Coaches', route: '/coaches'),
-                          (label: 'Staff', route: '/academy-staff'),
-                          (label: 'More', route: '/explore'),
-                        ],
-                      ),
-                    ],
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: QuickTileV3(
+                            title: 'Opportunities',
+                            subtitle: 'Trials · Tournaments · Scholarships · Sponsorships',
+                            icon: LucideIcons.trophy,
+                            iconBg: AppColors.yellowTint,
+                            iconFg: AppColors.primaryDarker,
+                            onTap: () => context.push('/opportunities'),
+                            subtiles: const [
+                              (label: 'Trials', route: '/trials'),
+                              (label: 'Tournaments', route: '/tournaments'),
+                              (label: 'Scholarships', route: '/scholarships'),
+                              (label: 'Sponsors', route: '/sponsorships'),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: QuickTileV3(
+                            title: 'Find Talent',
+                            subtitle: 'Connect with Athletes · Coaches · Staff',
+                            icon: LucideIcons.users,
+                            iconBg: AppColors.infoLight,
+                            iconFg: AppColors.info,
+                            onTap: () => context.push('/athlete-directory'),
+                            subtiles: const [
+                              (label: 'Athletes', route: '/athlete-directory'),
+                              (label: 'Coaches', route: '/coaches'),
+                              (label: 'Staff', route: '/academy-staff'),
+                              (label: 'More', route: '/explore'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const V3FeedPreview(),
                   const SizedBox(height: 10),

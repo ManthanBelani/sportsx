@@ -1,5 +1,19 @@
 # Entity-Relationship Diagram — SportX India
 
+> [!IMPORTANT]
+> **This is the LOGICAL / aspirational ERD from the design spec, not the live schema.**
+> It describes tables and columns that are specified but **not yet implemented**
+> (`generalized_profiles`, `coach_sports`, `connection_requests`, `reviews`,
+> `broadcasts`, `event_schedules`, `leaderboard_config`, `scout_reports`,
+> `academy_athlete_invites`, `users.profile_visibility`, `posts.author_user_id`,
+> `follows.followable_type`, …) and several columns whose names differ from the
+> implementation (`tournaments.event_type` vs `format`, `trials.position_id`,
+> `achievements.owner_type` vs `athlete_id`/`coach_profile_id`).
+>
+> **For the schema that actually exists, read [`ER-Diagram-Physical.md`](ER-Diagram-Physical.md)** —
+> auto-generated from the live MySQL database, with every table, column, key,
+> index, enum and foreign key.
+
 > **Synced with new design (v3):** reflects `Backend-Feature-Delta.md` and `SportX_Mandatory_Fields.md`. See `Database-Design.md` for the canonical schema.
 
 Logical ERD (Mermaid) with entity and attribute descriptions. Physical schema (types, indexes, constraints) is specified in `Database-Design.md`.

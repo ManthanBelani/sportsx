@@ -27,6 +27,11 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
   bool _isReorderMode = false;
   bool _isLoading = true;
 
+  // Profile photo / cover photo are separate slots — their media items are
+  // hidden from the gallery so the three lists never bleed into each other.
+  int? _profilePhotoId;
+  int? _coverPhotoId;
+
   @override
   void initState() {
     super.initState();
@@ -38,6 +43,20 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
   Future<void> _loadMedia() async {
     if (mounted) setState(() => _isLoading = true);
     try {
+      // The profile photo / cover photo ids so they can be kept out of the
+      // gallery list.
+      try {
+        final resp = await ref.read(dioProvider).get('/me/profile');
+        final d = resp.data['data'] as Map<String, dynamic>?;
+        if (d != null) {
+          final photo = (d['photo'] as Map<String, dynamic>?) ??
+              (d['logo'] as Map<String, dynamic>?);
+          final cover = d['cover'] as Map<String, dynamic>?;
+          _profilePhotoId =
+              (photo?['id'] as int?) ?? d['photo_media_id'] as int?;
+          _coverPhotoId = (cover?['id'] as int?) ?? d['cover_media_id'] as int?;
+        }
+      } catch (_) {}
       // Phase 2 typed endpoints first, profile-embedded data as fallback.
       List<Map<String, dynamic>>? serverItems;
       List<Map<String, dynamic>>? serverAch;
@@ -115,11 +134,79 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
     if (mounted) setState(() => _isLoading = false);
   }
 
+  /// Media items owned by the profile, minus the ones used as the profile
+  /// photo or the cover photo.
+  List<Map<String, dynamic>> get _galleryItems => _mediaItems
+      .where((i) => i['id'] != _profilePhotoId && i['id'] != _coverPhotoId)
+      .toList();
+
   List<Map<String, dynamic>> get _filteredItems {
-    if (_currentTab == 0) return _mediaItems.where((i) => i['media_type'] == 'photo').toList();
-    if (_currentTab == 1) return _mediaItems.where((i) => i['media_type'] == 'video').toList();
+    final gallery = _galleryItems;
+    if (_currentTab == 0) return gallery.where((i) => i['media_type'] == 'photo').toList();
+    if (_currentTab == 1) return gallery.where((i) => i['media_type'] == 'video').toList();
     if (_currentTab == 2) return _achievements;
     return [];
+  }
+
+  /// Sets a gallery item as the profile photo or the cover photo.
+  Future<void> _setAsProfileImage(Map<String, dynamic> item, {required bool asCover}) async {
+    final mediaId = item['id'];
+    if (mediaId is! int) return;
+    try {
+      final dio = ref.read(dioProvider);
+      await dio.put('/me/profile/images', data: {
+        if (asCover) 'cover_media_id': mediaId else 'photo_media_id': mediaId,
+      });
+      if (!mounted) return;
+      SnackBarUtils.showSuccess(
+          context, asCover ? 'Cover photo updated' : 'Profile photo updated');
+      await _loadMedia();
+    } on DioException catch (e) {
+      if (mounted) SnackBarUtils.showError(context, ApiException.fromDio(e));
+    } catch (e) {
+      if (mounted) SnackBarUtils.showError(context, e, 'Could not update the photo.');
+    }
+  }
+
+  void _openItemActions(Map<String, dynamic> item) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(LucideIcons.user, color: AppColors.primary),
+              title: const Text('Set as profile photo'),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _setAsProfileImage(item, asCover: false);
+              },
+            ),
+            ListTile(
+              leading: const Icon(LucideIcons.image, color: AppColors.primary),
+              title: const Text('Set as cover photo'),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _setAsProfileImage(item, asCover: true);
+              },
+            ),
+            ListTile(
+              leading: const Icon(LucideIcons.trash2, color: AppColors.error),
+              title: const Text('Delete'),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _deleteMedia(item['id'] as int);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   bool _uploading = false;
@@ -312,8 +399,8 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     children: [
-                      _buildTab('Photos (${_mediaItems.where((i) => i['media_type'] == 'photo').length})', 0),
-                      _buildTab('Videos (${_mediaItems.where((i) => i['media_type'] == 'video').length})', 1),
+                      _buildTab('Photos (${_galleryItems.where((i) => i['media_type'] == 'photo').length})', 0),
+                      _buildTab('Videos (${_galleryItems.where((i) => i['media_type'] == 'video').length})', 1),
                       _buildTab('Achievements (${_achievements.length})', 2),
                     ],
                   ),
@@ -479,6 +566,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
               'title': item['media_type'] == 'video' ? 'Video' : 'Photo',
             },
           ),
+          onLongPress: () => _openItemActions(item),
           child: _buildMediaTile(item),
         );
       },
@@ -551,7 +639,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
           Text('Tips for a great gallery', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
           SizedBox(height: 4),
           Text(
-            'Add photos and videos of your training, matches, and achievements. Profiles with media get 3x more enquiries.',
+            'Add photos and videos of your training, matches, and achievements. Long-press a photo to use it as your profile or cover photo.',
             style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
           ),
         ],

@@ -46,6 +46,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   List<Map<String, dynamic>> _achievements = [];
 
   String? _avatarUrl;
+  String? _coverUrl;
 
   List<Map<String, dynamic>> _uploadedMedia = const [];
 
@@ -78,6 +79,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         final city = data['city'] as Map<String, dynamic>?;
         final ach = data['achievements'] as List? ?? const [];
         final photo = data['photo'] as Map<String, dynamic>?;
+        final cover = data['cover'] as Map<String, dynamic>?;
         final mediaItems = data['media_items'] as List? ?? const [];
 
         setState(() {
@@ -89,6 +91,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           _location = (city?['name'] ?? _location) as String;
           _isVerified = data['is_verified'] == true;
           _avatarUrl = photo?['url'] as String?;
+          // Cover photo is its own slot — never derived from the media gallery
+          // or the profile photo.
+          _coverUrl = (cover?['url'] as String?) ?? (data['cover_image_url'] as String?);
           _socialLinks = socialLinksOf(Map<String, dynamic>.from(data as Map));
           _uploadedMedia = mediaItems
               .whereType<Map>()
@@ -219,7 +224,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   /// .profile-hero — full-bleed cover (166px) with the 84px avatar overlapping
   /// the bottom-left corner (white padding ring, bottom −42).
   Widget _profileHero() {
-    final cover = _uploadedMedia.isNotEmpty ? _absoluteUrl(((_uploadedMedia.first['url'] ?? '') as String)) : '';
+    // The cover is the explicitly-set banner photo. Gallery items never
+    // become the cover on their own.
+    final cover = _coverUrl != null && _coverUrl!.isNotEmpty ? _absoluteUrl(_coverUrl!) : '';
     Widget coverImg = Container(
       height: 166,
       width: double.infinity,
