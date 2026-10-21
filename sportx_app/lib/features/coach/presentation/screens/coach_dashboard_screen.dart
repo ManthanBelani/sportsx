@@ -39,7 +39,10 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
       backgroundColor: AppColors.surface,
       body: RefreshIndicator(
         color: AppColors.yellowDeep,
-        onRefresh: () async => ref.read(enquiryInboxProvider.notifier).load(),
+        onRefresh: () async {
+          ref.read(enquiryInboxProvider.notifier).load();
+          await ref.read(coachProvider.notifier).loadCoachProfile();
+        },
         child: CustomScrollView(
           slivers: [
             SliverAppBar(
@@ -114,11 +117,67 @@ class _CoachDashboardScreenState extends ConsumerState<CoachDashboardScreen> {
                     ),
                   ),
                   const V3FeedPreview(),
+                  const _EnrollmentsCard(),
                   _EnquiriesCard(state: ref.watch(enquiryInboxProvider)),
                   const SizedBox(height: 96),
                 ]),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Enrollment requests — entry point for the coach's approve/reject flow
+// (/coach-enrollments), which previously had no inbound navigation.
+// ────────────────────────────────────────────────────────────────────────────
+
+class _EnrollmentsCard extends StatelessWidget {
+  const _EnrollmentsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push('/coach-enrollments'),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(2, 10, 2, 0),
+        padding: const EdgeInsets.fromLTRB(13, 12, 13, 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: SportXShadows.e1,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.yellowTint,
+              ),
+              child: const Icon(LucideIcons.userCheck, size: 18, color: AppColors.primaryDarker),
+            ),
+            const SizedBox(width: 11),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Enrollment requests',
+                      style: GoogleFonts.sora(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                  const SizedBox(height: 2),
+                  Text('Approve or reject athletes who want to enroll with you.',
+                      style: GoogleFonts.inter(fontSize: 10.5, color: AppColors.textSecondary)),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(LucideIcons.chevronRight, size: 18, color: AppColors.textSecondary),
           ],
         ),
       ),

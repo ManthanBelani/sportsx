@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/features/organizer/presentation/widgets/external_registration_field.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
@@ -40,12 +41,15 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
   final _startDate = TextEditingController();
   final _endDate = TextEditingController();
   final _deadline = TextEditingController();
+  final _externalRegistrationUrl = TextEditingController();
 
   int? _sportId;
   int? _cityId;
   String _format = 'knockout';
-  String _gender = 'mixed';
+  String _gender = 'male';
   bool _saving = false;
+  bool _useExternalRegistration = false;
+  String? _externalUrlError;
   final List<CategoryRow> _categories = [CategoryRow()..name.text='U-16', CategoryRow()..name.text='U-18', CategoryRow()..name.text='Open'];
 
   @override
@@ -82,6 +86,7 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
     _startDate.dispose();
     _endDate.dispose();
     _deadline.dispose();
+    _externalRegistrationUrl.dispose();
     for (final c in _categories) {
       c.dispose();
     }
@@ -101,6 +106,15 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
     if (_sportId == null || _cityId == null) {
       SnackBarUtils.showError(context, 'Please select Sport and City');
       return;
+    }
+    // External registration link (optional) — validated before saving.
+    if (_useExternalRegistration) {
+      final urlError = validateExternalRegistrationUrl(_externalRegistrationUrl.text);
+      if (urlError != null) {
+        setState(() => _externalUrlError = urlError);
+        SnackBarUtils.showError(context, urlError);
+        return;
+      }
     }
     // Validate categories have age group
     for (final c in _categories) {
@@ -140,6 +154,9 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
         'entry_fee': num.tryParse(_entryFee.text.replaceAll(RegExp(r'[₹, ]'), '')) ?? 0,
         'prize_pool': '₹${_prizePool.text.trim()} (1st: ₹${_prize1.text}, 2nd: ₹${_prize2.text}, 3rd: ₹${_prize3.text})',
         'rules': _description.text.trim().isEmpty ? null : _description.text.trim(),
+        'external_registration_url': _useExternalRegistration && _externalRegistrationUrl.text.trim().isNotEmpty
+            ? _externalRegistrationUrl.text.trim()
+            : null,
         'status': status,
         'categories': cleanedCats,
       }..removeWhere((k, v) => v == null);
@@ -225,11 +242,10 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
                 DropdownButtonFormField<String>(
                   initialValue: _gender,
                   items: const [
-                    DropdownMenuItem(value: 'mixed', child: Text('Mixed')),
                     DropdownMenuItem(value: 'male', child: Text('Male')),
                     DropdownMenuItem(value: 'female', child: Text('Female')),
                   ],
-                  onChanged: (v)=> setState(()=> _gender=v??'mixed'),
+                  onChanged: (v)=> setState(()=> _gender=v??'male'),
                   decoration: const InputDecoration(),
                 ),
               ])),
@@ -252,6 +268,20 @@ class _TournamentPostingScreenState extends ConsumerState<TournamentPostingScree
             const SizedBox(height: 16),
             _label('Description'),
             TextField(controller: _description, maxLines: 3, decoration: const InputDecoration(hintText: 'Tournament format, rules, eligibility...')),
+            const SizedBox(height: 16),
+            _label('External Registration URL (optional)'),
+            ExternalRegistrationUrlField(
+              controller: _externalRegistrationUrl,
+              enabled: _useExternalRegistration,
+              errorText: _externalUrlError,
+              onEnabledChanged: (v) => setState(() {
+                _useExternalRegistration = v;
+                if (!v) {
+                  _externalRegistrationUrl.clear();
+                  _externalUrlError = null;
+                }
+              }),
+            ),
             const SizedBox(height: 24),
             Divider(color: AppColors.border, height: 1),
             const SizedBox(height: 24),

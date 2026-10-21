@@ -14,7 +14,12 @@ void main() {
         'status': 'inactive',
         'approval_status': 'pending',
         'notes': 'Want to improve batting',
-        'coach': {'id': 3, 'full_name': 'Coach Test'},
+        'coach': {
+          'id': 3,
+          'user_id': 3,
+          'full_name': 'Coach Test',
+          'sport_id': 1,
+        },
         'athlete': {
           'id': 9,
           'user': {'name': 'Test Athlete'}
@@ -63,7 +68,7 @@ void main() {
 
       expect(e.isRejected, isTrue);
       expect(e.rejectionReason, 'Fully booked');
-      expect(e.approvalStatus, ApprovalStatus.rejected);
+      expect(e.approvalStatus, 'rejected');
     });
 
     test('defaults unknown plan to session', () {

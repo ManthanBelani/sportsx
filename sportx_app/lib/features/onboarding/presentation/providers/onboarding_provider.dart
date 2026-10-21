@@ -9,7 +9,7 @@ class OnboardingState {
   final int? selectedCityId;
   final String fullName;
   final String dateOfBirth; // ISO yyyy-MM-dd
-  final String gender; // male | female | other | prefer_not_to_say
+  final String gender; // male | female
   final bool isLoading;
   final String? error;
 

@@ -21,6 +21,7 @@ class MasterDataSeeder extends Seeder
             ['name' => 'Volleyball', 'sort_order' => 8],
             ['name' => 'Kabaddi', 'sort_order' => 9],
             ['name' => 'Hockey', 'sort_order' => 10],
+            ['name' => 'Chess', 'sort_order' => 11],
         ];
         foreach ($sports as $sport) {
             DB::table('sports')->updateOrInsert(['name' => $sport['name']], $sport);

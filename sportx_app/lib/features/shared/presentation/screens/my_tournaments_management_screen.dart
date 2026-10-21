@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/core/role_config.dart';
@@ -21,6 +22,7 @@ class MyTournamentsManagementScreen extends ConsumerWidget {
     final canCreate = canCreateListings(ref.watch(authProvider).user?.role);
     final published = state.items.where((t)=> t.status=='published' || t.status=='active').toList();
     final drafts = state.items.where((t)=> t.status=='draft').toList();
+    final closed = state.items.where((t)=> t.status=='closed' || t.status=='expired').toList();
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -70,8 +72,17 @@ class MyTournamentsManagementScreen extends ConsumerWidget {
                           child: _tournamentCard(context, ref, t, false, canCreate),
                         )),
                       ],
-                      if (published.isEmpty && drafts.isEmpty)
+                      if (published.isEmpty && drafts.isEmpty && closed.isEmpty)
                         const Center(child: Text('No tournaments', style: TextStyle(color: AppColors.textSecondary))),
+                      if (closed.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Text('CLOSED (${closed.length})', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary, letterSpacing: 0.5)),
+                        const SizedBox(height: 12),
+                        ...closed.map((t)=> Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _tournamentCard(context, ref, t, false, canCreate),
+                        )),
+                      ],
                     ],
                   ),
       ),
@@ -87,9 +98,12 @@ class MyTournamentsManagementScreen extends ConsumerWidget {
     final venue = t.venue as String?;
     final dateStr = start!=null ? (end!=null ? '${_fmt(start)}-${_fmt(end)}, ${end.year} • ${venue ?? ''}' : '${_fmt(start)} • ${venue ?? ''}') : (venue ?? '');
 
-    final filled = t.filledSpots as int? ?? 0;
-    final fee = t.registrationFee as double?;
-    final collected = fee!=null ? fee*filled : 0;
+    // Real counters from the API (registration stats block).
+    final confirmed = (t.confirmedRegistrationsCount as int?) ?? 0;
+    final totalRegs = (t.registrationsCount as int?) ?? 0;
+    final spots = (t.totalSpots as int?) ?? 0;
+    final externalClicks = (t.externalRegistrationClicks as int?) ?? 0;
+    final hasExternal = (t.hasExternalRegistration as bool?) ?? false;
 
     return InkWell(
       onTap: ()=> context.push('/registration-management', extra: {'id': id, 'title': title}),
@@ -116,8 +130,24 @@ class MyTournamentsManagementScreen extends ConsumerWidget {
                   case 'registrations': context.push('/registration-management', extra:{'id':id,'title':title}); break;
                   case 'capacity': context.push('/capacity-management', extra:{'id':id}); break;
                   case 'results': context.push('/results-publishing', extra:{'id':id,'title':title}); break;
-                  case 'publish': await actions.publish(id); break;
-                  case 'close': await actions.close(id); break;
+                  case 'publish':
+                    final (ok, error) = await actions.publish(id);
+                    if (!context.mounted) return;
+                    if (ok) {
+                      SnackBarUtils.showSuccess(context, 'Tournament published');
+                    } else {
+                      SnackBarUtils.showError(context, error ?? 'Could not publish the tournament.');
+                    }
+                    break;
+                  case 'close':
+                    final (ok, error) = await actions.close(id);
+                    if (!context.mounted) return;
+                    if (ok) {
+                      SnackBarUtils.showSuccess(context, 'Tournament closed');
+                    } else {
+                      SnackBarUtils.showError(context, error ?? 'Could not close the tournament.');
+                    }
+                    break;
                 }
               },
               itemBuilder: (_) => [
@@ -134,30 +164,49 @@ class MyTournamentsManagementScreen extends ConsumerWidget {
             const SizedBox(height: 12),
             Row(children: [
               Text.rich(TextSpan(children:[
-                TextSpan(text: '$filled', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-                const TextSpan(text: ' teams registered', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                TextSpan(text: '$confirmed', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                TextSpan(text: spots > 0 ? ' of $spots spots filled' : ' confirmed', style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
               ])),
               const SizedBox(width: 20),
-              Text.rich(TextSpan(children:[
-                TextSpan(text: '₹${collected.toStringAsFixed(0)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-                const TextSpan(text: ' collected', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-              ])),
+              if (!hasExternal)
+                Text.rich(TextSpan(children:[
+                  TextSpan(text: '$totalRegs', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                  const TextSpan(text: ' registration requests', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                ])),
             ]),
+            // External registration page — clicks are NOT registrations.
+            if (hasExternal) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.infoLight,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppColors.info.withValues(alpha: 0.25)),
+                ),
+                child: Row(children: [
+                  const Icon(LucideIcons.externalLink, size: 14, color: AppColors.info),
+                  const SizedBox(width: 6),
+                  const Expanded(child: Text('External registration page', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.info))),
+                  Text('$externalClicks clicks', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.info)),
+                ]),
+              ),
+            ],
             // capacity section per design - show first category example
-            if (t.categories != null && (t.categories as List).isNotEmpty) ...[
+            if (!hasExternal && t.categories != null && (t.categories as List).isNotEmpty) ...[
               const SizedBox(height: 12),
               Container(height: 1, color: AppColors.border),
               const SizedBox(height: 12),
               ... (t.categories as List).take(1).map((cat){
                 final cap = cat.capacity as int? ?? 16;
-                final isFull = filled >= cap;
+                final isFull = confirmed >= cap;
                 return Column(children: [
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children:[
-                    Text('${cat.name}: $filled/$cap teams', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                    Text(isFull ? 'Full' : '${cap-filled} left', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+                    Text('${cat.name}: $confirmed/$cap spots', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                    Text(isFull ? 'Full' : '${cap-confirmed} left', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
                   ]),
                   const SizedBox(height: 6),
-                  ClipRRect(borderRadius: BorderRadius.circular(3), child: LinearProgressIndicator(value: cap==0?0: (filled/cap).clamp(0,1), minHeight: 6, backgroundColor: AppColors.border, valueColor: const AlwaysStoppedAnimation(AppColors.primary))),
+                  ClipRRect(borderRadius: BorderRadius.circular(3), child: LinearProgressIndicator(value: cap==0?0: (confirmed/cap).clamp(0,1), minHeight: 6, backgroundColor: AppColors.border, valueColor: const AlwaysStoppedAnimation(AppColors.primary))),
                 ]);
               }),
             ],

@@ -16,18 +16,74 @@ use Illuminate\Http\Request;
  */
 class EventRegistrationController extends Controller
 {
-    protected function eventOf(string $id, ?string $type): array
+    /**
+     * Resolve the event behind an id.
+     *
+     * Trials and tournaments live in separate tables but share one id space,
+     * so an id can match both. When the caller does not say which one it
+     * means, we resolve to the event the caller actually owns — otherwise a
+     * trial owned by an academy could shadow the tournament an organizer is
+     * trying to manage (and every ownership check would fail with 403).
+     */
+    protected function eventOf(Request $request, string $id, ?string $type): array
     {
         $type = strtolower($type ?? 'auto');
-        if (in_array($type, ['trial', 'camp', 'auto'])) {
-            $trial = Trial::find($id);
-            if ($trial) {
+
+        if (in_array($type, ['trial', 'camp'], true)) {
+            return ['kind' => 'trial', 'event' => Trial::findOrFail($id)];
+        }
+
+        if ($type === 'tournament') {
+            return ['kind' => 'tournament', 'event' => Tournament::findOrFail($id)];
+        }
+
+        // auto
+        $trial = Trial::find($id);
+        $tournament = Tournament::find($id);
+
+        if ($trial && $tournament) {
+            $user = $request->user();
+            if ($this->ownsTrial($user, $trial)) {
                 return ['kind' => 'trial', 'event' => $trial];
             }
-            abort_if($type !== 'auto', 404);
+            if ($this->ownsTournament($user, $tournament)) {
+                return ['kind' => 'tournament', 'event' => $tournament];
+            }
+
+            return ['kind' => 'trial', 'event' => $trial];
+        }
+
+        if ($trial) {
+            return ['kind' => 'trial', 'event' => $trial];
         }
 
         return ['kind' => 'tournament', 'event' => Tournament::findOrFail($id)];
+    }
+
+    protected function ownsTrial($user, Trial $trial): bool
+    {
+        if (! $user) {
+            return false;
+        }
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return (int) $trial->posted_by_user_id === (int) $user->id;
+    }
+
+    protected function ownsTournament($user, Tournament $tournament): bool
+    {
+        if (! $user) {
+            return false;
+        }
+        if ($user->isAdmin()) {
+            return true;
+        }
+        $profileId = $user->organizerProfile?->id;
+
+        return (int) $tournament->organizer_id === (int) $user->id
+            || ($profileId && (int) $tournament->organizer_id === (int) $profileId);
     }
 
     protected function assertOwner(Request $request, string $kind, $event): void
@@ -48,7 +104,7 @@ class EventRegistrationController extends Controller
     /** GET /events/{id}/registrations?status=&q= — All/Approved/Pending + search. */
     public function index(Request $request, string $id)
     {
-        ['kind' => $kind, 'event' => $event] = $this->eventOf($id, $request->query('type'));
+        ['kind' => $kind, 'event' => $event] = $this->eventOf($request, $id, $request->query('type'));
         $this->assertOwner($request, $kind, $event);
 
         $status = strtolower($request->query('status', 'all'));
@@ -73,14 +129,44 @@ class EventRegistrationController extends Controller
     public function show(Request $request, string $id)
     {
         $type = strtolower($request->query('type', 'auto'));
-        if (in_array($type, ['trial', 'auto'])) {
-            $reg = TrialRegistration::with(['athlete.user', 'trial'])->find($id);
-            if ($reg) {
-                $this->assertCanView($request, 'trial', $reg);
-                return response()->json(['data' => array_merge($reg->toArray(), ['kind' => 'trial'])]);
-            }
-            abort_if($type !== 'auto', 404);
+
+        if (in_array($type, ['trial', 'camp'], true)) {
+            $reg = TrialRegistration::with(['athlete.user', 'trial'])->findOrFail($id);
+            $this->assertCanView($request, 'trial', $reg);
+
+            return response()->json(['data' => array_merge($reg->toArray(), ['kind' => 'trial'])]);
         }
+
+        if ($type === 'tournament') {
+            $reg = TournamentRegistration::with(['athlete.user', 'tournament', 'category'])->findOrFail($id);
+            $this->assertCanView($request, 'tournament', $reg);
+
+            return response()->json(['data' => array_merge($reg->toArray(), ['kind' => 'tournament'])]);
+        }
+
+        // auto — pick the registration the caller is allowed to see.
+        $trialReg = TrialRegistration::with(['athlete.user', 'trial'])->find($id);
+        $tournamentReg = TournamentRegistration::with(['athlete.user', 'tournament', 'category'])->find($id);
+
+        if ($trialReg && $tournamentReg) {
+            if ($this->ownsTrial($request->user(), $trialReg->trial)) {
+                $this->assertCanView($request, 'trial', $trialReg);
+
+                return response()->json(['data' => array_merge($trialReg->toArray(), ['kind' => 'trial'])]);
+            }
+            if ($this->ownsTournament($request->user(), $tournamentReg->tournament)) {
+                $this->assertCanView($request, 'tournament', $tournamentReg);
+
+                return response()->json(['data' => array_merge($tournamentReg->toArray(), ['kind' => 'tournament'])]);
+            }
+        }
+
+        if ($trialReg) {
+            $this->assertCanView($request, 'trial', $trialReg);
+
+            return response()->json(['data' => array_merge($trialReg->toArray(), ['kind' => 'trial'])]);
+        }
+
         $reg = TournamentRegistration::with(['athlete.user', 'tournament', 'category'])->findOrFail($id);
         $this->assertCanView($request, 'tournament', $reg);
 
@@ -109,28 +195,48 @@ class EventRegistrationController extends Controller
             'ids.*' => 'integer',
             'reason' => 'nullable|string|max:500',
         ]);
-        ['kind' => $kind, 'event' => $event] = $this->eventOf($id, $request->query('type') ?? $request->input('type'));
+        ['kind' => $kind, 'event' => $event] = $this->eventOf($request, $id, $request->query('type') ?? $request->input('type'));
         $this->assertOwner($request, $kind, $event);
 
         $status = $validated['action'] === 'approve' ? 'approved' : 'rejected';
         $count = 0;
+        $failed = [];
+
         foreach ($validated['ids'] as $rid) {
-            $sub = Request::create("/registrations/{$rid}/{$validated['action']}", 'POST', ['reason' => $validated['reason'] ?? null]);
+            // The sub-request MUST carry the type, otherwise the id would be
+            // resolved against the wrong table (a trial registration with the
+            // same id) and every approval would silently fail.
+            $sub = Request::create(
+                "/registrations/{$rid}/{$validated['action']}",
+                'POST',
+                ['reason' => $validated['reason'] ?? null],
+                [], [], ['QUERY_STRING' => ['type' => $kind]]
+            );
             $sub->setUserResolver($request->getUserResolver());
             try {
                 $this->decide($sub, (string) $rid, $status, $validated['reason'] ?? null);
                 $count++;
-            } catch (\Throwable) {
+            } catch (\Throwable $e) {
+                // Report what failed instead of silently dropping it.
+                $failed[] = [
+                    'id' => (int) $rid,
+                    'error' => $e->getMessage(),
+                ];
             }
         }
 
-        return response()->json(['data' => ['processed' => $count]]);
+        return response()->json([
+            'data' => [
+                'processed' => $count,
+                'failed' => $failed,
+            ],
+        ]);
     }
 
     /** GET /events/{id}/registrations/export — CSV, role-scoped. */
     public function export(Request $request, string $id)
     {
-        ['kind' => $kind, 'event' => $event] = $this->eventOf($id, $request->query('type'));
+        ['kind' => $kind, 'event' => $event] = $this->eventOf($request, $id, $request->query('type'));
         $this->assertOwner($request, $kind, $event);
 
         $rows = $kind === 'trial'
@@ -188,15 +294,46 @@ class EventRegistrationController extends Controller
         }
         $rc = app(RegistrationController::class);
 
-        if (in_array($type, ['trial', 'auto'])) {
-            $reg = TrialRegistration::find($id);
-            if ($reg) {
-                return $status === 'approved'
-                    ? $rc->approveTrial($request, $reg)
-                    : $rc->rejectTrial($request, $reg);
-            }
-            abort_if($type !== 'auto', 404);
+        if (in_array($type, ['trial', 'camp'], true)) {
+            $reg = TrialRegistration::findOrFail($id);
+
+            return $status === 'approved'
+                ? $rc->approveTrial($request, $reg)
+                : $rc->rejectTrial($request, $reg);
         }
+
+        if ($type === 'tournament') {
+            $reg = TournamentRegistration::findOrFail($id);
+
+            return $status === 'approved'
+                ? $rc->approveTournament($request, $reg)
+                : $rc->rejectTournament($request, $reg);
+        }
+
+        // auto — trials and tournaments share one id space, so resolve the
+        // registration whose event the caller actually owns before acting.
+        $trialReg = TrialRegistration::with('trial')->find($id);
+        $tournamentReg = TournamentRegistration::with('tournament')->find($id);
+
+        if ($trialReg && $tournamentReg) {
+            if ($this->ownsTrial($request->user(), $trialReg->trial)) {
+                return $status === 'approved'
+                    ? $rc->approveTrial($request, $trialReg)
+                    : $rc->rejectTrial($request, $trialReg);
+            }
+            if ($this->ownsTournament($request->user(), $tournamentReg->tournament)) {
+                return $status === 'approved'
+                    ? $rc->approveTournament($request, $tournamentReg)
+                    : $rc->rejectTournament($request, $tournamentReg);
+            }
+        }
+
+        if ($trialReg) {
+            return $status === 'approved'
+                ? $rc->approveTrial($request, $trialReg)
+                : $rc->rejectTrial($request, $trialReg);
+        }
+
         $reg = TournamentRegistration::findOrFail($id);
 
         return $status === 'approved'

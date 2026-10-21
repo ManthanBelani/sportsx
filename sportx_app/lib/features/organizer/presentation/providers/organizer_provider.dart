@@ -58,6 +58,112 @@ final tournamentRegistrationsByStatusProvider =
   return List<Map<String, dynamic>>.from(data as List);
 });
 
+/// Organizer team members (GET /me/organizer/team).
+class OrganizerTeamMember {
+  final int id;
+  final String name;
+  final String email;
+  final String role;
+  final String status;
+
+  OrganizerTeamMember({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.role,
+    required this.status,
+  });
+
+  factory OrganizerTeamMember.fromJson(Map<String, dynamic> json) => OrganizerTeamMember(
+        id: (json['id'] as num).toInt(),
+        name: (json['name'] ?? '').toString(),
+        email: (json['email'] ?? '').toString(),
+        role: (json['role'] ?? 'volunteer').toString(),
+        status: (json['status'] ?? 'pending').toString(),
+      );
+
+  String get roleLabel => switch (role) {
+        'co_organizer' => 'Co-organizer',
+        'volunteer' => 'Volunteer',
+        'staff' => 'Staff',
+        'finance' => 'Finance',
+        _ => role,
+      };
+
+  bool get isPending => status == 'pending';
+}
+
+final organizerTeamProvider = FutureProvider<List<OrganizerTeamMember>>((ref) async {
+  final resp = await ref.watch(dioProvider).get('/me/organizer/team');
+  final data = resp.data['data'];
+  if (data is! List) return const [];
+  return data
+      .whereType<Map>()
+      .map((e) => OrganizerTeamMember.fromJson(Map<String, dynamic>.from(e)))
+      .toList();
+});
+
+/// Actions on the organizer's team (invite / update / remove).
+class OrganizerTeamActions {
+  final Dio _dio;
+  final Ref _ref;
+
+  OrganizerTeamActions(this._dio, this._ref);
+
+  Future<(bool, String?)> invite({
+    required String name,
+    required String email,
+    required String role,
+  }) async {
+    try {
+      await _dio.post('/me/organizer/team', data: {
+        'name': name,
+        'email': email,
+        'role': role,
+      });
+      _ref.invalidate(organizerTeamProvider);
+      return (true, null);
+    } catch (e) {
+      return (false, e is DioException ? ApiException.fromDio(e).message : ApiException.messageFor(e));
+    }
+  }
+
+  Future<(bool, String?)> updateRole(int id, String role) async {
+    try {
+      await _dio.patch('/me/organizer/team/$id', data: {'role': role});
+      _ref.invalidate(organizerTeamProvider);
+      return (true, null);
+    } catch (e) {
+      return (false, e is DioException ? ApiException.fromDio(e).message : ApiException.messageFor(e));
+    }
+  }
+
+  Future<(bool, String?)> remove(int id) async {
+    try {
+      await _dio.delete('/me/organizer/team/$id');
+      _ref.invalidate(organizerTeamProvider);
+      return (true, null);
+    } catch (e) {
+      return (false, e is DioException ? ApiException.fromDio(e).message : ApiException.messageFor(e));
+    }
+  }
+}
+
+final organizerTeamActionsProvider = Provider<OrganizerTeamActions>((ref) {
+  return OrganizerTeamActions(ref.watch(dioProvider), ref);
+});
+
+/// Organizer profile completion percentage (GET /me/completion-checklist).
+final organizerCompletionProvider = FutureProvider<int>((ref) async {
+  final resp = await ref.watch(dioProvider).get('/me/completion-checklist');
+  final data = resp.data['data'];
+  if (data is Map) {
+    final pct = data['completion'];
+    if (pct is num) return pct.round();
+  }
+  return 0;
+});
+
 /// Organizer analytics (GET /me/organizer/analytics)
 class OrganizerAnalytics {
   final int totalTournaments;

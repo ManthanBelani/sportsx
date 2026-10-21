@@ -271,7 +271,7 @@ class NotificationsScreen extends ConsumerWidget {
       context.push('/academy/$id');
     } else if (path.startsWith('/coach/')) {
       final id = path.split('/').last;
-      context.push('/coach-profile/$id');
+      context.push('/coach-profile-detail/$id');
     } else {
       context.push(path);
     }

@@ -61,6 +61,23 @@ class Tournament {
   final String? contactNumber;
   final String? documentRequired;
   final String? registrationLink;
+
+  /// When set, the "Register" button hands the user over to this external
+  /// page instead of the in-app registration flow.
+  final String? externalRegistrationUrl;
+
+  /// Clicks on the external register button (NOT confirmed registrations).
+  final int externalRegistrationClicks;
+
+  /// Confirmed registrations made on SportX.
+  final int confirmedRegistrationsCount;
+
+  /// All registration records (any approval status).
+  final int registrationsCount;
+
+  /// 'internal' (SportX registration) or 'external' (organizer's own page).
+  final String registrationMode;
+
   final String status;
   final DateTime? expiresAt;
   final Sport? sport;
@@ -91,6 +108,11 @@ class Tournament {
     this.contactNumber,
     this.documentRequired,
     this.registrationLink,
+    this.externalRegistrationUrl,
+    this.externalRegistrationClicks = 0,
+    this.confirmedRegistrationsCount = 0,
+    this.registrationsCount = 0,
+    this.registrationMode = 'internal',
     required this.status,
     this.expiresAt,
     this.sport,
@@ -101,6 +123,8 @@ class Tournament {
   });
 
   factory Tournament.fromJson(Map<String, dynamic> json) {
+    final externalUrl = (json['external_registration_url'] as String?)?.trim();
+
     return Tournament(
       id: _parseInt(json['id'])!,
       title: (json['title'] ?? json['name'] ?? '') as String,
@@ -124,6 +148,11 @@ class Tournament {
       contactNumber: json['contact_number'] as String?,
       documentRequired: json['document_required'] as String?,
       registrationLink: json['registration_link'] as String?,
+      externalRegistrationUrl: (externalUrl == null || externalUrl.isEmpty) ? null : externalUrl,
+      externalRegistrationClicks: _parseInt(json['external_registration_clicks']) ?? 0,
+      confirmedRegistrationsCount: _parseInt(json['confirmed_registrations_count']) ?? 0,
+      registrationsCount: _parseInt(json['registrations_count']) ?? 0,
+      registrationMode: (json['registration_mode'] as String?) ?? 'internal',
       status: json['status'] as String? ?? 'draft',
       expiresAt: json['expires_at'] != null ? DateTime.parse(json['expires_at']) : null,
       sport: json['sport'] != null ? Sport.fromJson(json['sport']) : null,
@@ -138,4 +167,8 @@ class Tournament {
   }
 
   int? get spotsLeft => totalSpots != null ? totalSpots! - (filledSpots ?? 0) : null;
+
+  /// True when the tournament registers athletes on an external page.
+  bool get hasExternalRegistration =>
+      externalRegistrationUrl != null && externalRegistrationUrl!.isNotEmpty;
 }

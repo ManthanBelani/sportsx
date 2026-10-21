@@ -193,10 +193,21 @@ class Coach {
     'id': id, 'user_id': userId, 'full_name': fullName,
     'profile_photo_url': profilePhotoUrl, 'sport_id': sportId,
     'city_id': cityId, 'contact_number': contactNumber, 'email': email,
-    'experience': experience, 'specialization': specialization,
+    'experience': experience,
+    // Backend persists qualification under 'qualification' (see fromJson) and
+    // keeps 'specialization' as a legacy alias — write both so either reader
+    // picks the value up.
+    'qualification': specialization,
+    'specialization': specialization,
     'achievements': achievements, 'bio': bio, 'hourly_rate': hourlyRate,
     'fee_per_session': feePerSession, 'fee_monthly': feeMonthly, 'fee_quarterly': feeQuarterly,
-    'location': location, 'headline': headline, 'availability': availability,
+    'fee_structure': feeStructure,
+    'availability': availability,
+    'certifications': certifications,
+    'languages': languages,
+    'personal_coaching': personalCoaching,
+    'social_links': socialLinks.isEmpty ? <String, String>{} : socialLinks,
+    'location': location, 'headline': headline,
     'registration_link': registrationLink, 'status': status,
     'rating': rating, 'avg_rating': avgRating,
   };

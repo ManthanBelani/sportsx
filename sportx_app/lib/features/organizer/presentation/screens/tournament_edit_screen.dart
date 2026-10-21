@@ -6,6 +6,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
+import 'package:sportx_app/features/organizer/presentation/widgets/external_registration_field.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
@@ -34,13 +35,16 @@ class _TournamentEditScreenState extends ConsumerState<TournamentEditScreen> {
   final _startDate = TextEditingController();
   final _endDate = TextEditingController();
   final _deadline = TextEditingController();
+  final _externalRegistrationUrl = TextEditingController();
   int? _sportId;
   int? _cityId;
   String _format = 'knockout';
-  String _gender = 'mixed';
+  String _gender = 'male';
   String _status = 'draft';
   bool _loading = true;
   bool _saving = false;
+  bool _useExternalRegistration = false;
+  String? _externalUrlError;
   final List<CategoryEditRow> _categories = [];
 
   @override
@@ -53,6 +57,7 @@ class _TournamentEditScreenState extends ConsumerState<TournamentEditScreen> {
   void dispose() {
     _name.dispose(); _venue.dispose(); _description.dispose(); _prizePool.dispose();
     _entryFee.dispose(); _startDate.dispose(); _endDate.dispose(); _deadline.dispose();
+    _externalRegistrationUrl.dispose();
     for (final c in _categories) c.dispose();
     super.dispose();
   }
@@ -69,11 +74,15 @@ class _TournamentEditScreenState extends ConsumerState<TournamentEditScreen> {
       _sportId = (data['sport_id'] ?? data['sport']?['id']) as int?;
       _cityId = (data['city_id'] ?? data['city']?['id']) as int?;
       _format = (data['format'] ?? 'knockout').toString();
-      _gender = (data['gender'] ?? 'mixed').toString();
+      _gender = (data['gender'] ?? 'male').toString();
+      if (_gender == 'mixed' || _gender == 'open') _gender = 'male';
       _status = (data['status'] ?? 'draft').toString();
       _startDate.text = (data['start_date'] ?? '').toString().split('T').first;
       _endDate.text = (data['end_date'] ?? '').toString().split('T').first;
       _deadline.text = (data['registration_deadline'] ?? '').toString().split('T').first.replaceAll('null', '');
+      final externalUrl = (data['external_registration_url'] ?? '').toString().trim();
+      _useExternalRegistration = externalUrl.isNotEmpty;
+      _externalRegistrationUrl.text = externalUrl;
 
       // categories via capacity endpoint for accurate capacity
       try {
@@ -112,6 +121,14 @@ class _TournamentEditScreenState extends ConsumerState<TournamentEditScreen> {
       SnackBarUtils.showError(context, 'Name and venue required');
       return;
     }
+    if (_useExternalRegistration) {
+      final urlError = validateExternalRegistrationUrl(_externalRegistrationUrl.text);
+      if (urlError != null) {
+        setState(() => _externalUrlError = urlError);
+        SnackBarUtils.showError(context, urlError);
+        return;
+      }
+    }
     setState(() => _saving = true);
     try {
       final payload = {
@@ -127,6 +144,10 @@ class _TournamentEditScreenState extends ConsumerState<TournamentEditScreen> {
         if (_entryFee.text.trim().isNotEmpty) 'entry_fee': num.tryParse(_entryFee.text.replaceAll(RegExp(r'[₹, ]'), '')) ?? 0,
         if (_prizePool.text.trim().isNotEmpty) 'prize_pool': _prizePool.text.trim(),
         'rules': _description.text.trim().isEmpty ? null : _description.text.trim(),
+        // Empty string clears the link and restores the in-app registration.
+        'external_registration_url': _useExternalRegistration
+            ? _externalRegistrationUrl.text.trim()
+            : '',
       };
       await ref.read(dioProvider).put('/me/tournaments/${widget.tournamentId}', data: payload);
 
@@ -156,15 +177,17 @@ class _TournamentEditScreenState extends ConsumerState<TournamentEditScreen> {
   Future<void> _changeStatus(String action) async {
     setState(() => _saving = true);
     try {
-      if (action == 'publish') {
-        await ref.read(providerTournamentActionsProvider).publish(widget.tournamentId);
-      } else if (action == 'close') {
-        await ref.read(providerTournamentActionsProvider).close(widget.tournamentId);
+      final actions = ref.read(providerTournamentActionsProvider);
+      final (ok, error) = action == 'publish'
+          ? await actions.publish(widget.tournamentId)
+          : await actions.close(widget.tournamentId);
+      if (!mounted) return;
+      if (!ok) {
+        SnackBarUtils.showError(context, error ?? 'Could not update the tournament status.');
+        return;
       }
-      if (mounted) {
-        SnackBarUtils.showSuccess(context, action == 'publish' ? 'Published' : 'Closed');
-        context.pop();
-      }
+      SnackBarUtils.showSuccess(context, action == 'publish' ? 'Published' : 'Closed');
+      context.pop();
     } catch (e) {
       if (mounted) SnackBarUtils.showError(context, e);
     } finally {
@@ -213,7 +236,7 @@ class _TournamentEditScreenState extends ConsumerState<TournamentEditScreen> {
           Row(children: [
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_label('Format'), DropdownButtonFormField<String>(initialValue: _format, items: const [DropdownMenuItem(value: 'knockout', child: Text('Knockout')), DropdownMenuItem(value: 'league', child: Text('League')), DropdownMenuItem(value: 'round-robin', child: Text('Round Robin'))], onChanged: (v) => setState(() => _format = v ?? 'knockout'), decoration: const InputDecoration())])),
             const SizedBox(width: 12),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_label('Gender'), DropdownButtonFormField<String>(initialValue: _gender, items: const [DropdownMenuItem(value: 'mixed', child: Text('Mixed')), DropdownMenuItem(value: 'male', child: Text('Male')), DropdownMenuItem(value: 'female', child: Text('Female'))], onChanged: (v) => setState(() => _gender = v ?? 'mixed'), decoration: const InputDecoration())])),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_label('Gender'), DropdownButtonFormField<String>(initialValue: _gender, items: const [DropdownMenuItem(value: 'male', child: Text('Male')), DropdownMenuItem(value: 'female', child: Text('Female'))], onChanged: (v) => setState(() => _gender = v ?? 'male'), decoration: const InputDecoration())])),
           ]),
           const SizedBox(height: 12),
           Row(children: [
@@ -233,6 +256,20 @@ class _TournamentEditScreenState extends ConsumerState<TournamentEditScreen> {
           ]),
           const SizedBox(height: 12),
           _label('Description / Rules'), TextField(controller: _description, maxLines: 3, decoration: const InputDecoration(hintText: 'Rules, eligibility...')),
+          const SizedBox(height: 16),
+          _label('External Registration URL (optional)'),
+          ExternalRegistrationUrlField(
+            controller: _externalRegistrationUrl,
+            enabled: _useExternalRegistration,
+            errorText: _externalUrlError,
+            onEnabledChanged: (v) => setState(() {
+              _useExternalRegistration = v;
+              if (!v) {
+                _externalRegistrationUrl.clear();
+                _externalUrlError = null;
+              }
+            }),
+          ),
           const SizedBox(height: 16),
           _label('Categories'),
           ..._categories.asMap().entries.map((e) {

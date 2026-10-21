@@ -27,7 +27,7 @@ return new class extends Migration
             $table->string('prize_pool', 60)->nullable();
             $table->text('rules')->nullable();
             $table->foreignId('banner_media_id')->nullable()->constrained('media_items')->nullOnDelete();
-            $table->enum('gender', ['male', 'female', 'mixed', 'open'])->nullable();
+            $table->enum('gender', ['male', 'female'])->nullable();
             $table->enum('status', ['draft', 'published', 'closed', 'expired', 'removed'])->default('draft');
             $table->timestamp('expires_at')->nullable();
             $table->softDeletes();

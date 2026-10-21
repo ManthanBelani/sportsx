@@ -1,9 +1,13 @@
+import 'dart:convert';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
@@ -13,15 +17,51 @@ import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
-class RegistrationManagementScreen extends ConsumerWidget {
+class RegistrationManagementScreen extends ConsumerStatefulWidget {
   final String tournamentId;
   final String title;
   const RegistrationManagementScreen({super.key, required this.tournamentId, required this.title});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final capacityAsync = ref.watch(tournamentCapacityProvider(tournamentId));
-    final tournamentAsync = ref.watch(tournamentDetailProvider(tournamentId));
+  ConsumerState<RegistrationManagementScreen> createState() => _RegistrationManagementScreenState();
+}
+
+class _RegistrationManagementScreenState extends ConsumerState<RegistrationManagementScreen> {
+  bool _exporting = false;
+
+  /// Downloads the real CSV from the backend and hands it to the OS share
+  /// sheet. The previous implementation only showed the character count of a
+  /// locally built string — nothing was ever exported.
+  Future<void> _exportCsv() async {
+    if (_exporting) return;
+    setState(() => _exporting = true);
+    try {
+      final resp = await ref.read(dioProvider).get(
+        '/events/${widget.tournamentId}/registrations/export',
+        queryParameters: {'type': 'tournament'},
+        // The endpoint answers with text/csv — keep it as raw text.
+        options: Options(responseType: ResponseType.plain),
+      );
+      final csv = resp.data is String
+          ? resp.data as String
+          : jsonEncode(resp.data);
+      await Share.share(
+        csv,
+        subject: '${widget.title} — registrations',
+      );
+    } catch (e) {
+      if (mounted) {
+        SnackBarUtils.showError(context, e, 'Could not export the registrations.');
+      }
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final capacityAsync = ref.watch(tournamentCapacityProvider(widget.tournamentId));
+    final tournamentAsync = ref.watch(tournamentDetailProvider(widget.tournamentId));
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -32,13 +72,22 @@ class RegistrationManagementScreen extends ConsumerWidget {
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
         title: Text('Registrations', style: GoogleFonts.sora(fontSize: 19, fontWeight: FontWeight.w700, color: AppColors.ink)),
         bottom: const PreferredSize(preferredSize: Size.fromHeight(1), child: Divider(height: 1, color: AppColors.border)),
+        actions: [
+          IconButton(
+            tooltip: 'Export CSV',
+            onPressed: _exporting ? null : _exportCsv,
+            icon: _exporting
+                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(LucideIcons.download, color: AppColors.textPrimary),
+          ),
+        ],
       ),
       body: tournamentAsync.when(
         loading: () => const GenericDetailSkeleton(),
-        error: (e, _) => Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Text(ApiException.messageFor(e), style: GoogleFonts.inter(color: AppColors.textSecondary)), const SizedBox(height: 12), SecondaryButton(label: 'Retry', onPressed: () => ref.invalidate(tournamentDetailProvider(tournamentId)))])),
+        error: (e, _) => Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Text(ApiException.messageFor(e), style: GoogleFonts.inter(color: AppColors.textSecondary)), const SizedBox(height: 12), SecondaryButton(label: 'Retry', onPressed: () => ref.invalidate(tournamentDetailProvider(widget.tournamentId)))])),
         data: (tournament) {
           final capacityList = capacityAsync.valueOrNull ?? [];
-          final feeRaw = tournament?.registrationFee ?? 0;
+          final feeRaw = tournament.registrationFee ?? 0;
           final feePerTeam = (feeRaw > 0 ? feeRaw : 0).toInt();
           int spotsLeft = 0;
           int totalCapacity = 0;
@@ -52,21 +101,23 @@ class RegistrationManagementScreen extends ConsumerWidget {
             }
             spotsLeft = (totalCapacity - totalRegistered).clamp(0, 9999);
           }
-          final venue = tournament?.venue;
-          final dateStr = tournament?.startDate != null
-              ? (tournament!.endDate != null
+          final venue = tournament.venue;
+          final dateStr = tournament.startDate != null
+              ? (tournament.endDate != null
                   ? '${DateFormatUtils.formatShortDate(tournament.startDate!.toIso8601String())} - ${DateFormatUtils.formatShortDate(tournament.endDate!.toIso8601String())}${venue != null ? ' • $venue' : ''}'
                   : '${DateFormatUtils.formatShortDate(tournament.startDate!.toIso8601String())}${venue != null ? ' • $venue' : ''}')
               : (venue ?? 'Tournament details pending');
 
           return _RegistrationsTabView(
-            tournamentId: tournamentId,
-            title: title,
+            tournamentId: widget.tournamentId,
+            title: widget.title,
             dateStr: dateStr,
             spotsLeft: spotsLeft,
             totalRegistered: totalRegistered,
             feePerTeam: feePerTeam,
             capacityList: capacityList,
+            hasExternalRegistration: tournament.hasExternalRegistration,
+            externalClicks: tournament.externalRegistrationClicks,
           );
         },
       ),
@@ -82,6 +133,8 @@ class _RegistrationsTabView extends ConsumerStatefulWidget {
   final int totalRegistered;
   final int feePerTeam;
   final List<Map<String, dynamic>> capacityList;
+  final bool hasExternalRegistration;
+  final int externalClicks;
 
   const _RegistrationsTabView({
     required this.tournamentId,
@@ -91,6 +144,8 @@ class _RegistrationsTabView extends ConsumerStatefulWidget {
     required this.totalRegistered,
     required this.feePerTeam,
     required this.capacityList,
+    this.hasExternalRegistration = false,
+    this.externalClicks = 0,
   });
 
   @override
@@ -136,6 +191,33 @@ class _RegistrationsTabViewState extends ConsumerState<_RegistrationsTabView> wi
               const SizedBox(width: 10),
               Expanded(child: _summaryItem('${widget.spotsLeft}', 'Spots Left')),
             ]),
+            // External registration tournaments have no in-app sign-ups — the
+            // only signal we have is the number of clicks on the link.
+            if (widget.hasExternalRegistration) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.infoLight,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.info.withValues(alpha: 0.25)),
+                ),
+                child: Row(children: [
+                  const Icon(LucideIcons.externalLink, size: 16, color: AppColors.info),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'This tournament registers athletes on your own page. '
+                      'SportX can only count link clicks, not the sign-ups made there.',
+                      style: GoogleFonts.inter(fontSize: 11.5, color: AppColors.info),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text('${widget.externalClicks} clicks',
+                      style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.info)),
+                ]),
+              ),
+            ],
           ]),
         ),
         Padding(
@@ -172,9 +254,9 @@ class _RegistrationsTabViewState extends ConsumerState<_RegistrationsTabView> wi
           child: TabBarView(
             controller: _tabController,
             children: [
-              _RegistrationListView(tournamentId: widget.tournamentId, status: 'pending', feePerTeam: widget.feePerTeam, query: _query),
-              _RegistrationListView(tournamentId: widget.tournamentId, status: 'approved', feePerTeam: widget.feePerTeam, query: _query),
-              _RegistrationListView(tournamentId: widget.tournamentId, status: 'rejected', feePerTeam: widget.feePerTeam, query: _query),
+              _RegistrationListView(tournamentId: widget.tournamentId, status: 'pending', feePerTeam: widget.feePerTeam, query: _query, hasExternalRegistration: widget.hasExternalRegistration),
+              _RegistrationListView(tournamentId: widget.tournamentId, status: 'approved', feePerTeam: widget.feePerTeam, query: _query, hasExternalRegistration: widget.hasExternalRegistration),
+              _RegistrationListView(tournamentId: widget.tournamentId, status: 'rejected', feePerTeam: widget.feePerTeam, query: _query, hasExternalRegistration: widget.hasExternalRegistration),
             ],
           ),
         ),
@@ -204,8 +286,15 @@ class _RegistrationListView extends ConsumerWidget {
   final String status;
   final int feePerTeam;
   final String query;
+  final bool hasExternalRegistration;
 
-  const _RegistrationListView({required this.tournamentId, required this.status, required this.feePerTeam, this.query = ''});
+  const _RegistrationListView({
+    required this.tournamentId,
+    required this.status,
+    required this.feePerTeam,
+    this.query = '',
+    this.hasExternalRegistration = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -235,7 +324,18 @@ class _RegistrationListView extends ConsumerWidget {
           return Center(child: Text('No results for "$query"', style: GoogleFonts.inter(color: AppColors.textSecondary)));
         }
         if (filtered.isEmpty) {
-          return Center(child: Text('No $status registrations', style: GoogleFonts.inter(color: AppColors.textSecondary)));
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                hasExternalRegistration
+                    ? 'No $status registrations — athletes register on your own page.'
+                    : 'No $status registrations',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(color: AppColors.textSecondary),
+              ),
+            ),
+          );
         }
         final grouped = <String, List<Map<String, dynamic>>>{};
         for (final r in filtered) {
@@ -249,22 +349,7 @@ class _RegistrationListView extends ConsumerWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                child: Row(children: [
-                  Text('${filtered.length} $status', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
-                  const Spacer(),
-                  InkWell(
-                    onTap: () {
-                      final csv = StringBuffer('team,athlete,category,status,payment\n');
-                      for (final r in filtered) {
-                        final at = r['athlete'] is Map ? r['athlete'] as Map : null;
-                        final u = at != null && at['user'] is Map ? at['user'] as Map : null;
-                        csv.writeln('${r['team_name'] ?? ''},${u?['name'] ?? ''},${r['category']?['name'] ?? ''},${r['approval_status'] ?? ''},${r['payment_status'] ?? ''}');
-                      }
-                      SnackBarUtils.showSuccess(context, 'CSV ready: ${filtered.length} rows (${csv.length} chars)');
-                    },
-                    child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), decoration: BoxDecoration(border: Border.all(color: AppColors.border), borderRadius: BorderRadius.circular(6)), child:  Row(mainAxisSize: MainAxisSize.min, children: [Icon(LucideIcons.download, size: 12, color: AppColors.textSecondary), SizedBox(width: 4), Text('Export CSV', style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondary))])),
-                  ),
-                ]),
+                child: Text('${filtered.length} $status', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
               ),
               ...grouped.entries.map((entry) => Container(
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
@@ -272,7 +357,7 @@ class _RegistrationListView extends ConsumerWidget {
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                         Text(entry.key, style: GoogleFonts.sora(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
-                        Text('${entry.value.length} teams', style: GoogleFonts.inter(fontSize: 13, color: AppColors.primaryDarker, fontWeight: FontWeight.w700)),
+                        Text('${entry.value.length} registrations', style: GoogleFonts.inter(fontSize: 13, color: AppColors.primaryDarker, fontWeight: FontWeight.w700)),
                       ]),
                       const SizedBox(height: 10),
                       ...entry.value.map((r) => _RegistrationCard(tournamentId: tournamentId, data: r, status: status, feePerTeam: feePerTeam)),

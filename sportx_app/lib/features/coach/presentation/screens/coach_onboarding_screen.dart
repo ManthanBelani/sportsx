@@ -80,7 +80,7 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_sportId == null || _cityId == null) {
-      SnackBarUtils.showSuccess(context, 'Please select sport and city');
+      SnackBarUtils.showError(context, 'Please select sport and city');
       return;
     }
     setState(() => _saving = true);

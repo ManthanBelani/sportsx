@@ -4,13 +4,15 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/features/connections/presentation/providers/follow_block_provider.dart';
 import 'package:sportx_app/shared/providers/providers.dart';
+import 'package:sportx_app/shared/providers/role_config_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/home_kit.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/features/social/presentation/providers/groups_provider.dart';
-import 'package:sportx_app/features/social/presentation/providers/test_data_provider.dart';
 import 'package:sportx_app/features/social/presentation/providers/posts_provider.dart';
 import 'package:sportx_app/features/social/presentation/widgets/community_feed.dart';
 
@@ -20,6 +22,8 @@ class CommunityScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final config = ref.watch(roleConfigProvider);
+
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: CustomScrollView(
@@ -42,6 +46,26 @@ class CommunityScreen extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
+                // Role-specific shortcuts for the community hub.
+                if (config.discoverLinks.isNotEmpty) ...[
+                  SizedBox(
+                    height: 32,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        for (final link in config.discoverLinks) ...[
+                          SportXChip(
+                            label: link.label,
+                            icon: link.icon,
+                            onTap: () => context.push(link.route),
+                          ),
+                          const SizedBox(width: 7),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
                 const _CommunityTabs(),
               ]),
             ),
@@ -126,14 +150,13 @@ class _SuggestedSection extends ConsumerWidget {
             return Column(
               children: [
                 for (final a in state.take(4))
-                  PersonRowCard(
+                  _SuggestedFollowRow(
+                    athleteId: a['id']?.toString() ?? '',
                     name: (a['full_name'] ?? a['name'] ?? 'Athlete').toString(),
                     role: a['sport'] is Map && a['sport']['name'] != null
                         ? a['sport']['name'].toString()
                         : 'Athlete',
                     photoUrl: _photo((a['profile_photo_url'] ?? '').toString()),
-                    ctaLabel: 'Follow',
-                    onTap: () => context.push('/view-profile', extra: {'type': 'athlete', 'id': a['id']?.toString() ?? ''}),
                   ),
               ],
             );
@@ -574,13 +597,14 @@ class _FeedSectionContentState extends State<_FeedSectionContent> {
   Widget build(BuildContext context) {
     return Consumer(
       builder: (context, WidgetRef ref, _) {
-        // Use combined provider (test data + real API)
-        final postsAsync = ref.watch(combinedPostsProvider);
+        // Real feed only — the community used to fall back to mock posts
+        // ("Rohit Sharma", …) when the API had nothing, which showed fake
+        // content to real users.
+        final postsAsync = ref.watch(filteredPostsFeedProvider(''));
 
         return RefreshIndicator(
           onRefresh: () async {
-            ref.invalidate(combinedPostsProvider);
-            ref.invalidate(postsFeedProvider);
+            ref.invalidate(filteredPostsFeedProvider(''));
           },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -598,8 +622,7 @@ class _FeedSectionContentState extends State<_FeedSectionContent> {
                     const SizedBox(height: 8),
                     OutlinedButton(
                       onPressed: () {
-                        ref.invalidate(combinedPostsProvider);
-                        ref.invalidate(postsFeedProvider);
+                        ref.invalidate(filteredPostsFeedProvider(''));
                       },
                       child: const Text('Retry'),
                     ),
@@ -662,3 +685,57 @@ class _FeedSkeleton extends StatelessWidget {
 }
 
 String _photo(String raw) => raw.isNotEmpty ? MediaUtils.resolveUrl(raw) : '';
+
+/// Suggested-athlete row whose Follow CTA actually follows the athlete's
+/// profile (C3). The card body still opens the profile; only the button follows.
+class _SuggestedFollowRow extends ConsumerStatefulWidget {
+  final String athleteId;
+  final String name;
+  final String role;
+  final String? photoUrl;
+  const _SuggestedFollowRow({
+    required this.athleteId,
+    required this.name,
+    required this.role,
+    this.photoUrl,
+  });
+
+  @override
+  ConsumerState<_SuggestedFollowRow> createState() => _SuggestedFollowRowState();
+}
+
+class _SuggestedFollowRowState extends ConsumerState<_SuggestedFollowRow> {
+  bool _busy = false;
+  bool _followed = false;
+
+  Future<void> _toggle() async {
+    if (_busy || widget.athleteId.isEmpty) return;
+    setState(() {
+      _busy = true;
+      _followed = !_followed; // optimistic
+    });
+    final ok = _followed
+        ? await followProfile(ref, 'athlete', widget.athleteId)
+        : await unfollowProfile(ref, 'athlete', widget.athleteId);
+    if (!mounted) return;
+    if (!ok) {
+      setState(() => _followed = !_followed);
+      SnackBarUtils.showError(context, 'Could not ${_followed ? 'follow' : 'unfollow'}');
+    } else {
+      SnackBarUtils.showSuccess(context, _followed ? 'Following' : 'Unfollowed');
+    }
+    if (mounted) setState(() => _busy = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PersonRowCard(
+      name: widget.name,
+      role: widget.role,
+      photoUrl: widget.photoUrl,
+      ctaLabel: _followed ? 'Following' : 'Follow',
+      onTap: () => context.push('/view-profile', extra: {'type': 'athlete', 'id': widget.athleteId}),
+      onCtaTap: _toggle,
+    );
+  }
+}

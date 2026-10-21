@@ -11,15 +11,52 @@ class UnifiedEvent {
   final String eventType;
   final String name;
   final String status;
+  final String? venue;
+  final DateTime? startDate;
+  final int? totalSpots;
+  final int? filledSpots;
+  final int registrationsCount;
+  final int externalRegistrationClicks;
+  final bool hasExternalRegistration;
 
-  UnifiedEvent({required this.id, required this.eventType, required this.name, required this.status});
+  UnifiedEvent({
+    required this.id,
+    required this.eventType,
+    required this.name,
+    required this.status,
+    this.venue,
+    this.startDate,
+    this.totalSpots,
+    this.filledSpots,
+    this.registrationsCount = 0,
+    this.externalRegistrationClicks = 0,
+    this.hasExternalRegistration = false,
+  });
 
-  factory UnifiedEvent.fromJson(Map<String, dynamic> json) => UnifiedEvent(
-        id: (json['id'] ?? '').toString(),
-        eventType: (json['event_type'] ?? 'trial').toString(),
-        name: (json['name'] ?? '').toString(),
-        status: (json['status'] ?? '').toString(),
-      );
+  factory UnifiedEvent.fromJson(Map<String, dynamic> json) {
+    final rawDate = json['start_date'] ?? json['event_datetime'];
+    return UnifiedEvent(
+      id: (json['id'] ?? '').toString(),
+      eventType: (json['event_type'] ?? 'trial').toString(),
+      name: (json['name'] ?? '').toString(),
+      status: (json['status'] ?? '').toString(),
+      venue: json['venue'] as String?,
+      startDate: rawDate != null ? DateTime.tryParse(rawDate.toString()) : null,
+      totalSpots: _asInt(json['total_spots']),
+      filledSpots: _asInt(json['filled_spots']),
+      registrationsCount: _asInt(json['registrations_count']) ?? 0,
+      externalRegistrationClicks: _asInt(json['external_registration_clicks']) ?? 0,
+      hasExternalRegistration: json['has_external_registration'] == true,
+    );
+  }
+
+  bool get isTournament => eventType == 'tournament';
+}
+
+int? _asInt(dynamic value) {
+  if (value is int) return value;
+  if (value is num) return value.round();
+  return int.tryParse(value?.toString() ?? '');
 }
 
 class MyEventsState {

@@ -1,13 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/shared/presentation/widgets/async_state_view.dart';
 import 'package:sportx_app/shared/presentation/widgets/detail_page_template.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/features/trial/presentation/providers/unified_events_provider.dart';
+import 'package:sportx_app/features/tournament/presentation/providers/external_registration_provider.dart';
 
 class TournamentDetailScreen extends ConsumerWidget {
   final String id;
@@ -18,6 +22,50 @@ class TournamentDetailScreen extends ConsumerWidget {
       return '${s.day}–${e.day}/${s.month}/${s.year}';
     }
     return '${s.day}/${s.month}–${e.day}/${e.month}/${e.year}';
+  }
+
+  /// Opens the organizer's own registration page and records the click.
+  ///
+  /// The click is only counted once the browser actually opened, so the
+  /// counter reflects real intent and not a failed launch.
+  Future<void> _openExternalRegistration(
+    BuildContext context,
+    WidgetRef ref,
+    Tournament tournament,
+  ) async {
+    final raw = tournament.externalRegistrationUrl;
+    if (raw == null || raw.isEmpty) {
+      SnackBarUtils.showError(context, 'No registration link available for this tournament.');
+      return;
+    }
+
+    final uri = Uri.tryParse(raw);
+    if (uri == null ||
+        !uri.hasScheme ||
+        !uri.hasAuthority ||
+        !['http', 'https'].contains(uri.scheme.toLowerCase())) {
+      SnackBarUtils.showError(context, 'This registration link is not valid. Please contact the organizer.');
+      return;
+    }
+
+    bool opened = false;
+    try {
+      opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      opened = false;
+    }
+
+    if (!opened) {
+      if (context.mounted) {
+        SnackBarUtils.showError(context, 'Could not open the registration page.');
+      }
+      return;
+    }
+
+    // Best-effort counting — never blocks the user.
+    unawaited(
+      ref.read(externalRegistrationRecorderProvider).record(tournament.id.toString()),
+    );
   }
 
   @override
@@ -43,10 +91,13 @@ class TournamentDetailScreen extends ConsumerWidget {
           if (t.prizePool != null) 'Prize Pool': '₹${t.prizePool!.toStringAsFixed(0)}',
           if (t.registrationFee != null) 'Entry Fee': '₹${t.registrationFee!.toStringAsFixed(0)}',
           if (t.ageGroupLabel != null) 'Age Group': t.ageGroupLabel!,
+          if (t.hasExternalRegistration) 'Registration': 'On the organizer’s website',
         },
         addressStr: t.venue ?? t.city?.name ?? '',
-        ctaText: 'Register',
-        onCtaPressed: () => context.push('/tournament-registration/$id'),
+        ctaText: t.hasExternalRegistration ? 'Register externally' : 'Register',
+        onCtaPressed: () => t.hasExternalRegistration
+            ? _openExternalRegistration(context, ref, t)
+            : context.push('/tournament-registration/$id'),
         extraSections: [
           results.when(
             loading: () => const SizedBox.shrink(),

@@ -93,6 +93,20 @@ class MoreRow {
   });
 }
 
+/// A role-specific shortcut shown on the Discover (Explore) and Community
+/// tabs — the same shell for everybody, the same content for nobody.
+class DiscoverLink {
+  final String label;
+  final IconData icon;
+  final String route;
+
+  const DiscoverLink({
+    required this.label,
+    required this.icon,
+    required this.route,
+  });
+}
+
 /// Per-role shell configuration.
 class RoleConfig {
   final SportXRole role;
@@ -106,6 +120,9 @@ class RoleConfig {
   final List<CreateTile> createTiles;
   final List<MoreRow> moreRows;
 
+  /// Role-specific shortcuts for the Discover + Community tabs.
+  final List<DiscoverLink> discoverLinks;
+
   const RoleConfig({
     required this.role,
     required this.label,
@@ -115,6 +132,7 @@ class RoleConfig {
     required this.profileRoute,
     required this.createTiles,
     required this.moreRows,
+    this.discoverLinks = const [],
   });
 }
 
@@ -154,6 +172,12 @@ RoleConfig roleConfigFor(SportXRole role) {
           MoreRow(label: 'My Registrations', icon: LucideIcons.clipboardList, route: '/my-registrations'),
           ..._sharedMoreRows,
         ],
+        discoverLinks: [
+          DiscoverLink(label: 'My Registrations', icon: LucideIcons.clipboardList, route: '/my-registrations'),
+          DiscoverLink(label: 'Leaderboard', icon: LucideIcons.trophy, route: '/athlete-leaderboard'),
+          DiscoverLink(label: 'My Achievements', icon: LucideIcons.award, route: '/achievements'),
+          DiscoverLink(label: 'Nearby Events', icon: LucideIcons.calendar, route: '/tournaments'),
+        ],
       );
 
     case SportXRole.coach:
@@ -180,6 +204,12 @@ RoleConfig roleConfigFor(SportXRole role) {
           MoreRow(label: 'My Opportunities', icon: LucideIcons.megaphone, route: '/my-opportunities'),
           MoreRow(label: 'My Connections', icon: LucideIcons.users, route: '/my-connections'),
           ..._sharedMoreRows,
+        ],
+        discoverLinks: [
+          DiscoverLink(label: 'My Training Programs', icon: LucideIcons.dumbbell, route: '/my-programs'),
+          DiscoverLink(label: 'My Events', icon: LucideIcons.calendar, route: '/my-tournaments'),
+          DiscoverLink(label: 'My Athletes', icon: LucideIcons.users, route: '/athlete-directory'),
+          DiscoverLink(label: 'Enquiries', icon: LucideIcons.inbox, route: '/coach-enquiry-inbox'),
         ],
       );
 
@@ -212,6 +242,12 @@ RoleConfig roleConfigFor(SportXRole role) {
           MoreRow(label: 'Enquiries', icon: LucideIcons.inbox, route: '/enquiry-inbox'),
           ..._sharedMoreRows,
         ],
+        discoverLinks: [
+          DiscoverLink(label: 'Our Athletes', icon: LucideIcons.users, route: '/showcase-athletes'),
+          DiscoverLink(label: 'Academy Programs', icon: LucideIcons.dumbbell, route: '/my-programs'),
+          DiscoverLink(label: 'Events / Trials', icon: LucideIcons.calendar, route: '/my-trials'),
+          DiscoverLink(label: 'Facilities', icon: LucideIcons.building2, route: '/facilities'),
+        ],
       );
 
     case SportXRole.organizer:
@@ -241,6 +277,12 @@ RoleConfig roleConfigFor(SportXRole role) {
           MoreRow(label: 'My Opportunities', icon: LucideIcons.megaphone, route: '/my-opportunities'),
           ..._sharedMoreRows,
         ],
+        discoverLinks: [
+          DiscoverLink(label: 'My Events', icon: LucideIcons.calendar, route: '/my-tournaments'),
+          DiscoverLink(label: 'Registrations', icon: LucideIcons.clipboardList, route: '/registration-management'),
+          DiscoverLink(label: 'Find Talent', icon: LucideIcons.search, route: '/scout-discovery'),
+          DiscoverLink(label: 'My Venues', icon: LucideIcons.building2, route: '/facilities'),
+        ],
       );
 
     case SportXRole.scout:
@@ -267,6 +309,12 @@ RoleConfig roleConfigFor(SportXRole role) {
           MoreRow(label: 'My Connections', icon: LucideIcons.users, route: '/scout-connections'),
           ..._sharedMoreRows,
         ],
+        discoverLinks: [
+          DiscoverLink(label: 'Discover Talents', icon: LucideIcons.search, route: '/scout-discovery'),
+          DiscoverLink(label: 'Shortlisted Talents', icon: LucideIcons.listPlus, route: '/scout-shortlist'),
+          DiscoverLink(label: 'Scouting Reports', icon: LucideIcons.fileText, route: '/observations'),
+          DiscoverLink(label: 'My Opportunities', icon: LucideIcons.megaphone, route: '/my-opportunities'),
+        ],
       );
 
     case SportXRole.sponsor:
@@ -287,6 +335,12 @@ RoleConfig roleConfigFor(SportXRole role) {
           MoreRow(label: 'My Sponsorships', icon: LucideIcons.handCoins, route: '/my-opportunities'),
           MoreRow(label: 'Discover Athletes', icon: LucideIcons.search, route: '/scout-discovery'),
           ..._sharedMoreRows,
+        ],
+        discoverLinks: [
+          DiscoverLink(label: 'Discover Athletes', icon: LucideIcons.search, route: '/scout-discovery'),
+          DiscoverLink(label: 'My Sponsorships', icon: LucideIcons.handCoins, route: '/my-opportunities'),
+          DiscoverLink(label: 'Open Opportunities', icon: LucideIcons.megaphone, route: '/opportunities'),
+          DiscoverLink(label: 'Discover Events', icon: LucideIcons.calendar, route: '/tournaments'),
         ],
       );
 
@@ -311,6 +365,12 @@ RoleConfig roleConfigFor(SportXRole role) {
           MoreRow(label: 'Reports', icon: LucideIcons.flag, route: '/admin/reports'),
           MoreRow(label: 'Analytics', icon: LucideIcons.chartLine, route: '/admin/analytics'),
           MoreRow(label: 'Settings', icon: LucideIcons.settings, route: '/admin/settings'),
+        ],
+        discoverLinks: [
+          DiscoverLink(label: 'Dashboard', icon: LucideIcons.layoutDashboard, route: '/admin/dashboard'),
+          DiscoverLink(label: 'Users', icon: LucideIcons.users, route: '/admin/users'),
+          DiscoverLink(label: 'Approvals', icon: LucideIcons.badgeCheck, route: '/admin/approvals'),
+          DiscoverLink(label: 'Moderation', icon: LucideIcons.shieldAlert, route: '/admin/moderation'),
         ],
       );
   }

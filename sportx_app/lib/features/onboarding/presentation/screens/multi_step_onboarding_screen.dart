@@ -344,7 +344,7 @@ class _CoreIdentityStepState extends State<_CoreIdentityStep> {
             label: 'Gender',
             hint: 'Select',
             value: _gender,
-            items: ['male', 'female', 'other', 'prefer_not_to_say']
+            items: ['male', 'female']
                 .map((g) => DropdownMenuItem(value: g, child: Text(g.capitalize())))
                 .toList(),
             onChanged: (v) {

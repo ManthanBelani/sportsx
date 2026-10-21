@@ -11,6 +11,16 @@ class PlatformStats {
   final int totalUsers;
   final int pendingApprovals;
   final int reportsToday;
+
+  /// Confirmed registrations made on SportX.
+  final int tournamentRegistrations;
+  final int confirmedTournamentRegistrations;
+  final int pendingTournamentRegistrations;
+
+  /// Clicks on external "Register" buttons — NOT confirmed registrations.
+  final int externalRegistrationClicks;
+  final int tournamentsWithExternalRegistration;
+
   final Map<String, int> usersByRole;
   final Map<String, int> usersByRegion;
   final Map<String, int> usersBySport;
@@ -24,6 +34,11 @@ class PlatformStats {
     this.totalUsers = 0,
     this.pendingApprovals = 0,
     this.reportsToday = 0,
+    this.tournamentRegistrations = 0,
+    this.confirmedTournamentRegistrations = 0,
+    this.pendingTournamentRegistrations = 0,
+    this.externalRegistrationClicks = 0,
+    this.tournamentsWithExternalRegistration = 0,
     this.usersByRole = const {},
     this.usersByRegion = const {},
     this.usersBySport = const {},
@@ -45,6 +60,11 @@ class PlatformStats {
       totalUsers: asInt(json['total_users']),
       pendingApprovals: asInt(json['pending_approvals']),
       reportsToday: asInt(json['reports_today']),
+      tournamentRegistrations: asInt(json['tournament_registrations']),
+      confirmedTournamentRegistrations: asInt(json['confirmed_tournament_registrations']),
+      pendingTournamentRegistrations: asInt(json['pending_tournament_registrations']),
+      externalRegistrationClicks: asInt(json['external_registration_clicks']),
+      tournamentsWithExternalRegistration: asInt(json['tournaments_with_external_registration']),
       usersByRole: asIntMap(json['users_by_role']),
       usersByRegion: asIntMap(json['users_by_region']),
       usersBySport: asIntMap(json['users_by_sport']),

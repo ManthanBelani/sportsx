@@ -70,6 +70,31 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               Expanded(child: _buildStatCard(context, 'Pending Approvals', '${stats?.pendingApprovals ?? '—'}', LucideIcons.clock, AppColors.warning)),
             ],
           ),
+          const SizedBox(height: 12),
+          // Registration activity — confirmed registrations and external
+          // register-button clicks are tracked separately on purpose.
+          SectionHeader(title: 'Registration Activity'),
+          Row(
+            children: [
+              Expanded(child: _buildStatCard(context, 'Confirmed Registrations', '${stats?.confirmedTournamentRegistrations ?? '—'}', LucideIcons.badgeCheck, AppColors.success)),
+              const SizedBox(width: 12),
+              Expanded(child: _buildStatCard(context, 'External Link Clicks', '${stats?.externalRegistrationClicks ?? '—'}', LucideIcons.externalLink, AppColors.info)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Confirmed registrations are sign-ups made on SportX. External link clicks are taps on an '
+            'organizer’s own registration page — they are not confirmed registrations.',
+            style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: _buildStatCard(context, 'Total Sign-ups', '${stats?.tournamentRegistrations ?? '—'}', LucideIcons.users, AppColors.primaryDark)),
+              const SizedBox(width: 12),
+              Expanded(child: _buildStatCard(context, 'Pending Sign-ups', '${stats?.pendingTournamentRegistrations ?? '—'}', LucideIcons.clock, AppColors.organizer)),
+            ],
+          ),
           const SizedBox(height: 28),
           const SectionHeader(title: 'Quick Actions'),
           Row(
@@ -82,16 +107,22 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: _buildActionCard(context, 'Moderation', LucideIcons.shield, AppColors.errorLight, AppColors.admin, () => context.push('/admin/moderation'))),
+              Expanded(child: _buildActionCard(context, 'Tournaments', LucideIcons.trophy, AppColors.infoLight, AppColors.info, () => context.push('/admin/content', extra: {'category': 'tournaments'}))),
               const SizedBox(width: 12),
-              Expanded(child: _buildActionCard(context, 'Approvals', LucideIcons.badgeCheck, AppColors.successLight, AppColors.academy, () => context.push('/admin/approvals'))),
+              Expanded(child: _buildActionCard(context, 'Moderation', LucideIcons.shield, AppColors.errorLight, AppColors.admin, () => context.push('/admin/moderation'))),
             ],
           ),
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: _buildActionCard(context, 'Analytics', LucideIcons.chartLine, AppColors.infoLight, AppColors.info, () => context.push('/admin/analytics'))),
+              Expanded(child: _buildActionCard(context, 'Approvals', LucideIcons.badgeCheck, AppColors.successLight, AppColors.academy, () => context.push('/admin/approvals'))),
               const SizedBox(width: 12),
+              Expanded(child: _buildActionCard(context, 'Analytics', LucideIcons.chartLine, AppColors.infoLight, AppColors.info, () => context.push('/admin/analytics'))),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
               Expanded(child: _buildActionCard(context, 'Settings', LucideIcons.settings, AppColors.surface, AppColors.dark, () => context.push('/admin/settings'))),
             ],
           ),

@@ -47,7 +47,7 @@ class ProfileController extends Controller
             $validated = $request->validate([
                 'full_name' => 'required|string|max:100',
                 'date_of_birth' => 'required|date|before:today',
-                'gender' => 'required|in:male,female,other,prefer_not_to_say',
+                'gender' => 'required|in:male,female',
                 'skill_level' => 'required|in:beginner,intermediate,advanced,competitive',
                 'city_id' => 'required|exists:cities,id',
                 'phone' => 'nullable|string|max:20',

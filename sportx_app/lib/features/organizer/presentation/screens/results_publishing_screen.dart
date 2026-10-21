@@ -107,6 +107,7 @@ class _ResultsPublishingScreenState extends ConsumerState<ResultsPublishingScree
       return;
     }
     final winners = <Map<String, dynamic>>[];
+    var place = 0;
     for (final m in _matches) {
       final a = int.tryParse(m.scoreA.text) ?? -1;
       final b = int.tryParse(m.scoreB.text) ?? -1;
@@ -117,11 +118,17 @@ class _ResultsPublishingScreenState extends ConsumerState<ResultsPublishingScree
         SnackBarUtils.showError(context, 'No approved teams found for selected category. Approve registrations first.');
         return;
       }
-      final winner = a >= b ? m.teamA : m.teamB;
-      final loser = a >= b ? m.teamB : m.teamA;
-      winners.add({'category_id': int.parse(_selectedCategoryId!), 'place': 1, 'winner_name': winner});
-      winners.add({'category_id': int.parse(_selectedCategoryId!), 'place': 2, 'winner_name': loser});
-      break; // only first completed match as final result for now
+      if (a == b) {
+        SnackBarUtils.showError(context, '${m.teamA} and ${m.teamB} are tied — enter a winner before publishing.');
+        return;
+      }
+      // Every completed match yields the next two places (winner, runner-up).
+      final winner = a > b ? m.teamA : m.teamB;
+      final runnerUp = a > b ? m.teamB : m.teamA;
+      place += 1;
+      winners.add({'category_id': int.parse(_selectedCategoryId!), 'place': place, 'winner_name': winner});
+      place += 1;
+      winners.add({'category_id': int.parse(_selectedCategoryId!), 'place': place, 'winner_name': runnerUp});
     }
     if (winners.isEmpty) {
       SnackBarUtils.showError(context, 'Enter scores for at least one completed match');

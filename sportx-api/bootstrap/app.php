@@ -71,4 +71,61 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 404);
             }
         });
+
+        // Any other HTTP error (403, 409, 422 …) thrown by the controllers.
+        // Laravel's default payload leaks the exception class, the absolute
+        // server path and a stack trace — the API answers with the same
+        // envelope as every other error instead.
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            $status = $e->getStatusCode();
+            $message = trim((string) $e->getMessage());
+            if ($message === '') {
+                $message = match ($status) {
+                    403 => 'Forbidden.',
+                    404 => 'Endpoint not found.',
+                    405 => 'Method not allowed.',
+                    409 => 'Conflict.',
+                    429 => 'Too many attempts.',
+                    default => 'Request failed.',
+                };
+            }
+
+            return response()->json([
+                'message' => $message,
+                'error' => [
+                    'code' => match ($status) {
+                        403 => 'FORBIDDEN',
+                        404 => 'NOT_FOUND',
+                        405 => 'METHOD_NOT_ALLOWED',
+                        409 => 'CONFLICT',
+                        429 => 'TOO_MANY_REQUESTS',
+                        default => 'REQUEST_FAILED',
+                    },
+                    'message' => $message,
+                ],
+            ], $status, $e->getHeaders());
+        });
+
+        // Unhandled server errors: never leak the stack trace or file paths.
+        $exceptions->render(function (\Throwable $e, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            $message = config('app.debug') && $e->getMessage() !== ''
+                ? $e->getMessage()
+                : 'Something went wrong. Please try again.';
+
+            return response()->json([
+                'message' => $message,
+                'error' => [
+                    'code' => 'SERVER_ERROR',
+                    'message' => $message,
+                ],
+            ], 500);
+        });
     })->create();

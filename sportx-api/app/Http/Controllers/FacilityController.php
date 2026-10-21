@@ -26,14 +26,13 @@ class FacilityController extends Controller
 
     /**
      * GET /me/facilities
+     *
+     * Academies see their own grounds, organizers see the venues they run.
      */
     public function mine(Request $request): JsonResponse
     {
-        $academy = $request->user()->academies;
-        abort_unless($academy, 403, 'Academy profile required.');
-
         return response()->json([
-            'data' => Facility::where('academy_id', $academy->id)->orderBy('name')->get(),
+            'data' => $this->ownedQuery($request)->orderBy('name')->get(),
         ]);
     }
 
@@ -42,12 +41,9 @@ class FacilityController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $academy = $request->user()->academies;
-        abort_unless($academy, 403, 'Academy profile required.');
-
         $validated = $this->rules($request);
 
-        $facility = Facility::create(array_merge($validated, ['academy_id' => $academy->id]));
+        $facility = Facility::create(array_merge($validated, $this->ownerColumns($request)));
 
         return response()->json(['data' => $facility], 201);
     }
@@ -75,10 +71,43 @@ class FacilityController extends Controller
 
     protected function owned(Request $request, string $id): Facility
     {
-        $academy = $request->user()->academies;
-        abort_unless($academy, 403, 'Academy profile required.');
+        return $this->ownedQuery($request)->findOrFail($id);
+    }
 
-        return Facility::where('academy_id', $academy->id)->findOrFail($id);
+    /**
+     * The rows the caller owns (academy grounds or organizer venues).
+     */
+    protected function ownedQuery(Request $request)
+    {
+        $user = $request->user();
+
+        $academy = $user->academies;
+        if ($academy) {
+            return Facility::where('academy_id', $academy->id);
+        }
+
+        $organizer = $user->organizerProfile;
+        abort_unless($organizer, 403, 'Academy or organizer profile required.');
+
+        return Facility::where('organizer_id', $organizer->id);
+    }
+
+    /**
+     * The owner columns for a newly created facility.
+     */
+    protected function ownerColumns(Request $request): array
+    {
+        $user = $request->user();
+
+        $academy = $user->academies;
+        if ($academy) {
+            return ['academy_id' => $academy->id, 'organizer_id' => null];
+        }
+
+        $organizer = $user->organizerProfile;
+        abort_unless($organizer, 403, 'Academy or organizer profile required.');
+
+        return ['academy_id' => null, 'organizer_id' => $organizer->id];
     }
 
     protected function rules(Request $request, bool $sometimes = false): array
@@ -95,7 +124,11 @@ class FacilityController extends Controller
             'image_media_ids.*' => 'integer|exists:media_items,id',
         ]);
 
-        $validated['type'] = strtolower($validated['type'] ?? 'other');
+        // Only normalise the type when it was actually sent — a partial
+        // update (e.g. renaming a venue) must not reset it to "other".
+        if (array_key_exists('type', $validated)) {
+            $validated['type'] = strtolower($validated['type'] ?? 'other');
+        }
 
         return $validated;
     }

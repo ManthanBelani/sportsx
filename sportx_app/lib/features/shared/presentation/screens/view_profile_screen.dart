@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/features/connections/presentation/providers/follow_block_provider.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/chat/presentation/providers/chat_provider.dart';
 import 'package:sportx_app/features/saved/presentation/providers/saved_provider.dart';
@@ -41,6 +42,12 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
   bool _openingChat = false;
   bool _isSaved = false;
   bool _savingToggle = false;
+
+  // Follow state (GET /follow/status/{type}/{id}).
+  bool _following = false;
+  int _followersCount = 0;
+  int _followingCount = 0;
+  bool _followLoading = false;
 
   /// Backend saved item_type for the profile being viewed.
   String get _saveType => widget.type == 'coach' ? 'coach_profile' : 'athlete_profile';
@@ -147,6 +154,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
         });
         _syncSavedFlag();
         _loadConnStatus();
+        _loadFollowStatus();
       }
     } catch (e) {
       if (mounted) {
@@ -187,6 +195,67 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
     } catch (_) {
       if (mounted) setState(() => _connLoading = false);
     }
+  }
+
+  /// Follow status for the viewed profile (works for any profile type).
+  Future<void> _loadFollowStatus() async {
+    if (_isOwnProfile) return;
+    try {
+      final resp = await ref
+          .read(dioProvider)
+          .get('/follow/status/${widget.type}/${widget.id}');
+      if (!mounted) return;
+      final data = resp.data['data'] as Map<String, dynamic>?;
+      setState(() {
+        _following = data?['following'] == true;
+        _followersCount = (data?['followers_count'] ?? 0) as int;
+        _followingCount = (data?['following_count'] ?? 0) as int;
+      });
+    } catch (_) {
+      // Non-blocking: profile is still usable without follow state.
+    }
+  }
+
+  Future<void> _handleFollow() async {
+    if (_followLoading || widget.id.isEmpty) return;
+    final wasFollowing = _following;
+    setState(() {
+      _following = !wasFollowing; // optimistic
+      _followLoading = true;
+      if (wasFollowing) {
+        _followersCount = (_followersCount - 1).clamp(0, 1 << 30);
+      } else {
+        _followersCount += 1;
+      }
+    });
+    bool ok;
+    if (wasFollowing) {
+      ok = await unfollowProfile(ref, widget.type, widget.id);
+    } else {
+      ok = await followProfile(ref, widget.type, widget.id);
+    }
+    if (ok) {
+      // Resync precise counts from the server after the successful toggle.
+      final resp = await ref
+          .read(dioProvider)
+          .get('/follow/status/${widget.type}/${widget.id}');
+      final data = resp.data['data'] as Map<String, dynamic>?;
+      if (!mounted) return;
+      setState(() {
+        _following = data?['following'] == true;
+        _followersCount = (data?['followers_count'] ?? _followersCount) as int;
+        _followingCount = (data?['following_count'] ?? _followingCount) as int;
+        SnackBarUtils.showSuccess(context, wasFollowing ? 'Unfollowed' : 'Following');
+      });
+    } else {
+      // Roll back the optimistic change.
+      setState(() {
+        _following = wasFollowing;
+        _followersCount = wasFollowing ? _followersCount + 1 : (_followersCount - 1).clamp(0, 1 << 30);
+      });
+      SnackBarUtils.showError(context, wasFollowing ? 'Could not unfollow' : 'Could not follow');
+    }
+    setState(() => _followLoading = false);
   }
 
   Future<void> _handleConnect() async {
@@ -249,14 +318,22 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
     return expanded ? Expanded(child: btn) : btn;
   }
 
-  Widget _messageButton({bool expanded = true}) {
-    final btn = OutlinedButton.icon(
-      onPressed: _openingChat ? null : _handleMessage,
-      icon: _openingChat
-          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-          : const Icon(LucideIcons.messageCircle),
-      label: const Text('Message'),
-    );
+  Widget _messageButton({bool expanded = true, bool locked = false}) {
+    final btn = locked
+        ? OutlinedButton.icon(
+            // C5: disabled until Connected — error now hints instead of a
+            // post-hoc snackbar from a failed chat creation.
+            onPressed: null,
+            icon: const Icon(LucideIcons.lock),
+            label: const Text('Locked'),
+          )
+        : OutlinedButton.icon(
+            onPressed: _openingChat ? null : _handleMessage,
+            icon: _openingChat
+                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(LucideIcons.messageCircle),
+            label: const Text('Message'),
+          );
     return expanded ? Expanded(child: btn) : btn;
   }
 
@@ -492,16 +569,39 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
     );
   }
 
+  Widget _followButton({bool expanded = true}) {
+    final isFollowing = _following;
+    final btn = _followLoading
+        ? const OutlinedButton(onPressed: null, child: SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2)))
+        : isFollowing
+            ? OutlinedButton.icon(
+                onPressed: _handleFollow,
+                icon: const Icon(LucideIcons.userCheck, size: 18),
+                label: const Text('Following'),
+              )
+            : OutlinedButton.icon(
+                onPressed: _handleFollow,
+                icon: const Icon(LucideIcons.userPlus, size: 18),
+                label: const Text('Follow'),
+              );
+    return expanded ? Expanded(child: btn) : btn;
+  }
+
   Widget _buildActionButtons() {
     // Athlete-to-athlete connect + chat. Other profile types keep Message only.
     final showConnect = widget.type == 'athlete' && !_isOwnProfile && _profileUserId != null;
+    // C5: Message is locked until the connection is accepted (athlete pair).
+    final messageLocked = widget.type == 'athlete' && !_isOwnProfile && _connStatus != 'accepted';
+
     return Row(
       children: [
         if (showConnect) ...[
           _connectButton(),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
         ],
-        _messageButton(),
+        _followButton(),
+        const SizedBox(width: 8),
+        _messageButton(locked: messageLocked),
       ],
     );
   }
@@ -509,7 +609,13 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
   Widget _buildStatsRow() {
     final connectionsCount = _profileData!['connections_count'] ?? 0;
     final postsCount = _profileData!['posts_count'] ?? _profileData!['social_posts_count'] ?? 0;
-    final achievementsCount = (_profileData!['achievements'] as List?)?.length ?? 0;
+    // C6: follower counts come from /follow/status (falls back to payload).
+    final followersCount = _followersCount != 0
+        ? _followersCount
+        : (int.tryParse('${_profileData!['followers_count'] ?? 0}') ?? 0);
+    final followingCount = _followingCount != 0
+        ? _followingCount
+        : (int.tryParse('${_profileData!['following_count'] ?? 0}') ?? 0);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -522,9 +628,11 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
         children: [
           _buildStatItem('$postsCount', 'Posts', LucideIcons.fileText),
           Container(width: 1, height: 32, color: AppColors.border),
-          _buildStatItem('$connectionsCount', 'Connects', LucideIcons.users),
+          _buildStatItem('$followersCount', 'Followers', LucideIcons.userCheck),
           Container(width: 1, height: 32, color: AppColors.border),
-          _buildStatItem('$achievementsCount', 'Achievements', LucideIcons.trophy),
+          _buildStatItem('$followingCount', 'Following', LucideIcons.userPlus),
+          Container(width: 1, height: 32, color: AppColors.border),
+          _buildStatItem('$connectionsCount', 'Connects', LucideIcons.users),
         ],
       ),
     );

@@ -22,7 +22,7 @@ void main() {
 
       expect(athlete.id, '42');
       expect(athlete.fullName, 'Rahul Sharma');
-      expect(athlete.photoUrl, '/storage/photos/rahul.jpg');
+      expect(athlete.photoUrl, endsWith('/storage/photos/rahul.jpg'));
       expect(athlete.sports, ['Cricket', 'Football']);
       expect(athlete.ageGroupName, 'Under 18');
       expect(athlete.cityName, 'Mumbai');

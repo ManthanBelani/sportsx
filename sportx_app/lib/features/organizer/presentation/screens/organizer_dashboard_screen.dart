@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
-import 'package:sportx_app/features/academy/presentation/providers/academy_provider.dart';
+import 'package:sportx_app/features/trial/presentation/providers/unified_events_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/home_kit.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
@@ -18,36 +18,45 @@ class OrganizerDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider).user;
-    final trials = ref.watch(myTrialsProvider);
-    final tournaments = ref.watch(myTournamentsProvider);
+    final myEvents = ref.watch(myEventsProvider);
     final analytics = ref.watch(organizerAnalyticsProvider);
+    final completion = ref.watch(organizerCompletionProvider).valueOrNull;
 
-    final upcoming = <_EventRow>[
-      ...tournaments.items.take(3).map((t) => _EventRow(
-            title: t.title,
-            date: t.startDate,
-            venue: t.venue ?? '',
-            registered: t.filledSpots?.toString(),
-            total: t.totalSpots,
-            onTap: () => context.push('/tournament-detail/${t.id}'),
-          )),
-      ...trials.items.take(3).map((t) => _EventRow(
-            title: t.title,
-            date: t.trialDate,
-            venue: t.venue ?? '',
-            registered: t.filledSpots?.toString(),
-            total: t.totalSpots,
-            onTap: () => context.push('/trial-detail/${t.id}'),
-          )),
-    ]..sort((a, b) => (a.date ?? DateTime(9999)).compareTo(b.date ?? DateTime(9999)));
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    // Upcoming = published/active and not in the past. Trials and
+    // tournaments come from the unified events endpoint, so the dashboard
+    // shows every event the organizer runs.
+    final upcoming = myEvents.events
+        .where((e) {
+          final status = e.status;
+          if (status != 'published' && status != 'active') return false;
+          final start = e.startDate;
+          return start == null || !start.isBefore(today);
+        })
+        .take(3)
+        .map((e) => _EventRow(
+              title: e.name,
+              date: e.startDate,
+              venue: e.venue ?? '',
+              registered: e.filledSpots,
+              total: e.totalSpots,
+              onTap: () => context.push(
+                e.isTournament
+                    ? '/tournament-detail/${e.id}'
+                    : '/trial-detail/${e.id}',
+              ),
+            ))
+        .toList()
+      ..sort((a, b) => (a.date ?? DateTime(9999)).compareTo(b.date ?? DateTime(9999)));
 
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: RefreshIndicator(
         color: AppColors.yellowDeep,
         onRefresh: () async {
-          await ref.read(myTrialsProvider.notifier).refresh();
-          await ref.read(myTournamentsProvider.notifier).refresh();
+          await ref.read(myEventsProvider.notifier).load();
           ref.invalidate(organizerAnalyticsProvider);
         },
         child: CustomScrollView(
@@ -74,8 +83,10 @@ class OrganizerDashboardScreen extends ConsumerWidget {
                     greeting: greetingFor(DateTime.now()),
                     name: 'Hi, ${user?.name ?? 'Organizer'}!',
                     avatarInitial: (user?.name.isNotEmpty ?? false) ? user!.name[0].toUpperCase() : 'O',
-                    subtitle: '75% complete',
-                    progress: 0.75,
+                    subtitle: completion == null
+                        ? 'Profile setup'
+                        : '$completion% complete',
+                    progress: (completion ?? 0) / 100,
                     chevron: true,
                     onTap: () => context.push('/organizer-profile'),
                   ),
@@ -152,7 +163,7 @@ class _EventRow {
   final String title;
   final DateTime? date;
   final String venue;
-  final String? registered;
+  final int? registered;
   final int? total;
   final VoidCallback onTap;
   const _EventRow({
@@ -172,7 +183,7 @@ class _EventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = row.total ?? 0;
-    final r = int.tryParse(row.registered ?? '') ?? 0;
+    final r = row.registered ?? 0;
     final fill = t > 0 ? (r / t).clamp(0.0, 1.0) : 0.0;
     return GestureDetector(
       onTap: row.onTap,

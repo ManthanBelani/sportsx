@@ -6,6 +6,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/features/opportunity/presentation/providers/opportunity_provider.dart';
 import 'package:sportx_app/shared/providers/providers.dart';
+import 'package:sportx_app/shared/providers/role_config_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/home_kit.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
@@ -17,6 +18,8 @@ class ExploreScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final config = ref.watch(roleConfigProvider);
+
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: CustomScrollView(
@@ -42,6 +45,27 @@ class ExploreScreen extends ConsumerWidget {
                 SportXSearchBar(hint: 'Search athletes, coaches, academies…',
                     onTap: () => context.push('/universal-search')),
                 const SizedBox(height: 10),
+                // Role-specific shortcuts — the same shell, role-relevant
+                // destinations.
+                if (config.discoverLinks.isNotEmpty) ...[
+                  SizedBox(
+                    height: 32,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        for (final link in config.discoverLinks) ...[
+                          SportXChip(
+                            label: link.label,
+                            icon: link.icon,
+                            onTap: () => context.push(link.route),
+                          ),
+                          const SizedBox(width: 7),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
                 SizedBox(
                   height: 32,
                   child: ListView(

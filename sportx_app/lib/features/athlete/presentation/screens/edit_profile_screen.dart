@@ -35,7 +35,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   String _dominantSide = 'Right';
   int? _selectedAgeGroupId;
   String? _selectedGender;
-  final List<String> _genders = ['male', 'female', 'other', 'prefer_not_to_say'];
+  final List<String> _genders = ['male', 'female'];
   final List<String> _skillLevels = ['beginner', 'intermediate', 'advanced', 'competitive'];
   
   File? _avatarFile;

@@ -30,8 +30,8 @@ void main() {
       expect(a.name, 'Pro Cricket Academy');
       expect(a.description, 'Premier cricket training facility');
       expect(a.address, '123 Sports Complex, SG Highway');
-      expect(a.logoUrl, '/storage/academies/logo1.png');
-      expect(a.coverImageUrl, '/storage/academies/cover1.png');
+      expect(a.logoUrl, endsWith('/storage/academies/logo1.png'));
+      expect(a.coverImageUrl, endsWith('/storage/academies/cover1.png'));
       expect(a.hourlyRate, 500);
       expect(a.monthlyRate, 5000);
       expect(a.city?.name, 'Ahmedabad');

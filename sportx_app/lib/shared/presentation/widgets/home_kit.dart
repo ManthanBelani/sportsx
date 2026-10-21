@@ -7,6 +7,7 @@ import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/social/presentation/providers/posts_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/providers/leaderboard_provider.dart';
+import 'package:sportx_app/features/notifications/presentation/providers/notifications_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
@@ -55,17 +56,59 @@ class SportXWordmark extends StatelessWidget {
   }
 }
 
-/// .top-actions — message + bell(3) + avatar, shared by all home tabs.
-class HomeHeaderActions extends StatelessWidget {
+/// .top-actions — message + bell(unread count) + avatar, shared by all home tabs.
+/// The bell badge is driven by [notificationsProvider]'s unreadCount so it stays
+/// in sync with mark-as-read / mark-all-read and push-triggered refreshes.
+class HomeHeaderActions extends ConsumerStatefulWidget {
   final String? role;
   const HomeHeaderActions({super.key, this.role});
 
   @override
+  ConsumerState<HomeHeaderActions> createState() => _HomeHeaderActionsState();
+}
+
+class _HomeHeaderActionsState extends ConsumerState<HomeHeaderActions>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Re-sync the badge when the app comes back to the foreground.
+      ref.read(notificationsProvider.notifier).load();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final unreadCount = ref.watch(
+        notificationsProvider.select((state) => state.unreadCount));
     return Row(children: [
       SportXIconButton(icon: LucideIcons.messageCircle, onTap: () => context.push('/chat-list')),
       const SizedBox(width: 7),
-      SportXIconButton(icon: LucideIcons.bell, badge: 3, onTap: () => context.push('/notifications')),
+      SportXIconButton(
+        icon: LucideIcons.bell,
+        badge: unreadCount > 0
+            ? (unreadCount > 99 ? 99 : unreadCount)
+            : null,
+        onTap: () async {
+          // Refresh so the badge and list reflect the server on open.
+          ref.read(notificationsProvider.notifier).load();
+          await context.push('/notifications');
+          // And again when returning home, in case it changed in between.
+          ref.read(notificationsProvider.notifier).load();
+        },
+      ),
       const SizedBox(width: 7),
       const _HeaderAvatar(),
     ]);
@@ -1120,6 +1163,7 @@ class PersonRowCard extends StatelessWidget {
   final String? photoUrl;
   final String ctaLabel;
   final VoidCallback? onTap;
+  final VoidCallback? onCtaTap;
   final double rating;
   const PersonRowCard({
     super.key,
@@ -1129,6 +1173,7 @@ class PersonRowCard extends StatelessWidget {
     this.photoUrl,
     this.ctaLabel = 'View',
     this.onTap,
+    this.onCtaTap,
     this.rating = 4.8,
   });
 
@@ -1172,7 +1217,7 @@ class PersonRowCard extends StatelessWidget {
           alignment: Alignment.centerRight,
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 88),
-            child: CompactPrimaryButton(label: ctaLabel, onTap: onTap),
+            child: CompactPrimaryButton(label: ctaLabel, onTap: onCtaTap ?? onTap),
           ),
         ),
       ]),
@@ -1333,9 +1378,20 @@ class _V3FeedPreviewState extends ConsumerState<V3FeedPreview> {
     );
   }
 
+  /// Feed filter for each tab of the feed switcher.
+  static const _tabFilters = <String>[
+    '',            // For You — everything the viewer may see
+    'following',   // people the viewer follows
+    'role:athlete',
+    'role:coach',
+    'role:academy',
+    'role:organizer', // event announcements
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final feed = ref.watch(postsFeedProvider);
+    final filter = _tabFilters[_tab.clamp(0, _tabFilters.length - 1)];
+    final feed = ref.watch(filteredPostsFeedProvider(filter));
     final posts = feed.value ?? const <SocialPost>[];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1345,7 +1401,6 @@ class _V3FeedPreviewState extends ConsumerState<V3FeedPreview> {
           onChanged: (i) {
             if (i == _tab) return;
             setState(() => _tab = i);
-            ref.invalidate(postsFeedProvider);
           },
         ),
         const SizedBox(height: 10),
@@ -1355,7 +1410,7 @@ class _V3FeedPreviewState extends ConsumerState<V3FeedPreview> {
                 ? Padding(
                     padding: const EdgeInsets.only(bottom: 10),
                     child: OutlinedButton.icon(
-                      onPressed: () => ref.invalidate(postsFeedProvider),
+                      onPressed: () => ref.invalidate(filteredPostsFeedProvider(filter)),
                       icon: const Icon(LucideIcons.refreshCw, size: 16),
                       label: const Text("Couldn't load feed — tap to retry"),
                     ),
@@ -1364,7 +1419,7 @@ class _V3FeedPreviewState extends ConsumerState<V3FeedPreview> {
                     ? const SizedBox(
                         height: 90,
                         child: Center(
-                          child: Text('Be the first to post — share an update from your training.',
+                          child: Text('Nothing here yet — check back soon.',
                               textAlign: TextAlign.center,
                               style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
                         ),

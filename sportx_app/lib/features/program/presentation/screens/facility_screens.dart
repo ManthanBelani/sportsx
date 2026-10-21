@@ -17,6 +17,36 @@ class FacilityListScreen extends ConsumerStatefulWidget {
   ConsumerState<FacilityListScreen> createState() => _FacilityListScreenState();
 }
 
+class _ErrorState extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+
+  const _ErrorState({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(LucideIcons.circleAlert, size: 32, color: AppColors.textSecondary),
+            const SizedBox(height: 10),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 14),
+            SecondaryButton(label: 'Retry', onPressed: onRetry),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _FacilityListScreenState extends ConsumerState<FacilityListScreen> {
   String? _typeFilter;
 
@@ -89,7 +119,14 @@ class _FacilityListScreenState extends ConsumerState<FacilityListScreen> {
           Expanded(
             child: state.isLoading && state.items.isEmpty
                 ? const GenericListSkeleton()
-                : RefreshIndicator(
+                : state.error != null && state.items.isEmpty
+                    // Surface the failure instead of pretending the list is
+                    // empty (a 403 used to look like "no venues yet").
+                    ? _ErrorState(
+                        message: state.error!,
+                        onRetry: () => ref.read(facilitiesProvider.notifier).load(),
+                      )
+                    : RefreshIndicator(
                     onRefresh: () => ref.read(facilitiesProvider.notifier).load(),
                     child: items.isEmpty
                         ? const SingleChildScrollView(

@@ -195,7 +195,10 @@ class ApiException implements Exception {
           } else {
             msg = _statusMessage(status);
           }
-          final errs = data['errors'];
+          // Field errors live either at the top level or nested inside the
+          // API's error envelope ({error: {code, message, errors}}).
+          final errs = data['errors'] ??
+              (data['error'] is Map ? (data['error'] as Map)['errors'] : null);
           if (errs is Map) {
             fieldErrors = {
               for (final entry in errs.entries)
@@ -203,8 +206,11 @@ class ApiException implements Exception {
                     ? (entry.value as List).map((v) => v.toString()).join(' ')
                     : entry.value.toString(),
             };
-            // If we only have field errors and generic message, surface first field error.
-            if (msg == _statusMessage(status) && fieldErrors.isNotEmpty) {
+            // If we only have field errors and a generic message, surface the
+            // first field error (the API's generic validation text included).
+            final generic = msg == _statusMessage(status) ||
+                msg.toLowerCase().contains('given data was invalid');
+            if (generic && fieldErrors.isNotEmpty) {
               msg = fieldErrors.values.first;
             }
           }
@@ -265,11 +271,11 @@ class ApiException implements Exception {
       case 429:
         return 'Too many requests. Please wait a moment and try again.';
       case 500:
-        return 'Server error. Please try again later.';
+        return 'Server error (500). Please try again later.';
       case 502:
       case 503:
       case 504:
-        return 'Service temporarily unavailable. Please try again later.';
+        return 'Service temporarily unavailable ($status). Please try again later.';
       default:
         if (status != null) return 'Request failed (error $status). Please try again.';
         return 'Something went wrong. Please try again.';

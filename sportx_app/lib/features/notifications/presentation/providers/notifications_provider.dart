@@ -184,7 +184,11 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
         : state.unreadCount,
         );
       }
-    } catch (_) {}
+    } catch (_) {
+      // Don't leave the optimistic decrement in place if the server didn't
+      // persist it — resync the badge from the server.
+      refetchUnreadCount();
+    }
   }
 
   Future<void> markAllRead() async {
@@ -203,7 +207,23 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
         unreadCount: 0,
         );
       }
-    } catch (_) {}
+    } catch (_) {
+      refetchUnreadCount();
+    }
+  }
+
+  /// Lightweight resync of the badge (badge comes from meta.unread_count).
+  Future<void> refetchUnreadCount() async {
+    try {
+      final resp = await _dio.get('/me/notifications',
+          queryParameters: {'page': 1, 'per_page': 1});
+      final unreadCount = resp.data['meta']?['unread_count'] as int? ?? 0;
+      if (mounted) {
+        state = state.copyWith(unreadCount: unreadCount, isLoading: false);
+      }
+    } catch (_) {
+      // Network is down; keep the current badge and try again later.
+    }
   }
 
   Future<void> refresh() async {

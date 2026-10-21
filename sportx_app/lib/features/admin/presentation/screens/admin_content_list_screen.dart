@@ -19,6 +19,12 @@ class AdminContentListScreen extends ConsumerStatefulWidget {
 class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen> {
   final _searchController = TextEditingController();
 
+  static int _asInt(dynamic v) {
+    if (v is int) return v;
+    if (v is num) return v.round();
+    return int.tryParse(v?.toString() ?? '') ?? 0;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -77,6 +83,16 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
                           final item = items[i] as Map<String, dynamic>;
                           final title = (item['title'] ?? item['name'] ?? item['full_name'] ?? 'Item #$i').toString();
                           final status = (item['status'] ?? 'draft').toString();
+
+                          // Tournaments carry their registration counters so
+                          // admins can see confirmed sign-ups and external
+                          // register-link clicks side by side.
+                          final isTournament = widget.category == 'tournaments';
+                          final confirmed = isTournament ? _asInt(item['confirmed_registrations_count']) : 0;
+                          final total = isTournament ? _asInt(item['registrations_count']) : 0;
+                          final clicks = isTournament ? _asInt(item['external_registration_clicks']) : 0;
+                          final hasExternal = isTournament && (item['registration_mode'] == 'external');
+
                           return Container(
                             margin: const EdgeInsets.only(bottom: 10),
                             padding: const EdgeInsets.all(12),
@@ -86,17 +102,37 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
                               borderRadius: BorderRadius.circular(14),
                               boxShadow: SportXShadows.e1,
                             ),
-                            child: Row(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Expanded(child: Text(title, style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: AppColors.ink))),
-                                StatusPill(
-                                  label: status,
-                                  kind: status == 'published' || status == 'approved'
-                                      ? PillKind.ok
-                                      : status == 'pending'
-                                          ? PillKind.pending
-                                          : PillKind.draft,
+                                Row(
+                                  children: [
+                                    Expanded(child: Text(title, style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: AppColors.ink))),
+                                    StatusPill(
+                                      label: status,
+                                      kind: status == 'published' || status == 'approved'
+                                          ? PillKind.ok
+                                          : status == 'pending'
+                                              ? PillKind.pending
+                                              : PillKind.draft,
+                                    ),
+                                  ],
                                 ),
+                                if (isTournament) ...[
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Registrations: $confirmed',
+                                    style: GoogleFonts.inter(
+                                        fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.ink),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    hasExternal
+                                        ? 'External registration link · $clicks link clicks (not registrations)'
+                                        : 'Internal registration · $total registration requests',
+                                    style: GoogleFonts.inter(fontSize: 11.5, color: AppColors.textSecondary),
+                                  ),
+                                ],
                               ],
                             ),
                           );

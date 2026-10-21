@@ -47,6 +47,28 @@ final postsFeedProvider = FutureProvider<List<SocialPost>>((ref) async {
   return (data as List).map((e) => SocialPost.fromJson(e as Map<String, dynamic>)).toList();
 });
 
+/// Feed for one tab of the feed switcher.
+///
+/// `filter` is either empty (For You), `following` (posts by people the
+/// viewer follows) or `role:<role>` (posts authored by that role — this is
+/// what makes the feed role-aware: a coach sees coaching posts, an
+/// organizer sees event announcements).
+final filteredPostsFeedProvider = FutureProvider.family<List<SocialPost>, String>((ref, filter) async {
+  final query = <String, dynamic>{};
+  if (filter == 'following') {
+    query['following'] = 1;
+  } else if (filter.startsWith('role:')) {
+    query['author_role'] = filter.substring('role:'.length);
+  }
+
+  final resp = await ref.watch(dioProvider).get(
+    '/posts',
+    queryParameters: query.isEmpty ? null : query,
+  );
+  final data = resp.data['data'];
+  return (data as List).map((e) => SocialPost.fromJson(e as Map<String, dynamic>)).toList();
+});
+
 final postDetailProvider = FutureProvider.family<SocialPost, String>((ref, id) async {
   final resp = await ref.watch(dioProvider).get('/posts/$id');
   final body = resp.data['data'] as Map<String, dynamic>;

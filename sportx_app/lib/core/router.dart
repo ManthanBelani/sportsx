@@ -71,6 +71,7 @@ import 'package:sportx_app/features/coach/presentation/screens/coach_profile_edi
 import 'package:sportx_app/features/academy/presentation/screens/academy_onboarding_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/registrant_list_screen.dart';
 import 'package:sportx_app/features/organizer/presentation/screens/registration_management_screen.dart';
+import 'package:sportx_app/features/organizer/presentation/screens/registration_picker_screen.dart';
 import 'package:sportx_app/features/organizer/presentation/screens/capacity_management_screen.dart';
 import 'package:sportx_app/features/organizer/presentation/screens/results_publishing_screen.dart';
 import 'package:sportx_app/features/organizer/presentation/screens/results_view_screen.dart';
@@ -108,9 +109,7 @@ import 'package:sportx_app/features/coach/presentation/screens/coach_go_live_scr
 import 'package:sportx_app/features/academy/presentation/screens/invite_athlete_screen.dart';
 import 'package:sportx_app/features/academy/presentation/screens/academy_staff_screen.dart';
 import 'package:sportx_app/features/academy/presentation/screens/academy_collaborations_screen.dart';
-import 'package:sportx_app/features/organizer/presentation/screens/schedule_editor_screen.dart';
 import 'package:sportx_app/features/organizer/presentation/screens/post_announcement_screen.dart';
-import 'package:sportx_app/features/organizer/presentation/screens/promote_event_screen.dart';
 import 'package:sportx_app/features/organizer/presentation/screens/organizer_team_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/screens/compare_talents_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_report_screen.dart';
@@ -407,13 +406,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/academy-invite-athlete', builder: (context, state) => const InviteAthleteScreen()),
       GoRoute(path: '/academy-staff', builder: (context, state) => const AcademyStaffScreen()),
       GoRoute(path: '/academy-collaborations', builder: (context, state) => const AcademyCollaborationsScreen()),
-      GoRoute(path: '/schedule-editor', builder: (context, state) {
-        final extra = state.extra as Map<String, dynamic>?;
-        return ScheduleEditorScreen(
-            eventTitle: extra?['title'] as String? ?? 'Event');
-      }),
       GoRoute(path: '/post-announcement', builder: (context, state) => const PostAnnouncementScreen()),
-      GoRoute(path: '/promote-event', builder: (context, state) => const PromoteEventScreen()),
       GoRoute(path: '/organizer-team', builder: (context, state) => const OrganizerTeamScreen()),
       GoRoute(path: '/event-gallery', builder: (context, state) => const MediaGalleryScreen()),
       GoRoute(path: '/my-collaborations', builder: (context, state) => const AcademyCollaborationsScreen()),
@@ -490,8 +483,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       }),
       GoRoute(path: '/registration-management', builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
+        final tournamentId = extra?['id'] as String? ?? '';
+        // No tournament selected → show the picker hub so the tile is never a
+        // dead end.
+        if (tournamentId.isEmpty) return const RegistrationPickerScreen();
         return RegistrationManagementScreen(
-          tournamentId: extra?['id'] as String? ?? '',
+          tournamentId: tournamentId,
           title: extra?['title'] as String? ?? 'Tournament',
         );
       }),
