@@ -8,6 +8,7 @@ import 'package:sportx_app/features/auth/presentation/providers/auth_provider.da
 import 'package:sportx_app/features/social/presentation/providers/posts_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/providers/leaderboard_provider.dart';
 import 'package:sportx_app/features/notifications/presentation/providers/notifications_provider.dart';
+import 'package:sportx_app/shared/providers/role_config_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
@@ -121,10 +122,13 @@ class _HeaderAvatar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider).user;
+    // Every role has its own profile screen; pushing the athlete-only
+    // '/profile' for a coach was bounced back to the dashboard by the router.
+    final profileRoute = ref.watch(roleConfigProvider).profileRoute;
     final photo = user?.profilePhotoUrl;
     final initial = (user?.name.trim().isNotEmpty ?? false) ? user!.name.trim()[0].toUpperCase() : 'A';
     return GestureDetector(
-      onTap: () => context.push('/profile'),
+      onTap: () => context.push(profileRoute),
       child: Container(
         width: 36,
         height: 36,

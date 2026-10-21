@@ -3,6 +3,7 @@
 use App\Http\Controllers\AcademyController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\AthleteDiscoveryController;
+use App\Http\Controllers\AthleteLeaderboardController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\GuardianController;
@@ -490,6 +491,9 @@ Route::prefix('v1')->group(function () {
     // ── Leaderboard (Phase 7: athletes P0; coach/academy tabs P1) ──
     Route::get('/leaderboard', [LeaderboardController::class, 'index'])->middleware('auth:sanctum');
     Route::get('/leaderboard/strip', [LeaderboardController::class, 'strip'])->middleware('auth:sanctum');
+
+    // ── Athlete leaderboard (period/category board used by the mobile app) ──
+    Route::get('/me/leaderboard', [AthleteLeaderboardController::class, 'index'])->middleware('auth:sanctum');
 
     // ── Scout extensions (Phase 7) ──
     Route::get('/observations', [ObservationController::class, 'index'])->middleware('auth:sanctum');

@@ -51,7 +51,7 @@ class LeaderboardService
             $points = 0;
 
             // Verified achievements only.
-            $achQ = Achievement::where('athlete_profile_id', $athlete->id);
+            $achQ = Achievement::where('athlete_id', $athlete->id);
             if (Schema::hasColumn('achievements', 'sport_id')) {
                 $achQ->where('sport_id', $sportId);
             }
@@ -63,24 +63,23 @@ class LeaderboardService
             $points += $achQ->count() * static::POINTS_VERIFIED_ACHIEVEMENT;
 
             // Completion milestone.
-            if (method_exists($athlete, 'completionPercent')) {
-                try {
-                    if ($athlete->completionPercent() >= 80) {
-                        $points += static::POINTS_COMPLETION_MILESTONE;
-                    }
-                } catch (\Throwable) {
+            try {
+                $percent = \App\Http\Controllers\CompletionChecklistController::completionFor($athlete->user);
+                if ($percent >= 80) {
+                    $points += static::POINTS_COMPLETION_MILESTONE;
                 }
+            } catch (\Throwable) {
             }
 
             // Participation (approved regs), capped.
             $parts = 0;
             try {
-                $parts += TrialRegistration::where('athlete_profile_id', $athlete->id)
+                $parts += TrialRegistration::where('athlete_id', $athlete->id)
                     ->whereIn('status', ['approved', 'confirmed'])->count();
             } catch (\Throwable) {
             }
             try {
-                $parts += TournamentRegistration::where('athlete_profile_id', $athlete->id)
+                $parts += TournamentRegistration::where('athlete_id', $athlete->id)
                     ->whereIn('status', ['approved', 'confirmed'])->count();
             } catch (\Throwable) {
             }

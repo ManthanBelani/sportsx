@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/core/utils/media_utils.dart';
 
 enum LeaderboardPeriod { weekly, monthly, season, allTime }
 enum LeaderboardCategory { xp, matches, wins, achievements, connections }
@@ -46,14 +47,20 @@ class LeaderboardEntry {
   factory LeaderboardEntry.fromJson(Map<String, dynamic> json) {
     return LeaderboardEntry(
       rank: (json['rank'] as num?)?.toInt() ?? 0,
-      userId: json['user_id']?.toString() ?? json['id']?.toString() ?? '',
+      userId: json['athlete_profile_id']?.toString() ??
+          json['id']?.toString() ??
+          json['user_id']?.toString() ??
+          '',
       name: json['name']?.toString() ?? json['full_name']?.toString() ?? 'Athlete',
-      avatarUrl: json['avatar_url']?.toString() ?? json['profile_photo_url']?.toString(),
+      avatarUrl: MediaUtils.resolveNullable(
+          json['avatar_url']?.toString() ?? json['profile_photo_url']?.toString()),
       score: (json['score'] as num?)?.toInt() ?? (json['xp'] as num?)?.toInt() ?? 0,
       sport: json['sport']?.toString() ?? json['sport_name']?.toString() ?? 'General',
       level: json['level']?.toString() ?? json['skill_level']?.toString() ?? 'Beginner',
       isCurrentUser: json['is_current_user'] == true,
-      city: json['city']?.toString(),
+      city: json['city'] is Map
+          ? (json['city'] as Map)['name']?.toString()
+          : json['city']?.toString(),
     );
   }
 }
@@ -102,9 +109,9 @@ final leaderboardProvider = FutureProvider.family<LeaderboardState, ({
     'category': params.category.name,
     if (params.sportId != null) 'sport_id': params.sportId,
   });
-  
-  final data = resp.data['data'] as Map<String, dynamic>;
-  final entries = (data['entries'] as List? ?? [])
+
+  final data = (resp.data is Map ? resp.data['data'] : null) as Map<String, dynamic>?;
+  final entries = (data?['entries'] as List? ?? [])
       .map((e) => LeaderboardEntry.fromJson(e as Map<String, dynamic>))
       .toList()
     // Do not rely on API ordering: sort by rank, then score as a tie-break.
@@ -113,16 +120,20 @@ final leaderboardProvider = FutureProvider.family<LeaderboardState, ({
       if (byRank != 0) return byRank;
       return b.score.compareTo(a.score);
     });
-  
+
   LeaderboardEntry? currentUserEntry;
   try {
-    currentUserEntry = LeaderboardEntry.fromJson(data['current_user'] as Map<String, dynamic>);
+    final raw = data?['current_user'];
+    if (raw is Map<String, dynamic>) {
+      currentUserEntry = LeaderboardEntry.fromJson(raw);
+    }
   } catch (_) {}
 
   return LeaderboardState(
     entries: entries,
     currentUserEntry: currentUserEntry,
-    totalParticipants: (data['total_participants'] as num?)?.toInt() ?? entries.length,
+    totalParticipants:
+        (data?['total_participants'] as num?)?.toInt() ?? entries.length,
   );
 });
 

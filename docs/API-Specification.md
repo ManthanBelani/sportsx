@@ -577,9 +577,15 @@ All listing types share the same pattern: paginated card-list with consistent fi
 | GET | `/explore` | Any | NEW | Grouped sections (athletes/coaches/academies/events/opportunities) for S.2/Explore; cheaper than 5 calls. | S.2 |
 | GET | `/leaderboard` | Any | NEW | Tabs (athletes/coaches/academies/teams/events), sport/location/age filters, podium + ranks 4–10; minors anonymized. | S.6; BE-M8.1 |
 | GET | `/leaderboard/strip` | Any | NEW | Top-5 for home (AT.1/CO.2/AC.2). | BE-M8.1 |
+| GET | `/me/leaderboard` | Any | BUILT | Personalised athlete board with `period` (weekly/monthly/season/allTime) and `category` (xp/matches/wins/achievements/connections) filters; includes the viewer's own rank. | AT.1; BE-M8.1 |
 
 **GET `/leaderboard` params:** `sport_id`, `city_id`, `age_group_id`, `season_id`, `tab`.
 **Response:** `{ "data": { "podium": [...], "ranks": [...], "season": { "id": 1, "name": "2026 Season" } }, "meta": { ... } }`
+
+**GET `/me/leaderboard` params:** `period` (`weekly|monthly|season|allTime`), `category` (`xp|matches|wins|achievements|connections`), `sport_id`, `limit` (max 100).
+**Response:** `{ "data": { "period": "weekly", "category": "xp", "season": {...}, "entries": [ { "rank": 1, "id": 12, "athlete_profile_id": 12, "user_id": 31, "name": "...", "avatar_url": "/storage/...", "score": 150, "sport": "Cricket", "level": "intermediate", "is_current_user": false, "city": "Pune" } ], "current_user": { ... } | null, "total_participants": 42 } }`
+
+Scores are computed live from activity rows so weekly/monthly windows are possible: achievements (`achievements.created_at`), matches (approved trial/tournament registrations), wins (`tournament_results` place 1, matched on winner name), connections (accepted `connections`). XP = 50 per achievement + 10 per approved match (participation capped at 50). Minors are anonymized (first name + initial) unless the guardian opted into full names.
 
 **Leaderboard points** recalc on: verified achievement, profile-completion milestones, post/event participation (BE-M8.1). Admin config endpoints (`/admin/leaderboard-config`, `/admin/leaderboard/reset-season`) are P1.
 
