@@ -9,7 +9,7 @@ class TournamentController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Tournament::published()->with(['sport', 'city', 'organizer', 'categories.ageGroup']);
+        $query = Tournament::published()->with(['sport', 'city', 'organizer', 'categories.ageGroup'])->withRegistrationCounts();
 
         $query->when($request->sport_id, fn ($q) => $q->where('sport_id', $request->sport_id))
             ->when($request->city_id, fn ($q) => $q->where('city_id', $request->city_id))
@@ -27,12 +27,19 @@ class TournamentController extends Controller
 
         $perPage = min((int) ($request->per_page ?? 20), 50);
 
-        return response()->json($query->paginate($perPage)->withQueryString());
+        $paginator = $query->paginate($perPage);
+
+        return response()->json(
+            $paginator->through(fn ($t) => array_merge($t->toArray(), $t->registrationStats()))
+                ->withQueryString()
+        );
     }
 
     public function show(Request $request, string $id)
     {
-        $tournament = Tournament::with(['sport', 'city', 'organizer', 'categories.ageGroup', 'results'])->findOrFail($id);
+        $tournament = Tournament::with(['sport', 'city', 'organizer', 'categories.ageGroup', 'results'])
+            ->withRegistrationCounts()
+            ->findOrFail($id);
 
         $isOwn = false;
         // This route is public, so the default guard is "web" and a Bearer
@@ -51,6 +58,7 @@ class TournamentController extends Controller
         abort_unless($tournament->status === 'published' || $isOwn, 404);
 
         $data = $tournament->toArray();
+        $data = array_merge($data, $tournament->registrationStats());
         $data['registration_status'] = $this->registrationStatus($tournament, $viewer);
 
         return response()->json(['data' => $data]);

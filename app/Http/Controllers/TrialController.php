@@ -9,7 +9,11 @@ class TrialController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Trial::published()->with(['sport', 'city', 'academy', 'postedBy']);
+        $query = Trial::published()->with(['sport', 'city', 'academy', 'postedBy'])
+            ->withCount([
+                'registrations',
+                'registrations as confirmed_registrations_count' => fn ($q) => $q->where('approval_status', 'approved'),
+            ]);
 
         $query->when($request->sport_id, fn ($q) => $q->where('sport_id', $request->sport_id))
             ->when($request->city_id, fn ($q) => $q->where('city_id', $request->city_id))
@@ -27,17 +31,47 @@ class TrialController extends Controller
 
         $perPage = min((int) ($request->per_page ?? 20), 50);
 
-        return response()->json($query->paginate($perPage)->withQueryString());
+        $paginator = $query->paginate($perPage);
+
+        return response()->json(
+            $paginator->through(fn ($t) => array_merge($t->toArray(), $this->trialStats($t)))
+                ->withQueryString()
+        );
+    }
+
+    /**
+     * Registration counters for a trial (spots come from `vacancies`).
+     */
+    private function trialStats(Trial $trial): array
+    {
+        $confirmed = (int) ($trial->confirmed_registrations_count ?? 0);
+        $total = (int) ($trial->registrations_count ?? 0);
+        $spots = (int) ($trial->vacancies ?? 0);
+
+        return [
+            'total_spots' => $spots,
+            'filled_spots' => $confirmed,
+            'spots_left' => max(0, $spots - $confirmed),
+            'registrations_count' => $total,
+            'confirmed_registrations_count' => $confirmed,
+            'utilization_percent' => $spots > 0 ? round(($confirmed / $spots) * 100, 1) : 0.0,
+        ];
     }
 
     public function show(Request $request, string $id)
     {
-        $trial = Trial::published()->with(['sport', 'city', 'academy', 'postedBy'])->findOrFail($id);
+        $trial = Trial::published()->with(['sport', 'city', 'academy', 'postedBy'])
+            ->withCount([
+                'registrations',
+                'registrations as confirmed_registrations_count' => fn ($q) => $q->where('approval_status', 'approved'),
+            ])
+            ->findOrFail($id);
 
         $data = $trial->toArray();
         // Public route → default guard is "web"; resolve the SANCTUM user so
         // authenticated athletes still see their own registration status.
         $data['registration_status'] = $this->registrationStatus($trial, auth('sanctum')->user());
+        $data = array_merge($data, $this->trialStats($trial));
 
         return response()->json(['data' => $data]);
     }

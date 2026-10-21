@@ -19,7 +19,7 @@ class ProviderTournamentController extends Controller
         // Canonical: organizer_id FKs organizer_profiles.id (see migration).
         // Legacy rows created via store() used user_id — match both for back-compat
         // (same dual-lookup as OrganizerAnalyticsController).
-        $query = Tournament::with(['sport', 'city', 'categories'])
+        $query = Tournament::with(['sport', 'city', 'categories'])->withRegistrationCounts()
             ->orderBy('start_date', 'desc');
         $profileId = $user->organizerProfile?->id;
         if ($profileId) {
@@ -33,7 +33,10 @@ class ProviderTournamentController extends Controller
         $tournaments = $query->paginate(20);
 
         return response()->json([
-            'data' => $tournaments->items(),
+            'data' => $tournaments->getCollection()->map(fn ($t) => array_merge(
+                $t->toArray(),
+                $t->registrationStats()
+            ))->values(),
             'current_page' => $tournaments->currentPage(),
             'last_page' => $tournaments->lastPage(),
             'per_page' => $tournaments->perPage(),
@@ -68,7 +71,8 @@ class ProviderTournamentController extends Controller
             'banner_media_id' => 'nullable|integer|exists:media_items,id',
             'contact_number' => 'nullable|string|max:20',
             'registration_link' => 'nullable|url|max:500',
-            'gender' => 'nullable|in:male,female,mixed',
+            'external_registration_url' => ['nullable', 'string', 'max:500', new \App\Rules\ExternalRegistrationUrl],
+            'gender' => 'nullable|in:male,female',
             'categories' => 'nullable|array',
             'categories.*.name' => 'required_with:categories|string|max:100',
             'categories.*.age_group_id' => 'nullable|integer|exists:age_groups,id',
@@ -98,6 +102,10 @@ class ProviderTournamentController extends Controller
             );
             // Remove alias leftover
             unset($tournamentData['categories']);
+            // An empty external link means "use the in-app registration flow".
+            if (array_key_exists('external_registration_url', $tournamentData)) {
+                $tournamentData['external_registration_url'] = $this->normalizeExternalUrl($tournamentData['external_registration_url']);
+            }
             // Honor auto-approve setting
             $settings = $this->platformSettings();
             $autoApprove = $settings['auto_approve_tournaments'] ?? false;
@@ -115,7 +123,12 @@ class ProviderTournamentController extends Controller
                 $tournament->categories()->create($cat);
             }
 
-            return response()->json(['data' => $tournament->load(['sport', 'city', 'categories'])], 201);
+            return response()->json([
+                'data' => array_merge(
+                    $tournament->load(['sport', 'city', 'categories'])->toArray(),
+                    $tournament->registrationStats()
+                ),
+            ], 201);
         });
     }
 
@@ -139,13 +152,24 @@ class ProviderTournamentController extends Controller
             'banner_media_id' => 'nullable|integer|exists:media_items,id',
             'contact_number' => 'nullable|string|max:20',
             'registration_link' => 'nullable|url|max:500',
-            'gender' => 'nullable|in:male,female,mixed',
+            'external_registration_url' => ['nullable', 'string', 'max:500', new \App\Rules\ExternalRegistrationUrl],
+            'gender' => 'nullable|in:male,female',
             'status' => 'nullable|in:draft,published,closed',
         ]);
 
-        $tournament->update(collect($validated)->except(['categories'])->toArray());
+        $payload = collect($validated)->except(['categories'])->toArray();
+        if (array_key_exists('external_registration_url', $payload)) {
+            $payload['external_registration_url'] = $this->normalizeExternalUrl($payload['external_registration_url']);
+        }
 
-        return response()->json(['data' => $tournament->load(['sport', 'city', 'categories'])]);
+        $tournament->update($payload);
+
+        return response()->json([
+            'data' => array_merge(
+                $tournament->load(['sport', 'city', 'categories'])->toArray(),
+                $tournament->registrationStats()
+            ),
+        ]);
     }
 
     public function updateCategories(Request $request, Tournament $tournament)
@@ -230,6 +254,21 @@ class ProviderTournamentController extends Controller
         // Canonical: organizer_id = organizer_profiles.id; legacy: user_id.
         if ($user->organizerProfile && (int) $tournament->organizer_id === (int) $user->organizerProfile->id) return;
         abort_unless((int) $tournament->organizer_id === (int) $user->id, 403);
+    }
+
+    /**
+     * Empty / whitespace-only links are stored as NULL so the tournament
+     * falls back to the in-app registration flow.
+     */
+    private function normalizeExternalUrl($value): ?string
+    {
+        if (! is_string($value)) {
+            return null;
+        }
+
+        $value = trim($value);
+
+        return $value === '' ? null : $value;
     }
 
     private function platformSettings(): array

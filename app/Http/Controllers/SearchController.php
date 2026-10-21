@@ -24,7 +24,7 @@ class SearchController extends Controller
             'age_group_id' => 'nullable|integer',
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date',
-            'gender' => 'nullable|in:male,female,mixed,open,all',
+            'gender' => 'nullable|in:male,female,all',
             'position' => 'nullable|string|max:80',
             'level' => 'nullable|string|max:40',
             'facilities' => 'nullable|string|max:255',

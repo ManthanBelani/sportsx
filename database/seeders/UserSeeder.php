@@ -194,6 +194,63 @@ class UserSeeder extends Seeder
                 'phone' => '+91 79 2657 8811',
                 'status' => 'pending',
             ],
+            // One account per seeded tournament owner — otherwise every
+            // tournament would belong to the first organizer profile and
+            // "My Events" would show other organisations' events.
+            [
+                'name' => 'Gujarat Cricket Federation',
+                'email' => 'organizer.cricket@sportx.test',
+                'role' => 'organizer',
+                'phone' => '+91 79 2657 8821',
+            ],
+            [
+                'name' => 'Badminton Association of India',
+                'email' => 'organizer.badminton@sportx.test',
+                'role' => 'organizer',
+                'phone' => '+91 79 2657 8822',
+            ],
+            [
+                'name' => 'Mumbai Swimming Association',
+                'email' => 'organizer.swimming@sportx.test',
+                'role' => 'organizer',
+                'phone' => '+91 22 2657 8823',
+            ],
+            [
+                'name' => 'Delhi Athletics Federation',
+                'email' => 'organizer.athletics@sportx.test',
+                'role' => 'organizer',
+                'phone' => '+91 11 2657 8824',
+            ],
+            [
+                'name' => 'Karnataka Basketball Association',
+                'email' => 'organizer.basketball@sportx.test',
+                'role' => 'organizer',
+                'phone' => '+91 80 2657 8825',
+            ],
+            [
+                'name' => 'All India Tennis Association',
+                'email' => 'organizer.tennis@sportx.test',
+                'role' => 'organizer',
+                'phone' => '+91 44 2657 8826',
+            ],
+            [
+                'name' => 'Women Football Association',
+                'email' => 'organizer.wfootball@sportx.test',
+                'role' => 'organizer',
+                'phone' => '+91 22 2657 8827',
+            ],
+            [
+                'name' => 'Gujarat Kabaddi Association',
+                'email' => 'organizer.kabaddi@sportx.test',
+                'role' => 'organizer',
+                'phone' => '+91 79 2657 8828',
+            ],
+            [
+                'name' => 'Ahmedabad Chess Association',
+                'email' => 'organizer.chess@sportx.test',
+                'role' => 'organizer',
+                'phone' => '+91 79 2657 8829',
+            ],
 
             /* ── Talent scouts ──────────────────────────────────────── */
             [

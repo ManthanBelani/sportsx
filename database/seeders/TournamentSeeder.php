@@ -4,21 +4,20 @@ namespace Database\Seeders;
 
 use App\Models\OrganizerProfile;
 use App\Models\Tournament;
+use Database\Seeders\Support\SeedLookup;
 use Illuminate\Database\Seeder;
 
 class TournamentSeeder extends Seeder
 {
     public function run(): void
     {
-        $organizer = OrganizerProfile::first();
         $cityIds = [1, 2, 3, 4, 5]; // Ahmedabad, Mumbai, Delhi, Bangalore, Chennai
 
         $tournaments = [
             [
                 'name' => 'U-16 State Cup 2026',
-                'organizer_id' => $organizer?->id ?? 1,
-                'sport_id' => 1,
-                'organizer_name' => 'Gujarat Cricket Federation',
+                'sport' => 'Cricket',
+                                'organizer_name' => 'Gujarat Cricket Federation',
                 'format' => 'knockout',
                 'start_date' => now()->addDays(21)->toDateString(),
                 'end_date' => now()->addDays(26)->toDateString(),
@@ -36,9 +35,8 @@ class TournamentSeeder extends Seeder
             ],
             [
                 'name' => 'Inter-City Football Championship',
-                'organizer_id' => $organizer?->id ?? 1,
-                'sport_id' => 2,
-                'organizer_name' => 'Gujarat Sports Federation',
+                'sport' => 'Football',
+                                'organizer_name' => 'Gujarat Sports Federation',
                 'format' => 'league',
                 'start_date' => now()->addDays(30)->toDateString(),
                 'end_date' => now()->addDays(40)->toDateString(),
@@ -54,9 +52,8 @@ class TournamentSeeder extends Seeder
             ],
             [
                 'name' => 'All India Badminton Open 2026',
-                'organizer_id' => $organizer?->id ?? 1,
-                'sport_id' => 3,
-                'organizer_name' => 'Badminton Association of India',
+                'sport' => 'Badminton',
+                                'organizer_name' => 'Badminton Association of India',
                 'format' => 'knockout',
                 'start_date' => now()->addDays(45)->toDateString(),
                 'end_date' => now()->addDays(50)->toDateString(),
@@ -68,14 +65,13 @@ class TournamentSeeder extends Seeder
                 'contact_number' => '+91 98250 11111',
                 'prize_pool' => '75000',
                 'rules' => 'BWF rules apply',
-                'gender' => 'open',
+                'gender' => 'female',
                 'status' => 'published',
             ],
             [
                 'name' => 'Mumbai Junior Swimming Championship',
-                'organizer_id' => $organizer?->id ?? 1,
-                'sport_id' => 4,
-                'organizer_name' => 'Mumbai Swimming Association',
+                'sport' => 'Swimming',
+                                'organizer_name' => 'Mumbai Swimming Association',
                 'format' => 'time-trial',
                 'start_date' => now()->addDays(14)->toDateString(),
                 'end_date' => now()->addDays(14)->toDateString(),
@@ -86,14 +82,13 @@ class TournamentSeeder extends Seeder
                 'contact_number' => '+91 98111 44444',
                 'prize_pool' => '25000',
                 'rules' => 'FINA rules apply',
-                'gender' => 'open',
+                'gender' => 'female',
                 'status' => 'published',
             ],
             [
                 'name' => 'Delhi Athletics Meet 2026',
-                'organizer_id' => $organizer?->id ?? 1,
-                'sport_id' => 5,
-                'organizer_name' => 'Delhi Athletics Federation',
+                'sport' => 'Athletics',
+                                'organizer_name' => 'Delhi Athletics Federation',
                 'format' => 'track-field',
                 'start_date' => now()->addDays(60)->toDateString(),
                 'end_date' => now()->addDays(62)->toDateString(),
@@ -104,14 +99,13 @@ class TournamentSeeder extends Seeder
                 'contact_number' => '+91 98111 55555',
                 'prize_pool' => '150000',
                 'rules' => 'World Athletics rules',
-                'gender' => 'open',
+                'gender' => 'female',
                 'status' => 'published',
             ],
             [
                 'name' => 'Bangalore Basketball League',
-                'organizer_id' => $organizer?->id ?? 1,
-                'sport_id' => 6,
-                'organizer_name' => 'Karnataka Basketball Association',
+                'sport' => 'Basketball',
+                                'organizer_name' => 'Karnataka Basketball Association',
                 'format' => 'league-knockout',
                 'start_date' => now()->addDays(25)->toDateString(),
                 'end_date' => now()->addDays(35)->toDateString(),
@@ -127,9 +121,8 @@ class TournamentSeeder extends Seeder
             ],
             [
                 'name' => 'National Tennis Open 2026',
-                'organizer_id' => $organizer?->id ?? 1,
-                'sport_id' => 7,
-                'organizer_name' => 'All India Tennis Association',
+                'sport' => 'Tennis',
+                                'organizer_name' => 'All India Tennis Association',
                 'format' => 'knockout',
                 'start_date' => now()->addDays(90)->toDateString(),
                 'end_date' => now()->addDays(97)->toDateString(),
@@ -140,14 +133,13 @@ class TournamentSeeder extends Seeder
                 'contact_number' => '+91 98111 77777',
                 'prize_pool' => '200000',
                 'rules' => 'ITF rules apply',
-                'gender' => 'open',
+                'gender' => 'female',
                 'status' => 'published',
             ],
             [
                 'name' => 'Women Football Cup 2026',
-                'organizer_id' => $organizer?->id ?? 1,
-                'sport_id' => 2,
-                'organizer_name' => 'Women Football Association',
+                'sport' => 'Football',
+                                'organizer_name' => 'Women Football Association',
                 'format' => 'league',
                 'start_date' => now()->addDays(35)->toDateString(),
                 'end_date' => now()->addDays(50)->toDateString(),
@@ -163,9 +155,8 @@ class TournamentSeeder extends Seeder
             ],
             [
                 'name' => 'Gujarat Kabaddi Championship',
-                'organizer_id' => $organizer?->id ?? 1,
-                'sport_id' => 8,
-                'organizer_name' => 'Gujarat Kabaddi Association',
+                'sport' => 'Kabaddi',
+                                'organizer_name' => 'Gujarat Kabaddi Association',
                 'format' => 'league-knockout',
                 'start_date' => now()->addDays(18)->toDateString(),
                 'end_date' => now()->addDays(25)->toDateString(),
@@ -181,9 +172,8 @@ class TournamentSeeder extends Seeder
             ],
             [
                 'name' => 'Junior Chess Tournament 2026',
-                'organizer_id' => $organizer?->id ?? 1,
-                'sport_id' => 9,
-                'organizer_name' => 'Ahmedabad Chess Association',
+                'sport' => 'Chess',
+                                'organizer_name' => 'Ahmedabad Chess Association',
                 'format' => 'swiss',
                 'start_date' => now()->addDays(22)->toDateString(),
                 'end_date' => now()->addDays(24)->toDateString(),
@@ -194,15 +184,34 @@ class TournamentSeeder extends Seeder
                 'contact_number' => '+91 98260 11111',
                 'prize_pool' => '30000',
                 'rules' => 'FIDE Swiss System',
-                'gender' => 'open',
+                'gender' => 'female',
                 'status' => 'published',
             ],
         ];
 
         foreach ($tournaments as $tournament) {
+            // The tournament belongs to the organisation that actually runs
+            // it — resolved by name so every organizer only sees their own
+            // events in "My Events".
+            $organizer = OrganizerProfile::where('organization_name', $tournament['organizer_name'])->first();
+            if (! $organizer) {
+                $this->command->warn("Organizer profile for {$tournament['organizer_name']} not found. Run OrganizerProfileSeeder first.");
+                continue;
+            }
+
+            $sportId = SeedLookup::sportId($tournament['sport']);
+            if (! $sportId) {
+                $this->command->warn("Sport {$tournament['sport']} not found. Run MasterDataSeeder first.");
+                continue;
+            }
+
+            $attributes = collect($tournament)->except(['sport', 'organizer_name'])->toArray();
+            $attributes['sport_id'] = $sportId;
+            $attributes['organizer_id'] = $organizer->id;
+
             Tournament::updateOrCreate(
                 ['name' => $tournament['name']],
-                $tournament
+                $attributes
             );
         }
 

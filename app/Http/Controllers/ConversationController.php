@@ -54,6 +54,12 @@ class ConversationController extends Controller
             if ($minorError = $this->minorChatGate($user->id, (int) $ids[0])) {
                 return $minorError;
             }
+            // Gate BEFORE the reuse check so stale conversations can't bypass it (B1).
+            $gateError = $this->peerChatGate($user->id, (int) $ids[0]);
+            if ($gateError) {
+                return $gateError;
+            }
+
             $existing = Conversation::where('type', 'private')
                 ->whereHas('participants', fn ($q) => $q->where('user_id', $user->id))
                 ->whereHas('participants', fn ($q) => $q->where('user_id', $ids[0]))
@@ -61,12 +67,6 @@ class ConversationController extends Controller
 
             if ($existing) {
                 return response()->json(['data' => $existing->load('participants')]);
-            }
-
-            // Gate scout <-> athlete and athlete <-> athlete DMs on an accepted connection.
-            $gateError = $this->peerChatGate($user->id, (int) $ids[0]);
-            if ($gateError) {
-                return $gateError;
             }
         }
 
@@ -94,6 +94,11 @@ class ConversationController extends Controller
             if ($p->id !== $request->user()->id && Block::hasBlockBetween($request->user()->id, $p->id)) {
                 return response()->json(['error' => ['code' => 'BLOCKED', 'message' => 'Chat disabled.']], 403);
             }
+        }
+
+        // Private 1:1 sends are re-gated (B2): block/removed connections kill chat access.
+        if ($sendGateError = $this->privateSendGate($request->user(), $conversation)) {
+            return $sendGateError;
         }
 
         $message = Message::create([
@@ -160,10 +165,14 @@ class ConversationController extends Controller
     }
 
     /**
-     * Require an accepted connection before peer DMs:
-     *  - scout <-> athlete needs an accepted ScoutConnection
-     *  - athlete <-> athlete needs an accepted generic Connection
-     * Other role pairs are unaffected.
+     * Require DM permission before peer chats:
+     *  - scout <-> athlete needs an accepted ScoutConnection (profile graphs)
+     *  - ALL other role pairs need an accepted generic Connection
+     *  - the target's `who_can_message` privacy is enforced:
+     *      everyone     → normal rules (above)
+     *      connections  → accepted generic Connection required (covers athlete pairs too)
+     *      nobody       → rejected
+     * Admins bypass.
      * Returns a 403 JSON response when blocked, null when allowed.
      */
     private function peerChatGate(int $userId, int $otherUserId): ?\Illuminate\Http\JsonResponse
@@ -175,6 +184,10 @@ class ConversationController extends Controller
             return null;
         }
 
+        if ($a->isAdmin() || $b->isAdmin()) {
+            return null;
+        }
+
         $isScoutAthletePair = ($a->role === 'talent_scout' && $b->role === 'athlete')
             || ($a->role === 'athlete' && $b->role === 'talent_scout');
 
@@ -182,19 +195,41 @@ class ConversationController extends Controller
             return $this->scoutAthleteGate($a, $b);
         }
 
-        if ($a->role === 'athlete' && $b->role === 'athlete') {
-            $connected = \App\Models\Connection::where('status', 'accepted')
-                ->where(fn ($q) => $q
-                    ->where(fn ($w) => $w->where('follower_user_id', $a->id)->where('followee_user_id', $b->id))
-                    ->orWhere(fn ($w) => $w->where('follower_user_id', $b->id)->where('followee_user_id', $a->id)))
-                ->exists();
+        // who_can_message of the conversation TARGET (the other party) —
+        // defaults to 'everyone' so existing users see no behaviour change.
+        $targetPolicy = data_get($b->privacy_settings, 'who_can_message', 'everyone');
 
-            if (!$connected) {
-                return response()->json(['error' => ['code' => 'CONNECTION_REQUIRED', 'message' => 'Connect and get accepted before chatting.']], 403);
-            }
+        if ($targetPolicy === 'nobody' && $a->role !== 'admin') {
+            return response()->json(['error' => ['code' => 'MESSAGING_DISABLED', 'message' => 'This user does not accept messages.']], 403);
+        }
+
+        // B1: every non-scout role pair requires an accepted generic Connection.
+        $connected = \App\Models\Connection::where('status', 'accepted')
+            ->where(fn ($q) => $q
+                ->where(fn ($w) => $w->where('follower_user_id', $a->id)->where('followee_user_id', $b->id))
+                ->orWhere(fn ($w) => $w->where('follower_user_id', $b->id)->where('followee_user_id', $a->id)))
+            ->exists();
+
+        if (!$connected) {
+            return response()->json(['error' => ['code' => 'CONNECTION_REQUIRED', 'message' => 'Connect and get accepted before chatting.']], 403);
         }
 
         return null;
+    }
+
+    /** Send-time gate for private conversations (closes the stale-conversation hole). */
+    private function privateSendGate($user, Conversation $conversation): ?\Illuminate\Http\JsonResponse
+    {
+        if ($conversation->type !== 'private' || $conversation->participants->count() !== 2) {
+            return null;
+        }
+
+        $other = $conversation->participants->firstWhere('id', '!=', $user->id);
+        if (!$other) {
+            return null;
+        }
+
+        return $this->peerChatGate($user->id, $other->id);
     }
 
     private function scoutAthleteGate(\App\Models\User $a, \App\Models\User $b): ?\Illuminate\Http\JsonResponse

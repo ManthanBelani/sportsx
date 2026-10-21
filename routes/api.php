@@ -50,6 +50,7 @@ use App\Http\Controllers\SponsorshipController;
 use App\Http\Controllers\SportsVenueController;
 use App\Http\Controllers\OrganizerAnalyticsController;
 use App\Http\Controllers\TournamentController;
+use App\Http\Controllers\TournamentRegistrationClickController;
 use App\Http\Controllers\TalentScoutController;
 use App\Http\Controllers\ScoutShortlistController;
 use App\Http\Controllers\ScoutConnectionController;
@@ -179,6 +180,10 @@ Route::prefix('v1')->group(function () {
     Route::get('/trials/{id}', [TrialController::class, 'show']);
     Route::get('/tournaments', [TournamentController::class, 'index']);
     Route::get('/tournaments/{id}', [TournamentController::class, 'show']);
+    // External registration link clicks (tournaments that point "Register" at
+    // a third-party form). Throttled and idempotent per click_token.
+    Route::post('/tournaments/{id}/registration-click', [TournamentRegistrationClickController::class, 'store'])
+        ->middleware('throttle:120,1');
     // Phase 4 cutover: legacy scholarship/sponsorship directories are gone —
     // everything lives under /opportunities (type=scholarship|sponsorship).
     Route::get('/scholarships', [LegacyGoneController::class, 'gone']);
@@ -224,6 +229,11 @@ Route::prefix('v1')->group(function () {
     Route::put('/me/academy', [AcademyController::class, 'update'])->middleware(['auth:sanctum', 'role:academy']);
     Route::get('/me/organizer', [\App\Http\Controllers\OrganizerProfileController::class, 'show'])->middleware(['auth:sanctum', 'role:organizer']);
     Route::put('/me/organizer', [\App\Http\Controllers\OrganizerProfileController::class, 'update'])->middleware(['auth:sanctum', 'role:organizer']);
+    // Organizer team (co-organizers / volunteers).
+    Route::get('/me/organizer/team', [\App\Http\Controllers\OrganizerTeamController::class, 'index'])->middleware(['auth:sanctum', 'role:organizer']);
+    Route::post('/me/organizer/team', [\App\Http\Controllers\OrganizerTeamController::class, 'store'])->middleware(['auth:sanctum', 'role:organizer']);
+    Route::patch('/me/organizer/team/{id}', [\App\Http\Controllers\OrganizerTeamController::class, 'update'])->middleware(['auth:sanctum', 'role:organizer']);
+    Route::delete('/me/organizer/team/{id}', [\App\Http\Controllers\OrganizerTeamController::class, 'destroy'])->middleware(['auth:sanctum', 'role:organizer']);
 
     // ── Organizer public card (Phase 2) ──
     Route::get('/organizers/{id}', [\App\Http\Controllers\OrganizerProfileController::class, 'publicShow']);
@@ -238,10 +248,11 @@ Route::prefix('v1')->group(function () {
 
     // ── Facilities (Phase 5: academy-owned rows) ──
     Route::get('/facilities/{id}', [\App\Http\Controllers\FacilityController::class, 'show']);
-    Route::get('/me/facilities', [\App\Http\Controllers\FacilityController::class, 'mine'])->middleware(['auth:sanctum', 'role:academy']);
-    Route::post('/me/facilities', [\App\Http\Controllers\FacilityController::class, 'store'])->middleware(['auth:sanctum', 'role:academy']);
-    Route::put('/me/facilities/{id}', [\App\Http\Controllers\FacilityController::class, 'update'])->middleware(['auth:sanctum', 'role:academy']);
-    Route::delete('/me/facilities/{id}', [\App\Http\Controllers\FacilityController::class, 'destroy'])->middleware(['auth:sanctum', 'role:academy']);
+    // Facilities / venues — owned by an academy or by an organizer.
+    Route::get('/me/facilities', [\App\Http\Controllers\FacilityController::class, 'mine'])->middleware(['auth:sanctum', 'role:academy,organizer']);
+    Route::post('/me/facilities', [\App\Http\Controllers\FacilityController::class, 'store'])->middleware(['auth:sanctum', 'role:academy,organizer']);
+    Route::put('/me/facilities/{id}', [\App\Http\Controllers\FacilityController::class, 'update'])->middleware(['auth:sanctum', 'role:academy,organizer']);
+    Route::delete('/me/facilities/{id}', [\App\Http\Controllers\FacilityController::class, 'destroy'])->middleware(['auth:sanctum', 'role:academy,organizer']);
 
     // ── Enquiries ──
     Route::post('/enquiries', [EnquiryController::class, 'store'])->middleware(['auth:sanctum', 'role:athlete']);
@@ -468,6 +479,7 @@ Route::prefix('v1')->group(function () {
     Route::delete('/follow/{type}/{id}', [FollowController::class, 'destroy'])->middleware('auth:sanctum');
     Route::get('/me/following', [FollowController::class, 'following'])->middleware('auth:sanctum');
     Route::get('/me/followers', [FollowController::class, 'followers'])->middleware('auth:sanctum');
+    Route::get('/follow/status/{type}/{id}', [FollowController::class, 'status'])->middleware('auth:sanctum');
 
     // ── Safety: blocks + reports (Phase 6) ──
     Route::get('/blocks', [BlockController::class, 'index'])->middleware('auth:sanctum');

@@ -17,11 +17,18 @@ class ProviderTrialController extends Controller
 
         $trials = Trial::where('posted_by_user_id', $user->id)
             ->with(['city', 'sport'])
+            ->withCount([
+                'registrations',
+                'registrations as confirmed_registrations_count' => fn ($q) => $q->where('approval_status', 'approved'),
+            ])
             ->orderBy('event_datetime', 'desc')
             ->paginate(20);
 
         return response()->json([
-            'data' => $trials->items(),
+            'data' => $trials->getCollection()->map(fn ($t) => array_merge(
+                $t->toArray(),
+                $this->trialStats($t)
+            ))->values(),
             'meta' => ['pagination' => [
                 'total' => $trials->total(),
                 'per_page' => $trials->perPage(),
@@ -29,6 +36,26 @@ class ProviderTrialController extends Controller
                 'last_page' => $trials->lastPage(),
             ]],
         ]);
+    }
+
+    /**
+     * Registration counters for a trial. The app renders the same
+     * "N of M spots filled" bar for trials as it does for tournaments.
+     */
+    private function trialStats(Trial $trial): array
+    {
+        $confirmed = (int) ($trial->confirmed_registrations_count ?? 0);
+        $total = (int) ($trial->total_registrations_count ?? $trial->registrations()->count());
+        $spots = (int) ($trial->vacancies ?? 0);
+
+        return [
+            'total_spots' => $spots,
+            'filled_spots' => $confirmed,
+            'spots_left' => max(0, $spots - $confirmed),
+            'registrations_count' => $total,
+            'confirmed_registrations_count' => $confirmed,
+            'utilization_percent' => $spots > 0 ? round(($confirmed / $spots) * 100, 1) : 0.0,
+        ];
     }
 
     public function store(Request $request)

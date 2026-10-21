@@ -17,8 +17,9 @@ class Tournament extends Model
         'organizer_id', 'sport_id', 'name', 'organizer_name', 'format',
         'start_date', 'end_date', 'registration_deadline', 'venue',
         'google_maps_url', 'city_id', 'entry_fee', 'contact_number',
-        'registration_link', 'prize_pool', 'rules', 'banner_media_id',
-        'gender', 'status', 'expires_at',
+        'registration_link', 'external_registration_url',
+        'external_registration_clicks', 'prize_pool', 'rules',
+        'banner_media_id', 'gender', 'status', 'expires_at',
     ];
 
     protected function casts(): array
@@ -28,6 +29,7 @@ class Tournament extends Model
             'end_date' => 'date',
             'registration_deadline' => 'date',
             'expires_at' => 'datetime',
+            'external_registration_clicks' => 'integer',
         ];
     }
 
@@ -61,8 +63,81 @@ class Tournament extends Model
         return $this->hasMany(TournamentResult::class);
     }
 
+    public function registrationClicks(): HasMany
+    {
+        return $this->hasMany(TournamentRegistrationClick::class);
+    }
+
     public function scopePublished($query)
     {
         return $query->where('status', 'published');
+    }
+
+    /**
+     * Eager-load the counters used by the registration stats block so list
+     * endpoints don't fan out one query per tournament.
+     */
+    public function scopeWithRegistrationCounts($query)
+    {
+        return $query
+            ->withCount([
+                'registrations',
+                'registrations as confirmed_registrations_count' => fn ($q) => $q->where('approval_status', 'approved'),
+                'registrations as pending_registrations_count' => fn ($q) => $q->where('approval_status', 'pending'),
+                'registrations as rejected_registrations_count' => fn ($q) => $q->where('approval_status', 'rejected'),
+            ])
+            ->withSum('categories as total_spots', 'capacity');
+    }
+
+    /**
+     * True when the "Register" button should hand the user over to an
+     * external registration page instead of the in-app flow.
+     */
+    public function hasExternalRegistration(): bool
+    {
+        return ! empty($this->external_registration_url);
+    }
+
+    /**
+     * Registration statistics for a tournament.
+     *
+     * `confirmed_registrations_count` counts real registrations made on
+     * SportX; `external_registration_clicks` counts clicks on the external
+     * register button. The two are intentionally kept apart — an external
+     * click is not a confirmed registration.
+     *
+     * @param  array<string, mixed>|null  $counts  Pre-loaded counters from
+     *                                              scopeWithRegistrationCounts().
+     */
+    public function registrationStats(?array $counts = null): array
+    {
+        $counts = $counts ?? [];
+
+        $total = (int) ($counts['registrations_count'] ?? $this->registrations_count ?? $this->registrations()->count());
+        $confirmed = (int) ($counts['confirmed_registrations_count']
+            ?? $this->confirmed_registrations_count
+            ?? $this->registrations()->where('approval_status', 'approved')->count());
+        $pending = (int) ($counts['pending_registrations_count']
+            ?? $this->pending_registrations_count
+            ?? $this->registrations()->where('approval_status', 'pending')->count());
+        $rejected = (int) ($counts['rejected_registrations_count']
+            ?? $this->rejected_registrations_count
+            ?? $this->registrations()->where('approval_status', 'rejected')->count());
+        $spots = (int) ($counts['total_spots'] ?? $this->total_spots ?? $this->categories()->sum('capacity'));
+        $clicks = (int) $this->external_registration_clicks;
+
+        return [
+            'registration_mode' => $this->hasExternalRegistration() ? 'external' : 'internal',
+            'has_external_registration' => $this->hasExternalRegistration(),
+            'registrations_count' => $total,
+            'confirmed_registrations_count' => $confirmed,
+            'pending_registrations_count' => $pending,
+            'rejected_registrations_count' => $rejected,
+            'external_registration_clicks' => $clicks,
+            'total_spots' => $spots,
+            'filled_spots' => $confirmed,
+            'spots_left' => max(0, $spots - $confirmed),
+            'utilization_percent' => $spots > 0 ? round(($confirmed / $spots) * 100, 1) : 0.0,
+        ];
     }
 }

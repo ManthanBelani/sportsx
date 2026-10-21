@@ -39,19 +39,23 @@ class EventController extends Controller
         if (in_array($type, ['all', 'trial', 'camp'])) {
             $trials = Trial::where('posted_by_user_id', $user->id)
                 ->with(['sport', 'city'])
+                ->withCount([
+                    'registrations',
+                    'registrations as confirmed_registrations_count' => fn ($q) => $q->where('approval_status', 'approved'),
+                ])
                 ->orderBy('event_datetime', 'desc')
                 ->get()
-                ->map(fn ($t) => array_merge($t->toArray(), ['event_type' => 'trial']));
+                ->map(fn ($t) => array_merge($t->toArray(), ['event_type' => 'trial'], $this->trialStats($t)));
         }
         if (in_array($type, ['all', 'tournament'])) {
             $profileId = $user->organizerProfile?->id;
-            $q = Tournament::with(['sport', 'city'])->orderBy('start_date', 'desc');
+            $q = Tournament::with(['sport', 'city'])->withRegistrationCounts()->orderBy('start_date', 'desc');
             if ($profileId) {
                 $q->where(fn ($w) => $w->where('organizer_id', $user->id)->orWhere('organizer_id', $profileId));
             } else {
                 $q->where('organizer_id', $user->id);
             }
-            $tournaments = $q->get()->map(fn ($t) => array_merge($t->toArray(), ['event_type' => 'tournament']));
+            $tournaments = $q->get()->map(fn ($t) => array_merge($t->toArray(), ['event_type' => 'tournament'], $t->registrationStats()));
         }
 
         $all = $trials->concat($tournaments);
@@ -67,8 +71,26 @@ class EventController extends Controller
         ]]);
     }
 
-    /** GET /events/{id}?type= — auto-detects trial vs tournament. */
-    public function show(Request $request, string $id)
+    /**
+     * Registration counters for a trial (spots come from `vacancies`).
+     */
+    private function trialStats(Trial $trial): array
+    {
+        $confirmed = (int) ($trial->confirmed_registrations_count ?? 0);
+        $total = (int) ($trial->registrations_count ?? 0);
+        $spots = (int) ($trial->vacancies ?? 0);
+
+        return [
+            'total_spots' => $spots,
+            'filled_spots' => $confirmed,
+            'spots_left' => max(0, $spots - $confirmed),
+            'registrations_count' => $total,
+            'confirmed_registrations_count' => $confirmed,
+            'utilization_percent' => $spots > 0 ? round(($confirmed / $spots) * 100, 1) : 0.0,
+        ];
+    }
+
+    /** GET /events/{id}?type= — auto-detects trial vs tournament. */    public function show(Request $request, string $id)
     {
         $type = strtolower($request->query('type', 'auto'));
         if (in_array($type, ['trial', 'camp', 'auto'])) {

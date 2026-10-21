@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
             $table->string('full_name');
             $table->date('date_of_birth')->index();
-            $table->enum('gender', ['male', 'female', 'other', 'prefer_not_to_say']);
+            $table->enum('gender', ['male', 'female']);
             $table->foreignId('age_group_id')->constrained('age_groups')->restrictOnDelete();
             $table->enum('skill_level', ['beginner', 'intermediate', 'advanced', 'competitive']);
             $table->foreignId('city_id')->nullable()->constrained()->nullOnDelete();

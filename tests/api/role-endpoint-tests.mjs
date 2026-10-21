@@ -523,7 +523,7 @@ S.push({
     { name: 'POST /me/events/{trial}/publish', method: 'POST', path: '/me/events/<orgTrialId>/publish?type=trial', token: 'organizer' },
     { name: 'GET /events/{trial} (show)', method: 'GET', path: '/events/<orgTrialId>', token: 'organizer' },
     { name: 'POST /me/events?type=tournament', method: 'POST', path: '/me/events?type=tournament', token: 'organizer',
-      body: () => ({ name: `TestRunner Cup ${Date.now()}`, sport_id: ctx.sportId, city_id: ctx.cityId, venue: 'Cup Stadium', format: 'knockout', start_date: future(8, false), end_date: future(9, false), registration_deadline: future(5, false), entry_fee: 100, prize_pool: 'Trophy', contact_number: '9800000001', gender: 'mixed', status: 'draft', categories: [{ name: 'Open TR', age_group_id: ctx.ageGroupId, capacity: 50 }] }),
+      body: () => ({ name: `TestRunner Cup ${Date.now()}`, sport_id: ctx.sportId, city_id: ctx.cityId, venue: 'Cup Stadium', format: 'knockout', start_date: future(8, false), end_date: future(9, false), registration_deadline: future(5, false), entry_fee: 100, prize_pool: 'Trophy', contact_number: '9800000001', gender: 'male', status: 'draft', categories: [{ name: 'Open TR', age_group_id: ctx.ageGroupId, capacity: 50 }] }),
       expect: 201, keep: 'orgTournamentId',
       each: () => {} },
     { name: 'PUT /me/events/{tournament}', method: 'PUT', path: '/me/events/<orgTournamentId>?type=tournament', token: 'organizer', body: { rules: 'Fair play enforced.' } },
@@ -732,7 +732,7 @@ S.push({
       body: () => ({
         full_name: ctx.athleteProfileRaw?.full_name ?? ctx.athleteProfileRaw?.name ?? 'John Athlete',
         date_of_birth: ctx.athleteProfileRaw?.date_of_birth ?? '2004-01-01',
-        gender: ctx.athleteProfileRaw?.gender ?? 'prefer_not_to_say',
+        gender: ctx.athleteProfileRaw?.gender ?? 'male',
         skill_level: ctx.athleteProfileRaw?.skill_level ?? 'intermediate',
         city_id: ctx.athleteProfileRaw?.city_id ?? ctx.cityId,
       }) },

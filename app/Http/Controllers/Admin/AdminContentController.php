@@ -92,7 +92,22 @@ class AdminContentController extends Controller
         $query->orderBy($sortField, $sortDir);
 
         $perPage = min($request->get('per_page', 20), 50);
+
+        // Tournaments carry their registration counters so the admin
+        // tournament management view can show "Registrations: N" next to the
+        // external register-button clicks.
+        if ($type === 'tournaments') {
+            $query->withRegistrationCounts();
+        }
+
         $items = $query->paginate($perPage);
+
+        if ($type === 'tournaments') {
+            $items->setCollection($items->getCollection()->map(fn ($t) => array_merge(
+                $t->toArray(),
+                $t->registrationStats()
+            )));
+        }
 
         return response()->json([
             'data' => $items->items(),
@@ -128,9 +143,27 @@ class AdminContentController extends Controller
             ], 404);
         }
 
+        if ($type === 'tournaments' && $item instanceof \App\Models\Tournament) {
+            return response()->json([
+                'data' => $this->decorateTournament($item)
+            ]);
+        }
+
         return response()->json([
             'data' => $item
         ]);
+    }
+
+    /**
+     * Tournament rows expose their registration counters so the admin
+     * tournament management view can show "Registrations: N" alongside the
+     * external register-button clicks.
+     */
+    private function decorateTournament($tournament): array
+    {
+        $tournament->loadMissing('sport', 'city', 'categories')->withRegistrationCounts();
+
+        return array_merge($tournament->toArray(), $tournament->registrationStats());
     }
 
     public function store(Request $request, string $type): JsonResponse
@@ -158,6 +191,7 @@ class AdminContentController extends Controller
         }
 
         $validated = $this->injectOwner($request, $type, $validated);
+        $validated = $this->validateTournamentRegistrationLink($request, $type, $validated);
 
         $item = $model::create($validated);
 
@@ -199,12 +233,37 @@ class AdminContentController extends Controller
             ]));
         }
         $validated = $this->injectOwner($request, $type, $validated, $item);
+        $validated = $this->validateTournamentRegistrationLink($request, $type, $validated);
 
         $item->update($validated);
 
         return response()->json([
             'data' => $item
         ]);
+    }
+
+    /**
+     * Admin edits of a tournament go through the same external-URL validation
+     * as the organizer's own form.
+     */
+    private function validateTournamentRegistrationLink(Request $request, string $type, array $validated): array
+    {
+        if ($type !== 'tournaments') {
+            return $validated;
+        }
+
+        if (! $request->has('external_registration_url')) {
+            return $validated;
+        }
+
+        $request->validate([
+            'external_registration_url' => ['nullable', 'string', 'max:500', new \App\Rules\ExternalRegistrationUrl],
+        ]);
+
+        $value = $request->input('external_registration_url');
+        $validated['external_registration_url'] = (is_string($value) && trim($value) !== '') ? trim($value) : null;
+
+        return $validated;
     }
 
     private function ownerColumnForType(string $type): ?string

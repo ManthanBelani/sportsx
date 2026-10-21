@@ -10,7 +10,7 @@ class Facility extends Model
     public const TYPES = ['ground', 'indoor', 'gym', 'other'];
 
     protected $fillable = [
-        'academy_id', 'name', 'type', 'size', 'amenities', 'image_media_ids',
+        'academy_id', 'organizer_id', 'name', 'type', 'size', 'amenities', 'image_media_ids',
     ];
 
     protected function casts(): array
@@ -24,5 +24,10 @@ class Facility extends Model
     public function academy(): BelongsTo
     {
         return $this->belongsTo(Academy::class);
+    }
+
+    public function organizer(): BelongsTo
+    {
+        return $this->belongsTo(OrganizerProfile::class);
     }
 }

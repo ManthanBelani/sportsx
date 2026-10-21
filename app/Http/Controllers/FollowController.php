@@ -62,6 +62,20 @@ class FollowController extends Controller
         return response()->json(['data' => ['message' => 'Unfollowed']]);
     }
 
+    /** GET /follow/status/{type}/{id} — { following, followers_count, following_count } for the target user. */
+    public function status(Request $request, string $type, int $id)
+    {
+        $targetUserId = static::resolveUserId($type, $id);
+        abort_if(!$targetUserId, 404, 'Profile not found.');
+
+        return response()->json(['data' => [
+            'following' => Follow::where('follower_user_id', $request->user()->id)
+                ->where('followee_user_id', $targetUserId)->exists(),
+            'followers_count' => Follow::where('followee_user_id', $targetUserId)->count(),
+            'following_count' => Follow::where('follower_user_id', $targetUserId)->count(),
+        ]]);
+    }
+
     /** GET /me/following */
     public function following(Request $request)
     {

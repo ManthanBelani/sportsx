@@ -7,12 +7,13 @@ use App\Models\PostComment;
 use App\Models\PostLike;
 use App\Models\Block;
 use App\Models\Connection;
+use App\Models\Follow;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
-    /** Feed: posts by the user + posts by their accepted connections + public posts. */
+    /** Feed: posts by the user + followers-scoped posts + public posts. */
     public function index(Request $request)
     {
         $userId = $request->user()->id;
@@ -32,14 +33,39 @@ class PostController extends Controller
             ->push($userId)
             ->unique();
 
+        // Users I follow (one-way) — they can share `followers` posts with me.
+        $followedIds = Follow::where('follower_user_id', $userId)
+            ->whereNotIn('followee_user_id', $blockedIds)
+            ->pluck('followee_user_id')
+            ->merge($connectedIds)
+            ->unique()
+            ->all();
+
+        // ?following=1 → only posts authored by people I follow (I still see my own posts).
+        $onlyFollowing = $request->boolean('following');
+        if ($onlyFollowing) {
+            $followedIds = array_values(array_unique(array_merge($followedIds, [$userId])));
+        }
+
         $query = Post::with(['user', 'comments.user'])
             ->withCount(['likes', 'comments'])
-            ->whereNotIn('user_id', $blockedIds)
-            ->where(function ($q) use ($userId, $connectedIds) {
+            ->when($onlyFollowing, fn ($q) => $q->whereIn('user_id', $followedIds))
+            ->when(!$onlyFollowing, fn ($q) => $q->whereNotIn('user_id', $blockedIds))
+            // ?author_role=organizer → role-scoped feed, so each role sees the
+            // content that is relevant to it (coaching posts for a coach,
+            // tournament posts for an organizer, …).
+            ->when($request->filled('author_role'), function ($q) use ($request) {
+                $roles = array_filter(array_map(
+                    fn ($r) => strtolower(trim((string) $r)),
+                    explode(',', (string) $request->query('author_role'))
+                ));
+                $q->whereHas('user', fn ($uq) => $uq->whereIn('role', $roles));
+            })
+            ->where(function ($q) use ($userId, $followedIds) {
                 $q->where('visibility', 'public')
                     ->orWhere('user_id', $userId)
-                    ->orWhere(function ($q2) use ($connectedIds) {
-                        $q2->where('visibility', 'followers')->whereIn('user_id', $connectedIds);
+                    ->orWhere(function ($q2) use ($followedIds) {
+                        $q2->where('visibility', 'followers')->whereIn('user_id', $followedIds);
                     });
             })
             ->latest();
@@ -57,11 +83,24 @@ class PostController extends Controller
         return response()->json($page);
     }
 
+    /** GET /posts/{id} — visibility enforced: public, own, or follower/connected for `followers` posts. 404 hides existence. */
     public function show(Request $request, string $id)
     {
+        $userId = $request->user()->id;
         $post = Post::with(['user', 'comments.user', 'comments.replies.user'])
             ->withCount(['likes', 'comments'])
             ->findOrFail($id);
+
+        if ($post->visibility === 'followers' && $post->user_id !== $userId) {
+            $allowed = Connection::where('status', 'accepted')
+                    ->where(function ($q) use ($userId, $post) {
+                        $q->where(fn ($w) => $w->where('follower_user_id', $userId)->where('followee_user_id', $post->user_id))
+                            ->orWhere(fn ($w) => $w->where('follower_user_id', $post->user_id)->where('followee_user_id', $userId));
+                    })->exists()
+                || Follow::where('follower_user_id', $userId)->where('followee_user_id', $post->user_id)->exists();
+
+            abort_unless($allowed && !Block::hasBlockBetween($userId, (int) $post->user_id), 404);
+        }
 
         $postArray = $post->toArray();
         $postArray['liked'] = $post->likedBy($request->user());
@@ -141,6 +180,18 @@ class PostController extends Controller
     public function comments(Request $request, string $id)
     {
         $post = Post::findOrFail($id);
+        // Comment access mirrors post visibility (see show()).
+        if ($post->visibility === 'followers' && $post->user_id !== $request->user()->id) {
+            $allowed = Connection::where('status', 'accepted')
+                    ->where(function ($q) use ($request, $post) {
+                        $q->where(fn ($w) => $w->where('follower_user_id', $request->user()->id)->where('followee_user_id', $post->user_id))
+                            ->orWhere(fn ($w) => $w->where('follower_user_id', $post->user_id)->where('followee_user_id', $request->user()->id));
+                    })->exists()
+                || Follow::where('follower_user_id', $request->user()->id)->where('followee_user_id', $post->user_id)->exists();
+            if (!$allowed) {
+                return response()->json(['error' => ['code' => 'FORBIDDEN', 'message' => 'Connect or follow this user first.']], 403);
+            }
+        }
         $comments = PostComment::where('post_id', $post->id)
             ->with('user')
             ->latest()
@@ -210,6 +261,18 @@ class PostController extends Controller
         ]);
 
         $post = Post::findOrFail($id);
+        // Commenting on followers-only posts requires follow/connection (like show()).
+        if ($post->visibility === 'followers' && $post->user_id !== $request->user()->id) {
+            $allowed = Connection::where('status', 'accepted')
+                    ->where(function ($q) use ($request, $post) {
+                        $q->where(fn ($w) => $w->where('follower_user_id', $request->user()->id)->where('followee_user_id', $post->user_id))
+                            ->orWhere(fn ($w) => $w->where('follower_user_id', $post->user_id)->where('followee_user_id', $request->user()->id));
+                    })->exists()
+                || Follow::where('follower_user_id', $request->user()->id)->where('followee_user_id', $post->user_id)->exists();
+            if (!$allowed) {
+                return response()->json(['error' => ['code' => 'FORBIDDEN', 'message' => 'Connect or follow this user first.']], 403);
+            }
+        }
 
         $comment = PostComment::create([
             'post_id' => $post->id,

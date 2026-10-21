@@ -27,6 +27,15 @@ complete role profile, so the app never redirects them into onboarding
 | Academy | `academy2@sportx.test` | `password` | Surat Sports Academy | Published, unverified (pending blue check) |
 | Organizer | `organizer@sportx.test` | `password` | Gujarat Sports Federation | Verified, has tournaments |
 | Organizer | `organizer2@sportx.test` | `password` | Mumbai District Sports Council | Verified, NGO type |
+| Organizer | `organizer.cricket@sportx.test` | `password` | Gujarat Cricket Federation | Owns the U-16 State Cup |
+| Organizer | `organizer.badminton@sportx.test` | `password` | Badminton Association of India | Owns the All India Badminton Open |
+| Organizer | `organizer.swimming@sportx.test` | `password` | Mumbai Swimming Association | Owns the Junior Swimming Championship |
+| Organizer | `organizer.athletics@sportx.test` | `password` | Delhi Athletics Federation | Owns the Delhi Athletics Meet |
+| Organizer | `organizer.basketball@sportx.test` | `password` | Karnataka Basketball Association | Owns the Bangalore Basketball League |
+| Organizer | `organizer.tennis@sportx.test` | `password` | All India Tennis Association | Owns the National Tennis Open |
+| Organizer | `organizer.wfootball@sportx.test` | `password` | Women Football Association | Owns the Women Football Cup |
+| Organizer | `organizer.kabaddi@sportx.test` | `password` | Gujarat Kabaddi Association | Owns the Gujarat Kabaddi Championship |
+| Organizer | `organizer.chess@sportx.test` | `password` | Ahmedabad Chess Association | Owns the Junior Chess Tournament |
 | Talent Scout | `kiran@scout.test` | `password` | Kiran Patel | Shortlists + observations |
 | Talent Scout | `scout2@sportx.test` | `password` | Anita Fernandes | Second scout for two-way connect |
 | Sponsor | `sponsor@sportx.test` | `password` | Decathlon India | Legacy role — API returns `410 SPONSOR_REMOVED` |

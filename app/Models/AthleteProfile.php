@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\Auditable;
+use App\Models\Connection;
+use App\Models\Follow;
 
 class AthleteProfile extends Model
 {
@@ -32,7 +34,7 @@ class AthleteProfile extends Model
         'cover_media_id',
     ];
 
-    protected $appends = ['connections_count'];
+    protected $appends = ['connections_count', 'followers_count', 'following_count'];
 
     protected function casts(): array
     {
@@ -113,5 +115,15 @@ class AthleteProfile extends Model
             ->where(fn ($q) => $q->where('follower_user_id', $this->user_id)
                 ->orWhere('followee_user_id', $this->user_id))
             ->count();
+    }
+
+    public function getFollowersCountAttribute(): int
+    {
+        return Follow::where('followee_user_id', $this->user_id)->count();
+    }
+
+    public function getFollowingCountAttribute(): int
+    {
+        return Follow::where('follower_user_id', $this->user_id)->count();
     }
 }

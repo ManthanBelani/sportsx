@@ -22,7 +22,7 @@ class OnboardingController extends Controller
         $validated = $request->validate([
             'full_name' => 'required|string|max:100',
             'date_of_birth' => 'required|date|before:today',
-            'gender' => 'required|in:male,female,other,prefer_not_to_say',
+            'gender' => 'required|in:male,female',
             'sports' => 'required|array|min:1',
             'sports.*' => 'exists:sports,id',
             'age_group_id' => 'required|exists:age_groups,id',
@@ -227,7 +227,7 @@ class OnboardingController extends Controller
                 'fields' => [
                     ['name' => 'full_name', 'type' => 'text', 'required' => true, 'label' => 'Full Name'],
                     ['name' => 'date_of_birth', 'type' => 'date', 'required' => true, 'label' => 'Date of Birth'],
-                    ['name' => 'gender', 'type' => 'select', 'required' => true, 'label' => 'Gender', 'options' => ['male' => 'Male', 'female' => 'Female', 'other' => 'Other', 'prefer_not_to_say' => 'Prefer not to say']],
+                    ['name' => 'gender', 'type' => 'select', 'required' => true, 'label' => 'Gender', 'options' => ['male' => 'Male', 'female' => 'Female']],
                     ['name' => 'sports', 'type' => 'multi-select', 'required' => true, 'label' => 'Sports'],
                     ['name' => 'age_group_id', 'type' => 'select', 'required' => true, 'label' => 'Age Group'],
                     ['name' => 'skill_level', 'type' => 'select', 'required' => true, 'label' => 'Skill Level', 'options' => ['beginner' => 'Beginner', 'intermediate' => 'Intermediate', 'advanced' => 'Advanced', 'competitive' => 'Competitive']],

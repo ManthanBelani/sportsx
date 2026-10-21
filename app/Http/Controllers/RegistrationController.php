@@ -377,7 +377,7 @@ class RegistrationController extends Controller
         if ($request->has('approval_status')) {
             $query->where('approval_status', $request->query('approval_status'));
         }
-        $registrations = $query->paginate(20);
+        $registrations = $query->paginate($this->perPage($request));
 
         return response()->json([
             'data' => $registrations->items(),
@@ -396,7 +396,7 @@ class RegistrationController extends Controller
         $registrations = $tournament->registrations()
             ->with(['athlete.user', 'category'])
             ->where('approval_status', 'pending')
-            ->paginate(20);
+            ->paginate($this->perPage($request));
 
         return response()->json([
             'data' => $registrations->items(),
@@ -640,7 +640,11 @@ class RegistrationController extends Controller
 
     public function downloadTrialIcs(Request $request, TrialRegistration $registration)
     {
-        abort_if($registration->athlete->user_id !== $request->user()->id, 403);
+        // Athlete who registered, or the trial owner (coach / academy).
+        $isAthlete = $registration->athlete->user_id === $request->user()->id;
+        if (! $isAthlete) {
+            $this->authorizeOwner($request, $registration->trial);
+        }
 
         $trial = $registration->trial;
 
@@ -661,7 +665,13 @@ class RegistrationController extends Controller
 
     public function downloadTournamentIcs(Request $request, TournamentRegistration $registration)
     {
-        abort_if($registration->athlete->user_id !== $request->user()->id, 403);
+        // The athlete who registered may always download their own invite;
+        // the tournament owner may too (organizers share the calendar invite
+        // with their entrants).
+        $isAthlete = $registration->athlete->user_id === $request->user()->id;
+        if (! $isAthlete) {
+            $this->authorizeTournamentOwner($request, $registration->tournament);
+        }
 
         $tournament = $registration->tournament;
         $category = $registration->category;
@@ -685,6 +695,22 @@ class RegistrationController extends Controller
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
+
+    /**
+     * Page size for the organizer registration lists. The app asks for 100 so
+     * a single page covers a whole tournament — honour it (capped) instead of
+     * silently truncating the list at 20 rows.
+     */
+    private function perPage(Request $request, int $default = 20, int $max = 200): int
+    {
+        $perPage = (int) $request->query('per_page', $default);
+
+        if ($perPage < 1) {
+            return $default;
+        }
+
+        return min($perPage, $max);
+    }
 
     private function authorizeOwner(Request $request, Trial $trial): void
     {

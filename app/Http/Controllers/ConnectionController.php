@@ -38,17 +38,14 @@ class ConnectionController extends Controller
             return response()->json(['error' => ['code' => 'BLOCKED', 'message' => 'Connection unavailable.']], 403);
         }
 
-        $duplicate = Connection::where('follower_user_id', $userId)
-            ->where('followee_user_id', $targetId)
-            ->first();
-
-        if ($duplicate) {
-            return response()->json(['error' => ['code' => 'CONFLICT', 'message' => 'Connection request already exists.']], 409);
-        }
-
-        $connection = Connection::create(
-            ['follower_user_id' => $userId, 'followee_user_id' => $targetId, 'status' => 'pending']
+        // D3: firstOrCreate kills the double-check→create duplicate race.
+        $connection = Connection::firstOrCreate(
+            ['follower_user_id' => $userId, 'followee_user_id' => $targetId],
+            ['status' => 'pending']
         );
+        if (!$connection->wasRecentlyCreated && $connection->status !== 'pending') {
+            return response()->json(['error' => ['code' => 'CONFLICT', 'message' => 'Connection already exists.']], 409);
+        }
 
         // Auto-accept if the counterpart already follows (mutual consent).
         $reverse = Connection::where('follower_user_id', $targetId)
