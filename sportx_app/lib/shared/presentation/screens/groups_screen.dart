@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:sportx_app/core/config/api_config.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/social/presentation/providers/groups_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
@@ -179,7 +181,10 @@ class GroupDetailScreen extends StatelessWidget {
                       child: SecondaryButton(
                         label: 'Share',
                         icon: LucideIcons.share2,
-                        onPressed: () {},
+                        onPressed: () {
+                          final url = '${ApiConfig.webBaseUrl}/groups';
+                          Share.share('Join "$name" on SportX\n$url');
+                        },
                       ),
                     ),
                   ],

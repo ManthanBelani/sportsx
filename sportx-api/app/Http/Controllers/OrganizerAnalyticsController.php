@@ -155,6 +155,24 @@ class OrganizerAnalyticsController extends Controller
             ['name' => 'External link', 'percent' => $externalShare, 'count' => (int) $externalClicks],
         ], fn ($s) => $s['count'] > 0));
 
+        // Enquiries addressed to this organizer (profile + their opportunities),
+        // mirroring EnquiryController::inbox so the "Inquiries" KPI matches the
+        // inbox count the organizer actually sees.
+        $subjectPairs = [];
+        if ($organizerProfileId) {
+            $subjectPairs[] = ['organizer_profile', $organizerProfileId];
+        }
+        $opportunityIds = \App\Models\Opportunity::where('created_by_user_id', $user->id)->pluck('id');
+        foreach ($opportunityIds as $oppId) {
+            $subjectPairs[] = ['opportunity', $oppId];
+        }
+        $inquiries = 0;
+        foreach ($subjectPairs as [$type, $id]) {
+            $inquiries += \App\Models\Enquiry::where('subject_type', $type)
+                ->where('subject_id', $id)
+                ->count();
+        }
+
         return response()->json([
             'data' => [
                 'tournaments' => [
@@ -180,6 +198,7 @@ class OrganizerAnalyticsController extends Controller
                     'currency' => 'INR',
                 ],
                 'views' => $views,
+                'inquiries' => $inquiries,
                 'daily_series' => $dailySeries,
                 'top_sources' => $topSources,
                 'capacity' => [

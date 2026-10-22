@@ -54,7 +54,7 @@ class _OrganizerAnalyticsScreenState
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'My Analytics',
+          'Event Analytics',
           style: GoogleFonts.sora(
             fontSize: 19,
             fontWeight: FontWeight.w700,
@@ -241,21 +241,23 @@ class _OrganizerAnalyticsScreenState
               const SizedBox(height: 12),
 
               // ── 2×2 KPI grid ──────────────────────────────────────────
+              // ── KpiTile ×4 — design board: Views / Registrations /
+              // Revenue / Inquiries ──────────────────────────────────────
               Row(
                 children: [
                   Expanded(
                     child: OrgKpiTile(
-                      value: '${a.totalRegistrations}',
-                      label: 'Total',
-                      icon: LucideIcons.users,
+                      value: compactIndianNumber(a.views),
+                      label: 'Views',
+                      icon: LucideIcons.eye,
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: OrgKpiTile(
-                      value: '${a.approvedRegistrations}',
-                      label: 'Approved',
-                      icon: LucideIcons.check,
+                      value: '${a.totalRegistrations}',
+                      label: 'Registrations',
+                      icon: LucideIcons.users,
                     ),
                   ),
                 ],
@@ -265,17 +267,17 @@ class _OrganizerAnalyticsScreenState
                 children: [
                   Expanded(
                     child: OrgKpiTile(
-                      value: '${a.pendingRegistrations}',
-                      label: 'Pending',
-                      icon: LucideIcons.clock,
+                      value: '₹${compactIndianNumber(a.revenueEstimate)}',
+                      label: 'Revenue',
+                      icon: LucideIcons.indianRupee,
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: OrgKpiTile(
-                      value: '₹${formatIndianNumber(a.revenueEstimate)}',
-                      label: 'Revenue',
-                      icon: LucideIcons.indianRupee,
+                      value: '${a.inquiries}',
+                      label: 'Inquiries',
+                      icon: LucideIcons.mail,
                     ),
                   ),
                 ],

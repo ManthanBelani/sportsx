@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:sportx_app/core/config/api_config.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/features/social/presentation/providers/posts_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
@@ -18,6 +20,66 @@ class CommunityPostCard extends StatelessWidget {
     required this.onComment,
     required this.onOpen,
   });
+
+  /// Overflow menu for a feed card — share is the one action the card can
+  /// always honour (report/save live on the detail screen).
+  void _showActions(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 10),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.border,
+                borderRadius: BorderRadius.circular(99),
+              ),
+            ),
+            const SizedBox(height: 6),
+            ListTile(
+              leading: const Icon(LucideIcons.share2, size: 20),
+              title: Text(
+                'Share post',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(ctx);
+                final url = '${ApiConfig.webBaseUrl}/post-detail/${post.id}';
+                Share.share(
+                  post.body?.isNotEmpty == true
+                      ? '${post.body}\n$url'
+                      : 'Check this out on SportX\n$url',
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(LucideIcons.x, size: 20),
+              title: Text(
+                'Cancel',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              onTap: () => Navigator.pop(ctx),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +158,7 @@ class CommunityPostCard extends StatelessWidget {
                     visualDensity: VisualDensity.compact,
                     icon: const Icon(LucideIcons.moreHorizontal, size: 18),
                     color: AppColors.textSecondary,
-                    onPressed: () {},
+                    onPressed: () => _showActions(context),
                   ),
                 ],
               ),
@@ -122,8 +184,11 @@ class CommunityPostCard extends StatelessWidget {
                   errorBuilder: (_, _, _) => Container(
                     color: AppColors.surface,
                     alignment: Alignment.center,
-                    child: const Icon(LucideIcons.image,
-                        color: AppColors.textTertiary, size: 32),
+                    child: const Icon(
+                      LucideIcons.image,
+                      color: AppColors.textTertiary,
+                      size: 32,
+                    ),
                   ),
                 ),
               ),
@@ -138,7 +203,9 @@ class CommunityPostCard extends StatelessWidget {
                 children: [
                   _FeedAction(
                     icon: LucideIcons.heart,
-                    color: post.liked ? Colors.redAccent : AppColors.textSecondary,
+                    color: post.liked
+                        ? Colors.redAccent
+                        : AppColors.textSecondary,
                     filled: post.liked,
                     label: _compactNumber(post.likesCount),
                     onTap: onLike,
@@ -189,16 +256,17 @@ class _FeedAction extends StatelessWidget {
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         foregroundColor: color,
       ),
-      icon: Icon(icon,
-          size: 18, color: color, fill: filled ? 1.0 : null),
+      icon: Icon(icon, size: 18, color: color, fill: filled ? 1.0 : null),
       label: label == null
           ? const SizedBox.shrink()
-          : Text(label!,
+          : Text(
+              label!,
               style: GoogleFonts.inter(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textSecondary,
-              )),
+              ),
+            ),
     );
   }
 }

@@ -11,10 +11,12 @@ class AdminContentPickerScreen extends ConsumerStatefulWidget {
   const AdminContentPickerScreen({super.key});
 
   @override
-  ConsumerState<AdminContentPickerScreen> createState() => _AdminContentPickerScreenState();
+  ConsumerState<AdminContentPickerScreen> createState() =>
+      _AdminContentPickerScreenState();
 }
 
-class _AdminContentPickerScreenState extends ConsumerState<AdminContentPickerScreen> {
+class _AdminContentPickerScreenState
+    extends ConsumerState<AdminContentPickerScreen> {
   static const _categories = [
     ('academies', 'Academies', LucideIcons.building2),
     ('coaches', 'Coaches', LucideIcons.user),
@@ -27,13 +29,16 @@ class _AdminContentPickerScreenState extends ConsumerState<AdminContentPickerScr
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.read(adminProvider.notifier).loadContentPicker());
+    Future.microtask(
+      () => ref.read(adminProvider.notifier).loadContentPicker(),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final pickers = ref.watch(adminProvider).contentPicker;
-    int count(String type) => pickers.where((p) => p.type == type).fold(0, (s, p) => s + p.total);
+    int count(String type) =>
+        pickers.where((p) => p.type == type).fold(0, (s, p) => s + p.total);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -41,21 +46,43 @@ class _AdminContentPickerScreenState extends ConsumerState<AdminContentPickerScr
         backgroundColor: Colors.white,
         foregroundColor: AppColors.ink,
         elevation: 0,
-        title: Text('Content Management',
-            style: GoogleFonts.sora(
-                fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
-        leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.ink), onPressed: () => context.pop()),
+        title: Text(
+          'Content Management',
+          style: GoogleFonts.sora(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: AppColors.ink,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(LucideIcons.arrowLeft, color: AppColors.ink),
+          onPressed: () => context.pop(),
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: _categories
-            .map((c) => _buildCategoryTile(context, c.$1, c.$2, c.$3, '${count(c.$1)}'))
+            .map(
+              (c) => _buildCategoryTile(
+                context,
+                c.$1,
+                c.$2,
+                c.$3,
+                '${count(c.$1)}',
+              ),
+            )
             .toList(),
       ),
     );
   }
 
-  Widget _buildCategoryTile(BuildContext context, String type, String name, IconData icon, String count) {
+  Widget _buildCategoryTile(
+    BuildContext context,
+    String type,
+    String name,
+    IconData icon,
+    String count,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
@@ -73,27 +100,38 @@ class _AdminContentPickerScreenState extends ConsumerState<AdminContentPickerScr
           ),
           child: Icon(icon, color: AppColors.primaryDark, size: 20),
         ),
-        title: Text(name,
-            style: GoogleFonts.sora(
-                fontSize: 14.5, fontWeight: FontWeight.w700, color: AppColors.ink)),
+        title: Text(
+          name,
+          style: GoogleFonts.sora(
+            fontSize: 14.5,
+            fontWeight: FontWeight.w700,
+            color: AppColors.ink,
+          ),
+        ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  border: Border.all(color: AppColors.borderSoft),
-                  borderRadius: BorderRadius.circular(999)),
-              child: Text(count,
-                  style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w700, color: AppColors.ink)),
+                color: AppColors.surface,
+                border: Border.all(color: AppColors.borderSoft),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                count,
+                style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.ink,
+                ),
+              ),
             ),
             const SizedBox(width: 8),
             const Icon(LucideIcons.chevronRight, color: AppColors.textTertiary),
           ],
         ),
-        onTap: () => context.push('/admin-content-list/$type'),
+        // The list route reads its category from `extra`, not the path.
+        onTap: () => context.push('/admin/content', extra: {'category': type}),
       ),
     );
   }

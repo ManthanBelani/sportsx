@@ -350,7 +350,7 @@ class _RegistrationsTabViewState extends ConsumerState<_RegistrationsTabView>
           child: TextField(
             controller: _searchCtrl,
             decoration: InputDecoration(
-              hintText: 'Search team / athlete',
+              hintText: 'Search participants…',
               prefixIcon: const Icon(
                 LucideIcons.search,
                 size: 16,

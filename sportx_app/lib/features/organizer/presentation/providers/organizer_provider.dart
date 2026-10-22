@@ -189,6 +189,7 @@ class OrganizerAnalytics {
   final double utilizationPercent;
   final int spotsLeft;
   final int views;
+  final int inquiries;
   final List<({String date, int count})> dailySeries;
   final List<Map<String, dynamic>> topSources;
   final Map<String, dynamic>? deadlineAlert;
@@ -213,6 +214,7 @@ class OrganizerAnalytics {
     required this.utilizationPercent,
     required this.spotsLeft,
     this.views = 0,
+    this.inquiries = 0,
     this.dailySeries = const [],
     this.topSources = const [],
     this.deadlineAlert,
@@ -247,6 +249,7 @@ class OrganizerAnalytics {
       utilizationPercent: ((json['capacity']?['utilization_percent'] ?? 0) as num).toDouble(),
       spotsLeft: (json['capacity']?['spots_left'] ?? 0) as int,
       views: (json['views'] ?? 0) is num ? ((json['views'] ?? 0) as num).toInt() : 0,
+      inquiries: (json['inquiries'] ?? 0) is num ? ((json['inquiries'] ?? 0) as num).toInt() : 0,
       dailySeries: series,
       topSources: (json['top_sources'] as List? ?? [])
           .map((e) => Map<String, dynamic>.from(e as Map))

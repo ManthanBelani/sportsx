@@ -22,71 +22,110 @@ class NotificationsScreen extends ConsumerWidget {
         backgroundColor: Colors.white.withValues(alpha: 0.88),
         surfaceTintColor: Colors.white,
         elevation: 0,
-        title: Text('Notifications',
-            style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),
+        title: Text(
+          'Notifications',
+          style: GoogleFonts.sora(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: AppColors.ink,
+          ),
+        ),
         centerTitle: false,
         actions: [
           IconButton(
-            icon: const Icon(LucideIcons.settings2, color: AppColors.textSecondary),
+            icon: const Icon(
+              LucideIcons.settings2,
+              color: AppColors.textSecondary,
+            ),
             onPressed: () => context.push('/notification-preferences'),
           ),
           if (state.unreadCount > 0)
             Padding(
               padding: const EdgeInsets.only(right: 8),
               child: TextButton(
-                onPressed: () => ref.read(notificationsProvider.notifier).markAllRead(),
-                child: const Text('Mark all read', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.primary)),
+                onPressed: () =>
+                    ref.read(notificationsProvider.notifier).markAllRead(),
+                child: const Text(
+                  'Mark all read',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.primary,
+                  ),
+                ),
               ),
             ),
         ],
       ),
-      body: Column(children: [
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-          child: Row(
-            children: NotificationsNotifier.tabs.map((t) {
-              final active = state.tab == t;
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: GestureDetector(
-                  onTap: () => ref.read(notificationsProvider.notifier).setTab(t),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      gradient: active
-                          ? const LinearGradient(colors: [
-                              Color(0xFFFFD54A),
-                              Color(0xFFFFC107),
-                              Color(0xFFF5B400)
-                            ])
-                          : null,
-                      color: active ? null : Colors.white,
-                      border: Border.all(color: active ? const Color(0x2E785000) : AppColors.border),
-                      borderRadius: BorderRadius.circular(11),
-                    ),
-                    child: Text(t,
+      body: Column(
+        children: [
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+            child: Row(
+              children: NotificationsNotifier.tabs.map((t) {
+                final active = state.tab == t;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: GestureDetector(
+                    onTap: () =>
+                        ref.read(notificationsProvider.notifier).setTab(t),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: active
+                            ? const LinearGradient(
+                                colors: [
+                                  Color(0xFFFFD54A),
+                                  Color(0xFFFFC107),
+                                  Color(0xFFF5B400),
+                                ],
+                              )
+                            : null,
+                        color: active ? null : Colors.white,
+                        border: Border.all(
+                          color: active
+                              ? const Color(0x2E785000)
+                              : AppColors.border,
+                        ),
+                        borderRadius: BorderRadius.circular(11),
+                      ),
+                      child: Text(
+                        t,
                         style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: active ? FontWeight.w800 : FontWeight.w600,
-                            color: AppColors.ink)),
+                          fontSize: 12,
+                          fontWeight: active
+                              ? FontWeight.w800
+                              : FontWeight.w600,
+                          color: AppColors.ink,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              );
-            }).toList(),
+                );
+              }).toList(),
+            ),
           ),
-        ),
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: () => ref.read(notificationsProvider.notifier).refresh(),
-            child: _buildBody(context, ref, state),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () =>
+                  ref.read(notificationsProvider.notifier).refresh(),
+              child: _buildBody(context, ref, state),
+            ),
           ),
-        ),
-      ]),
+        ],
+      ),
     );
   }
 
-  Widget _buildBody(BuildContext context, WidgetRef ref, NotificationsState state) {
+  Widget _buildBody(
+    BuildContext context,
+    WidgetRef ref,
+    NotificationsState state,
+  ) {
     if (state.isLoading && state.items.isEmpty) {
       return const NotificationsSkeleton();
     }
@@ -102,14 +141,18 @@ class NotificationsScreen extends ConsumerWidget {
           children: [
             Icon(LucideIcons.bellOff, size: 64, color: AppColors.textTertiary),
             SizedBox(height: 16),
-            Text('No notifications yet', style: TextStyle(fontSize: 16, color: AppColors.textSecondary)),
+            Text(
+              'No notifications yet',
+              style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+            ),
           ],
         ),
       );
     }
 
     // Sort items by date descending just to be safe
-    final sortedItems = List.of(state.items)..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final sortedItems = List.of(state.items)
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(0, 6, 0, 16),
@@ -125,10 +168,12 @@ class NotificationsScreen extends ConsumerWidget {
 
         final item = sortedItems[i];
         final previousItem = i > 0 ? sortedItems[i - 1] : null;
-        
+
         final dateGroup = _getDateGroup(item.createdAt);
-        final previousDateGroup = previousItem != null ? _getDateGroup(previousItem.createdAt) : null;
-        
+        final previousDateGroup = previousItem != null
+            ? _getDateGroup(previousItem.createdAt)
+            : null;
+
         final showHeader = dateGroup != previousDateGroup;
 
         return Column(
@@ -137,11 +182,19 @@ class NotificationsScreen extends ConsumerWidget {
             if (showHeader)
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 8,
+                ),
                 color: AppColors.surface,
                 child: Text(
                   dateGroup,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary, letterSpacing: 0.5),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
             _buildNotificationItem(context, ref, item),
@@ -151,7 +204,11 @@ class NotificationsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildNotificationItem(BuildContext context, WidgetRef ref, dynamic item) {
+  Widget _buildNotificationItem(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic item,
+  ) {
     final typeData = _getTypeData(item.type);
 
     return InkWell(
@@ -195,18 +252,27 @@ class NotificationsScreen extends ConsumerWidget {
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: item.isRead ? AppColors.textSecondary : AppColors.textPrimary,
+                      color: item.isRead
+                          ? AppColors.textSecondary
+                          : AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     item.body,
-                    style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.4),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     _formatTime(item.createdAt),
-                    style: const TextStyle(fontSize: 12, color: AppColors.textTertiary),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textTertiary,
+                    ),
                   ),
                 ],
               ),
@@ -232,14 +298,15 @@ class NotificationsScreen extends ConsumerWidget {
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
     final itemDate = DateTime(date.year, date.month, date.day);
-    
+
     if (itemDate == today) return 'TODAY';
     if (itemDate == yesterday) return 'YESTERDAY';
     if (now.difference(date).inDays < 7) return 'THIS WEEK';
     return 'EARLIER';
   }
 
-  String _formatTime(DateTime date) => DateFormatUtils.formatRelative(date.toIso8601String());
+  String _formatTime(DateTime date) =>
+      DateFormatUtils.formatRelative(date.toIso8601String());
 
   void _navigateTo(BuildContext context, String url) {
     final uri = Uri.parse(url);
@@ -262,13 +329,13 @@ class NotificationsScreen extends ConsumerWidget {
       context.push('/my-applications');
     } else if (path.startsWith('/trial/')) {
       final id = path.split('/').last;
-      context.push('/trial/$id');
+      context.push('/trial-detail/$id');
     } else if (path.startsWith('/tournament/')) {
       final id = path.split('/').last;
-      context.push('/tournament/$id');
+      context.push('/tournament-detail/$id');
     } else if (path.startsWith('/academy/')) {
       final id = path.split('/').last;
-      context.push('/academy/$id');
+      context.push('/academy-detail/$id');
     } else if (path.startsWith('/coach/')) {
       final id = path.split('/').last;
       context.push('/coach-profile-detail/$id');
@@ -279,20 +346,40 @@ class NotificationsScreen extends ConsumerWidget {
 
   _TypeData _getTypeData(String? type) {
     switch (type) {
-      case 'trial_reminder': 
+      case 'trial_reminder':
       case 'deadline':
-        return _TypeData(icon: LucideIcons.clock, bgColor: AppColors.yellowTint, iconColor: AppColors.warnText);
-      case 'registration': 
+        return _TypeData(
+          icon: LucideIcons.clock,
+          bgColor: AppColors.yellowTint,
+          iconColor: AppColors.warnText,
+        );
+      case 'registration':
       case 'trial':
-        return _TypeData(icon: LucideIcons.checkCircle, bgColor: AppColors.infoLight, iconColor: AppColors.info);
-      case 'enquiry': 
+        return _TypeData(
+          icon: LucideIcons.checkCircle,
+          bgColor: AppColors.infoLight,
+          iconColor: AppColors.info,
+        );
+      case 'enquiry':
       case 'reply':
-        return _TypeData(icon: LucideIcons.messageCircle, bgColor: AppColors.successLight, iconColor: AppColors.success);
-      case 'shortlist': 
+        return _TypeData(
+          icon: LucideIcons.messageCircle,
+          bgColor: AppColors.successLight,
+          iconColor: AppColors.success,
+        );
+      case 'shortlist':
       case 'application':
-        return _TypeData(icon: LucideIcons.trophy, bgColor: AppColors.infoLight, iconColor: AppColors.coach);
-      default: 
-        return _TypeData(icon: LucideIcons.bell, bgColor: AppColors.surface, iconColor: AppColors.textSecondary);
+        return _TypeData(
+          icon: LucideIcons.trophy,
+          bgColor: AppColors.infoLight,
+          iconColor: AppColors.coach,
+        );
+      default:
+        return _TypeData(
+          icon: LucideIcons.bell,
+          bgColor: AppColors.surface,
+          iconColor: AppColors.textSecondary,
+        );
     }
   }
 }
@@ -302,5 +389,9 @@ class _TypeData {
   final Color bgColor;
   final Color iconColor;
 
-  _TypeData({required this.icon, required this.bgColor, required this.iconColor});
+  _TypeData({
+    required this.icon,
+    required this.bgColor,
+    required this.iconColor,
+  });
 }
