@@ -9,16 +9,17 @@ import 'package:sportx_app/features/organizer/presentation/providers/organizer_p
 import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
+import 'package:sportx_app/shared/providers/profile_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 
-class OrganizerProfileScreen extends ConsumerStatefulWidget {
-  const OrganizerProfileScreen({super.key});
+class OrganizerProfileEditScreen extends ConsumerStatefulWidget {
+  const OrganizerProfileEditScreen({super.key});
   @override
-  ConsumerState<OrganizerProfileScreen> createState() => _OrganizerProfileScreenState();
+  ConsumerState<OrganizerProfileEditScreen> createState() => _OrganizerProfileScreenState();
 }
 
-class _OrganizerProfileScreenState extends ConsumerState<OrganizerProfileScreen> {
+class _OrganizerProfileScreenState extends ConsumerState<OrganizerProfileEditScreen> {
   final _name = TextEditingController();
   final _regNo = TextEditingController();
   final _website = TextEditingController();
@@ -131,6 +132,10 @@ class _OrganizerProfileScreenState extends ConsumerState<OrganizerProfileScreen>
         if (_sportsEdited) 'sports': _sportIds.toList(),
       });
       ref.invalidate(myOrganizerProvider);
+      // The home greet card shows the completion %, and the More header
+      // renders the profile — keep both in sync with the edit.
+      ref.invalidate(organizerCompletionProvider);
+      ref.invalidate(profileProvider);
       if (mounted) {
         SnackBarUtils.showSuccess(context, 'Organization updated');
         context.pop();
@@ -152,7 +157,7 @@ class _OrganizerProfileScreenState extends ConsumerState<OrganizerProfileScreen>
         scrolledUnderElevation: 0,
         elevation: 0,
         leading: IconButton(icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary), onPressed: () => context.pop()),
-        title: Text('Organization Profile', style: GoogleFonts.sora(fontSize: 19, fontWeight: FontWeight.w700, color: AppColors.ink)),
+        title: Text('Edit Profile', style: GoogleFonts.sora(fontSize: 19, fontWeight: FontWeight.w700, color: AppColors.ink)),
         bottom: const PreferredSize(preferredSize: Size.fromHeight(1), child: Divider(height: 1, color: AppColors.border)),
         actions: [
           Padding(

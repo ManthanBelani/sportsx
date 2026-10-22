@@ -48,6 +48,24 @@ class Tournament extends Model
         return $this->belongsTo(City::class);
     }
 
+    public function bannerMedia(): BelongsTo
+    {
+        return $this->belongsTo(MediaItem::class, 'banner_media_id');
+    }
+
+    /**
+     * Resolved banner URL for list/detail payloads (nullable).
+     *
+     * Always read through the eagerly-loaded relation so list endpoints never
+     * trigger N+1 queries — see the `bannerMedia` with() calls below.
+     */
+    public function bannerUrl(): ?string
+    {
+        $path = $this->bannerMedia?->url;
+
+        return $path === null || $path === '' ? null : $path;
+    }
+
     public function categories(): HasMany
     {
         return $this->hasMany(TournamentCategory::class);

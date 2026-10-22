@@ -11,6 +11,7 @@ import 'package:sportx_app/features/connections/presentation/providers/scout_dir
 import 'package:sportx_app/features/connections/presentation/providers/scout_requests_provider.dart';
 import 'package:sportx_app/features/notifications/presentation/providers/notification_prefs_provider.dart';
 import 'package:sportx_app/features/notifications/presentation/providers/notifications_provider.dart';
+import 'package:sportx_app/features/onboarding/presentation/providers/multi_step_onboarding_provider.dart';
 import 'package:sportx_app/features/onboarding/presentation/providers/onboarding_provider.dart';
 import 'package:sportx_app/features/opportunity/presentation/providers/opportunity_provider.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
@@ -18,6 +19,7 @@ import 'package:sportx_app/features/program/presentation/providers/program_provi
 import 'package:sportx_app/features/saved/presentation/providers/saved_provider.dart';
 import 'package:sportx_app/features/search/presentation/providers/search_provider.dart';
 import 'package:sportx_app/features/settings/presentation/providers/settings_provider.dart';
+import 'package:sportx_app/features/social/presentation/providers/groups_provider.dart';
 import 'package:sportx_app/features/social/presentation/providers/posts_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/providers/athlete_discovery_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/providers/leaderboard_provider.dart';
@@ -32,6 +34,7 @@ import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/shared/providers/enquiry_provider.dart';
 import 'package:sportx_app/shared/providers/profile_provider.dart';
 import 'package:sportx_app/shared/providers/registration_provider.dart';
+import 'package:sportx_app/shared/providers/report_provider.dart';
 
 /// Drops every user-scoped provider state.
 ///
@@ -120,4 +123,13 @@ void resetUserScopedProviders(Ref ref) {
   ref.invalidate(myEventsProvider);
   ref.invalidate(eventRegistrationsProvider);
   ref.invalidate(eventResultsProvider);
+  ref.invalidate(groupsProvider);
+  ref.invalidate(myGroupsProvider);
+  ref.invalidate(organizerCompletionProvider);
+  ref.invalidate(organizerTeamProvider);
+  // Family providers — invalidating the family clears every argument's cache.
+  ref.invalidate(filteredPostsFeedProvider);
+  ref.invalidate(multiStepOnboardingProvider);
+  ref.invalidate(onboardingStepsProvider);
+  ref.invalidate(reportProvider);
 }

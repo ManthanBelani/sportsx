@@ -122,6 +122,39 @@ class OrganizerAnalyticsController extends Controller
             }
         }
 
+        // ── Analytics board extras (organizer analytics screen) ──────────────
+        // Views = in-app registrations + external registration page clicks —
+        // the two signals SportX actually records for an organizer's events.
+        $externalClicks = $tournaments->sum('external_registration_clicks');
+        $views = $totalRegs + (int) $externalClicks;
+
+        // Registrations per day over the last 30 days (line chart).
+        $windowStart = now()->subDays(29)->startOfDay();
+        $createdDates = $tournamentRegs->map(fn ($r) => $r->created_at)
+            ->concat($trialRegs->map(fn ($r) => $r->created_at))
+            ->filter(fn ($d) => $d && $d->gte($windowStart))
+            ->map(fn ($d) => $d->toDateString());
+
+        $createdCounts = $createdDates->countBy();
+
+        $dailySeries = [];
+        for ($i = 29; $i >= 0; $i--) {
+            $day = now()->subDays($i)->toDateString();
+            $dailySeries[] = [
+                'date' => $day,
+                'count' => (int) ($createdCounts[$day] ?? 0),
+            ];
+        }
+
+        // Where the audience came from: registrations made inside SportX vs
+        // clicks on the organizer's own registration page.
+        $internalShare = $views > 0 ? round(($totalRegs / $views) * 100, 1) : 0.0;
+        $externalShare = $views > 0 ? round(((int) $externalClicks / $views) * 100, 1) : 0.0;
+        $topSources = array_values(array_filter([
+            ['name' => 'SportX App', 'percent' => $internalShare, 'count' => $totalRegs],
+            ['name' => 'External link', 'percent' => $externalShare, 'count' => (int) $externalClicks],
+        ], fn ($s) => $s['count'] > 0));
+
         return response()->json([
             'data' => [
                 'tournaments' => [
@@ -146,6 +179,9 @@ class OrganizerAnalyticsController extends Controller
                     'total_estimate' => round($revenue, 2),
                     'currency' => 'INR',
                 ],
+                'views' => $views,
+                'daily_series' => $dailySeries,
+                'top_sources' => $topSources,
                 'capacity' => [
                     'total_capacity' => $totalCapacity,
                     'total_registered' => $totalRegistered,

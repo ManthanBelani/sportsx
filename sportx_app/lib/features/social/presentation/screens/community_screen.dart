@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/core/role_config.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/connections/presentation/providers/follow_block_provider.dart';
@@ -66,7 +67,9 @@ class CommunityScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 10),
                 ],
-                const _CommunityTabs(),
+                _CommunityTabs(
+                  isOrganizer: config.role == SportXRole.organizer,
+                ),
               ]),
             ),
           ),
@@ -77,7 +80,10 @@ class CommunityScreen extends ConsumerWidget {
 }
 
 class _CommunityTabs extends StatefulWidget {
-  const _CommunityTabs();
+  /// Organizers get the board's community screen: an "Organizers" sub-chip and
+  /// a "Popular Groups" section right under "Suggested for You".
+  final bool isOrganizer;
+  const _CommunityTabs({this.isOrganizer = false});
 
   @override
   State<_CommunityTabs> createState() => _CommunityTabsState();
@@ -96,25 +102,50 @@ class _CommunityTabsState extends State<_CommunityTabs> {
           onChanged: (i) => setState(() => _tab = i),
         ),
         if (_tab == 0) ...[
-          SportXSearchBar(hint: 'Search people, groups', onTap: () => context.push('/universal-search')),
+          SportXSearchBar(
+            hint: 'Search people, groups, events…',
+            onTap: () => context.push('/universal-search'),
+          ),
           const SizedBox(height: 8),
           SizedBox(
             height: 32,
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [
-                SportXChip(label: 'Athletes', selected: true, onTap: () => context.push('/athlete-directory')),
+                SportXChip(
+                  label: 'Athletes',
+                  selected: true,
+                  onTap: () => context.push('/athlete-directory'),
+                ),
                 const SizedBox(width: 7),
-                SportXChip(label: 'Coaches', onTap: () => context.push('/coaches')),
+                SportXChip(
+                  label: 'Coaches',
+                  onTap: () => context.push('/coaches'),
+                ),
                 const SizedBox(width: 7),
-                SportXChip(label: 'Academies', onTap: () => context.push('/academies')),
+                SportXChip(
+                  label: 'Academies',
+                  onTap: () => context.push('/academies'),
+                ),
+                if (widget.isOrganizer) ...[
+                  const SizedBox(width: 7),
+                  SportXChip(
+                    label: 'Organizers',
+                    onTap: () => context.push('/tournaments'),
+                  ),
+                ],
                 const SizedBox(width: 7),
-                SportXChip(label: 'My network', icon: LucideIcons.users, onTap: () => context.push('/network')),
+                SportXChip(
+                  label: 'My network',
+                  icon: LucideIcons.users,
+                  onTap: () => context.push('/network'),
+                ),
                 const SizedBox(width: 7),
               ],
             ),
           ),
           const _SuggestedSection(),
+          if (widget.isOrganizer) const _GroupsSection(showSeeAll: true),
         ] else if (_tab == 1)
           const _GroupsSection()
         else if (_tab == 2)
@@ -146,7 +177,10 @@ class _SuggestedSection extends ConsumerWidget {
           loading: () => const _SuggestedSkeleton(),
           error: (_, _) => emptyHint('Could not load suggestions right now.'),
           data: (state) {
-            if (state.isEmpty) return emptyHint('More athletes will appear here as they join SportX.');
+            if (state.isEmpty)
+              return emptyHint(
+                'More athletes will appear here as they join SportX.',
+              );
             return Column(
               children: [
                 for (final a in state.take(4))
@@ -165,7 +199,8 @@ class _SuggestedSection extends ConsumerWidget {
         Builder(
           builder: (context) {
             final acadState = ref.watch(academiesProvider);
-            if (acadState.isLoading && acadState.items.isEmpty) return const SizedBox.shrink();
+            if (acadState.isLoading && acadState.items.isEmpty)
+              return const SizedBox.shrink();
             if (acadState.items.isEmpty) return const SizedBox.shrink();
             final a = acadState.items.first;
             return _AcademyWideCard(
@@ -188,10 +223,13 @@ class _SuggestedSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: List.generate(4, (index) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: SkeletonWidget.rectangular(height: 70, radius: 14),
-      )),
+      children: List.generate(
+        4,
+        (index) => Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: SkeletonWidget.rectangular(height: 70, radius: 14),
+        ),
+      ),
     );
   }
 }
@@ -201,7 +239,12 @@ class _AcademyWideCard extends StatelessWidget {
   final String location;
   final String? photoUrl;
   final VoidCallback onTap;
-  const _AcademyWideCard({required this.name, required this.location, this.photoUrl, required this.onTap});
+  const _AcademyWideCard({
+    required this.name,
+    required this.location,
+    this.photoUrl,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +262,12 @@ class _AcademyWideCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            kitNetImage(url: photoUrl ?? '', width: 104, height: 86, radius: 10),
+            kitNetImage(
+              url: photoUrl ?? '',
+              width: 104,
+              height: 86,
+              radius: 10,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Padding(
@@ -227,20 +275,35 @@ class _AcademyWideCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.sora(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                    Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.sora(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.ink,
+                      ),
+                    ),
                     const SizedBox(height: 5),
                     Row(
                       children: [
-                        const Icon(LucideIcons.mapPin, size: 10, color: AppColors.textTertiary),
+                        const Icon(
+                          LucideIcons.mapPin,
+                          size: 10,
+                          color: AppColors.textTertiary,
+                        ),
                         const SizedBox(width: 3),
                         Flexible(
-                          child: Text(location,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(fontSize: 9.5, color: AppColors.textSecondary)),
+                          child: Text(
+                            location,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              fontSize: 9.5,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -248,9 +311,21 @@ class _AcademyWideCard extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Sports Academy', style: GoogleFonts.inter(fontSize: 9, color: AppColors.textSecondary)),
-                        Text('View ›',
-                            style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.primaryDarker)),
+                        Text(
+                          'Sports Academy',
+                          style: GoogleFonts.inter(
+                            fontSize: 9,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        Text(
+                          'View ›',
+                          style: GoogleFonts.inter(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.primaryDarker,
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -267,7 +342,10 @@ class _AcademyWideCard extends StatelessWidget {
 // ─── Groups tab (Dynamic) ─────────────────────────────────────────────────────
 
 class _GroupsSection extends ConsumerWidget {
-  const _GroupsSection();
+  /// When true the section renders inside the Network tab of the organizer
+  /// board: heading + "See all" + compact rows without the tab's own padding.
+  final bool showSeeAll;
+  const _GroupsSection({this.showSeeAll = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -277,7 +355,7 @@ class _GroupsSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SectionHeadV3(
-          title: 'Popular groups',
+          title: 'Popular Groups',
           actionText: 'See all',
           onActionTap: () => context.push('/groups'),
         ),
@@ -299,8 +377,9 @@ class _GroupsSection extends ConsumerWidget {
             }
             return Column(
               children: [
-                for (final g in groups.take(6)) _GroupCard(group: g),
-                if (groups.length > 6)
+                for (final g in groups.take(showSeeAll ? 3 : 6))
+                  _GroupCard(group: g),
+                if (!showSeeAll && groups.length > 6)
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: OutlinedButton(
@@ -322,10 +401,13 @@ class _GroupsSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: List.generate(3, (index) => Padding(
-        padding: const EdgeInsets.only(bottom: 9),
-        child: SkeletonWidget.rectangular(height: 70, radius: 16),
-      )),
+      children: List.generate(
+        3,
+        (index) => Padding(
+          padding: const EdgeInsets.only(bottom: 9),
+          child: SkeletonWidget.rectangular(height: 70, radius: 16),
+        ),
+      ),
     );
   }
 }
@@ -364,7 +446,9 @@ class _GroupCard extends ConsumerWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: (typeColors[group.type] ?? AppColors.primary).withValues(alpha: 0.12),
+              color: (typeColors[group.type] ?? AppColors.primary).withValues(
+                alpha: 0.12,
+              ),
               borderRadius: BorderRadius.circular(12),
             ),
             alignment: Alignment.center,
@@ -382,15 +466,23 @@ class _GroupCard extends ConsumerWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: Text(group.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                              fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.ink)),
+                      child: Text(
+                        group.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.ink,
+                        ),
+                      ),
                     ),
                     if (group.memberCount > 0)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.surface,
                           borderRadius: BorderRadius.circular(99),
@@ -398,11 +490,19 @@ class _GroupCard extends ConsumerWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(LucideIcons.users, size: 10, color: AppColors.textTertiary),
+                            const Icon(
+                              LucideIcons.users,
+                              size: 10,
+                              color: AppColors.textTertiary,
+                            ),
                             const SizedBox(width: 2),
                             Text(
                               '${group.memberCount}',
-                              style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
                           ],
                         ),
@@ -410,10 +510,15 @@ class _GroupCard extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 3),
-                Text(group.description,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(fontSize: 10, color: AppColors.textSecondary)),
+                Text(
+                  group.description,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ],
             ),
           ),
@@ -447,7 +552,14 @@ class _EventsSection extends ConsumerWidget {
     final tournaments = ref.watch(tournamentsProvider);
     final hasData = trials.items.isNotEmpty || tournaments.items.isNotEmpty;
     if (!hasData) {
-      return Column(children: [emptyHint('No upcoming events yet — trials and tournaments will show here.'), const SizedBox(height: 100)]);
+      return Column(
+        children: [
+          emptyHint(
+            'No upcoming events yet — trials and tournaments will show here.',
+          ),
+          const SizedBox(height: 100),
+        ],
+      );
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -485,12 +597,31 @@ class _EventWideRow extends StatelessWidget {
   final String location;
   final String typeLabel;
   final VoidCallback onTap;
-  const _EventWideRow({required this.title, required this.date, required this.location, required this.typeLabel, required this.onTap});
+  const _EventWideRow({
+    required this.title,
+    required this.date,
+    required this.location,
+    required this.typeLabel,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final d = date;
-    final months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    final months = [
+      'JAN',
+      'FEB',
+      'MAR',
+      'APR',
+      'MAY',
+      'JUN',
+      'JUL',
+      'AUG',
+      'SEP',
+      'OCT',
+      'NOV',
+      'DEC',
+    ];
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -513,10 +644,22 @@ class _EventWideRow extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  Text(d != null ? months[d.month - 1] : 'TBA',
-                      style: GoogleFonts.sora(fontSize: 8.5, fontWeight: FontWeight.w800, color: AppColors.primaryDarker)),
-                  Text(d != null ? '${d.day}' : '–',
-                      style: GoogleFonts.sora(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.ink)),
+                  Text(
+                    d != null ? months[d.month - 1] : 'TBA',
+                    style: GoogleFonts.sora(
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primaryDarker,
+                    ),
+                  ),
+                  Text(
+                    d != null ? '${d.day}' : '–',
+                    style: GoogleFonts.sora(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.ink,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -525,20 +668,35 @@ class _EventWideRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.ink)),
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.ink,
+                    ),
+                  ),
                   const SizedBox(height: 3),
                   Row(
                     children: [
-                      const Icon(LucideIcons.mapPin, size: 10, color: AppColors.textTertiary),
+                      const Icon(
+                        LucideIcons.mapPin,
+                        size: 10,
+                        color: AppColors.textTertiary,
+                      ),
                       const SizedBox(width: 3),
                       Flexible(
-                        child: Text(location,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(fontSize: 9.5, color: AppColors.textSecondary)),
+                        child: Text(
+                          location,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontSize: 9.5,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -588,7 +746,8 @@ class _FeedSectionContentState extends State<_FeedSectionContent> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       // Could trigger pagination here
     }
   }
@@ -652,23 +811,26 @@ class _FeedSectionContentState extends State<_FeedSectionContent> {
                         separatorBuilder: (_, _) => const SizedBox(height: 12),
                         itemBuilder: (context, index) {
                           final post = posts[index];
-                      return CommunityPostCard(
-                        post: post,
-                        onLike: () => togglePostLike(ref, post.id),
-                        onComment: () => context.push('/post-detail/${post.id}'),
-                        onOpen: () => context.push('/post-detail/${post.id}'),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 100),
-                ],
-              );
-            },
+                          return CommunityPostCard(
+                            post: post,
+                            onLike: () => togglePostLike(ref, post.id),
+                            onComment: () =>
+                                context.push('/post-detail/${post.id}'),
+                            onOpen: () =>
+                                context.push('/post-detail/${post.id}'),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 100),
+                    ],
+                  );
+                },
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
-  });
   }
 }
 
@@ -676,10 +838,13 @@ class _FeedSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: List.generate(3, (index) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: SkeletonWidget.rectangular(height: 180, radius: 16),
-      )),
+      children: List.generate(
+        3,
+        (index) => Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: SkeletonWidget.rectangular(height: 180, radius: 16),
+        ),
+      ),
     );
   }
 }
@@ -701,7 +866,8 @@ class _SuggestedFollowRow extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<_SuggestedFollowRow> createState() => _SuggestedFollowRowState();
+  ConsumerState<_SuggestedFollowRow> createState() =>
+      _SuggestedFollowRowState();
 }
 
 class _SuggestedFollowRowState extends ConsumerState<_SuggestedFollowRow> {
@@ -720,9 +886,15 @@ class _SuggestedFollowRowState extends ConsumerState<_SuggestedFollowRow> {
     if (!mounted) return;
     if (!ok) {
       setState(() => _followed = !_followed);
-      SnackBarUtils.showError(context, 'Could not ${_followed ? 'follow' : 'unfollow'}');
+      SnackBarUtils.showError(
+        context,
+        'Could not ${_followed ? 'follow' : 'unfollow'}',
+      );
     } else {
-      SnackBarUtils.showSuccess(context, _followed ? 'Following' : 'Unfollowed');
+      SnackBarUtils.showSuccess(
+        context,
+        _followed ? 'Following' : 'Unfollowed',
+      );
     }
     if (mounted) setState(() => _busy = false);
   }
@@ -734,7 +906,10 @@ class _SuggestedFollowRowState extends ConsumerState<_SuggestedFollowRow> {
       role: widget.role,
       photoUrl: widget.photoUrl,
       ctaLabel: _followed ? 'Following' : 'Follow',
-      onTap: () => context.push('/view-profile', extra: {'type': 'athlete', 'id': widget.athleteId}),
+      onTap: () => context.push(
+        '/view-profile',
+        extra: {'type': 'athlete', 'id': widget.athleteId},
+      ),
       onCtaTap: _toggle,
     );
   }

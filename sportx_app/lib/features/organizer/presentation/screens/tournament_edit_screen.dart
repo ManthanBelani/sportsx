@@ -7,7 +7,9 @@ import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
 import 'package:sportx_app/features/organizer/presentation/widgets/external_registration_field.dart';
+import 'package:sportx_app/features/trial/presentation/providers/unified_events_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
+import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -163,6 +165,11 @@ class _TournamentEditScreenState extends ConsumerState<TournamentEditScreen> {
         await ref.read(dioProvider).put('/me/tournaments/${widget.tournamentId}/categories', data: {'categories': cats});
       }
       ref.invalidate(myTournamentsProvider);
+      // The My Events board, the dashboard and the event detail page all
+      // render this tournament — keep them in sync with the edit.
+      ref.invalidate(myEventsProvider);
+      ref.invalidate(tournamentDetailProvider);
+      ref.invalidate(organizerAnalyticsProvider);
       if (mounted) {
         SnackBarUtils.showSuccess(context, 'Tournament updated');
         context.pop();

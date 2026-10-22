@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/features/trial/presentation/providers/unified_events_provider.dart';
 import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 
@@ -39,12 +40,14 @@ class ProviderTrialActions {
   Future<void> create(Map<String, dynamic> data) async {
     await _dio.post('/me/trials', data: data);
     _ref.read(myTrialsProvider.notifier).refresh();
+    _ref.invalidate(myEventsProvider);
   }
 
   Future<bool> publish(String id) async {
     try {
       await _dio.post('/me/trials/$id/publish');
       _ref.read(myTrialsProvider.notifier).refresh();
+      _ref.invalidate(myEventsProvider);
       return true;
     } on DioException {
       return false;
@@ -55,6 +58,7 @@ class ProviderTrialActions {
     try {
       await _dio.post('/me/trials/$id/close');
       _ref.read(myTrialsProvider.notifier).refresh();
+      _ref.invalidate(myEventsProvider);
       return true;
     } on DioException {
       return false;

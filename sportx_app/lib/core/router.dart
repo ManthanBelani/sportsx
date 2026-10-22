@@ -53,7 +53,10 @@ import 'package:sportx_app/features/coach/presentation/screens/coach_dashboard_s
 import 'package:sportx_app/features/academy/presentation/screens/academy_dashboard_screen.dart';
 import 'package:sportx_app/features/organizer/presentation/screens/organizer_analytics_screen.dart';
 import 'package:sportx_app/features/organizer/presentation/screens/organizer_dashboard_screen.dart';
-import 'package:sportx_app/features/organizer/presentation/screens/organizer_profile_screen.dart';
+import 'package:sportx_app/features/organizer/presentation/screens/organizer_event_management_screen.dart';
+import 'package:sportx_app/features/organizer/presentation/screens/organizer_profile_edit_screen.dart';
+import 'package:sportx_app/features/organizer/presentation/screens/organizer_profile_view_screen.dart';
+import 'package:sportx_app/features/organizer/presentation/screens/create_poll_screen.dart';
 import 'package:sportx_app/features/organizer/presentation/screens/tournament_edit_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/enquiry_inbox_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/enquiry_detail_screen.dart';
@@ -408,6 +411,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/academy-collaborations', builder: (context, state) => const AcademyCollaborationsScreen()),
       GoRoute(path: '/post-announcement', builder: (context, state) => const PostAnnouncementScreen()),
       GoRoute(path: '/organizer-team', builder: (context, state) => const OrganizerTeamScreen()),
+      GoRoute(path: '/organizer-go-live', builder: (context, state) => const CoachGoLiveScreen()),
+      GoRoute(path: '/create-poll', builder: (context, state) => const CreatePollScreen()),
+      GoRoute(path: '/organizer-event/:id', builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return OrganizerEventManagementScreen(tournamentId: id);
+      }),
       GoRoute(path: '/event-gallery', builder: (context, state) => const MediaGalleryScreen()),
       GoRoute(path: '/my-collaborations', builder: (context, state) => const AcademyCollaborationsScreen()),
       GoRoute(path: '/scout-compare', builder: (context, state) {
@@ -511,7 +520,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         );
       }),
       GoRoute(path: '/organizer-analytics', builder: (context, state) => const OrganizerAnalyticsScreen()),
-      GoRoute(path: '/organizer-profile', builder: (context, state) => const OrganizerProfileScreen()),
+      GoRoute(path: '/organizer-profile', builder: (context, state) => const OrganizerProfileViewScreen()),
+      GoRoute(path: '/organizer-profile-edit', builder: (context, state) => const OrganizerProfileEditScreen()),
       GoRoute(path: '/edit-tournament/:id', builder: (context, state) => TournamentEditScreen(tournamentId: state.pathParameters['id']!)),
       GoRoute(path: '/sponsor-dashboard', redirect: (_, __) => '/opportunities'),
       GoRoute(path: '/athlete-discovery', redirect: (_, __) => '/scout-discovery'),

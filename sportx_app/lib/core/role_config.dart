@@ -136,16 +136,25 @@ class RoleConfig {
   });
 }
 
-/// Shared "More" rows appended for every non-admin role.
+/// Shared "More" rows appended for every non-admin role (group A/B of the
+/// design board: Saved → Messages).
 const List<MoreRow> _sharedMoreRows = [
   MoreRow(label: 'Saved', icon: LucideIcons.bookmark, route: '/saved'),
   MoreRow(label: 'My Activity', icon: LucideIcons.activity, route: '/activity-hub'),
   MoreRow(label: 'Notifications', icon: LucideIcons.bell, route: '/notifications'),
   MoreRow(label: 'Messages', icon: LucideIcons.messageCircle, route: '/chat-list'),
+];
+
+/// Shared "More" rows that close the list (group C of the design board).
+const List<MoreRow> _sharedMoreRowsTail = [
   MoreRow(label: 'Settings & Privacy', icon: LucideIcons.settings, route: '/settings'),
   MoreRow(label: 'Help & Support', icon: LucideIcons.circleHelp, route: '/help-support'),
-  MoreRow(label: 'About SportX', icon: LucideIcons.info, route: '/legal'),
 ];
+
+/// Optional last row — shown for every role except the organizer, whose
+/// "More" board stops at Help & Support.
+const MoreRow _aboutSportXRow =
+    MoreRow(label: 'About SportX', icon: LucideIcons.info, route: '/legal');
 
 RoleConfig roleConfigFor(SportXRole role) {
   switch (role) {
@@ -171,6 +180,8 @@ RoleConfig roleConfigFor(SportXRole role) {
           MoreRow(label: 'My Opportunities', icon: LucideIcons.megaphone, route: '/my-opportunities'),
           MoreRow(label: 'My Registrations', icon: LucideIcons.clipboardList, route: '/my-registrations'),
           ..._sharedMoreRows,
+          ..._sharedMoreRowsTail,
+          _aboutSportXRow,
         ],
         discoverLinks: [
           DiscoverLink(label: 'My Registrations', icon: LucideIcons.clipboardList, route: '/my-registrations'),
@@ -204,6 +215,8 @@ RoleConfig roleConfigFor(SportXRole role) {
           MoreRow(label: 'My Opportunities', icon: LucideIcons.megaphone, route: '/my-opportunities'),
           MoreRow(label: 'My Connections', icon: LucideIcons.users, route: '/my-connections'),
           ..._sharedMoreRows,
+          ..._sharedMoreRowsTail,
+          _aboutSportXRow,
         ],
         discoverLinks: [
           DiscoverLink(label: 'My Training Programs', icon: LucideIcons.dumbbell, route: '/my-programs'),
@@ -241,6 +254,8 @@ RoleConfig roleConfigFor(SportXRole role) {
           MoreRow(label: 'Collaborations', icon: LucideIcons.handshake, route: '/academy-collaborations'),
           MoreRow(label: 'Enquiries', icon: LucideIcons.inbox, route: '/enquiry-inbox'),
           ..._sharedMoreRows,
+          ..._sharedMoreRowsTail,
+          _aboutSportXRow,
         ],
         discoverLinks: [
           DiscoverLink(label: 'Our Athletes', icon: LucideIcons.users, route: '/showcase-athletes'),
@@ -253,29 +268,37 @@ RoleConfig roleConfigFor(SportXRole role) {
     case SportXRole.organizer:
       return const RoleConfig(
         role: SportXRole.organizer,
-        label: 'Organizer',
+        label: 'Event Organizer',
         accent: AppColors.organizer,
         homeRoute: '/organizer-dashboard',
         onboardingRoute: '/organizer-onboarding',
         profileRoute: '/organizer-profile',
+        // Design board · org-create: 8 rows, in order, with the pastel icon
+        // colours of the board (red / amber / green / purple / pink / red /
+        // blue / green).
         createTiles: [
-          CreateTile(id: 'event', label: 'Create Event', subtitle: 'Post a new tournament or trial', icon: LucideIcons.calendarPlus, tintBg: Color(0xFFFCE7F3), tintFg: AppColors.organizer, route: '/post-tournament'),
-          CreateTile(id: 'opportunity', label: 'Create Opportunity', subtitle: 'Scholarships & sponsorships', icon: LucideIcons.megaphone, route: '/post-opportunity'),
-          CreateTile(id: 'venue', label: 'Add Venue', subtitle: 'Showcase a ground or court', icon: LucideIcons.building2, tintBg: Color(0xFFDBEAFE), tintFg: AppColors.info, route: '/post-facility', priority: CreatePriority.p1),
-          CreateTile(id: 'post', label: 'Create Post', subtitle: 'Share an update', icon: LucideIcons.penLine, tintBg: Color(0xFFE3EFFF), tintFg: AppColors.info, route: '/create-post'),
-          CreateTile(id: 'media', label: 'Photos / Videos', subtitle: 'Add to your gallery', icon: LucideIcons.imagePlus, tintBg: Color(0xFFFEE2E2), tintFg: AppColors.error, route: '/media-gallery'),
+          CreateTile(id: 'event', label: 'Create Event', subtitle: 'Post trials, tournaments or camps', icon: LucideIcons.calendarPlus, tintBg: Color(0xFFFDE8E8), tintFg: Color(0xFFD9534F), route: '/post-tournament'),
+          CreateTile(id: 'opportunity', label: 'Create Opportunity', subtitle: 'Post scholarships or sponsorships', icon: LucideIcons.megaphone, tintBg: Color(0xFFFFF3D6), tintFg: Color(0xFF8A6D00), route: '/post-opportunity'),
+          CreateTile(id: 'venue', label: 'Add Venue', subtitle: 'List your ground, court or facility', icon: LucideIcons.building2, tintBg: Color(0xFFDFF5E3), tintFg: Color(0xFF3FA55C), route: '/post-facility'),
+          CreateTile(id: 'announcement', label: 'Post Announcement', subtitle: 'Share important updates', icon: LucideIcons.megaphone, tintBg: Color(0xFFECE6FB), tintFg: Color(0xFF8A6AEA), route: '/post-announcement'),
+          CreateTile(id: 'media', label: 'Upload Photo / Video', subtitle: 'Share event highlights', icon: LucideIcons.imagePlus, tintBg: Color(0xFFFCE7F3), tintFg: AppColors.pink, route: '/media-gallery'),
+          CreateTile(id: 'golive', label: 'Go Live / Stream', subtitle: 'Live streaming for your event', icon: LucideIcons.radio, tintBg: Color(0xFFFDE8E8), tintFg: Color(0xFFD9534F), route: '/organizer-go-live', priority: CreatePriority.p1),
+          CreateTile(id: 'poll', label: 'Create Poll', subtitle: 'Get feedback from participants', icon: LucideIcons.barChart2, tintBg: Color(0xFFE3EFFF), tintFg: Color(0xFF3B82F6), route: '/create-poll', priority: CreatePriority.p1),
+          CreateTile(id: 'staff', label: 'Add Staff / Organiser', subtitle: 'Add team members to your event', icon: LucideIcons.users, tintBg: Color(0xFFDFF5E3), tintFg: Color(0xFF3FA55C), route: '/organizer-team', priority: CreatePriority.p1),
         ],
+        // Design board · org-more: menu A (8 role rows) → Saved / My Activity →
+        // Notifications / Messages → Settings & Privacy / Help & Support.
         moreRows: [
           MoreRow(label: 'My Profile', icon: LucideIcons.user, route: '/organizer-profile'),
           MoreRow(label: 'My Events', icon: LucideIcons.calendarDays, route: '/my-tournaments'),
-          MoreRow(label: 'Registrations', icon: LucideIcons.clipboardList, route: '/registration-management'),
-          MoreRow(label: 'My Venues', icon: LucideIcons.building2, route: '/facilities'),
-          MoreRow(label: 'Analytics', icon: LucideIcons.chartLine, route: '/organizer-analytics'),
-          MoreRow(label: 'Post Announcement', icon: LucideIcons.megaphone, route: '/post-announcement'),
-          MoreRow(label: 'My Team', icon: LucideIcons.users, route: '/organizer-team'),
-          MoreRow(label: 'Collaborations', icon: LucideIcons.handshake, route: '/my-collaborations'),
+          MoreRow(label: 'Registrations & Participants', icon: LucideIcons.clipboardList, route: '/registration-management'),
           MoreRow(label: 'My Opportunities', icon: LucideIcons.megaphone, route: '/my-opportunities'),
+          MoreRow(label: 'My Venues', icon: LucideIcons.building2, route: '/facilities'),
+          MoreRow(label: 'My Team / Staff', icon: LucideIcons.users, route: '/organizer-team'),
+          MoreRow(label: 'My Analytics', icon: LucideIcons.chartLine, route: '/organizer-analytics'),
+          MoreRow(label: 'My Collaborations', icon: LucideIcons.handshake, route: '/my-collaborations'),
           ..._sharedMoreRows,
+          ..._sharedMoreRowsTail,
         ],
         discoverLinks: [
           DiscoverLink(label: 'My Events', icon: LucideIcons.calendar, route: '/my-tournaments'),
@@ -308,6 +331,8 @@ RoleConfig roleConfigFor(SportXRole role) {
           MoreRow(label: 'My Opportunities', icon: LucideIcons.megaphone, route: '/my-opportunities'),
           MoreRow(label: 'My Connections', icon: LucideIcons.users, route: '/scout-connections'),
           ..._sharedMoreRows,
+          ..._sharedMoreRowsTail,
+          _aboutSportXRow,
         ],
         discoverLinks: [
           DiscoverLink(label: 'Discover Talents', icon: LucideIcons.search, route: '/scout-discovery'),
@@ -335,6 +360,8 @@ RoleConfig roleConfigFor(SportXRole role) {
           MoreRow(label: 'My Sponsorships', icon: LucideIcons.handCoins, route: '/my-opportunities'),
           MoreRow(label: 'Discover Athletes', icon: LucideIcons.search, route: '/scout-discovery'),
           ..._sharedMoreRows,
+          ..._sharedMoreRowsTail,
+          _aboutSportXRow,
         ],
         discoverLinks: [
           DiscoverLink(label: 'Discover Athletes', icon: LucideIcons.search, route: '/scout-discovery'),

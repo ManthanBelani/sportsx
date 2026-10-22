@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/features/academy/presentation/providers/academy_provider.dart';
+import 'package:sportx_app/features/trial/presentation/providers/unified_events_provider.dart';
 import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 
@@ -50,10 +52,13 @@ final tournamentPendingRequestsProvider =
   return List<Map<String, dynamic>>.from(data as List);
 });
 
-/// Registrations filtered by approval_status (per_page 100 to cover pagination for organizer)
+/// Registrations filtered by approval_status (per_page 100 to cover pagination for organizer).
+/// A status of `'all'` omits the filter and returns every registration.
 final tournamentRegistrationsByStatusProvider =
     FutureProvider.family<List<Map<String, dynamic>>, ({String tournamentId, String status})>((ref, args) async {
-  final resp = await ref.watch(dioProvider).get('/tournaments/${args.tournamentId}/registrations', queryParameters: {'approval_status': args.status, 'per_page': 100});
+  final query = <String, dynamic>{'per_page': 100};
+  if (args.status != 'all') query['approval_status'] = args.status;
+  final resp = await ref.watch(dioProvider).get('/tournaments/${args.tournamentId}/registrations', queryParameters: query);
   final data = resp.data['data'];
   return List<Map<String, dynamic>>.from(data as List);
 });
@@ -183,6 +188,9 @@ class OrganizerAnalytics {
   final int totalRegistered;
   final double utilizationPercent;
   final int spotsLeft;
+  final int views;
+  final List<({String date, int count})> dailySeries;
+  final List<Map<String, dynamic>> topSources;
   final Map<String, dynamic>? deadlineAlert;
   final List<Map<String, dynamic>> categoryBreakdown;
 
@@ -204,11 +212,22 @@ class OrganizerAnalytics {
     required this.totalRegistered,
     required this.utilizationPercent,
     required this.spotsLeft,
+    this.views = 0,
+    this.dailySeries = const [],
+    this.topSources = const [],
     this.deadlineAlert,
     required this.categoryBreakdown,
   });
 
   factory OrganizerAnalytics.fromJson(Map<String, dynamic> json) {
+    final series = <({String date, int count})>[];
+    for (final row in (json['daily_series'] as List? ?? [])) {
+      if (row is! Map) continue;
+      series.add((
+        date: (row['date'] ?? '').toString(),
+        count: (row['count'] is num) ? (row['count'] as num).toInt() : 0,
+      ));
+    }
     return OrganizerAnalytics(
       totalTournaments: (json['tournaments']?['total'] ?? 0) as int,
       publishedTournaments: (json['tournaments']?['published'] ?? 0) as int,
@@ -227,9 +246,25 @@ class OrganizerAnalytics {
       totalRegistered: (json['capacity']?['total_registered'] ?? 0) as int,
       utilizationPercent: ((json['capacity']?['utilization_percent'] ?? 0) as num).toDouble(),
       spotsLeft: (json['capacity']?['spots_left'] ?? 0) as int,
+      views: (json['views'] ?? 0) is num ? ((json['views'] ?? 0) as num).toInt() : 0,
+      dailySeries: series,
+      topSources: (json['top_sources'] as List? ?? [])
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList(),
       deadlineAlert: json['deadline_alert'] as Map<String, dynamic>?,
       categoryBreakdown: (json['category_breakdown'] as List? ?? []).map((e) => Map<String, dynamic>.from(e as Map)).toList(),
     );
+  }
+
+  /// Total events the organizer runs (tournaments + trials) — the "Events"
+  /// tile of the design board's home stat row.
+  int get totalEvents => totalTournaments + totalTrials;
+
+  /// Series slice for a range pill (7D / 30D / 3M / 1Y) of the analytics card.
+  List<({String date, int count})> seriesFor(int days) {
+    if (dailySeries.isEmpty) return const [];
+    if (days <= dailySeries.length) return dailySeries.sublist(dailySeries.length - days);
+    return dailySeries;
   }
 }
 
@@ -250,6 +285,7 @@ class ProviderTournamentActions {
     try {
       await _dio.post('/me/tournaments', data: data);
       _ref.read(myTournamentsProvider.notifier).refresh();
+      _ref.invalidate(myEventsProvider);
       return (true, null);
     } catch (e) {
       return (false, _msg(e));
@@ -260,6 +296,7 @@ class ProviderTournamentActions {
     try {
       await _dio.post('/me/tournaments/$id/publish');
       _ref.read(myTournamentsProvider.notifier).refresh();
+      _ref.invalidate(myEventsProvider);
       return (true, null);
     } catch (e) {
       return (false, _msg(e));
@@ -270,6 +307,7 @@ class ProviderTournamentActions {
     try {
       await _dio.post('/me/tournaments/$id/close');
       _ref.read(myTournamentsProvider.notifier).refresh();
+      _ref.invalidate(myEventsProvider);
       return (true, null);
     } catch (e) {
       return (false, _msg(e));
@@ -331,6 +369,7 @@ class ProviderTournamentActions {
     try {
       await _dio.patch('/registrations/trials/$registrationId/approve');
       _ref.invalidate(organizerAnalyticsProvider);
+      _ref.invalidate(trialRegistrantsProvider);
       return (true, null);
     } catch (e) {
       return (false, _msg(e));
@@ -341,6 +380,7 @@ class ProviderTournamentActions {
     try {
       await _dio.patch('/registrations/trials/$registrationId/reject', data: {'rejection_reason': reason});
       _ref.invalidate(organizerAnalyticsProvider);
+      _ref.invalidate(trialRegistrantsProvider);
       return (true, null);
     } catch (e) {
       return (false, _msg(e));

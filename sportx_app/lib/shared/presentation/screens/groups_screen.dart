@@ -1,70 +1,72 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/features/social/presentation/providers/groups_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_cards.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 
-class GroupItem {
-  final String id;
-  final String name;
-  final String category;
-  final int members;
-  final bool joined;
-  const GroupItem({
-    required this.id,
-    required this.name,
-    required this.category,
-    required this.members,
-    this.joined = false,
-  });
-}
-
-/// S.13 Community — Groups (P2). Presentation-first: local join toggling.
-/// Wire to a `groupsProvider` when the community API lands.
-class GroupsScreen extends StatefulWidget {
+/// S.13 Community — Groups. Lists the real groups from the API with
+/// server-backed join/leave (the previous build rendered hardcoded samples).
+class GroupsScreen extends ConsumerWidget {
   const GroupsScreen({super.key});
 
   @override
-  State<GroupsScreen> createState() => _GroupsScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final groupsAsync = ref.watch(groupsProvider);
 
-class _GroupsScreenState extends State<GroupsScreen> {
-  static const _sample = [
-    GroupItem(id: 'g1', name: 'Cricket Coaches India', category: 'Professional', members: 1240),
-    GroupItem(id: 'g2', name: 'U-16 Football Parents', category: 'Interest', members: 486),
-    GroupItem(id: 'g3', name: 'Gujarat Athletics', category: 'Regional', members: 932, joined: true),
-  ];
-
-  final Set<String> _joined = {};
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: const SportXTopBar(title: 'Groups', showBack: true),
-      body: _sample.isEmpty
-          ? const EmptyState(
-              icon: LucideIcons.users,
-              title: 'No groups yet',
-              message: 'Interest groups will appear here.',
-            )
-          : ListView(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-              children: [
-                for (final g in _sample) _card(context, g),
-              ],
-            ),
+      body: RefreshIndicator(
+        onRefresh: () async => ref.invalidate(groupsProvider),
+        child: groupsAsync.when(
+          loading: () => const GenericListSkeleton(),
+          error: (e, _) => ListView(
+            children: [
+              const SizedBox(height: 100),
+              const EmptyState(
+                icon: LucideIcons.users,
+                title: 'Could not load groups',
+                message: 'Pull to retry.',
+              ),
+              Center(
+                child: SecondaryButton(
+                  label: 'Retry',
+                  onPressed: () => ref.invalidate(groupsProvider),
+                ),
+              ),
+            ],
+          ),
+          data: (groups) => groups.isEmpty
+              ? ListView(
+                  children: const [
+                    SizedBox(height: 100),
+                    EmptyState(
+                      icon: LucideIcons.users,
+                      title: 'No groups yet',
+                      message: 'Interest groups will appear here.',
+                    ),
+                  ],
+                )
+              : ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                  children: [for (final g in groups) _card(context, ref, g)],
+                ),
+        ),
+      ),
     );
   }
 
-  Widget _card(BuildContext context, GroupItem g) {
-    final joined = g.joined || _joined.contains(g.id);
+  Widget _card(BuildContext context, WidgetRef ref, Group g) {
     return SportXCard(
       margin: const EdgeInsets.only(bottom: 12),
-      onTap: () => context.push('/group-detail',
-          extra: {'id': g.id, 'name': g.name}),
+      onTap: () =>
+          context.push('/group-detail', extra: {'id': g.id, 'name': g.name}),
       child: Row(
         children: [
           Container(
@@ -75,38 +77,63 @@ class _GroupsScreenState extends State<GroupsScreen> {
               borderRadius: BorderRadius.circular(14),
             ),
             alignment: Alignment.center,
-            child: const Icon(LucideIcons.users,
-                size: 22, color: AppColors.info),
+            child: const Icon(
+              LucideIcons.users,
+              size: 22,
+              color: AppColors.info,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(g.name,
-                    style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.ink)),
+                Text(
+                  g.name,
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.ink,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text('${g.category} · ${g.members} members',
-                    style: GoogleFonts.inter(
-                        fontSize: 12, color: AppColors.textSecondary)),
+                Text(
+                  '${_typeLabel(g.type)} · ${g.memberCount} members',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ],
             ),
           ),
-          if (joined)
+          if (g.isMember)
             const StatusPill(label: 'JOINED', kind: PillKind.ok)
           else
             PrimaryButton(
               label: 'Join',
               small: true,
-              onPressed: () => setState(() => _joined.add(g.id)),
+              onPressed: () async {
+                final ok = await joinGroup(ref, g.id);
+                if (!context.mounted) return;
+                if (ok) {
+                  SnackBarUtils.showSuccess(context, 'Joined ${g.name}');
+                } else {
+                  SnackBarUtils.showError(context, 'Could not join the group.');
+                }
+              },
             ),
         ],
       ),
     );
   }
+
+  String _typeLabel(String type) => switch (type) {
+    'coaching' => 'Coaching',
+    'athletes' => 'Athletes',
+    'trials' => 'Trials',
+    _ => 'General',
+  };
 }
 
 /// S.14 Group Detail (P2).
@@ -129,27 +156,25 @@ class GroupDetailScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name,
-                    style: GoogleFonts.sora(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.ink)),
+                Text(
+                  name,
+                  style: GoogleFonts.sora(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.ink,
+                  ),
+                ),
                 const SizedBox(height: 6),
-                Text('Members and posts from this group appear here.',
-                    style: GoogleFonts.inter(
-                        fontSize: 13, color: AppColors.textSecondary)),
+                Text(
+                  'Members and posts from this group appear here.',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
                 const SizedBox(height: 14),
                 Row(
                   children: [
-                    Expanded(
-                      child: PrimaryButton(
-                        label: 'Joined',
-                        icon: LucideIcons.check,
-                        small: true,
-                        onPressed: () {},
-                      ),
-                    ),
-                    const SizedBox(width: 10),
                     Expanded(
                       child: SecondaryButton(
                         label: 'Share',

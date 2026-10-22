@@ -86,6 +86,10 @@ class Tournament {
   final bool isSaved;
   final List<TournamentCategory> categories;
 
+  /// Banner image resolved by the API (`banner_url`) — used by the organizer
+  /// event cards on the design board.
+  final String? bannerUrl;
+
   Tournament({
     required this.id,
     required this.title,
@@ -120,6 +124,7 @@ class Tournament {
     this.ageGroup,
     this.isSaved = false,
     this.categories = const [],
+    this.bannerUrl,
   });
 
   factory Tournament.fromJson(Map<String, dynamic> json) {
@@ -159,6 +164,11 @@ class Tournament {
       city: json['city'] != null ? City.fromJson(json['city']) : null,
       ageGroup: json['age_group'] != null ? AgeGroup.fromJson(json['age_group']) : null,
       isSaved: json['is_saved'] == true || json['is_saved'] == 1,
+      bannerUrl: (() {
+        final b = json['banner_url'] ?? json['poster_url'];
+        final s = b?.toString();
+        return (s == null || s.isEmpty) ? null : s;
+      })(),
       categories: (json['categories'] as List? ?? const [])
           .whereType<Map>()
           .map((c) => TournamentCategory.fromJson(Map<String, dynamic>.from(c)))

@@ -19,7 +19,7 @@ class ProviderTournamentController extends Controller
         // Canonical: organizer_id FKs organizer_profiles.id (see migration).
         // Legacy rows created via store() used user_id — match both for back-compat
         // (same dual-lookup as OrganizerAnalyticsController).
-        $query = Tournament::with(['sport', 'city', 'categories'])->withRegistrationCounts()
+        $query = Tournament::with(['sport', 'city', 'bannerMedia', 'categories'])->withRegistrationCounts()
             ->orderBy('start_date', 'desc');
         $profileId = $user->organizerProfile?->id;
         if ($profileId) {
