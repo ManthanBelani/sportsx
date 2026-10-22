@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -7,10 +9,13 @@ import 'package:share_plus/share_plus.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/features/coach/presentation/widgets/coach_enrollment_section.dart';
 import 'package:sportx_app/features/connections/presentation/providers/follow_block_provider.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/chat/presentation/providers/chat_provider.dart';
 import 'package:sportx_app/features/saved/presentation/providers/saved_provider.dart';
+import 'package:sportx_app/shared/models/coach.dart';
+import 'package:sportx_app/shared/presentation/widgets/home_kit.dart';
 import 'package:sportx_app/shared/presentation/widgets/social_links.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
@@ -370,6 +375,18 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
                           const SizedBox(height: 24),
                           _buildAchievementsSection(),
                           const SizedBox(height: 24),
+                          // Coach-only sections (same features the dedicated
+                          // coach screen used to show, now on the shared profile).
+                          if (widget.type == 'coach') ...[
+                            _buildCredentialsSection(),
+                            const SizedBox(height: 24),
+                            _buildFacilitiesSection(),
+                            const SizedBox(height: 24),
+                            _buildShowcaseAthletesSection(),
+                            const SizedBox(height: 24),
+                            CoachEnrollmentSection(coach: Coach.fromJson(_profileData!)),
+                            const SizedBox(height: 24),
+                          ],
                           // Tournament history / stats only if backend provides data; hide otherwise to avoid fake UI
                           if (widget.type == 'athlete' && (_profileData!['tournament_history'] is List && (_profileData!['tournament_history'] as List).isNotEmpty)) ...[
                             _buildTournamentHistorySection(),
@@ -558,9 +575,24 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
             children: [
               Icon(LucideIcons.briefcase, size: 16, color: AppColors.textSecondary),
               const SizedBox(width: 4),
-              Text(
-                '${_labelOf(_profileData!['experience']) ?? 0} years experience',
-                style: TextStyle(color: AppColors.textSecondary),
+              Flexible(
+                child: Text(
+                  '${_labelOf(_profileData!['experience']) ?? 0} years experience',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Icon(LucideIcons.wallet, size: 16, color: AppColors.textSecondary),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  '₹${_labelOf(_profileData!['hourly_rate']) ?? 0}/hour',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
               ),
             ],
           ),
@@ -624,15 +656,14 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildStatItem('$postsCount', 'Posts', LucideIcons.fileText),
+          Expanded(child: _buildStatItem('$postsCount', 'Posts', LucideIcons.fileText)),
           Container(width: 1, height: 32, color: AppColors.border),
-          _buildStatItem('$followersCount', 'Followers', LucideIcons.userCheck),
+          Expanded(child: _buildStatItem('$followersCount', 'Followers', LucideIcons.userCheck)),
           Container(width: 1, height: 32, color: AppColors.border),
-          _buildStatItem('$followingCount', 'Following', LucideIcons.userPlus),
+          Expanded(child: _buildStatItem('$followingCount', 'Following', LucideIcons.userPlus)),
           Container(width: 1, height: 32, color: AppColors.border),
-          _buildStatItem('$connectionsCount', 'Connects', LucideIcons.users),
+          Expanded(child: _buildStatItem('$connectionsCount', 'Connects', LucideIcons.users)),
         ],
       ),
     );
@@ -663,8 +694,32 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
     );
   }
 
+  /// Normalizes a list-shaped profile field: the backend stores some of them
+  /// in JSON columns that may hold a bare string (onboarding writes plain
+  /// text), so a payload can contain a String (possibly JSON-encoded) instead
+  /// of a List.
+  List<dynamic> _asList(dynamic raw) {
+    if (raw is List) return raw;
+    if (raw is String) {
+      final s = raw.trim();
+      if (s.startsWith('[') || s.startsWith('{')) {
+        try {
+          final decoded = jsonDecode(s);
+          if (decoded is List) return decoded;
+        } catch (_) {}
+      }
+      if (s.isEmpty) return const [];
+      return s
+          .split('\n')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
+    }
+    return const [];
+  }
+
   Widget _buildAchievementsSection() {
-    final achievements = _profileData!['achievements'] as List? ?? [];
+    final achievements = _asList(_profileData!['achievements']);
     if (achievements.isEmpty) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -697,6 +752,132 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCredentialsSection() {
+    final credentials = _profileData!['credentials'] as List? ?? [];
+    if (credentials.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Credentials', style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 12),
+        ...credentials.map((credential) {
+          final m = credential is Map ? credential : {'title': credential.toString()};
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border),
+                boxShadow: SportXShadows.e1,
+              ),
+              child: Row(
+                children: [
+                  const Icon(LucideIcons.badgeCheck, color: AppColors.success, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _labelOf(m['title']) ?? '',
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        Text(
+                          _labelOf(m['year']) ?? '',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildFacilitiesSection() {
+    final facilities = _profileData!['facilities'] as List? ?? [];
+    if (facilities.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Facilities & Programs', style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: facilities.whereType<Map>().map((facility) {
+            final isProgram = facility['type'] == 'program';
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: isProgram ? AppColors.infoLight : Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isProgram ? AppColors.primary : AppColors.border,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    isProgram ? LucideIcons.calendar : LucideIcons.building2,
+                    size: 16,
+                    color: isProgram ? AppColors.primary : AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    _labelOf(facility['name']) ?? '',
+                    style: TextStyle(
+                      color: isProgram ? AppColors.primary : AppColors.textPrimary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  /// Associated athletes of a coach — rendered with the athlete list-row
+  /// design (PersonRowCard); tapping opens that athlete's profile.
+  Widget _buildShowcaseAthletesSection() {
+    final athletes = _profileData!['showcase_athletes'] as List? ?? [];
+    if (athletes.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Associated Athletes', style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 12),
+        ...athletes.whereType<Map>().map((athlete) {
+          final id = athlete['id']?.toString() ?? '';
+          return PersonRowCard(
+            name: _labelOf(athlete['name']) ?? 'Athlete',
+            role: athlete['sport'] is Map && athlete['sport']['name'] != null
+                ? athlete['sport']['name'].toString()
+                : 'Athlete',
+            photoUrl: MediaUtils.resolveNullable(athlete['profile_photo_url']?.toString()),
+            ctaLabel: 'View',
+            onTap: id.isEmpty
+                ? null
+                : () => context.push(
+                      '/view-profile',
+                      extra: {'type': 'athlete', 'id': id},
+                    ),
+          );
+        }),
+      ],
     );
   }
 
@@ -862,6 +1043,17 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
           children: [
             if (widget.type == 'athlete' && !_isOwnProfile && _profileUserId != null) ...[
               _connectButton(),
+              const SizedBox(width: 12),
+            ],
+            if (widget.type == 'coach') ...[
+              Expanded(
+                child: FilledButton(
+                  onPressed: () => context.push(
+                    '/enquire/coach_profile/${widget.id}/${Uri.encodeComponent(_labelOf(_profileData!['name']) ?? _labelOf(_profileData!['full_name']) ?? 'Coach')}',
+                  ),
+                  child: const Text('Enquire / Book'),
+                ),
+              ),
               const SizedBox(width: 12),
             ],
             _messageButton(),

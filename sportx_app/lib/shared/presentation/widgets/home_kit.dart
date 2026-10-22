@@ -1183,16 +1183,19 @@ class PersonRowCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(9),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: SportXShadows.e1,
-      ),
-      child: Row(children: [
+    return GestureDetector(
+      // Whole row opens the person's profile; only the CTA keeps its own tap.
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(9),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: SportXShadows.e1,
+        ),
+        child: Row(children: [
         _Avatar(initial: name.isNotEmpty ? name[0].toUpperCase() : 'A', url: photoUrl, size: 45),
         const SizedBox(width: 9),
         Expanded(
@@ -1225,6 +1228,7 @@ class PersonRowCard extends StatelessWidget {
           ),
         ),
       ]),
+      ),
     );
   }
 }
@@ -1239,9 +1243,12 @@ class RatingLine extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(LucideIcons.star, size: 11, color: AppColors.yellow, fill: 1),
-        const SizedBox(width: 3),
-        Text(rating.toStringAsFixed(1), style: GoogleFonts.inter(fontSize: 9.5, fontWeight: FontWeight.w700, color: AppColors.dark)),
+        // rating == 0 means "no rating yet" — hide the fake zero.
+        if (rating > 0) ...[
+          const Icon(LucideIcons.star, size: 11, color: AppColors.yellow, fill: 1),
+          const SizedBox(width: 3),
+          Text(rating.toStringAsFixed(1), style: GoogleFonts.inter(fontSize: 9.5, fontWeight: FontWeight.w700, color: AppColors.dark)),
+        ],
         if (city != null && city!.isNotEmpty) ...[
           const Text(' · ', style: TextStyle(color: AppColors.textTertiary)),
           Flexible(

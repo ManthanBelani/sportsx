@@ -30,7 +30,6 @@ import 'package:sportx_app/features/search/presentation/screens/search_filter_sc
 import 'package:sportx_app/features/academy/presentation/screens/academy_directory_screen.dart';
 import 'package:sportx_app/features/academy/presentation/screens/academy_detail_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/coach_directory_screen.dart';
-import 'package:sportx_app/features/coach/presentation/screens/coach_detail_screen.dart';
 import 'package:sportx_app/features/trial/presentation/screens/trial_directory_screen.dart';
 import 'package:sportx_app/features/trial/presentation/screens/trial_detail_screen.dart';
 import 'package:sportx_app/features/tournament/presentation/screens/tournament_directory_screen.dart';
@@ -122,7 +121,6 @@ import 'package:sportx_app/features/admin/presentation/screens/admin_expiry_rule
 import 'package:sportx_app/features/admin/presentation/screens/admin_leaderboard_config_screen.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_content_list_screen.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_content_picker_screen.dart';
-import 'package:sportx_app/features/coach/presentation/screens/coach_profile_detail_screen.dart';
 import 'package:sportx_app/features/search/presentation/screens/universal_search_screen.dart';
 import 'package:sportx_app/features/connections/presentation/screens/my_connections_screen.dart';
 import 'package:sportx_app/features/connections/presentation/screens/connection_requests_screen.dart';
@@ -574,7 +572,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/edit-facilities', builder: (context, state) => const EditFacilitiesScreen()),
       GoRoute(path: '/showcase-athletes', builder: (context, state) => const ShowcaseAthletesScreen()),
       GoRoute(path: '/sponsor-directory-coach', redirect: (_, __) => '/opportunities'),
-      GoRoute(path: '/coach-profile-detail/:id', builder: (context, state) => CoachProfileDetailScreen(coachId: state.pathParameters['id']!)),
+      // v3.4: coach profiles reuse the shared ViewProfileScreen (same design
+      // as athlete profiles) — the dedicated coach detail screens are gone.
+      GoRoute(path: '/coach-profile-detail/:id', builder: (context, state) => ViewProfileScreen(type: 'coach', id: state.pathParameters['id']!)),
       GoRoute(path: '/search-filter', builder: (context, state) => const SearchFilterScreen()),
       GoRoute(path: '/discover', builder: (context, state) => const DiscoverScreen()),
       GoRoute(path: '/opportunities-legacy', redirect: (_, __) => '/opportunities'),
@@ -642,7 +642,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/academies', builder: (context, state) => const AcademyDirectoryScreen()),
           GoRoute(path: '/academy-detail/:id', builder: (context, state) => AcademyDetailScreen(id: state.pathParameters['id']!)),
           GoRoute(path: '/coaches', builder: (context, state) => const CoachDirectoryScreen()),
-          GoRoute(path: '/coach-detail/:id', builder: (context, state) => CoachDetailScreen(id: state.pathParameters['id']!)),
+          GoRoute(path: '/coach-detail/:id', builder: (context, state) => ViewProfileScreen(type: 'coach', id: state.pathParameters['id']!)),
           GoRoute(path: '/trials', builder: (context, state) => const TrialDirectoryScreen()),
           GoRoute(path: '/trial-detail/:id', builder: (context, state) => TrialDetailScreen(id: state.pathParameters['id']!)),
           GoRoute(path: '/tournaments', builder: (context, state) => const TournamentDirectoryScreen()),
