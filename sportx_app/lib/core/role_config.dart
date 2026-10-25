@@ -49,6 +49,22 @@ const Set<String> _listingCreatorRoles = {
 /// Whether [roleId] may open create-listing routes such as /post-opportunity.
 bool canCreateListings(String? roleId) => _listingCreatorRoles.contains(roleId);
 
+/// Opportunity publishing (scholarships/sponsorships) — deliberately NOT
+/// available to the organizer role (product decision); every other listing
+/// creator keeps it.
+const Set<String> _opportunityCreatorRoles = {
+  'coach',
+  'academy',
+  'scout',
+  'talent_scout',
+  'sponsor',
+  'admin',
+};
+
+/// Whether [roleId] may open /post-opportunity (scholarship or sponsorship).
+bool canPostOpportunities(String? roleId) =>
+    _opportunityCreatorRoles.contains(roleId);
+
 enum CreatePriority { p0, p1, p2 }
 
 /// A tile in the role-specific Create launcher (S.8).
@@ -273,17 +289,13 @@ RoleConfig roleConfigFor(SportXRole role) {
         homeRoute: '/organizer-dashboard',
         onboardingRoute: '/organizer-onboarding',
         profileRoute: '/organizer-profile',
-        // Design board · org-create: 8 rows, in order, with the pastel icon
-        // colours of the board (red / amber / green / purple / pink / red /
-        // blue / green).
+        // Design board · org-create — Event, Venue, Announcement, Staff.
+        // Go Live / Sponsorship / Media upload / Poll tiles removed for the
+        // organizer role on product request (kept for other roles).
         createTiles: [
           CreateTile(id: 'event', label: 'Create Event', subtitle: 'Post trials, tournaments or camps', icon: LucideIcons.calendarPlus, tintBg: Color(0xFFFDE8E8), tintFg: Color(0xFFD9534F), route: '/post-tournament'),
-          CreateTile(id: 'opportunity', label: 'Create Opportunity', subtitle: 'Post scholarships or sponsorships', icon: LucideIcons.megaphone, tintBg: Color(0xFFFFF3D6), tintFg: Color(0xFF8A6D00), route: '/post-opportunity'),
           CreateTile(id: 'venue', label: 'Add Venue', subtitle: 'List your ground, court or facility', icon: LucideIcons.building2, tintBg: Color(0xFFDFF5E3), tintFg: Color(0xFF3FA55C), route: '/post-facility'),
           CreateTile(id: 'announcement', label: 'Post Announcement', subtitle: 'Share important updates', icon: LucideIcons.megaphone, tintBg: Color(0xFFECE6FB), tintFg: Color(0xFF8A6AEA), route: '/post-announcement'),
-          CreateTile(id: 'media', label: 'Upload Photo / Video', subtitle: 'Share event highlights', icon: LucideIcons.imagePlus, tintBg: Color(0xFFFCE7F3), tintFg: AppColors.pink, route: '/media-gallery'),
-          CreateTile(id: 'golive', label: 'Go Live / Stream', subtitle: 'Live streaming for your event', icon: LucideIcons.radio, tintBg: Color(0xFFFDE8E8), tintFg: Color(0xFFD9534F), route: '/organizer-go-live', priority: CreatePriority.p1),
-          CreateTile(id: 'poll', label: 'Create Poll', subtitle: 'Get feedback from participants', icon: LucideIcons.barChart2, tintBg: Color(0xFFE3EFFF), tintFg: Color(0xFF3B82F6), route: '/create-poll', priority: CreatePriority.p1),
           CreateTile(id: 'staff', label: 'Add Staff / Organiser', subtitle: 'Add team members to your event', icon: LucideIcons.users, tintBg: Color(0xFFDFF5E3), tintFg: Color(0xFF3FA55C), route: '/organizer-team', priority: CreatePriority.p1),
         ],
         // Design board · org-more: menu A (8 role rows) → Saved / My Activity →

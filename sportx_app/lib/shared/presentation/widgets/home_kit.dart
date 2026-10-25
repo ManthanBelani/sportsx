@@ -1403,7 +1403,10 @@ class _V3FeedPreviewState extends ConsumerState<V3FeedPreview> {
   Widget build(BuildContext context) {
     final filter = _tabFilters[_tab.clamp(0, _tabFilters.length - 1)];
     final feed = ref.watch(filteredPostsFeedProvider(filter));
-    final posts = feed.value ?? const <SocialPost>[];
+    // valueOrNull — AsyncValue.value *rethrows* the error during build (e.g.
+    // a receive-timeout DioException crashed the whole dashboard); valueOrNull
+    // hands back null for error states so the friendly error branch runs.
+    final posts = feed.valueOrNull ?? const <SocialPost>[];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1418,13 +1421,9 @@ class _V3FeedPreviewState extends ConsumerState<V3FeedPreview> {
         feed.isLoading && posts.isEmpty
             ? const PostSkeleton()
             : feed.hasError
-                ? Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: OutlinedButton.icon(
-                      onPressed: () => ref.invalidate(filteredPostsFeedProvider(filter)),
-                      icon: const Icon(LucideIcons.refreshCw, size: 16),
-                      label: const Text("Couldn't load feed — tap to retry"),
-                    ),
+                ? _FeedUnavailableCard(
+                    onRetry: () =>
+                        ref.invalidate(filteredPostsFeedProvider(filter)),
                   )
                 : posts.isEmpty
                     ? const SizedBox(
@@ -1443,6 +1442,57 @@ class _V3FeedPreviewState extends ConsumerState<V3FeedPreview> {
                         ],
                       ]),
       ],
+    );
+  }
+}
+
+/// Soft failure card for the feed preview — explains the data isn't
+/// available right now and offers a retry, instead of a build-crash.
+class _FeedUnavailableCard extends StatelessWidget {
+  final VoidCallback onRetry;
+  const _FeedUnavailableCard({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          const Icon(LucideIcons.wifiOff,
+              size: 26, color: AppColors.textTertiary),
+          const SizedBox(height: 8),
+          const Text(
+            'Data not available',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppColors.ink,
+            ),
+          ),
+          const SizedBox(height: 3),
+          const Text(
+            "Couldn't load the feed right now. Check your connection.",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 10),
+          TextButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(LucideIcons.refreshCw, size: 15),
+            label: const Text(
+              'Try again',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

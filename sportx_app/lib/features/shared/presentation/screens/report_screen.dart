@@ -7,6 +7,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
+import 'package:sportx_app/shared/providers/role_config_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 /// v2 report-listing.html — standalone Report screen.
@@ -76,8 +77,9 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft, color: AppColors.ink),
-          onPressed: () =>
-              context.canPop() ? context.pop() : context.go('/home'),
+          onPressed: () => context.canPop()
+              ? context.pop()
+              : context.go(ref.read(roleConfigProvider).homeRoute),
         ),
         title: Text('Report Content',
             style: GoogleFonts.sora(

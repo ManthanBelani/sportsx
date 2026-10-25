@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
+import 'package:sportx_app/shared/providers/role_config_provider.dart';
 
 /// v2 application-status.html — application tracker timeline.
 /// Read-only view driven by route extra:
@@ -56,11 +58,12 @@ class ApplicationStatusScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white.withValues(alpha: 0.88),
         elevation: 0,
-        leading: IconButton(
+        leading: Consumer(builder: (context, ref, _) => IconButton(
           icon: const Icon(LucideIcons.arrowLeft, color: AppColors.ink),
-          onPressed: () =>
-              context.canPop() ? context.pop() : context.go('/home'),
-        ),
+          onPressed: () => context.canPop()
+              ? context.pop()
+              : context.go(ref.read(roleConfigProvider).homeRoute),
+        )),
         title: Text('Application Status',
             style: GoogleFonts.sora(
                 fontSize: 17,

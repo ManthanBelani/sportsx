@@ -4,10 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/responsive.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/auth/presentation/widgets/google_sign_in_button.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/shared/providers/role_config_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -51,7 +53,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!mounted) return;
     final state = ref.read(authProvider);
     if (state.status == AuthStatus.authenticated) {
-      context.go('/home');
+      context.go(ref.read(roleConfigProvider).homeRoute);
     } else if (state.status == AuthStatus.error) {
       SnackBarUtils.showError(context, state.error ?? 'Login failed');
     }
@@ -61,6 +63,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final auth = ref.watch(authProvider);
     final isLoading = auth.status == AuthStatus.loading;
+    final r = context.resp;
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
@@ -88,114 +91,126 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         centerTitle: false,
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 16),
-              Text(
-                'SportX India',
-                style: GoogleFonts.sora(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
-                  letterSpacing: -1.0,
-                ),
-                textAlign: TextAlign.center,
+        // Large viewports get a centered, capped form; small phones keep
+        // the tuned compact layout.
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: context.isTabletViewport ? 420 : double.infinity,
+            ),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: r.ws(24),
+                vertical: r.vs(16),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Welcome back! Log in to continue',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-
-              Text('Email Address', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _emailController,
-                onChanged: (_) => ref.read(authProvider.notifier).clearFieldErrors(),
-                decoration: InputDecoration(
-                  hintText: 'you@example.com',
-                  errorText: auth.fieldErrors['email'],
-                  prefixIcon: const Icon(LucideIcons.mail, size: 18, color: AppColors.textSecondary),
-                ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-
-              const SizedBox(height: 16),
-              Text('Password', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _passwordController,
-                onChanged: (_) => ref.read(authProvider.notifier).clearFieldErrors(),
-                decoration: InputDecoration(
-                  hintText: 'Enter your password',
-                  errorText: auth.fieldErrors['password'],
-                  prefixIcon: const Icon(LucideIcons.lock, size: 18, color: AppColors.textSecondary),
-                  suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword ? LucideIcons.eyeOff : LucideIcons.eye, color: AppColors.textSecondary, size: 20),
-                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                  ),
-                ),
-                obscureText: _obscurePassword,
-              ),
-              const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: _forgotPassword,
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  child: Text('Forgot Password?', style: GoogleFonts.inter(color: AppColors.primaryDarker, fontSize: 14, fontWeight: FontWeight.w700)),
-                ),
-              ),
-              const SizedBox(height: 24),
-              if (isLoading)
-                Container(
-                  height: 50,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Color(0xFFFFD54A), Color(0xFFFFC107), Color(0xFFF5B400)],
-                    ),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0x2E785000)),
-                    boxShadow: SportXShadows.btnShadow,
-                  ),
-                  alignment: Alignment.center,
-                  child: const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: AppColors.ink, strokeWidth: 2)),
-                )
-              else
-                PrimaryButton(
-                  label: 'Log In',
-                  icon: LucideIcons.arrowRight,
-                  onPressed: _login,
-                ),
-              const SizedBox(height: 24),
-              const GoogleSignInButton(),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text("Don't have an account? ", style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary)),
-                  GestureDetector(
-                    onTap: () => context.go('/role-selection'),
-                    child: Text('Sign up', style: GoogleFonts.inter(fontSize: 14, color: AppColors.primaryDarker, fontWeight: FontWeight.w700)),
+                  SizedBox(height: r.vs(16)),
+                  Text(
+                    'SportX India',
+                    style: GoogleFonts.sora(
+                      fontSize: r.ws(28),
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                      letterSpacing: -1.0,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
+                  SizedBox(height: r.vs(8)),
+                  Text(
+                    'Welcome back! Log in to continue',
+                    style: GoogleFonts.inter(
+                      fontSize: r.ws(14),
+                      color: AppColors.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: r.vs(32)),
+
+                  Text('Email Address', style: GoogleFonts.inter(fontSize: r.ws(14), fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _emailController,
+                    onChanged: (_) => ref.read(authProvider.notifier).clearFieldErrors(),
+                    decoration: InputDecoration(
+                      hintText: 'you@example.com',
+                      errorText: auth.fieldErrors['email'],
+                      prefixIcon: const Icon(LucideIcons.mail, size: 18, color: AppColors.textSecondary),
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+
+                  SizedBox(height: r.vs(16)),
+                  Text('Password', style: GoogleFonts.inter(fontSize: r.ws(14), fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _passwordController,
+                    onChanged: (_) => ref.read(authProvider.notifier).clearFieldErrors(),
+                    decoration: InputDecoration(
+                      hintText: 'Enter your password',
+                      errorText: auth.fieldErrors['password'],
+                      prefixIcon: const Icon(LucideIcons.lock, size: 18, color: AppColors.textSecondary),
+                      suffixIcon: IconButton(
+                        icon: Icon(_obscurePassword ? LucideIcons.eyeOff : LucideIcons.eye, color: AppColors.textSecondary, size: 20),
+                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      ),
+                    ),
+                    obscureText: _obscurePassword,
+                  ),
+                  SizedBox(height: r.vs(16)),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: _forgotPassword,
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text('Forgot Password?', style: GoogleFonts.inter(color: AppColors.primaryDarker, fontSize: r.ws(14), fontWeight: FontWeight.w700)),
+                    ),
+                  ),
+                  SizedBox(height: r.vs(24)),
+                  if (isLoading)
+                    Container(
+                      height: r.ws(50),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Color(0xFFFFD54A), Color(0xFFFFC107), Color(0xFFF5B400)],
+                        ),
+                        borderRadius: BorderRadius.circular(r.ws(14)),
+                        border: Border.all(color: const Color(0x2E785000)),
+                        boxShadow: SportXShadows.btnShadow,
+                      ),
+                      alignment: Alignment.center,
+                      child: const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: AppColors.ink, strokeWidth: 2)),
+                    )
+                  else
+                    PrimaryButton(
+                      label: 'Log In',
+                      icon: LucideIcons.arrowRight,
+                      onPressed: _login,
+                    ),
+                  SizedBox(height: r.vs(24)),
+                  const GoogleSignInButton(),
+                  SizedBox(height: r.vs(24)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("Don't have an account? ", style: GoogleFonts.inter(fontSize: r.ws(14), color: AppColors.textSecondary)),
+                      GestureDetector(
+                        onTap: () => context.go('/role-selection'),
+                        child: Text('Sign up', style: GoogleFonts.inter(fontSize: r.ws(14), color: AppColors.primaryDarker, fontWeight: FontWeight.w700)),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: r.vs(24)),
                 ],
               ),
-              const SizedBox(height: 24),
-            ],
+            ),
           ),
         ),
       ),

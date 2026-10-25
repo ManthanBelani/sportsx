@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:sportx_app/core/responsive_scaler.dart';
 import 'package:sportx_app/core/router.dart';
 import 'package:sportx_app/core/services/push_notification_service.dart';
 import 'package:sportx_app/firebase_options.dart';
@@ -57,6 +58,8 @@ class _SportXAppState extends ConsumerState<SportXApp> {
       title: 'SportX India',
       theme: AppTheme.lightTheme,
       routerConfig: router,
+      // Consistent proportions on every phone size (see ResponsiveScaler).
+      builder: (context, child) => ResponsiveScaler(child: child),
       debugShowCheckedModeBanner: false,
     );
   }

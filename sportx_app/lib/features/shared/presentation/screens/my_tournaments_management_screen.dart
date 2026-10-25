@@ -230,8 +230,11 @@ class _MyTournamentsManagementScreenState
   }
 
   void _openEvent(UnifiedEvent e) {
+    // Tournaments → Event Details & Management (design board screen 8);
+    // trials → their registrant management (approve/reject) screen.
     context.push(
-      e.isTournament ? '/organizer-event/${e.id}' : '/trial-detail/${e.id}',
+      e.isTournament ? '/organizer-event/${e.id}' : '/registrant-list',
+      extra: {'id': e.id, 'title': e.name},
     );
   }
 
@@ -239,7 +242,7 @@ class _MyTournamentsManagementScreenState
     switch (v) {
       case 'registrations':
         context.push(
-          '/registration-management',
+          e.isTournament ? '/registration-management' : '/registrant-list',
           extra: {'id': e.id, 'title': e.name},
         );
         break;

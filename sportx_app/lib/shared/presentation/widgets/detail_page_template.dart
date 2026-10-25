@@ -8,6 +8,7 @@ import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/theme/design_tokens.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/shared/providers/role_config_provider.dart';
 
 class DetailPageTemplate extends ConsumerWidget {
   final String? heroImageUrl;
@@ -21,8 +22,11 @@ class DetailPageTemplate extends ConsumerWidget {
   final List<Widget>? extraSections;
   final Widget? locationMap;
   final String addressStr;
-  final String ctaText;
-  final VoidCallback onCtaPressed;
+
+  /// Primary CTA — null renders no primary button (e.g. organizers view
+  /// tournaments to manage them, never to register as participants).
+  final String? ctaText;
+  final VoidCallback? onCtaPressed;
   final VoidCallback? onPhonePressed;
 
   /// Optional secondary CTA (e.g., "Connect" button).
@@ -49,8 +53,8 @@ class DetailPageTemplate extends ConsumerWidget {
     this.extraSections,
     this.locationMap,
     required this.addressStr,
-    required this.ctaText,
-    required this.onCtaPressed,
+    this.ctaText,
+    this.onCtaPressed,
     this.onPhonePressed,
     this.secondaryCtaText,
     this.onSecondaryCtaPressed,
@@ -58,6 +62,14 @@ class DetailPageTemplate extends ConsumerWidget {
     this.savedType,
     this.savedItemId,
   });
+
+  bool get hasPrimaryCta => ctaText != null && onCtaPressed != null;
+
+  bool get hasSecondaryCta =>
+      secondaryCtaText != null && onSecondaryCtaPressed != null;
+
+  bool get showBottomBar =>
+      hasPrimaryCta || hasSecondaryCta || onPhonePressed != null;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -95,7 +107,10 @@ class DetailPageTemplate extends ConsumerWidget {
                     if (context.canPop()) {
                       context.pop();
                     } else {
-                      context.go('/home');
+                      // No route stack? Land on the active role's dashboard,
+                      // never the athlete-only feed (organizers/coaches wear
+                      // this same template).
+                      context.go(ref.watch(roleConfigProvider).homeRoute);
                     }
                   },
                 ),
@@ -119,13 +134,14 @@ class DetailPageTemplate extends ConsumerWidget {
             ),
           ),
 
-          // Bottom CTA — v2 .stickybar
-          Positioned(
-            bottom: 12,
-            left: 12,
-            right: 12,
-            child: _buildBottomCTA(context),
-          ),
+          // Bottom CTA — v2 .stickybar (hidden when there's nothing to show)
+          if (showBottomBar)
+            Positioned(
+              bottom: 12,
+              left: 12,
+              right: 12,
+              child: _buildBottomCTA(context),
+            ),
         ],
       ),
     );
@@ -363,7 +379,12 @@ class DetailPageTemplate extends ConsumerWidget {
   }
 
   Widget _buildBottomCTA(BuildContext context) {
-    final hasSecondary = secondaryCtaText != null && onSecondaryCtaPressed != null;
+    final hasPrimary = hasPrimaryCta;
+    final hasSecondary = hasSecondaryCta;
+    final hasPhone = onPhonePressed != null;
+    // No primary/secondary CTA → the phone action stretches full-width
+    // instead of sitting in an awkward half-empty bar.
+    final showPhoneWide = hasPhone && !hasPrimary && !hasSecondary;
 
     // v2 .stickybar — floating rounded bar, blur white, 18px radius, e2 shadow.
     return Container(
@@ -376,7 +397,7 @@ class DetailPageTemplate extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          if (onPhonePressed != null && !hasSecondary) ...[
+          if (onPhonePressed != null && !hasSecondary && !showPhoneWide) ...[
             GestureDetector(
               onTap: onPhonePressed,
               child: Container(
@@ -394,6 +415,23 @@ class DetailPageTemplate extends ConsumerWidget {
             ),
             const SizedBox(width: 10),
           ],
+          if (showPhoneWide)
+            Expanded(
+              child: GestureDetector(
+                onTap: onPhonePressed,
+                child: Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: AppColors.border),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: SportXShadows.e1,
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(LucideIcons.phone, size: 20, color: AppColors.dark),
+                ),
+              ),
+            ),
           if (hasSecondary) ...[
             Expanded(
               child: SecondaryButton(
@@ -402,11 +440,11 @@ class DetailPageTemplate extends ConsumerWidget {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: PrimaryButton(label: ctaText, onPressed: onCtaPressed),
+              child: PrimaryButton(label: ctaText ?? '', onPressed: onCtaPressed ?? () {}),
             ),
-          ] else ...[
+          ] else if (hasPrimary) ...[
             Expanded(
-              child: PrimaryButton(label: ctaText, onPressed: onCtaPressed),
+              child: PrimaryButton(label: ctaText!, onPressed: onCtaPressed!),
             ),
           ],
         ],

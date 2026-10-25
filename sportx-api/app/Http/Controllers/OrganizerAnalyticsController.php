@@ -128,8 +128,11 @@ class OrganizerAnalyticsController extends Controller
         $externalClicks = $tournaments->sum('external_registration_clicks');
         $views = $totalRegs + (int) $externalClicks;
 
-        // Registrations per day over the last 30 days (line chart).
-        $windowStart = now()->subDays(29)->startOfDay();
+        // Registrations per day over the requested window (line chart).
+        // The app requests ?days=365 once and slices 7D / 30D / 3M / 1Y
+        // client-side from the same series.
+        $windowDays = min(365, max(7, (int) $request->query('days', 30)));
+        $windowStart = now()->subDays($windowDays - 1)->startOfDay();
         $createdDates = $tournamentRegs->map(fn ($r) => $r->created_at)
             ->concat($trialRegs->map(fn ($r) => $r->created_at))
             ->filter(fn ($d) => $d && $d->gte($windowStart))
@@ -138,7 +141,7 @@ class OrganizerAnalyticsController extends Controller
         $createdCounts = $createdDates->countBy();
 
         $dailySeries = [];
-        for ($i = 29; $i >= 0; $i--) {
+        for ($i = $windowDays - 1; $i >= 0; $i--) {
             $day = now()->subDays($i)->toDateString();
             $dailySeries[] = [
                 'date' => $day,

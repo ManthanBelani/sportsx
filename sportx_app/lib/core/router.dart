@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
-import 'package:sportx_app/features/social/presentation/widgets/create_bottom_sheet.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/services/push_notification_service.dart';
 import 'package:sportx_app/features/auth/presentation/screens/splash_screen.dart';
@@ -55,7 +54,6 @@ import 'package:sportx_app/features/organizer/presentation/screens/organizer_das
 import 'package:sportx_app/features/organizer/presentation/screens/organizer_event_management_screen.dart';
 import 'package:sportx_app/features/organizer/presentation/screens/organizer_profile_edit_screen.dart';
 import 'package:sportx_app/features/organizer/presentation/screens/organizer_profile_view_screen.dart';
-import 'package:sportx_app/features/organizer/presentation/screens/create_poll_screen.dart';
 import 'package:sportx_app/features/organizer/presentation/screens/tournament_edit_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/enquiry_inbox_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/enquiry_detail_screen.dart';
@@ -162,6 +160,7 @@ import 'package:sportx_app/features/talent_scout/presentation/screens/talent_sco
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_connections_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_profile_screen.dart';
 import 'package:sportx_app/features/social/presentation/screens/create_screen.dart';
+import 'package:sportx_app/features/social/presentation/widgets/create_bottom_sheet.dart';
 import 'package:sportx_app/features/more/presentation/screens/more_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/my_applications_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/application_status_screen.dart';
@@ -287,17 +286,21 @@ final routerProvider = Provider<GoRouter>((ref) {
           return dashboardRoute;
         }
 
-        // Listing creation (opportunities, events/trials, tournaments,
-        // programs, venues) belongs to the listing-owner roles — athletes
-        // consume listings, they don't publish them.
-        const listingCreateRoutes = [
-          '/post-opportunity',
+        // Listing creation (events/trials, tournaments, programs, venues)
+        // belongs to the listing-owner roles — athletes consume listings, they
+        // don't publish them. Opportunities additionally exclude organizers
+        // (product decision: organizers never post scholarships/sponsorships).
+        if (loc == '/post-opportunity') {
+          if (!canPostOpportunities(role)) {
+            return dashboardRoute;
+          }
+        } else if (const [
           '/post-trial',
           '/post-tournament',
           '/post-program',
           '/post-facility',
-        ];
-        if (listingCreateRoutes.contains(loc) && !canCreateListings(role)) {
+        ].contains(loc) &&
+            !canCreateListings(role)) {
           return dashboardRoute;
         }
 
@@ -409,8 +412,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/academy-collaborations', builder: (context, state) => const AcademyCollaborationsScreen()),
       GoRoute(path: '/post-announcement', builder: (context, state) => const PostAnnouncementScreen()),
       GoRoute(path: '/organizer-team', builder: (context, state) => const OrganizerTeamScreen()),
-      GoRoute(path: '/organizer-go-live', builder: (context, state) => const CoachGoLiveScreen()),
-      GoRoute(path: '/create-poll', builder: (context, state) => const CreatePollScreen()),
+      // Organizer Go-Live and Create-Poll routes removed — those features are
+      // no longer offered to the organizer role.
       GoRoute(path: '/organizer-event/:id', builder: (context, state) {
         final id = state.pathParameters['id']!;
         return OrganizerEventManagementScreen(tournamentId: id);
@@ -451,7 +454,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         final extra = state.extra as Map<String, dynamic>?;
         return CoachEnquiryDetailScreen(id: extra?['id'] as String? ?? '');
       }),
-      GoRoute(path: '/organizer-dashboard', builder: (context, state) => const OrganizerDashboardScreen()),
       GoRoute(path: '/enquiry-detail', builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
         return EnquiryDetailScreen(id: extra?['id'] as String? ?? '');
@@ -726,17 +728,18 @@ class MainShell extends ConsumerWidget {
           ],
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(4, 9, 4, 10),
+          top: false,
+          // v3 .bottom-nav — 72px bar, 5 equal columns (grid), every item
+          // centered so icon/label baselines line up across the shell.
+          child: SizedBox(
+            height: 72,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                _buildNavItem(context, ref, role, 0, LucideIcons.house, 'Home', selected == 0),
-                _buildNavItem(context, ref, role, 1, LucideIcons.compass, 'Explore', selected == 1),
-                _buildFab(context, () => CreateBottomSheet.show(context, ref)),
-                _buildNavItem(context, ref, role, 3, LucideIcons.users, 'Community', selected == 3),
-                _buildNavItem(context, ref, role, 4, LucideIcons.grid2x2, 'More', selected == 4),
+                Expanded(child: _buildNavItem(context, ref, role, 0, LucideIcons.house, 'Home', selected == 0)),
+                Expanded(child: _buildNavItem(context, ref, role, 1, LucideIcons.compass, 'Explore', selected == 1)),
+                Expanded(child: _buildFab(context, ref, selected == 2)),
+                Expanded(child: _buildNavItem(context, ref, role, 3, LucideIcons.users, 'Community', selected == 3)),
+                Expanded(child: _buildNavItem(context, ref, role, 4, LucideIcons.grid2x2, 'More', selected == 4)),
               ],
             ),
           ),
@@ -745,74 +748,92 @@ class MainShell extends ConsumerWidget {
     );
   }
 
-  Widget _buildFab(BuildContext context, VoidCallback onTap) {
+  /// v3 .create-nav — 47x47 yellow circle pulled 28px above the bar, with a
+  /// "Create" label like the other tabs (no underline for the active state).
+  /// Tapping it opens the role-aware Create bottom sheet (same popup every
+  /// role had) instead of the full-screen Create tab.
+  Widget _buildFab(BuildContext context, WidgetRef ref, bool isActive) {
     return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 47,
-        height: 47,
-        margin: const EdgeInsets.only(top: 0),
-        transform: Matrix4.translationValues(0, -28, 0),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFFFD54A), Color(0xFFFFC107), Color(0xFFF5B400)],
+      behavior: HitTestBehavior.opaque,
+      onTap: () => CreateBottomSheet.show(context, ref),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Transform.translate(
+            offset: const Offset(0, -28),
+            child: Container(
+              width: 47,
+              height: 47,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFFFFD54A), Color(0xFFFFC107), Color(0xFFF5B400)],
+                ),
+                border: Border.all(color: Colors.white, width: 3),
+                boxShadow: const [
+                  BoxShadow(color: Color(0x8CFFC107), blurRadius: 18, offset: Offset(0, 7)),
+                ],
+              ),
+              alignment: Alignment.center,
+              child: const Icon(LucideIcons.plus, color: AppColors.ink, size: 24),
+            ),
           ),
-          border: Border.all(color: Colors.white, width: 3),
-          boxShadow: const [
-            BoxShadow(color: Color(0x8CFFC107), blurRadius: 18, offset: Offset(0, 7)),
-          ],
-        ),
-        alignment: Alignment.center,
-        child: const Icon(LucideIcons.plus, color: AppColors.ink, size: 24),
+          const SizedBox(height: 4),
+          Text(
+            'Create',
+            style: GoogleFonts.inter(
+              fontSize: 8,
+              fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
+              color: isActive ? AppColors.primaryDarker : AppColors.textTertiary,
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  // v3 .nav-item — icon 22 above an 8px label; the active tab gets a yellow
-  // underline bar (18x3, .nav-active .nav-icon::after) and dark-gold colour.
+  // v3 .nav-item — 26px icon slot (icon 20 + active underline bar 18x3) above
+  // an 8px label; the active tab gets the yellow underline and dark-gold
+  // colour, exactly like .nav-active in the design board CSS.
   Widget _buildNavItem(
       BuildContext context, WidgetRef ref, String? role, int index, IconData icon, String label, bool isSelected) {
     final color = isSelected ? AppColors.primaryDarker : AppColors.textTertiary;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => _onItemTapped(index, context, ref, role),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 9),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              height: 28,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, color: color, size: 22),
-                  const SizedBox(height: 3),
-                  Container(
-                    width: 18,
-                    height: 3,
-                    decoration: BoxDecoration(
-                      color: isSelected ? AppColors.yellow : Colors.transparent,
-                      borderRadius: BorderRadius.circular(99),
-                    ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            height: 26,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: color, size: 20),
+                const SizedBox(height: 2),
+                Container(
+                  width: 18,
+                  height: 3,
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.yellow : Colors.transparent,
+                    borderRadius: BorderRadius.circular(99),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 8,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                color: color,
-              ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 8,
+              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+              color: color,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

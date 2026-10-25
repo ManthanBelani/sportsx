@@ -106,15 +106,15 @@ class _OrganizerProfileViewScreenState
           backgroundColor: AppColors.surface,
           body: CustomScrollView(
             slivers: [
-              SliverAppBar(
-                pinned: true,
-                expandedHeight: 168,
-                backgroundColor: AppColors.surface,
-                surfaceTintColor: AppColors.surface,
-                automaticallyImplyLeading: false,
-                leading: const SizedBox.shrink(),
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Stack(
+              // Hero — cover + floating controls, built as a plain adapter
+              // rather than a pinned SliverAppBar: a pinned appbar paints the
+              // cover ON TOP of the content sliver that follows it, which used
+              // to hide the overlapped logo avatar's upper half. Scrolling
+              // simply carries the cover away; the tab bar below stays pinned.
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: MediaQuery.of(context).padding.top + 168,
+                  child: Stack(
                     fit: StackFit.expand,
                     children: [
                       // Cover — org banner when the API resolved one, otherwise
@@ -161,24 +161,29 @@ class _OrganizerProfileViewScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Transform.translate(
-                        offset: const Offset(0, -34),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                _LogoAvatar(
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Only the avatar overlaps the cover edge
+                          // (translated up 34px). The name block must start
+                          // BELOW the cover so it stays readable — translating
+                          // the whole row pushed the title into the dark band.
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Transform.translate(
+                                offset: const Offset(0, -34),
+                                child: _LogoAvatar(
                                   photoUrl: user?.profilePhotoUrl,
                                   name: name,
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildNameBlock(name, orgType, city),
-                                ),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _buildNameBlock(name, orgType, city),
+                              ),
+                            ],
+                          ),
                             const SizedBox(height: 6),
                             // Stats row — Events · Participants · Collaborations
                             Container(
@@ -242,11 +247,10 @@ class _OrganizerProfileViewScreenState
                             ),
                           ],
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
               SliverPersistentHeader(
                 pinned: true,
                 delegate: _TabBarDelegate(
@@ -271,7 +275,8 @@ class _OrganizerProfileViewScreenState
                       Tab(text: 'Events'),
                       Tab(text: 'Venues'),
                       Tab(text: 'Team'),
-                      Tab(text: 'Media'),
+                      // Media tab removed for organizers — uploading photos and
+                      // videos is not part of the organizer flows anymore.
                     ],
                   ),
                 ),
@@ -293,7 +298,6 @@ class _OrganizerProfileViewScreenState
                     const _EventsTab(),
                     const _VenuesTab(),
                     const _TeamTab(),
-                    const _MediaTab(),
                   ],
                 ),
               ),
@@ -734,35 +738,6 @@ class _TeamTab extends ConsumerWidget {
           ],
         );
       },
-    );
-  }
-}
-
-class _MediaTab extends StatelessWidget {
-  const _MediaTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 18, 16, 40),
-      child: Column(
-        children: [
-          Text(
-            'Showcase your events with photos and videos.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 14),
-          SecondaryButton(
-            label: 'Open media gallery',
-            icon: LucideIcons.imagePlus,
-            onPressed: () => context.push('/media-gallery'),
-          ),
-        ],
-      ),
     );
   }
 }

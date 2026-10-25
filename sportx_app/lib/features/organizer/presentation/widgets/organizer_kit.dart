@@ -175,6 +175,9 @@ class OrgPill extends StatelessWidget {
         const Color(0x3D3B82F6),
       ),
     };
+    // FittedBox(scaleDown) keeps the pill at its natural size when there is
+    // room, and gracefully scales the contents down instead of overflowing
+    // when the pill is squeezed by a parent flex (Flexible/Wrap).
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -182,26 +185,29 @@ class OrgPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: border),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (dot) ...[
-            Container(
-              width: 6,
-              height: 6,
-              decoration: BoxDecoration(color: fg, shape: BoxShape.circle),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (dot) ...[
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(color: fg, shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 5),
+            ],
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: fg,
+              ),
             ),
-            const SizedBox(width: 5),
           ],
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: fg,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -318,7 +324,13 @@ class OrgEventCard extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: 7),
-                  Row(
+                  // Wrap instead of Row: on narrow cards the pill and the
+                  // "N Registered" / View can't share one line — Wrap drops
+                  // the second item to a new line instead of overflowing.
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       if (registrationsOpen)
                         const OrgPill(
@@ -326,12 +338,13 @@ class OrgEventCard extends StatelessWidget {
                           kind: OrgPillKind.open,
                           dot: true,
                         ),
-                      const Spacer(),
                       if (onView != null)
                         CompactPrimaryButton(label: 'View', onTap: onView)
                       else
                         Text(
                           '$registeredCount Registered',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.inter(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
@@ -468,17 +481,19 @@ class OrgQuickTile extends StatelessWidget {
   }
 }
 
-/// Design board · stat tile (home) — big value over a soft label.
+/// Design board · stat tile (home) — coloured icon, big value over a soft label.
 class OrgStatTile extends StatelessWidget {
   final String value;
   final String label;
   final IconData? icon;
+  final Color? iconColor;
 
   const OrgStatTile({
     super.key,
     required this.value,
     required this.label,
     this.icon,
+    this.iconColor,
   });
 
   @override
@@ -494,7 +509,7 @@ class OrgStatTile extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 15, color: AppColors.primaryDarker),
+            Icon(icon, size: 15, color: iconColor ?? AppColors.primaryDarker),
             const SizedBox(height: 4),
           ],
           FittedBox(
@@ -697,17 +712,22 @@ class OrgLineChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Expanded for the canvas: the caller sizes the whole widget (e.g. 140px);
+    // a fixed 150px inner height overflowed past the box. The labels row then
+    // takes only its natural height below the Expanded canvas.
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          height: 150,
-          width: double.infinity,
-          child: CustomPaint(
-            painter: _LinePainter(
-              values: values,
-              lineColor: AppColors.info,
-              gridColor: AppColors.borderSoft,
+        Expanded(
+          child: SizedBox(
+            width: double.infinity,
+            child: CustomPaint(
+              isComplex: true,
+              willChange: true,
+              painter: _LinePainter(
+                values: values,
+                lineColor: AppColors.info,
+                gridColor: AppColors.borderSoft,
+              ),
             ),
           ),
         ),

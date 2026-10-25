@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/theme/design_tokens.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
+import 'package:sportx_app/shared/providers/role_config_provider.dart';
 import 'package:go_router/go_router.dart';
 
 class DirectoryItem {
@@ -24,7 +26,7 @@ class DirectoryItem {
   });
 }
 
-class DirectoryListTemplate extends StatefulWidget {
+class DirectoryListTemplate extends ConsumerStatefulWidget {
   final String title;
   final List<DirectoryItem> items;
   final VoidCallback onFilterTap;
@@ -55,10 +57,10 @@ class DirectoryListTemplate extends StatefulWidget {
   });
 
   @override
-  State<DirectoryListTemplate> createState() => _DirectoryListTemplateState();
+  ConsumerState<DirectoryListTemplate> createState() => _DirectoryListTemplateState();
 }
 
-class _DirectoryListTemplateState extends State<DirectoryListTemplate> {
+class _DirectoryListTemplateState extends ConsumerState<DirectoryListTemplate> {
   final _searchController = TextEditingController();
   final _focusNode = FocusNode();
   String? _selectedSport;
@@ -87,7 +89,8 @@ class _DirectoryListTemplateState extends State<DirectoryListTemplate> {
             if (context.canPop()) {
               context.pop();
             } else {
-              context.go('/home');
+              // Role-aware: never dump a non-athlete onto the athlete feed.
+              context.go(ref.watch(roleConfigProvider).homeRoute);
             }
           },
         ),

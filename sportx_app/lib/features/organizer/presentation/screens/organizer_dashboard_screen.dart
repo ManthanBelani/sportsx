@@ -125,15 +125,25 @@ class OrganizerDashboardScreen extends ConsumerWidget {
                         onSelected: (v) {
                           switch (v) {
                             case 'manage':
+                              // Tournaments open the organizer's Event
+                              // Details & Management screen (design board
+                              // screen 8); trials open their registrant
+                              // management (approve/reject) screen.
                               context.push(
                                 featured.isTournament
-                                    ? '/tournament-detail/${featured.id}'
-                                    : '/trial-detail/${featured.id}',
+                                    ? '/organizer-event/${featured.id}'
+                                    : '/registrant-list',
+                                extra: {
+                                  'id': featured.id,
+                                  'title': featured.name,
+                                },
                               );
                               break;
                             case 'registrations':
                               context.push(
-                                '/registration-management',
+                                featured.isTournament
+                                    ? '/registration-management'
+                                    : '/registrant-list',
                                 extra: {
                                   'id': featured.id,
                                   'title': featured.name,
@@ -162,8 +172,12 @@ class OrganizerDashboardScreen extends ConsumerWidget {
                       ),
                       onTap: () => context.push(
                         featured.isTournament
-                            ? '/tournament-detail/${featured.id}'
-                            : '/trial-detail/${featured.id}',
+                            ? '/organizer-event/${featured.id}'
+                            : '/registrant-list',
+                        extra: {
+                          'id': featured.id,
+                          'title': featured.name,
+                        },
                       ),
                     ),
                   if (upcoming.length > 1)
@@ -179,8 +193,12 @@ class OrganizerDashboardScreen extends ConsumerWidget {
                                 registered: e.registeredCount,
                                 onTap: () => context.push(
                                   e.isTournament
-                                      ? '/tournament-detail/${e.id}'
-                                      : '/trial-detail/${e.id}',
+                                      ? '/organizer-event/${e.id}'
+                                      : '/registrant-list',
+                                  extra: {
+                                    'id': e.id,
+                                    'title': e.name,
+                                  },
                                 ),
                               ),
                             ),
@@ -193,6 +211,7 @@ class OrganizerDashboardScreen extends ConsumerWidget {
                   const SizedBox(height: 14),
 
                   // ── Stat row (Events · Participants · Views · Revenue) ───
+                  // Board colours: gold / blue / red / green icons.
                   Row(
                     children: [
                       Expanded(
@@ -200,6 +219,7 @@ class OrganizerDashboardScreen extends ConsumerWidget {
                           value: a == null ? '—' : '${a.totalEvents}',
                           label: 'Events',
                           icon: LucideIcons.calendar,
+                          iconColor: AppColors.warnText,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -209,6 +229,8 @@ class OrganizerDashboardScreen extends ConsumerWidget {
                               ? '—'
                               : '${compactIndianNumber(a.totalRegistrations)}+',
                           label: 'Participants',
+                          icon: LucideIcons.users,
+                          iconColor: AppColors.info,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -218,6 +240,8 @@ class OrganizerDashboardScreen extends ConsumerWidget {
                               ? '—'
                               : '${compactIndianNumber(a.views)}+',
                           label: 'Views',
+                          icon: LucideIcons.eye,
+                          iconColor: AppColors.error,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -227,6 +251,8 @@ class OrganizerDashboardScreen extends ConsumerWidget {
                               ? '—'
                               : '₹${compactIndianNumber(a.revenueEstimate)}',
                           label: 'Revenue',
+                          icon: LucideIcons.chartLine,
+                          iconColor: const Color(0xFF3FA55C),
                         ),
                       ),
                     ],
@@ -235,48 +261,53 @@ class OrganizerDashboardScreen extends ConsumerWidget {
                   const SizedBox(height: 10),
 
                   // ── Quick actions ───────────────────────────────────────
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OrgQuickTile(
-                          icon: LucideIcons.calendarPlus,
-                          label: 'Create Event',
-                          iconBg: AppColors.errorLight,
-                          iconFg: AppColors.error,
-                          onTap: () => context.go('/create'),
+                  // IntrinsicHeight + stretch: every tile matches the tallest
+                  // one, so the row stays even no matter how labels wrap.
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: OrgQuickTile(
+                            icon: LucideIcons.calendarPlus,
+                            label: 'Create Event',
+                            iconBg: AppColors.errorLight,
+                            iconFg: AppColors.error,
+                            onTap: () => context.go('/create'),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: OrgQuickTile(
-                          icon: LucideIcons.users,
-                          label: 'Manage Registrations',
-                          iconBg: AppColors.infoLight,
-                          iconFg: AppColors.info,
-                          onTap: () => context.push('/registration-management'),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: OrgQuickTile(
+                            icon: LucideIcons.users,
+                            label: 'Manage Registrations',
+                            iconBg: AppColors.infoLight,
+                            iconFg: AppColors.info,
+                            onTap: () => context.push('/registration-management'),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: OrgQuickTile(
-                          icon: LucideIcons.megaphone,
-                          label: 'Promote Event',
-                          iconBg: AppColors.errorLight,
-                          iconFg: AppColors.error,
-                          onTap: () => context.push('/my-tournaments'),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: OrgQuickTile(
+                            icon: LucideIcons.megaphone,
+                            label: 'Promote Event',
+                            iconBg: AppColors.errorLight,
+                            iconFg: AppColors.error,
+                            onTap: () => context.push('/my-tournaments'),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: OrgQuickTile(
-                          icon: LucideIcons.chartLine,
-                          label: 'Analytics',
-                          iconBg: AppColors.successLight,
-                          iconFg: const Color(0xFF3FA55C),
-                          onTap: () => context.push('/organizer-analytics'),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: OrgQuickTile(
+                            icon: LucideIcons.chartLine,
+                            label: 'Analytics',
+                            iconBg: AppColors.successLight,
+                            iconFg: const Color(0xFF3FA55C),
+                            onTap: () => context.push('/organizer-analytics'),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
 
                   const SizedBox(height: 6),

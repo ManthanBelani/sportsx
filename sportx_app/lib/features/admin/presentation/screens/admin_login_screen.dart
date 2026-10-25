@@ -7,6 +7,7 @@ import 'package:sportx_app/features/admin/presentation/providers/admin_provider.
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
+import 'package:sportx_app/core/responsive.dart';
 
 class AdminLoginScreen extends ConsumerStatefulWidget {
   const AdminLoginScreen({super.key});
@@ -50,19 +51,25 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.resp;
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 420),
+          constraints: BoxConstraints(
+            maxWidth: r.ws(420).clamp(360.0, 470.0),
+          ),
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(32),
+            padding: EdgeInsets.symmetric(
+              horizontal: r.ws(32),
+              vertical: r.vs(24),
+            ),
             child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 88,
-                height: 88,
+                width: r.ws(88),
+                height: r.ws(88),
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: LinearGradient(
@@ -74,16 +81,16 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                 alignment: Alignment.center,
                 child: const Icon(LucideIcons.shieldCheck, size: 40, color: AppColors.ink),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: r.vs(20)),
               Text('Admin Portal',
                   style: GoogleFonts.sora(
-                      fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.ink)),
-              const SizedBox(height: 8),
+                      fontSize: r.ws(26), fontWeight: FontWeight.w800, color: AppColors.ink)),
+              SizedBox(height: r.vs(8)),
               Text('SportX India Platform Management',
-                  style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 13.5)),
-              const SizedBox(height: 12),
+                  style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: r.ws(13.5))),
+              SizedBox(height: r.vs(12)),
               const StatusPill(label: 'MODERATION ACCESS', kind: PillKind.no),
-              const SizedBox(height: 36),
+              SizedBox(height: r.vs(36)),
               TextField(
                 controller: _emailController,
                 decoration: InputDecoration(
@@ -98,7 +105,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: r.vs(16)),
               TextField(
                 controller: _passwordController,
                 obscureText: _obscurePassword,
@@ -134,7 +141,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                 keyboardType: TextInputType.number,
                 maxLength: 6,
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: r.vs(24)),
               if (_loading)
                 const SizedBox(
                     height: 48,

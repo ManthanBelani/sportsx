@@ -6,10 +6,12 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/core/role_config.dart';
 import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/shared/presentation/widgets/async_state_view.dart';
 import 'package:sportx_app/shared/presentation/widgets/detail_page_template.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
+import 'package:sportx_app/shared/providers/role_config_provider.dart';
 import 'package:sportx_app/features/trial/presentation/providers/unified_events_provider.dart';
 import 'package:sportx_app/features/tournament/presentation/providers/external_registration_provider.dart';
 
@@ -73,6 +75,13 @@ class TournamentDetailScreen extends ConsumerWidget {
     final async = ref.watch(tournamentDetailProvider(id));
     final results = ref.watch(eventResultsProvider(id));
 
+    // Registration is an athlete action (the API only accepts athletes).
+    // Organizers manage events — they never register for them — so the
+    // "Register" CTA is hidden for them instead of showing a dead button.
+    final role = ref.watch(activeRoleProvider);
+    final canRegister =
+        role == null || role == SportXRole.athlete;
+
     return AsyncDetailBuilder<Tournament>(
       async: async,
       title: 'Tournament',
@@ -91,13 +100,15 @@ class TournamentDetailScreen extends ConsumerWidget {
           if (t.prizePool != null) 'Prize Pool': '₹${t.prizePool!.toStringAsFixed(0)}',
           if (t.registrationFee != null) 'Entry Fee': '₹${t.registrationFee!.toStringAsFixed(0)}',
           if (t.ageGroupLabel != null) 'Age Group': t.ageGroupLabel!,
-          if (t.hasExternalRegistration) 'Registration': 'On the organizer’s website',
+          if (t.hasExternalRegistration && canRegister) 'Registration': 'On the organizer’s website',
         },
         addressStr: t.venue ?? t.city?.name ?? '',
-        ctaText: t.hasExternalRegistration ? 'Register externally' : 'Register',
-        onCtaPressed: () => t.hasExternalRegistration
-            ? _openExternalRegistration(context, ref, t)
-            : context.push('/tournament-registration/$id'),
+        ctaText: canRegister ? (t.hasExternalRegistration ? 'Register externally' : 'Register') : null,
+        onCtaPressed: !canRegister
+            ? null
+            : () => t.hasExternalRegistration
+                ? _openExternalRegistration(context, ref, t)
+                : context.push('/tournament-registration/$id'),
         extraSections: [
           results.when(
             loading: () => const SizedBox.shrink(),

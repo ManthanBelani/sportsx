@@ -404,9 +404,14 @@ class GenericListSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ShimmerSkeleton(
+      // shrinkWrap so the skeleton can live inside an outer scrollable
+      // (SingleChildScrollView / Column) as well as standalone — the counts
+      // are tiny (<=6) so there is no lazy-build concern.
       child: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: itemCount,
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
         separatorBuilder: (_, _) => const SizedBox(height: 12),
         itemBuilder: (_, _) => Container(
           padding: const EdgeInsets.all(14),

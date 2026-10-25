@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/shared/providers/role_config_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 /// Shared "Continue with Google" button.
@@ -68,7 +69,8 @@ class _GoogleSignInButtonState extends ConsumerState<GoogleSignInButton> {
       if (!mounted) return;
       final state = ref.read(authProvider);
       if (state.status == AuthStatus.authenticated) {
-        context.go('/home');
+        // Land on the active role's dashboard — not the athlete-only feed.
+        context.go(ref.read(roleConfigProvider).homeRoute);
       } else if (state.status == AuthStatus.error) {
         _handleAuthError(state.error ?? 'Google sign-in failed');
       }

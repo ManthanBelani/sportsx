@@ -63,7 +63,7 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
             style: GoogleFonts.sora(
                 fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
         actions: [
-          if (canCreateListings(ref.watch(authProvider).user?.role))
+          if (canPostOpportunities(ref.watch(authProvider).user?.role))
             IconButton(
               icon: const Icon(LucideIcons.plus, color: AppColors.textPrimary),
               onPressed: () => context.push('/post-opportunity'),

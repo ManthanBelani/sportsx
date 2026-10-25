@@ -57,25 +57,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildSectionTitle('Account'),
-                  _buildSettingsGroup(
-                    children: [
-                      _buildSettingsItem(
-                        icon: LucideIcons.user,
-                        title: 'Edit Profile',
-                        subtitle: 'Name, sport, achievements',
-                        onTap: () {
-                          final role = ref.read(authProvider).user?.role ?? 'athlete';
-                          if (role == 'coach') {
-                            context.push('/coach-profile-edit');
-                          } else if (role == 'academy') {
-                            context.push('/edit-academy-profile');
-                          } else if (role == 'talent_scout') {
-                            context.push('/scout-profile');
-                          } else {
-                            context.push('/edit-profile');
-                          }
-                        },
-                      ),
+                  _buildSettingsGroup(children: [
+                    _buildSettingsItem(
+                      icon: LucideIcons.user,
+                      title: 'Edit Profile',
+                      subtitle: 'Name, sport, achievements',
+                      onTap: () {
+                        final role = ref.read(authProvider).user?.role ?? 'athlete';
+                        if (role == 'coach') {
+                          context.push('/coach-profile-edit');
+                        } else if (role == 'academy') {
+                          context.push('/edit-academy-profile');
+                        } else if (role == 'talent_scout') {
+                          context.push('/scout-profile');
+                        } else {
+                          context.push('/edit-profile');
+                        }
+                      },
+                    ),
+                    // Media gallery hidden for organizers — photo/video
+                    // uploads are no longer part of the organizer flows.
+                    if ((ref.watch(authProvider).user?.role ?? '') != 'organizer')
                       _buildSettingsItem(
                         icon: LucideIcons.camera,
                         title: 'Media Gallery',

@@ -6,6 +6,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_cards.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
+import 'package:sportx_app/shared/providers/role_config_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 /// A.6 Forgot / Reset Password.
@@ -80,7 +81,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     } else if (auth.status == AuthStatus.authenticated) {
       setState(() => _step = _Step.done);
       await Future.delayed(const Duration(milliseconds: 900));
-      if (mounted) context.go('/home');
+      if (mounted) context.go(ref.read(roleConfigProvider).homeRoute);
     }
   }
 

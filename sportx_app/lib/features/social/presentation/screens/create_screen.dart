@@ -34,7 +34,7 @@ class CreateScreen extends ConsumerWidget {
           if (context.canPop()) {
             context.pop();
           } else {
-            context.go('/home');
+            context.go(ref.watch(roleConfigProvider).homeRoute);
           }
         },
       ),

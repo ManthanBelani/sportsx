@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/shared/models/approval.dart';
 import 'package:sportx_app/shared/providers/registration_provider.dart';
+import 'package:sportx_app/shared/providers/role_config_provider.dart';
 import 'package:sportx_app/features/trial/presentation/providers/unified_events_provider.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/theme/colors.dart';
@@ -26,7 +27,7 @@ class MyRegistrationsScreen extends ConsumerWidget {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
-            onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
+            onPressed: () => context.canPop() ? context.pop() : context.go(ref.read(roleConfigProvider).homeRoute),
           ),
           title: Text('My Registrations',
             style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.ink)),

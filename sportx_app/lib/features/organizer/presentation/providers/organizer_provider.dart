@@ -272,7 +272,11 @@ class OrganizerAnalytics {
 }
 
 final organizerAnalyticsProvider = FutureProvider<OrganizerAnalytics>((ref) async {
-  final resp = await ref.watch(dioProvider).get('/me/organizer/analytics');
+  // One full-year daily series; the screen slices 7D/30D/3M/1Y client-side
+  // from it (the old 30-day response made the range pills look dead).
+  final resp = await ref
+      .watch(dioProvider)
+      .get('/me/organizer/analytics', queryParameters: {'days': 365});
   final data = resp.data['data'] as Map<String, dynamic>;
   return OrganizerAnalytics.fromJson(data);
 });

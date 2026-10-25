@@ -5,6 +5,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
+import 'package:sportx_app/shared/providers/role_config_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 class AsyncDetailBuilder<T> extends StatelessWidget {
@@ -90,16 +91,17 @@ class _Scaffold extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        leading: IconButton(
+        leading: Consumer(builder: (context, ref, _) => IconButton(
           icon: const Icon(LucideIcons.arrowLeft, color: AppColors.textPrimary),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
             } else {
-              context.go('/home');
+              // Role-aware: never dump a non-athlete onto the athlete feed.
+              context.go(ref.watch(roleConfigProvider).homeRoute);
             }
           },
-        ),
+        )),
         title: Text(title,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
       ),

@@ -268,11 +268,18 @@ class OrganizerEventManagementScreen extends ConsumerWidget {
                           final ageLabel = t.ageGroupLabel;
                           return Row(
                             children: [
+                              // Flexible clamp: sport + age + status pills can
+                              // exceed the card width together — without the
+                              // clamps this row overflowed on the right.
                               if (sportName != null && sportName.isNotEmpty)
-                                OrgPill(sportName, kind: OrgPillKind.info),
+                                Flexible(
+                                  child: OrgPill(sportName, kind: OrgPillKind.info),
+                                ),
                               if (ageLabel != null && ageLabel.isNotEmpty) ...[
                                 const SizedBox(width: 6),
-                                OrgPill(ageLabel, kind: OrgPillKind.draft),
+                                Flexible(
+                                  child: OrgPill(ageLabel, kind: OrgPillKind.draft),
+                                ),
                               ],
                               const Spacer(),
                               if (t.status == 'published' ||

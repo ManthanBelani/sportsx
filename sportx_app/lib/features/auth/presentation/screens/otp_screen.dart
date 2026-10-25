@@ -8,6 +8,7 @@ import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/shared/providers/role_config_provider.dart';
 
 class OtpScreen extends ConsumerStatefulWidget {
   final String email;
@@ -69,7 +70,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     final state = ref.read(authProvider);
     if (mounted) {
       if (state.status == AuthStatus.authenticated) {
-        context.go('/home');
+        context.go(ref.read(roleConfigProvider).homeRoute);
       } else if (state.status == AuthStatus.error) {
         SnackBarUtils.showError(context, state.error ?? 'Invalid OTP');
       }

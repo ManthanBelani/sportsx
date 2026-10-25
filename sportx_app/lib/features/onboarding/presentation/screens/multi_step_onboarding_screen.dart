@@ -5,11 +5,13 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/role_config.dart';
+import 'package:sportx_app/core/responsive.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/features/onboarding/presentation/providers/multi_step_onboarding_provider.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
+import 'package:sportx_app/shared/providers/role_config_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 /// Progressive multi-step onboarding screen for all roles
@@ -48,7 +50,7 @@ class _MultiStepOnboardingScreenState extends ConsumerState<MultiStepOnboardingS
 
     if (steps.isEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) context.go('/home');
+        if (mounted) context.go(ref.read(roleConfigProvider).homeRoute);
       });
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -87,8 +89,9 @@ class _MultiStepOnboardingScreenState extends ConsumerState<MultiStepOnboardingS
   }
 
   Widget _buildProgressBar(OnboardingProgress progress, List<OnboardingStep> steps) {
+    final r = context.resp;
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: EdgeInsets.fromLTRB(r.ws(16), r.vs(16), r.ws(16), r.vs(8)),
       child: Column(
         children: [
           Row(
@@ -115,7 +118,7 @@ class _MultiStepOnboardingScreenState extends ConsumerState<MultiStepOnboardingS
               );
             }),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: r.vs(12)),
           Row(
             children: [
               Icon(
@@ -130,18 +133,18 @@ class _MultiStepOnboardingScreenState extends ConsumerState<MultiStepOnboardingS
                   children: [
                     Text(
                       onboardingStepInfo[progress.currentStep]?.title ?? 'Step ${steps.indexOf(progress.currentStep) + 1}',
-                      style: GoogleFonts.sora(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink),
+                      style: GoogleFonts.sora(fontSize: r.ws(14), fontWeight: FontWeight.w700, color: AppColors.ink),
                     ),
                     Text(
                       onboardingStepInfo[progress.currentStep]?.subtitle ?? '',
-                      style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondary),
+                      style: GoogleFonts.inter(fontSize: r.ws(11), color: AppColors.textSecondary),
                     ),
                   ],
                 ),
               ),
               Text(
                 '${steps.indexOf(progress.currentStep) + 1} / ${steps.length}',
-                style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                style: GoogleFonts.inter(fontSize: r.ws(12), fontWeight: FontWeight.w600, color: AppColors.textSecondary),
               ),
             ],
           ),
@@ -173,8 +176,10 @@ class _MultiStepOnboardingScreenState extends ConsumerState<MultiStepOnboardingS
     final isLastStep = progress.currentStep == steps.last;
     final isFirstStep = progress.currentStep == steps.first;
 
+    final r = context.resp;
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      padding: EdgeInsets.fromLTRB(r.ws(16), r.vs(8), r.ws(16), r.vs(24)),
       child: Row(
         children: [
           if (!isFirstStep)
@@ -182,8 +187,8 @@ class _MultiStepOnboardingScreenState extends ConsumerState<MultiStepOnboardingS
               child: OutlinedButton(
                 onPressed: () => ref.read(multiStepOnboardingProvider(role).notifier).previousStep(),
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  padding: EdgeInsets.symmetric(vertical: r.vs(16)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.ws(14))),
                   side: const BorderSide(color: AppColors.border),
                 ),
                 child: Row(
@@ -191,7 +196,7 @@ class _MultiStepOnboardingScreenState extends ConsumerState<MultiStepOnboardingS
                   children: [
                     const Icon(LucideIcons.arrowLeft, size: 18),
                     const SizedBox(width: 8),
-                    Text('Back', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                    Text('Back', style: GoogleFonts.inter(fontSize: r.ws(14), fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                   ],
                 ),
               ),
@@ -233,7 +238,7 @@ class _MultiStepOnboardingScreenState extends ConsumerState<MultiStepOnboardingS
       await notifier.submit();
       if (mounted) {
         ref.read(authProvider.notifier).markOnboardingComplete();
-        context.go('/home');
+        context.go(ref.read(roleConfigProvider).homeRoute);
       }
     } on DioException catch (e) {
       if (mounted) {
@@ -246,7 +251,7 @@ class _MultiStepOnboardingScreenState extends ConsumerState<MultiStepOnboardingS
 
   void _handleBack(WidgetRef ref, OnboardingProgress progress, List<OnboardingStep> steps, SportXRole role) {
     if (progress.currentStep == steps.first) {
-      context.go('/home');
+      context.go(ref.read(roleConfigProvider).homeRoute);
     } else {
       ref.read(multiStepOnboardingProvider(role).notifier).previousStep();
     }
@@ -298,61 +303,69 @@ class _CoreIdentityStepState extends State<_CoreIdentityStep> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.resp;
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Tell us about yourself',
-              style: GoogleFonts.sora(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.ink)),
-          const SizedBox(height: 8),
-          Text('This helps us personalize your experience',
-              style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary)),
-          const SizedBox(height: 24),
-          
-          _FormField(
-            label: 'Full Name',
-            hint: 'As per your ID',
-            controller: _nameController,
-            icon: LucideIcons.user,
-            onChanged: (v) => notifier.updateFormData({'full_name': v}),
+      padding: EdgeInsets.all(r.ws(16)),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: context.isTabletViewport ? 560 : double.infinity,
           ),
-          const SizedBox(height: 16),
-          
-          _FormField(
-            label: 'Phone Number',
-            hint: '+91 XXXXX XXXXX',
-            controller: _phoneController,
-            icon: LucideIcons.phone,
-            keyboardType: TextInputType.phone,
-            onChanged: (v) => notifier.updateFormData({'phone': v}),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Tell us about yourself',
+                  style: GoogleFonts.sora(fontSize: r.ws(20), fontWeight: FontWeight.w700, color: AppColors.ink)),
+              const SizedBox(height: 8),
+              Text('This helps us personalize your experience',
+                  style: GoogleFonts.inter(fontSize: r.ws(14), color: AppColors.textSecondary)),
+              SizedBox(height: r.vs(24)),
+              
+              _FormField(
+                label: 'Full Name',
+                hint: 'As per your ID',
+                controller: _nameController,
+                icon: LucideIcons.user,
+                onChanged: (v) => notifier.updateFormData({'full_name': v}),
+              ),
+              SizedBox(height: r.vs(16)),
+              
+              _FormField(
+                label: 'Phone Number',
+                hint: '+91 XXXXX XXXXX',
+                controller: _phoneController,
+                icon: LucideIcons.phone,
+                keyboardType: TextInputType.phone,
+                onChanged: (v) => notifier.updateFormData({'phone': v}),
+              ),
+              SizedBox(height: r.vs(16)),
+              
+              _DatePickerField(
+                label: 'Date of Birth',
+                hint: 'Select date',
+                initialDate: _dob,
+                onChanged: (d) {
+                  setState(() => _dob = d);
+                  notifier.updateFormData({'date_of_birth': d.toIso8601String().split('T')[0]});
+                },
+              ),
+              SizedBox(height: r.vs(16)),
+              
+              _DropdownField<String>(
+                label: 'Gender',
+                hint: 'Select',
+                value: _gender,
+                items: ['male', 'female']
+                    .map((g) => DropdownMenuItem(value: g, child: Text(g.capitalize())))
+                    .toList(),
+                onChanged: (v) {
+                  setState(() => _gender = v);
+                  notifier.updateFormData({'gender': v});
+                },
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          
-          _DatePickerField(
-            label: 'Date of Birth',
-            hint: 'Select date',
-            initialDate: _dob,
-            onChanged: (d) {
-              setState(() => _dob = d);
-              notifier.updateFormData({'date_of_birth': d.toIso8601String().split('T')[0]});
-            },
-          ),
-          const SizedBox(height: 16),
-          
-          _DropdownField<String>(
-            label: 'Gender',
-            hint: 'Select',
-            value: _gender,
-            items: ['male', 'female']
-                .map((g) => DropdownMenuItem(value: g, child: Text(g.capitalize())))
-                .toList(),
-            onChanged: (v) {
-              setState(() => _gender = v);
-              notifier.updateFormData({'gender': v});
-            },
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -387,20 +400,26 @@ class _RoleProfileStepState extends ConsumerState<_RoleProfileStep> {
   @override
   Widget build(BuildContext context) {
     final meta = ref.watch(metaProvider);
+    final r = context.resp;
     final sports = meta.sports.where((s) => s.isActive).toList();
     final cities = meta.cities.where((c) => c.isActive).toList();
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Your ${role.name} Profile',
-              style: GoogleFonts.sora(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.ink)),
-          const SizedBox(height: 8),
-          Text('Help others find you',
-              style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary)),
-          const SizedBox(height: 24),
+      padding: EdgeInsets.all(r.ws(16)),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: context.isTabletViewport ? 560 : double.infinity,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Your ${role.name} Profile',
+                  style: GoogleFonts.sora(fontSize: r.ws(20), fontWeight: FontWeight.w700, color: AppColors.ink)),
+              const SizedBox(height: 8),
+              Text('Help others find you',
+                  style: GoogleFonts.inter(fontSize: r.ws(14), color: AppColors.textSecondary)),
+              SizedBox(height: r.vs(24)),
           
           if (role == SportXRole.athlete || role == SportXRole.coach) ...[
             if (meta.isLoading)
@@ -420,7 +439,7 @@ class _RoleProfileStepState extends ConsumerState<_RoleProfileStep> {
                   notifier.updateFormData({'sport_id': v});
                 },
               ),
-            const SizedBox(height: 16),
+            SizedBox(height: r.vs(16)),
             _DropdownField<String>(
               label: 'Skill Level',
               hint: 'Select level',
@@ -433,7 +452,7 @@ class _RoleProfileStepState extends ConsumerState<_RoleProfileStep> {
                 notifier.updateFormData({'skill_level': v});
               },
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: r.vs(16)),
           ],
           
           if (role == SportXRole.coach) ...[
@@ -443,7 +462,7 @@ class _RoleProfileStepState extends ConsumerState<_RoleProfileStep> {
               icon: LucideIcons.award,
               onChanged: (v) => notifier.updateFormData({'coaching_license': v}),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: r.vs(16)),
           ],
           
           if (role == SportXRole.academy) ...[
@@ -453,14 +472,14 @@ class _RoleProfileStepState extends ConsumerState<_RoleProfileStep> {
               icon: LucideIcons.building2,
               onChanged: (v) => notifier.updateFormData({'organization_name': v}),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: r.vs(16)),
             _FormField(
               label: 'Academy License',
               hint: 'Registration number',
               icon: LucideIcons.badgeCheck,
               onChanged: (v) => notifier.updateFormData({'academy_license': v}),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: r.vs(16)),
           ],
           
           if (role == SportXRole.organizer) ...[
@@ -470,14 +489,14 @@ class _RoleProfileStepState extends ConsumerState<_RoleProfileStep> {
               icon: LucideIcons.building2,
               onChanged: (v) => notifier.updateFormData({'organization_name': v}),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: r.vs(16)),
             _FormField(
               label: 'Tax ID / GST',
               hint: 'GSTIN or tax registration',
               icon: LucideIcons.fileText,
               onChanged: (v) => notifier.updateFormData({'tax_id': v}),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: r.vs(16)),
             _FormField(
               label: 'Website',
               hint: 'https://...',
@@ -485,7 +504,7 @@ class _RoleProfileStepState extends ConsumerState<_RoleProfileStep> {
               keyboardType: TextInputType.url,
               onChanged: (v) => notifier.updateFormData({'website': v}),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: r.vs(16)),
           ],
           
           if (role == SportXRole.scout) ...[
@@ -495,7 +514,7 @@ class _RoleProfileStepState extends ConsumerState<_RoleProfileStep> {
               icon: LucideIcons.badgeCheck,
               onChanged: (v) => notifier.updateFormData({'scouting_license': v}),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: r.vs(16)),
           ],
           
           if (role == SportXRole.sponsor) ...[
@@ -505,14 +524,14 @@ class _RoleProfileStepState extends ConsumerState<_RoleProfileStep> {
               icon: LucideIcons.building2,
               onChanged: (v) => notifier.updateFormData({'company_name': v}),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: r.vs(16)),
             _FormField(
               label: 'Tax ID / GST',
               hint: 'GSTIN or tax registration',
               icon: LucideIcons.fileText,
               onChanged: (v) => notifier.updateFormData({'tax_id': v}),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: r.vs(16)),
           ],
           
           if (meta.isLoading)
@@ -535,7 +554,7 @@ class _RoleProfileStepState extends ConsumerState<_RoleProfileStep> {
               notifier.updateFormData({'city_id': v});
             },
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: r.vs(16)),
           
           _FormField(
             label: 'Bio',
@@ -544,7 +563,9 @@ class _RoleProfileStepState extends ConsumerState<_RoleProfileStep> {
             maxLines: 4,
             onChanged: (v) => notifier.updateFormData({'bio': v}),
           ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -556,17 +577,23 @@ class _MediaStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.resp;
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Add Photos',
-              style: GoogleFonts.sora(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.ink)),
-          const SizedBox(height: 8),
-          Text('Profiles with photos get 10x more views',
-              style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary)),
-          const SizedBox(height: 24),
+      padding: EdgeInsets.all(r.ws(16)),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: context.isTabletViewport ? 560 : double.infinity,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Add Photos',
+                  style: GoogleFonts.sora(fontSize: r.ws(20), fontWeight: FontWeight.w700, color: AppColors.ink)),
+              const SizedBox(height: 8),
+              Text('Profiles with photos get 10x more views',
+                  style: GoogleFonts.inter(fontSize: r.ws(14), color: AppColors.textSecondary)),
+              SizedBox(height: r.vs(24)),
           
           _MediaUploadTile(
             title: 'Profile Photo',
@@ -574,7 +601,7 @@ class _MediaStep extends StatelessWidget {
             icon: LucideIcons.user,
             onTap: () => notifier.updateFormData({'profile_photo_action': 'pick'}),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: r.vs(16)),
           
           _MediaUploadTile(
             title: 'Cover Photo',
@@ -582,7 +609,9 @@ class _MediaStep extends StatelessWidget {
             icon: LucideIcons.image,
             onTap: () => notifier.updateFormData({'cover_photo_action': 'pick'}),
           ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -594,17 +623,23 @@ class _VerificationStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.resp;
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Get Verified',
-              style: GoogleFonts.sora(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.ink)),
-          const SizedBox(height: 8),
-          Text('Verified badge builds trust and unlocks features',
-              style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary)),
-          const SizedBox(height: 24),
+      padding: EdgeInsets.all(r.ws(16)),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: context.isTabletViewport ? 560 : double.infinity,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Get Verified',
+                  style: GoogleFonts.sora(fontSize: r.ws(20), fontWeight: FontWeight.w700, color: AppColors.ink)),
+              const SizedBox(height: 8),
+              Text('Verified badge builds trust and unlocks features',
+                  style: GoogleFonts.inter(fontSize: r.ws(14), color: AppColors.textSecondary)),
+              SizedBox(height: r.vs(24)),
           
           _MediaUploadTile(
             title: 'Government ID',
@@ -612,7 +647,7 @@ class _VerificationStep extends StatelessWidget {
             icon: LucideIcons.badgeCheck,
             onTap: () => notifier.updateFormData({'verification_doc_action': 'pick'}),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: r.vs(16)),
           
           Container(
             padding: const EdgeInsets.all(16),
@@ -642,7 +677,9 @@ class _VerificationStep extends StatelessWidget {
               ],
             ),
           ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -681,55 +718,63 @@ class _PreferencesStepState extends State<_PreferencesStep> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.resp;
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Your Preferences',
-              style: GoogleFonts.sora(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.ink)),
-          const SizedBox(height: 8),
-          Text('Customize your experience',
-              style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary)),
-          const SizedBox(height: 24),
-          
-          Text('Notifications', style: GoogleFonts.sora(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink)),
-          const SizedBox(height: 12),
-          _PreferenceTile(
-            title: 'Push Notifications',
-            subtitle: 'Match updates, messages, opportunities',
-            value: _pushNotifications,
-            onChanged: (v) { setState(() => _pushNotifications = v); _set('push_notifications', v); },
+      padding: EdgeInsets.all(r.ws(16)),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: context.isTabletViewport ? 560 : double.infinity,
           ),
-          _PreferenceTile(
-            title: 'Email Notifications',
-            subtitle: 'Weekly digest, important updates',
-            value: _emailNotifications,
-            onChanged: (v) { setState(() => _emailNotifications = v); _set('email_notifications', v); },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Your Preferences',
+                  style: GoogleFonts.sora(fontSize: r.ws(20), fontWeight: FontWeight.w700, color: AppColors.ink)),
+              const SizedBox(height: 8),
+              Text('Customize your experience',
+                  style: GoogleFonts.inter(fontSize: r.ws(14), color: AppColors.textSecondary)),
+              SizedBox(height: r.vs(24)),
+              
+              Text('Notifications', style: GoogleFonts.sora(fontSize: r.ws(14), fontWeight: FontWeight.w700, color: AppColors.ink)),
+              SizedBox(height: r.vs(12)),
+              _PreferenceTile(
+                title: 'Push Notifications',
+                subtitle: 'Match updates, messages, opportunities',
+                value: _pushNotifications,
+                onChanged: (v) { setState(() => _pushNotifications = v); _set('push_notifications', v); },
+              ),
+              _PreferenceTile(
+                title: 'Email Notifications',
+                subtitle: 'Weekly digest, important updates',
+                value: _emailNotifications,
+                onChanged: (v) { setState(() => _emailNotifications = v); _set('email_notifications', v); },
+              ),
+              _PreferenceTile(
+                title: 'SMS Notifications',
+                subtitle: 'Critical alerts only',
+                value: _smsNotifications,
+                onChanged: (v) { setState(() => _smsNotifications = v); _set('sms_notifications', v); },
+              ),
+              SizedBox(height: r.vs(24)),
+              
+              Text('Privacy', style: GoogleFonts.sora(fontSize: r.ws(14), fontWeight: FontWeight.w700, color: AppColors.ink)),
+              SizedBox(height: r.vs(12)),
+              _PreferenceTile(
+                title: 'Public Profile',
+                subtitle: 'Visible to other SportX users',
+                value: _profilePublic,
+                onChanged: (v) { setState(() => _profilePublic = v); _set('profile_public', v); },
+              ),
+              _PreferenceTile(
+                title: 'Show Activity',
+                subtitle: 'Matches, achievements, posts',
+                value: _showActivity,
+                onChanged: (v) { setState(() => _showActivity = v); _set('show_activity', v); },
+              ),
+            ],
           ),
-          _PreferenceTile(
-            title: 'SMS Notifications',
-            subtitle: 'Critical alerts only',
-            value: _smsNotifications,
-            onChanged: (v) { setState(() => _smsNotifications = v); _set('sms_notifications', v); },
-          ),
-          const SizedBox(height: 24),
-          
-          Text('Privacy', style: GoogleFonts.sora(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink)),
-          const SizedBox(height: 12),
-          _PreferenceTile(
-            title: 'Public Profile',
-            subtitle: 'Visible to other SportX users',
-            value: _profilePublic,
-            onChanged: (v) { setState(() => _profilePublic = v); _set('profile_public', v); },
-          ),
-          _PreferenceTile(
-            title: 'Show Activity',
-            subtitle: 'Matches, achievements, posts',
-            value: _showActivity,
-            onChanged: (v) { setState(() => _showActivity = v); _set('show_activity', v); },
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -740,15 +785,16 @@ class _CompletionStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.resp;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(r.vs(24)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 100,
-              height: 100,
+              width: r.ws(96),
+              height: r.ws(96),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: const LinearGradient(
@@ -758,14 +804,14 @@ class _CompletionStep extends StatelessWidget {
               alignment: Alignment.center,
               child: const Icon(LucideIcons.checkCircle, size: 50, color: Color(0xFF15803D)),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: r.vs(24)),
             Text('Welcome to SportX!',
-                style: GoogleFonts.sora(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.ink)),
-            const SizedBox(height: 12),
+                style: GoogleFonts.sora(fontSize: r.ws(24), fontWeight: FontWeight.w800, color: AppColors.ink)),
+            SizedBox(height: r.vs(12)),
             Text(
               'Your profile is set up and ready to go.\nStart exploring, connecting, and growing.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(fontSize: 15, color: AppColors.textSecondary, height: 1.5),
+              style: GoogleFonts.inter(fontSize: r.ws(15), color: AppColors.textSecondary, height: 1.5),
             ),
           ],
         ),
