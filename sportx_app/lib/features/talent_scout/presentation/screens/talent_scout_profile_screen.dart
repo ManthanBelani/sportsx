@@ -86,7 +86,7 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
   }
 
   Future<void> _pickPhoto() async {
-    final media = await pickAndUploadMedia(context, ref, mediaType: 'photo');
+    final media = await pickAndUploadMedia(context, ref, mediaType: 'photo', uploadContext: 'profile');
     if (media != null && mounted) {
       setState(() {
         _photoMediaId = media.mediaId;

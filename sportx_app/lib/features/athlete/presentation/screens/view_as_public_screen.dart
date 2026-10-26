@@ -142,7 +142,7 @@ class _ViewAsPublicScreenState extends ConsumerState<ViewAsPublicScreen> {
         return const EmptyState(
           icon: LucideIcons.image,
           title: 'No media yet',
-          message: 'Photos and videos you upload will appear here.',
+          message: 'Photos you upload will appear here.', // videos no longer uploadable
         );
     }
   }

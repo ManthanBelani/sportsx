@@ -82,21 +82,28 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     try {
       final dio = ref.read(dioProvider);
       // Upload media first via /media/upload (backend posts accept
-      // image_url/video_url strings, not multipart files).
+      // image_url / image_media_ids, not multipart files). Context 'post'
+      // keeps post photos out of the gallery quota; the server still
+      // compresses them.
       String? imageUrl;
+      List<int> imageMediaIds = [];
       if (_selectedMedia.isNotEmpty) {
         final form = FormData.fromMap({
           'file': await MultipartFile.fromFile(_selectedMedia.first.path),
-          'media_type': 'image',
+          'media_type': 'photo',
+          'context': 'post',
         });
         final up = await dio.post('/media/upload', data: form);
         final d = up.data['data'];
         imageUrl = (d is Map ? d['url'] ?? d['file_url'] : null)?.toString();
+        final id = (d is Map ? d['id'] : null);
+        if (id is int) imageMediaIds = [id];
       }
 
       await dio.post('/posts', data: {
         'body': _captionController.text.trim().isEmpty ? null : _captionController.text.trim(),
         if (imageUrl != null) 'image_url': imageUrl,
+        if (imageMediaIds.isNotEmpty) 'image_media_ids': imageMediaIds,
         if (_selectedHashtags.isNotEmpty) 'hashtags': _selectedHashtags,
       });
 

@@ -185,7 +185,7 @@ RoleConfig roleConfigFor(SportXRole role) {
         createTiles: [
           CreateTile(id: 'post', label: 'Create Post', subtitle: 'Share an update with your network', icon: LucideIcons.penLine, tintBg: Color(0xFFE3EFFF), tintFg: AppColors.info, route: '/create-post'),
           CreateTile(id: 'achievement', label: 'Add Achievement', subtitle: 'Medals, records & certificates', icon: LucideIcons.award, tintBg: Color(0xFFDCFCE7), tintFg: Color(0xFF15803D), route: '/add-achievement'),
-          CreateTile(id: 'media', label: 'Upload Photo/Video', subtitle: 'Showcase your highlights', icon: LucideIcons.imagePlus, tintBg: Color(0xFFFEE2E2), tintFg: AppColors.error, route: '/media-gallery'),
+          CreateTile(id: 'media', label: 'Upload Photo', subtitle: 'Showcase your highlights', icon: LucideIcons.imagePlus, tintBg: Color(0xFFFEE2E2), tintFg: AppColors.error, route: '/media-gallery'),
         ],
         moreRows: [
           MoreRow(label: 'My Profile', icon: LucideIcons.user, route: '/profile'),
@@ -220,7 +220,7 @@ RoleConfig roleConfigFor(SportXRole role) {
           CreateTile(id: 'program', label: 'Create Training Program', subtitle: 'Add a new program', icon: LucideIcons.dumbbell, tintBg: Color(0xFFECE9FF), tintFg: AppColors.coach, route: '/post-program'),
           CreateTile(id: 'event', label: 'Create Event / Trial', subtitle: 'Post a new trial or tournament', icon: LucideIcons.calendarPlus, tintBg: Color(0xFFFCE7F3), tintFg: AppColors.organizer, route: '/post-trial'),
           CreateTile(id: 'opportunity', label: 'Create Opportunity', subtitle: 'Scholarships & sponsorships', icon: LucideIcons.megaphone, route: '/post-opportunity', priority: CreatePriority.p1),
-          CreateTile(id: 'media', label: 'Upload Photo/Video', subtitle: 'Showcase your coaching', icon: LucideIcons.imagePlus, tintBg: Color(0xFFFEE2E2), tintFg: AppColors.error, route: '/media-gallery'),
+          CreateTile(id: 'media', label: 'Upload Photo', subtitle: 'Showcase your coaching', icon: LucideIcons.imagePlus, tintBg: Color(0xFFFEE2E2), tintFg: AppColors.error, route: '/media-gallery'),
           CreateTile(id: 'golive', label: 'Go Live / Webinar', subtitle: 'Host a live session', icon: LucideIcons.radio, tintBg: Color(0xFFFEE2E2), tintFg: AppColors.error, route: '/coach-go-live', priority: CreatePriority.p2),
         ],
         moreRows: [
@@ -256,7 +256,7 @@ RoleConfig roleConfigFor(SportXRole role) {
           CreateTile(id: 'event', label: 'Event / Trial', subtitle: 'Post a new trial or tournament', icon: LucideIcons.calendarPlus, tintBg: Color(0xFFFCE7F3), tintFg: AppColors.organizer, route: '/post-trial'),
           CreateTile(id: 'opportunity', label: 'Scholarship / Opportunity', subtitle: 'Post a scholarship or sponsorship', icon: LucideIcons.award, route: '/post-opportunity'),
           CreateTile(id: 'facility', label: 'Facility / Venue', subtitle: 'Showcase grounds, courts, gyms', icon: LucideIcons.building2, tintBg: Color(0xFFDBEAFE), tintFg: AppColors.info, route: '/post-facility'),
-          CreateTile(id: 'media', label: 'Photos / Videos', subtitle: 'Add to your gallery', icon: LucideIcons.imagePlus, tintBg: Color(0xFFFEE2E2), tintFg: AppColors.error, route: '/media-gallery'),
+          CreateTile(id: 'media', label: 'Photos', subtitle: 'Add to your gallery', icon: LucideIcons.imagePlus, tintBg: Color(0xFFFEE2E2), tintFg: AppColors.error, route: '/media-gallery'),
           CreateTile(id: 'invite', label: 'Invite Athlete', subtitle: 'Link an athlete to your academy', icon: LucideIcons.userPlus, tintBg: Color(0xFFDCFCE7), tintFg: Color(0xFF15803D), route: '/academy-invite-athlete', priority: CreatePriority.p1),
         ],
         moreRows: [
@@ -333,7 +333,7 @@ RoleConfig roleConfigFor(SportXRole role) {
           CreateTile(id: 'observation', label: 'Add Observation', subtitle: 'Quick scouting note', icon: LucideIcons.notebookPen, route: '/observations'),
           CreateTile(id: 'opportunity', label: 'Scouting Opportunity', subtitle: 'Post a scouting call', icon: LucideIcons.megaphone, route: '/post-opportunity'),
           CreateTile(id: 'event', label: 'Add Event / Trial', subtitle: 'Post a trial or camp', icon: LucideIcons.calendarPlus, tintBg: Color(0xFFFCE7F3), tintFg: AppColors.organizer, route: '/post-trial', priority: CreatePriority.p1),
-          CreateTile(id: 'media', label: 'Upload Photo / Video', subtitle: 'Attach footage to reports', icon: LucideIcons.imagePlus, tintBg: Color(0xFFFEE2E2), tintFg: AppColors.error, route: '/media-gallery'),
+          CreateTile(id: 'media', label: 'Upload Photo', subtitle: 'Attach photos to reports', icon: LucideIcons.imagePlus, tintBg: Color(0xFFFEE2E2), tintFg: AppColors.error, route: '/media-gallery'),
         ],
         moreRows: [
           MoreRow(label: 'My Profile', icon: LucideIcons.user, route: '/scout-profile'),

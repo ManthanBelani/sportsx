@@ -55,7 +55,7 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
   }
 
   Future<void> _pickDocument() async {
-    final media = await pickAndUploadMedia(context, ref, mediaType: 'document');
+    final media = await pickAndUploadMedia(context, ref, mediaType: 'document', uploadContext: 'document');
     if (media == null) return;
     setState(() {
       _documentMediaIds.add(media.mediaId);

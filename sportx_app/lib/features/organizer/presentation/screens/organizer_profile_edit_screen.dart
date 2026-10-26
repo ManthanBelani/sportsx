@@ -105,7 +105,7 @@ class _OrganizerProfileScreenState extends ConsumerState<OrganizerProfileEditScr
   }
 
   Future<void> _pickLogo() async {
-    final media = await pickAndUploadMedia(context, ref, mediaType: 'photo');
+    final media = await pickAndUploadMedia(context, ref, mediaType: 'photo', uploadContext: 'logo');
     if (media == null || !mounted) return;
     setState(() => _logoMediaId = media.mediaId);
     if (mounted) SnackBarUtils.showSuccess(context, 'Logo updated — tap Save');

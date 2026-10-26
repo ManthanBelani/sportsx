@@ -87,6 +87,45 @@ final class PlatformSettings
     }
 
     /**
+     * Per-role gallery photo limits (Step 3A). `0` = hard-blocked; any value
+     * >= 0 counts gallery photos only — profile / cover / logo / post /
+     * achievement / credential photos are always free.
+     */
+    public static function galleryLimitKeys(): array
+    {
+        return [
+            'athlete' => 'gallery_photo_limit_athlete',
+            'coach' => 'gallery_photo_limit_coach',
+            'academy' => 'gallery_photo_limit_academy',
+            'organizer' => 'gallery_photo_limit_organizer',
+            'talent_scout' => 'gallery_photo_limit_talent_scout',
+            'scout' => 'gallery_photo_limit_talent_scout', // canonical v3 alias → same key
+            'sponsor' => 'gallery_photo_limit_sponsor',
+        ];
+    }
+
+    /** Single source of truth for the caller's gallery photo limit. */
+    public static function galleryPhotoLimit(string $role): int
+    {
+        $role = UserRoles::normalize($role);
+        $key = static::galleryLimitKeys()[$role] ?? null;
+        if ($key === null) {
+            return 0; // unknown role → no gallery uploads
+        }
+
+        return max(0, (int) static::get($key, static::defaults()[$key]));
+    }
+
+    /** Contexts that are NOT counted against the gallery quota. */
+    public static function photoCompressionDefaults(): array
+    {
+        return [
+            'photo_max_dimension' => 1600,
+            'photo_jpeg_quality' => 78,
+        ];
+    }
+
+    /**
      * Keys the mobile admin screen (and the web panel) may change at runtime.
      */
     public static function writable(): array
@@ -98,7 +137,24 @@ final class PlatformSettings
             'auto_approve_tournaments',
             'push_notifications',
             'email_alerts',
+            // Photo-quota keys (Step 3A/3G/2B):
+            ...array_values(static::galleryLimitKeys()),
+            'post_max_photos',
+            'photo_max_dimension',
+            'photo_jpeg_quality',
         ];
+    }
+
+    /** Numeric (non-boolean) writable keys, with their validation range. */
+    public static function numericKeys(): array
+    {
+        return array_fill_keys(
+            array_values(array_merge(
+                array_values(static::galleryLimitKeys()),
+                ['post_max_photos', 'photo_max_dimension', 'photo_jpeg_quality'],
+            )),
+            true,
+        );
     }
 
     public static function defaults(): array
@@ -122,6 +178,18 @@ final class PlatformSettings
             'registrations_open' => true,
             'max_listings_per_user_per_day' => 5,
             'media_max_size_mb' => 10,
+            // Per-role gallery photo limits (0 = no uploads for that role).
+            'gallery_photo_limit_athlete' => 100,
+            'gallery_photo_limit_coach' => 150,
+            'gallery_photo_limit_academy' => 500,
+            'gallery_photo_limit_organizer' => 300,
+            'gallery_photo_limit_talent_scout' => 100,
+            'gallery_photo_limit_sponsor' => 100,
+            // Multi-photo posts cap (Step 3G).
+            'post_max_photos' => 5,
+            // Server-side photo compression (Step 2B).
+            'photo_max_dimension' => 1600,
+            'photo_jpeg_quality' => 78,
             'session_lifetime_minutes' => 30,
             'rate_limit_login_per_minute' => 10,
             'audit_log_enabled' => true,

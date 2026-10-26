@@ -72,7 +72,7 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
   void dispose(){ _name.dispose(); _regNo.dispose(); _website.dispose(); _desc.dispose(); super.dispose(); }
 
   Future<void> _pickLogo() async {
-    final media = await pickAndUploadMedia(context, ref, mediaType: 'photo');
+    final media = await pickAndUploadMedia(context, ref, mediaType: 'photo', uploadContext: 'logo');
     if (media != null && mounted) {
       setState(() => _logoMediaId = media.mediaId);
       SnackBarUtils.showSuccess(context, 'Logo uploaded');
@@ -80,7 +80,7 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
   }
 
   Future<void> _pickDoc() async {
-    final media = await pickAndUploadMedia(context, ref, mediaType: 'document');
+    final media = await pickAndUploadMedia(context, ref, mediaType: 'document', uploadContext: 'document');
     if (media != null && mounted) {
       setState(() {
         _docMediaId = media.mediaId;

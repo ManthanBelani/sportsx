@@ -181,7 +181,16 @@ return [
     'media' => [
         'max_upload_mb' => 10,
         'allowed_image_types' => ['jpg', 'jpeg', 'png', 'webp'],
-        'allowed_video_types' => ['mp4'],
+        // Video uploads are disabled platform-wide (photos only). Existing
+        // videos remain viewable; only new uploads are blocked.
+        'allowed_video_types' => [],
         'allowed_document_types' => ['pdf', 'jpg', 'jpeg', 'png'],
+        // Valid upload contexts — how the photo is used. Only 'gallery'
+        // counts against the per-role photo limit.
+        'upload_contexts' => ['gallery', 'profile', 'cover', 'logo', 'post', 'achievement', 'credential', 'document'],
+        // Server-side photo compression fallbacks (runtime overrides live in
+        // platform_settings.json via photo_max_dimension / photo_jpeg_quality).
+        'photo_max_dimension' => 1600,
+        'photo_jpeg_quality' => 78,
     ],
 ];

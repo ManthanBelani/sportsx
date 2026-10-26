@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -28,6 +29,21 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
   String? _error;
   Map<String, bool> _values = {};
   Map<String, bool> _initial = {};
+
+  // Photo-limit numeric keys (value is a TextEditController per key).
+  final Map<String, TextEditingController> _numeric = {};
+
+  static const _photoLimitRows = [
+    ('gallery_photo_limit_athlete', 'Athlete'),
+    ('gallery_photo_limit_coach', 'Coach'),
+    ('gallery_photo_limit_academy', 'Academy'),
+    ('gallery_photo_limit_organizer', 'Organizer'),
+    ('gallery_photo_limit_talent_scout', 'Talent Scout'),
+    ('gallery_photo_limit_sponsor', 'Sponsor'),
+    ('post_max_photos', 'Photos per post'),
+    ('photo_max_dimension', 'Max photo dimension (px)'),
+    ('photo_jpeg_quality', 'Photo JPEG quality'),
+  ];
 
   static const _rows = [
     (
@@ -77,6 +93,11 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
       final values = {
         for (final r in _rows) r.$1: (raw[r.$1] as bool?) ?? false,
       };
+      for (final r in _photoLimitRows) {
+        final key = r.$1;
+        _numeric[key] ??= TextEditingController();
+        _numeric[key]!.text = ((raw[key] as num?) ?? 0).toString();
+      }
       if (mounted) {
         setState(() {
           _values = values;
@@ -109,7 +130,13 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
     try {
       final resp = await ref
           .read(dioProvider)
-          .put('/admin/settings', data: _values);
+          .put('/admin/settings', data: {
+        ..._values,
+        // Numeric photo limits: parse ints, fall back to the current value on
+        // garbage input so a stray character never wipes a setting.
+        for (final r in _photoLimitRows)
+          r.$1: int.tryParse(_numeric[r.$1]!.text.trim()) ?? 0,
+      });
       final raw = Map<String, dynamic>.from(
         resp.data['data']['settings'] as Map,
       );
@@ -117,6 +144,11 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
       final values = {
         for (final r in _rows) r.$1: (raw[r.$1] as bool?) ?? false,
       };
+      for (final r in _photoLimitRows) {
+        final key = r.$1;
+        _numeric[key] ??= TextEditingController();
+        _numeric[key]!.text = ((raw[key] as num?) ?? 0).toString();
+      }
       setState(() {
         _values = values;
         _initial = Map.of(values);
@@ -189,6 +221,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                   _toggle(4),
                   _toggle(5),
                 ]),
+                _photoLimitsSection(),
               ],
             ),
       bottomSheet: _loading || _error != null
@@ -217,6 +250,68 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                 ),
               ),
             ),
+    );
+  }
+
+  /// Photo limits — per-role gallery photo caps plus compression knobs.
+  /// Only `gallery` photos count against a role's limit.
+  Widget _photoLimitsSection() {
+    return _section('Photo Limits', LucideIcons.images, [
+      for (final r in _photoLimitRows) _numericField(r.$1, r.$2),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
+        child: Text(
+          'Gallery photos count against a role\'s limit. Profile, cover, logo, post, achievement and document photos are always free. 0 disables gallery uploads for that role.',
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ),
+    ]);
+  }
+
+  Widget _numericField(String key, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: AppColors.borderSoft)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.ink,
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 90,
+            child: TextField(
+              controller: _numeric[key],
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d{0,5}$')),
+              ],
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(fontSize: 14, color: AppColors.ink),
+              decoration: InputDecoration(
+                isDense: true,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.border),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

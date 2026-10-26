@@ -827,9 +827,21 @@ class AdminPanelController extends Controller
             'session_lifetime_minutes' => 'nullable|integer|in:15,30,60,120,240,480',
             'rate_limit_login_per_minute' => 'nullable|integer|min:5|max:100',
             'data_retention_days' => 'nullable|integer|min:30|max:3650',
+            'gallery_photo_limit_athlete' => 'nullable|integer|min:0|max:10000',
+            'gallery_photo_limit_coach' => 'nullable|integer|min:0|max:10000',
+            'gallery_photo_limit_academy' => 'nullable|integer|min:0|max:10000',
+            'gallery_photo_limit_organizer' => 'nullable|integer|min:0|max:10000',
+            'gallery_photo_limit_talent_scout' => 'nullable|integer|min:0|max:10000',
+            'gallery_photo_limit_sponsor' => 'nullable|integer|min:0|max:10000',
+            'post_max_photos' => 'nullable|integer|min:0|max:10000',
+            'photo_max_dimension' => 'nullable|integer|min:0|max:10000',
+            'photo_jpeg_quality' => 'nullable|integer|min:0|max:10000',
         ]);
         $defaults = $this->readSettings();
-        $intKeys = ['max_listings_per_user_per_day','media_max_size_mb','session_lifetime_minutes','rate_limit_login_per_minute','data_retention_days'];
+        $intKeys = ['max_listings_per_user_per_day','media_max_size_mb','session_lifetime_minutes','rate_limit_login_per_minute','data_retention_days',
+            'gallery_photo_limit_athlete','gallery_photo_limit_coach','gallery_photo_limit_academy',
+            'gallery_photo_limit_organizer','gallery_photo_limit_talent_scout','gallery_photo_limit_sponsor',
+            'post_max_photos','photo_max_dimension','photo_jpeg_quality'];
         $boolKeys = array_diff(array_keys($defaults), $intKeys);
         $settings = [];
         foreach ($boolKeys as $key) {

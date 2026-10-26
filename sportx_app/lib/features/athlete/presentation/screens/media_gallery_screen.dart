@@ -32,6 +32,16 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
   int? _profilePhotoId;
   int? _coverPhotoId;
 
+  // Gallery photo quota (from GET /me/media/quota). null = unknown; when the
+  // limit is reached the upload affordance is disabled client-side, and the
+  // server still re-checks (authoritative).
+  int? _photoUsed;
+  int? _photoLimit;
+
+  int? get _photosRemaining => (_photoUsed == null || _photoLimit == null)
+      ? null
+      : (0 > (_photoLimit! - _photoUsed!) ? 0 : _photoLimit! - _photoUsed!);
+
   @override
   void initState() {
     super.initState();
@@ -40,8 +50,23 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
 
   String get _role => ref.read(authProvider).user?.role ?? 'athlete';
 
+  Future<void> _loadQuota() async {
+    try {
+      final resp = await ref.read(dioProvider).get('/me/media/quota');
+      final d = resp.data['data'] as Map<String, dynamic>?;
+      if (d == null) return;
+      if (mounted) {
+        setState(() {
+          _photoUsed = (d['used'] as num?)?.toInt();
+          _photoLimit = (d['limit'] as num?)?.toInt();
+        });
+      }
+    } catch (_) {}
+  }
+
   Future<void> _loadMedia() async {
     if (mounted) setState(() => _isLoading = true);
+    _loadQuota();
     try {
       // The profile photo / cover photo ids so they can be kept out of the
       // gallery list.
@@ -213,9 +238,23 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
 
   Future<void> _uploadMedia() async {
     if (_uploading) return;
+    // Video uploads were removed platform-wide (photos only). Legacy videos
+    // stay viewable in the read-only Videos tab.
+    if (_currentTab == 1) {
+      SnackBarUtils.showInfo(context, 'Video uploads are no longer supported — photos only.');
+      return;
+    }
+    // Client-side quota guard (server re-checks authoritatively).
+    final remaining = _photosRemaining;
+    if (remaining != null && remaining <= 0) {
+      SnackBarUtils.showInfo(context,
+          'Photo limit reached (${_photoLimit ?? 0} photos for your role). Profile & cover photos are free.');
+      return;
+    }
     setState(() => _uploading = true);
     try {
-      final media = await pickAndUploadMedia(context, ref, mediaType: _currentTab == 1 ? 'video' : 'photo');
+      final media =
+          await pickAndUploadMedia(context, ref, mediaType: 'photo', uploadContext: 'gallery');
       if (media == null) return;
       await _loadMedia();
     } finally {
@@ -400,7 +439,10 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
                   child: Row(
                     children: [
                       _buildTab('Photos (${_galleryItems.where((i) => i['media_type'] == 'photo').length})', 0),
-                      _buildTab('Videos (${_galleryItems.where((i) => i['media_type'] == 'video').length})', 1),
+                      // Videos tab is read-only: legacy videos stay viewable,
+                      // new video uploads are no longer offered. Hidden when empty.
+                      if (_galleryItems.any((i) => i['media_type'] == 'video'))
+                        _buildTab('Videos (${_galleryItems.where((i) => i['media_type'] == 'video').length})', 1),
                       _buildTab('Achievements (${_achievements.length})', 2),
                     ],
                   ),
@@ -410,6 +452,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       children: [
+                        if (_currentTab == 0) _buildQuotaBanner(),
                         _buildGrid(),
                         const SizedBox(height: 12),
                         _buildInfoCard(),
@@ -444,6 +487,42 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
             color: isActive ? AppColors.primary : AppColors.textSecondary,
           ),
         ),
+      ),
+    );
+  }
+
+  /// Gallery photo quota line (e.g. "23 / 100 photos — 77 left"), only shown
+  /// when the server reported a quota.
+  Widget _buildQuotaBanner() {
+    if (_photoUsed == null || _photoLimit == null) return const SizedBox.shrink();
+    final remaining = _photosRemaining ?? 0;
+    final blocked = remaining <= 0;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: blocked ? AppColors.error.withValues(alpha: 0.08) : AppColors.primary.withValues(alpha: 0.06),
+        border: Border.all(color: blocked ? AppColors.error : AppColors.primary, width: 1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(blocked ? LucideIcons.imageOff : LucideIcons.images, size: 18,
+              color: blocked ? AppColors.error : AppColors.primary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              blocked
+                  ? 'Photo limit reached — $_photoUsed of $_photoLimit. Profile & cover photos are free.'
+                  : '$_photoUsed / $_photoLimit gallery photos — $remaining left',
+              style: TextStyle(
+                fontSize: 13,
+                color: blocked ? AppColors.error : AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -522,7 +601,8 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
       );
     }
 
-    final itemCount = items.length + 1;
+    // Videos tab is read-only — no Add tile for videos
+    final itemCount = _currentTab == 1 ? items.length : items.length + 1;
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -533,21 +613,31 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
       ),
       itemCount: itemCount,
       itemBuilder: (context, index) {
+        // Videos tab is read-only — no Add tile for videos
+        if (index == items.length && _currentTab == 1) {
+          return const SizedBox.shrink();
+        }
         if (index == items.length) {
-          return GestureDetector(
-            onTap: _uploadMedia,
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.border, style: BorderStyle.solid, width: 2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(LucideIcons.plus, color: AppColors.textSecondary),
-                  SizedBox(height: 8),
-                  Text('Add', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
-                ],
+          final remaining = _photosRemaining ?? 999;
+          final quotaBlocked = remaining <= 0;
+          return Opacity(
+            opacity: quotaBlocked ? 0.45 : 1.0,
+            child: GestureDetector(
+              onTap: quotaBlocked ? null : _uploadMedia,
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.border, style: BorderStyle.solid, width: 2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(LucideIcons.plus, color: AppColors.textSecondary),
+                    const SizedBox(height: 8),
+                    const Text('Add',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  ],
+                ),
               ),
             ),
           );
@@ -639,7 +729,7 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
           Text('Tips for a great gallery', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
           SizedBox(height: 4),
           Text(
-            'Add photos and videos of your training, matches, and achievements. Long-press a photo to use it as your profile or cover photo.',
+            'Add photos of your training, matches, and achievements. Long-press a photo to use it as your profile or cover photo.',
             style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
           ),
         ],

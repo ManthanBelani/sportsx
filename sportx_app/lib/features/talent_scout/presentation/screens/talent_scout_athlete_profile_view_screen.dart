@@ -474,7 +474,7 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
                   const SizedBox(height: 12),
                   const Text('No media yet', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
                   const SizedBox(height: 8),
-                  Text('Photos and videos will appear here',
+                  Text('Photos will appear here', // videos no longer uploadable
                       textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: AppColors.textSecondary.withValues(alpha: 0.7))),
                 ]),
               ),

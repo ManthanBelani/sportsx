@@ -206,7 +206,6 @@ class _QuickPostSection extends StatelessWidget {
             children: [
               for (final q in const [
                 (icon: LucideIcons.image, label: 'Photo'),
-                (icon: LucideIcons.video, label: 'Video'),
                 (icon: LucideIcons.type, label: 'Text'),
                 (icon: LucideIcons.barChart2, label: 'Poll'),
                 (icon: LucideIcons.award, label: 'Achievement'),

@@ -17,7 +17,7 @@ import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 const _facilityOptions = [
   'Turf Ground',
   'AC Classroom',
-  'Video Analysis',
+  // 'Video Analysis',  // Video uploads no longer supported
   'Gym',
   'Swimming Pool',
   'Changing Rooms',
@@ -59,7 +59,8 @@ class _AcademyProfilePostingScreenState extends ConsumerState<AcademyProfilePost
   static const _sportsOfferedOptions = [
     'Batting', 'Bowling', 'Fielding', 'Wicketkeeping',
     'Fitness', 'Strength & Conditioning', 'Speed & Agility',
-    'Technique', 'Match Practice', 'Video Analysis', 'Mental Training',
+    'Technique', 'Match Practice', // 'Video Analysis',  // Video uploads no longer supported
+    'Mental Training',
   ];
   bool _saving = false;
   bool _prefilled = false;
@@ -290,7 +291,7 @@ class _AcademyProfilePostingScreenState extends ConsumerState<AcademyProfilePost
                       icon: LucideIcons.building2,
                       label: 'Upload Logo',
                       onTap: () async {
-                        final media = await pickAndUploadMedia(context, ref);
+                        final media = await pickAndUploadMedia(context, ref, uploadContext: 'logo');
                         if (media != null) setState(() { _logoMediaId = media.mediaId; _logoUrl = MediaUtils.resolveUrl(media.url); });
                       },
                     ),
@@ -301,7 +302,7 @@ class _AcademyProfilePostingScreenState extends ConsumerState<AcademyProfilePost
                       icon: LucideIcons.image,
                       label: 'Upload Cover',
                       onTap: () async {
-                        final media = await pickAndUploadMedia(context, ref);
+                        final media = await pickAndUploadMedia(context, ref, uploadContext: 'cover');
                         if (media != null) setState(() { _coverMediaId = media.mediaId; _coverUrl = MediaUtils.resolveUrl(media.url); });
                       },
                     ),

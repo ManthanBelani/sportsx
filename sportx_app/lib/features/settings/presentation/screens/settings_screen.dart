@@ -81,7 +81,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       _buildSettingsItem(
                         icon: LucideIcons.camera,
                         title: 'Media Gallery',
-                        subtitle: 'Photos, videos, certificates',
+                        subtitle: 'Photos, certificates', // videos no longer uploadable
                         onTap: () => context.push('/media-gallery'),
                       ),
                       _buildSettingsItem(

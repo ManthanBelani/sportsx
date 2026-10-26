@@ -128,7 +128,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     if (_pickingAvatar) return;
     setState(() => _pickingAvatar = true);
     try {
-      final media = await pickAndUploadMedia(context, ref, mediaType: 'photo');
+      final media = await pickAndUploadMedia(context, ref, mediaType: 'photo', uploadContext: 'profile');
       if (media == null) return;
       setState(() {
         _avatarFile = media.file;
@@ -155,7 +155,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     if (_pickingCover) return;
     setState(() => _pickingCover = true);
     try {
-      final media = await pickAndUploadMedia(context, ref, mediaType: 'photo');
+      final media = await pickAndUploadMedia(context, ref, mediaType: 'photo', uploadContext: 'cover');
       if (media == null) return;
       setState(() {
         _coverFile = media.file;

@@ -171,7 +171,7 @@ class _CoachProfileEditScreenState extends ConsumerState<CoachProfileEditScreen>
     if (_uploadingPhoto) return;
     setState(() => _uploadingPhoto = true);
     try {
-      final media = await pickAndUploadMedia(context, ref, mediaType: 'photo');
+      final media = await pickAndUploadMedia(context, ref, mediaType: 'photo', uploadContext: 'profile');
       if (!mounted || media == null) return;
       // Optimistic local preview
       setState(() {

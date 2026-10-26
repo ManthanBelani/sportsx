@@ -40,13 +40,25 @@ class MediaItem {
   }
 }
 
-/// Shows the camera/gallery source sheet, picks an image and uploads it to
-/// `/media/upload`. Returns null when the user cancels or the pick fails.
+/// Shows the camera/gallery source sheet, picks a PHOTO and uploads it to
+/// `/media/upload`. Videos are no longer uploadable anywhere in the app
+/// (photos only — legacy videos already on the server remain viewable).
+///
+/// [uploadContext] tells the backend why the photo is being uploaded so it
+/// can apply the right quota rule: only `gallery` photos count against the
+/// per-role gallery photo limit; profile/cover/logo/post/achievement/
+/// credential photos are always free.
+///
+/// Photos are compressed client-side before upload (max 1920px side,
+/// quality 75) — the server re-compresses again as a second stage.
+///
+/// Returns null when the user cancels or the pick fails.
 Future<PickedMedia?> pickAndUploadMedia(
   BuildContext context,
   WidgetRef ref, {
   String mediaType = 'photo',
   bool allowCamera = true,
+  String uploadContext = 'gallery',
 }) async {
   final source = await showModalBottomSheet<ImageSource>(
     context: context,
@@ -62,13 +74,13 @@ Future<PickedMedia?> pickAndUploadMedia(
           children: [
             if (allowCamera)
               ListTile(
-                leading: Icon(mediaType == 'video' ? LucideIcons.video : LucideIcons.camera, color: AppColors.primary),
-                title: Text(mediaType == 'video' ? 'Record Video' : 'Take Photo'),
+                leading: const Icon(LucideIcons.camera, color: AppColors.primary),
+                title: const Text('Take Photo'),
                 onTap: () => Navigator.pop(context, ImageSource.camera),
               ),
             ListTile(
-              leading: Icon(mediaType == 'video' ? LucideIcons.video : LucideIcons.image, color: AppColors.primary),
-              title: Text(mediaType == 'video' ? 'Choose Video from Gallery' : 'Choose from Gallery'),
+              leading: const Icon(LucideIcons.image, color: AppColors.primary),
+              title: const Text('Choose from Gallery'),
               onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
           ],
@@ -83,13 +95,14 @@ Future<PickedMedia?> pickAndUploadMedia(
 
   try {
     final picker = ImagePicker();
-    XFile? picked;
-    final isVideo = mediaType == 'video';
-    if (isVideo) {
-      picked = await picker.pickVideo(source: source);
-    } else {
-      picked = await picker.pickImage(source: source, imageQuality: 80);
-    }
+    // Photo-only: stricter client-side compression is the first stage of the
+    // two-stage compression pipeline (server re-encodes as stage two).
+    final picked = await picker.pickImage(
+      source: source,
+      imageQuality: 75,
+      maxWidth: 1920,
+      maxHeight: 1920,
+    );
     if (picked == null) return null;
 
     final file = File(picked.path);
@@ -105,9 +118,11 @@ Future<PickedMedia?> pickAndUploadMedia(
       return null;
     }
 
+    final backendType = mediaType == 'video' ? 'photo' : mediaType;
     final form = FormData.fromMap({
       'file': await MultipartFile.fromFile(file.path, filename: picked.name),
-      'media_type': mediaType,
+      'media_type': backendType,
+      'context': uploadContext,
     });
 
     final resp = await ref.read(dioProvider).post('/media/upload', data: form);

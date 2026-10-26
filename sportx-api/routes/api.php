@@ -204,6 +204,7 @@ Route::prefix('v1')->group(function () {
 
     // ── Media ──
     Route::get('/me/media', [MediaController::class, 'index'])->middleware('auth:sanctum');
+    Route::get('/me/media/quota', [MediaController::class, 'quota'])->middleware('auth:sanctum');
     Route::post('/media/upload', [MediaController::class, 'upload'])->middleware('auth:sanctum');
     Route::delete('/media/{id}', [MediaController::class, 'destroy'])->middleware('auth:sanctum');
     Route::put('/media/reorder', [MediaController::class, 'reorder'])->middleware('auth:sanctum');

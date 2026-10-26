@@ -46,7 +46,7 @@ class _SponsorOnboardingScreenState extends ConsumerState<SponsorOnboardingScree
   }
 
   Future<void> _pickLogo() async {
-    final media = await pickAndUploadMedia(context, ref, mediaType: 'photo');
+    final media = await pickAndUploadMedia(context, ref, mediaType: 'photo', uploadContext: 'logo');
     if (media != null && mounted) {
       setState(() {
         _logoMediaId = media.mediaId;
@@ -57,7 +57,7 @@ class _SponsorOnboardingScreenState extends ConsumerState<SponsorOnboardingScree
   }
 
   Future<void> _pickDoc() async {
-    final media = await pickAndUploadMedia(context, ref, mediaType: 'document');
+    final media = await pickAndUploadMedia(context, ref, mediaType: 'document', uploadContext: 'document');
     if (media != null && mounted) {
       setState(() {
         _docMediaId = media.mediaId;

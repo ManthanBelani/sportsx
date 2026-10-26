@@ -49,7 +49,8 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
   static const _sportsOfferedOptions = [
     'Batting', 'Bowling', 'Fielding', 'Wicketkeeping',
     'Fitness', 'Strength & Conditioning', 'Speed & Agility',
-    'Technique', 'Match Practice', 'Video Analysis', 'Mental Training',
+    'Technique', 'Match Practice', // 'Video Analysis',  // Video uploads no longer supported
+    'Mental Training',
   ];
 
   @override
@@ -133,7 +134,7 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
                   icon: LucideIcons.building2,
                   label: 'Upload Logo',
                   onTap: () async {
-                    final media = await pickAndUploadMedia(context, ref);
+                    final media = await pickAndUploadMedia(context, ref, uploadContext: 'logo');
                     if (media != null) setState(() { _logoMediaId = media.mediaId; _logoUrl = MediaUtils.resolveUrl(media.url); });
                   },
                 ),
@@ -144,7 +145,7 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
                   icon: LucideIcons.image,
                   label: 'Upload Cover',
                   onTap: () async {
-                    final media = await pickAndUploadMedia(context, ref);
+                    final media = await pickAndUploadMedia(context, ref, uploadContext: 'cover');
                     if (media != null) setState(() { _coverMediaId = media.mediaId; _coverUrl = MediaUtils.resolveUrl(media.url); });
                   },
                 ),
