@@ -87,18 +87,21 @@ class SecondaryButton extends StatelessWidget {
           boxShadow: SportXShadows.e1,
         ),
         alignment: Alignment.center,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: 17, color: AppColors.dark),
-              const SizedBox(width: 8),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 17, color: AppColors.dark),
+                const SizedBox(width: 8),
+              ],
+              Text(label,
+                  style: GoogleFonts.inter(
+                      fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.dark)),
             ],
-            Text(label,
-                style: GoogleFonts.inter(
-                    fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.dark)),
-          ],
+          ),
         ),
       ),
     );

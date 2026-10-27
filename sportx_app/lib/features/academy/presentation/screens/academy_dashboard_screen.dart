@@ -40,12 +40,8 @@ class AcademyDashboardScreen extends ConsumerWidget {
               automaticallyImplyLeading: false,
               toolbarHeight: 68,
               titleSpacing: 16,
-              title: Row(
-                children: const [
-                  Expanded(child: SportXWordmark()),
-                  HomeHeaderActions(),
-                ],
-              ),
+              title: const SportXWordmark(),
+              actions: const [HomeHeaderActions()],
             ),
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),

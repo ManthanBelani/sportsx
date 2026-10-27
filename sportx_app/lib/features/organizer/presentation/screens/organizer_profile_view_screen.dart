@@ -112,145 +112,149 @@ class _OrganizerProfileViewScreenState
               // to hide the overlapped logo avatar's upper half. Scrolling
               // simply carries the cover away; the tab bar below stays pinned.
               SliverToBoxAdapter(
-                child: SizedBox(
-                  height: MediaQuery.of(context).padding.top + 168,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      // Cover — org banner when the API resolved one, otherwise
-                      // the board's dark stage backdrop.
-                      DecoratedBox(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [Color(0xFF1B2430), Color(0xFF3A2B14)],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(
+                      height: MediaQuery.of(context).padding.top + 168,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          // Cover — org banner when the API resolved one, otherwise
+                          // the board's dark stage backdrop.
+                          DecoratedBox(
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [Color(0xFF1B2430), Color(0xFF3A2B14)],
+                              ),
+                            ),
+                            child: Icon(
+                              LucideIcons.trophy,
+                              size: 64,
+                              color: Colors.white.withValues(alpha: 0.12),
+                            ),
                           ),
-                        ),
-                        child: Icon(
-                          LucideIcons.trophy,
-                          size: 64,
-                          color: Colors.white.withValues(alpha: 0.12),
-                        ),
-                      ),
-                      Positioned(
-                        top: MediaQuery.of(context).padding.top + 6,
-                        left: 6,
-                        child: _RoundIconButton(
-                          icon: LucideIcons.arrowLeft,
-                          onTap: () => context.pop(),
-                        ),
-                      ),
-                      Positioned(
-                        top: MediaQuery.of(context).padding.top + 6,
-                        right: 6,
-                        child: _RoundIconButton(
-                          icon: LucideIcons.share2,
-                          onTap: () => Share.share(
-                            'Check out $name on SportX — sports events across ${city.isNotEmpty ? city : 'India'}.',
+                          Positioned(
+                            top: MediaQuery.of(context).padding.top + 6,
+                            left: 6,
+                            child: _RoundIconButton(
+                              icon: LucideIcons.arrowLeft,
+                              onTap: () => context.pop(),
+                            ),
                           ),
-                        ),
+                          Positioned(
+                            top: MediaQuery.of(context).padding.top + 6,
+                            right: 6,
+                            child: _RoundIconButton(
+                              icon: LucideIcons.share2,
+                              onTap: () => Share.share(
+                                'Check out $name on SportX — sports events across ${city.isNotEmpty ? city : 'India'}.',
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Column(
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Only the avatar overlaps the cover edge
-                          // (translated up 34px). The name block must start
-                          // BELOW the cover so it stays readable — translating
-                          // the whole row pushed the title into the dark band.
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Transform.translate(
-                                offset: const Offset(0, -34),
-                                child: _LogoAvatar(
-                                  photoUrl: user?.profilePhotoUrl,
-                                  name: name,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildNameBlock(name, orgType, city),
-                              ),
-                            ],
-                          ),
-                            const SizedBox(height: 6),
-                            // Stats row — Events · Participants · Collaborations
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 11,
-                                horizontal: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                border: Border.all(color: AppColors.border),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: Row(
+                              // Only the avatar overlaps the cover edge
+                              // (translated up 34px). The name block must start
+                              // BELOW the cover so it stays readable — translating
+                              // the whole row pushed the title into the dark band.
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  _stat(
-                                    '${analytics?.totalEvents ?? 0}',
-                                    'Events',
-                                  ),
-                                  _statDivider(),
-                                  _stat(
-                                    compactIndianNumber(
-                                      analytics?.totalRegistrations ?? 0,
+                                  Transform.translate(
+                                    offset: const Offset(0, -34),
+                                    child: _LogoAvatar(
+                                      photoUrl: user?.profilePhotoUrl,
+                                      name: name,
                                     ),
-                                    'Participants',
                                   ),
-                                  _statDivider(),
-                                  _stat(
-                                    ref
-                                            .watch(organizerTeamProvider)
-                                            .valueOrNull
-                                            ?.length
-                                            .toString() ??
-                                        '—',
-                                    'Collaborations',
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _buildNameBlock(name, orgType, city),
                                   ),
                                 ],
                               ),
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: PrimaryButton(
-                                    label: 'Edit Profile',
-                                    icon: LucideIcons.pencil,
-                                    onPressed: () =>
-                                        context.push('/organizer-profile-edit'),
-                                  ),
+                              const SizedBox(height: 6),
+                              // Stats row — Events · Participants · Collaborations
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 11,
+                                  horizontal: 8,
                                 ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: SecondaryButton(
-                                    label: 'Share',
-                                    icon: LucideIcons.share2,
-                                    onPressed: () => Share.share(
-                                      'Check out $name on SportX.',
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  border: Border.all(color: AppColors.border),
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: Row(
+                                  children: [
+                                    _stat(
+                                      '${analytics?.totalEvents ?? 0}',
+                                      'Events',
+                                    ),
+                                    _statDivider(),
+                                    _stat(
+                                      compactIndianNumber(
+                                        analytics?.totalRegistrations ?? 0,
+                                      ),
+                                      'Participants',
+                                    ),
+                                    _statDivider(),
+                                    _stat(
+                                      ref
+                                              .watch(organizerTeamProvider)
+                                              .valueOrNull
+                                              ?.length
+                                              .toString() ??
+                                          '—',
+                                      'Collaborations',
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: PrimaryButton(
+                                      label: 'Edit Profile',
+                                      icon: LucideIcons.pencil,
+                                      onPressed: () => context.push(
+                                        '/organizer-profile-edit',
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: SecondaryButton(
+                                      label: 'Share',
+                                      icon: LucideIcons.share2,
+                                      onPressed: () => Share.share(
+                                        'Check out $name on SportX.',
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
+              ),
               SliverPersistentHeader(
                 pinned: true,
                 delegate: _TabBarDelegate(

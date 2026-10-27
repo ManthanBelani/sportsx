@@ -252,20 +252,22 @@ class GreetCardV3 extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text('$pct%',
-                  style: GoogleFonts.sora(fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.ink)),
-              if (chevron) ...[
-                const SizedBox(height: 6),
-                const Icon(LucideIcons.chevronRight, size: 18, color: AppColors.textSecondary),
-              ] else if (ctaLabel != null) ...[
-                const SizedBox(height: 6),
-                CompactPrimaryButton(label: ctaLabel!, onTap: onCta),
+          Flexible(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text('$pct%',
+                    style: GoogleFonts.sora(fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.ink)),
+                if (chevron) ...[
+                  const SizedBox(height: 6),
+                  const Icon(LucideIcons.chevronRight, size: 18, color: AppColors.textSecondary),
+                ] else if (ctaLabel != null) ...[
+                  const SizedBox(height: 6),
+                  CompactPrimaryButton(label: ctaLabel!, onTap: onCta),
+                ],
               ],
-            ],
+            ),
           ),
         ],
       ),

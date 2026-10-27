@@ -73,11 +73,31 @@ class _MyProgramsScreenState extends ConsumerState<MyProgramsScreen>
                   .read(myProgramsProvider.notifier)
                   .load(status: _statuses[_tabs.index]),
               child: state.items.isEmpty
-                  ? const SingleChildScrollView(
-                      physics: AlwaysScrollableScrollPhysics(),
+                  ? SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
                       child: SizedBox(
                         height: 300,
-                        child: Center(child: Text('Nothing here yet')),
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                state.error ?? 'Nothing here yet',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                              ),
+                              if (state.error != null) ...[
+                                const SizedBox(height: 12),
+                                TextButton(
+                                  onPressed: () => ref
+                                      .read(myProgramsProvider.notifier)
+                                      .load(status: _statuses[_tabs.index]),
+                                  child: const Text('Retry'),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
                       ),
                     )
                   : ListView.builder(

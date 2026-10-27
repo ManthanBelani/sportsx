@@ -12,6 +12,17 @@ double? _parseDouble(dynamic value) {
   return null;
 }
 
+int _parseId(dynamic value) {
+  if (value is num) return value.toInt();
+  if (value is String) {
+    final i = int.tryParse(value);
+    if (i != null) return i;
+    final d = double.tryParse(value);
+    if (d != null) return d.toInt();
+  }
+  return 0;
+}
+
 /// Training program (Phase 5): owned by a coach or academy profile.
 class Program {
   final int id;
@@ -39,7 +50,7 @@ class Program {
   factory Program.fromJson(Map<String, dynamic> json) {
     final sport = json['sport'] as Map<String, dynamic>?;
     return Program(
-      id: _parseInt(json['id'])!,
+      id: _parseId(json['id']),
       title: json['title'] as String? ?? 'Untitled',
       sportName: sport?['name'] as String?,
       duration: json['duration'] as String?,

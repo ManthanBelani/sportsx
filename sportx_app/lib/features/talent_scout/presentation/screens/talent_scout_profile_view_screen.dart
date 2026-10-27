@@ -76,55 +76,65 @@ class _TalentScoutProfileScreenState
             ref.read(talentScoutProvider.notifier).loadProfile(),
         child: CustomScrollView(
           slivers: [
-            // Cover — "SCOUT" banner over a dark backdrop (matches screen 6).
-            SliverToBoxAdapter(child: _cover(context, name)),
+            // Cover + profile header live in ONE sliver: RenderViewport paints
+            // slivers in reverse order, so if the cover were its own sliver it
+            // would paint on top of this sliver's up-translated avatar and
+            // clip its upper half. Inside a single box subtree the avatar
+            // paints above the cover, as designed.
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Avatar overlaps the cover; the name block stays below it
-                    // (same layout as the organizer profile view).
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _cover(context, name),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Transform.translate(
-                          offset: const Offset(0, -34),
-                          child: _ScoutAvatar(
-                            photoUrl: profile?.photoUrl ?? user?.profilePhotoUrl,
-                            name: name,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(child: _nameBlock(name, cityName)),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: PrimaryButton(
-                            label: 'Edit Profile',
-                            icon: LucideIcons.pencil,
-                            onPressed: () => context.push('/scout-profile/edit'),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: SecondaryButton(
-                            label: 'Share',
-                            icon: LucideIcons.share2,
-                            onPressed: () => Share.share(
-                              'Check out $name on SportX — Talent Scout'
-                              '${cityName != null ? ' in $cityName' : ''}.',
+                        // Avatar overlaps the cover; the name block stays below it
+                        // (same layout as the organizer profile view).
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Transform.translate(
+                              offset: const Offset(0, -34),
+                              child: _ScoutAvatar(
+                                photoUrl: profile?.photoUrl ?? user?.profilePhotoUrl,
+                                name: name,
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 12),
+                            Expanded(child: _nameBlock(name, cityName)),
+                          ],
                         ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: PrimaryButton(
+                                label: 'Edit Profile',
+                                icon: LucideIcons.pencil,
+                                onPressed: () => context.push('/scout-profile/edit'),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: SecondaryButton(
+                                label: 'Share',
+                                icon: LucideIcons.share2,
+                                onPressed: () => Share.share(
+                                  'Check out $name on SportX — Talent Scout'
+                                  '${cityName != null ? ' in $cityName' : ''}.',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
             SliverPersistentHeader(
