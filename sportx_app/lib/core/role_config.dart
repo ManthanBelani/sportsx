@@ -214,7 +214,9 @@ RoleConfig roleConfigFor(SportXRole role) {
         accent: AppColors.coach,
         homeRoute: '/coach-dashboard',
         onboardingRoute: '/coach-onboarding',
-        profileRoute: '/coach-profile-edit',
+        // Design board screen 6: header avatar / More "My Profile" open the
+        // read-only view with the Edit Profile button; not the edit form.
+        profileRoute: '/coach-profile',
         createTiles: [
           CreateTile(id: 'post', label: 'Create Post', subtitle: 'Share an update with your network', icon: LucideIcons.penLine, tintBg: Color(0xFFE3EFFF), tintFg: AppColors.info, route: '/create-post'),
           CreateTile(id: 'program', label: 'Create Training Program', subtitle: 'Add a new program', icon: LucideIcons.dumbbell, tintBg: Color(0xFFECE9FF), tintFg: AppColors.coach, route: '/post-program'),
@@ -224,7 +226,7 @@ RoleConfig roleConfigFor(SportXRole role) {
           CreateTile(id: 'golive', label: 'Go Live / Webinar', subtitle: 'Host a live session', icon: LucideIcons.radio, tintBg: Color(0xFFFEE2E2), tintFg: AppColors.error, route: '/coach-go-live', priority: CreatePriority.p2),
         ],
         moreRows: [
-          MoreRow(label: 'My Profile', icon: LucideIcons.user, route: '/coach-profile-edit'),
+          MoreRow(label: 'My Profile', icon: LucideIcons.user, route: '/coach-profile'),
           MoreRow(label: 'My Training Programs', icon: LucideIcons.dumbbell, route: '/my-programs'),
           MoreRow(label: 'My Events', icon: LucideIcons.calendarDays, route: '/my-tournaments'),
           MoreRow(label: 'Achievements', icon: LucideIcons.award, route: '/achievements'),
@@ -249,7 +251,10 @@ RoleConfig roleConfigFor(SportXRole role) {
         accent: AppColors.academy,
         homeRoute: '/academy-dashboard',
         onboardingRoute: '/academy-onboarding',
-        profileRoute: '/edit-academy-profile',
+        // Design board screen 6: taps on the header avatar / More "My Profile"
+        // open the read-only profile VIEW (/academy-profile, with pencil →
+        // edit), not the inline edit form.
+        profileRoute: '/academy-profile',
         createTiles: [
           CreateTile(id: 'post', label: 'Create Post', subtitle: 'Share an update with your network', icon: LucideIcons.penLine, tintBg: Color(0xFFE3EFFF), tintFg: AppColors.info, route: '/create-post'),
           CreateTile(id: 'program', label: 'Training Program', subtitle: 'Add a new program', icon: LucideIcons.dumbbell, tintBg: Color(0xFFECE9FF), tintFg: AppColors.coach, route: '/post-program'),
@@ -260,7 +265,7 @@ RoleConfig roleConfigFor(SportXRole role) {
           CreateTile(id: 'invite', label: 'Invite Athlete', subtitle: 'Link an athlete to your academy', icon: LucideIcons.userPlus, tintBg: Color(0xFFDCFCE7), tintFg: Color(0xFF15803D), route: '/academy-invite-athlete', priority: CreatePriority.p1),
         ],
         moreRows: [
-          MoreRow(label: 'My Profile', icon: LucideIcons.user, route: '/edit-academy-profile'),
+          MoreRow(label: 'My Profile', icon: LucideIcons.user, route: '/academy-profile'),
           MoreRow(label: 'Academy Programs', icon: LucideIcons.dumbbell, route: '/my-programs'),
           MoreRow(label: 'Our Athletes', icon: LucideIcons.users, route: '/showcase-athletes'),
           MoreRow(label: 'Events / Trials', icon: LucideIcons.calendarDays, route: '/my-trials'),
@@ -330,10 +335,16 @@ RoleConfig roleConfigFor(SportXRole role) {
         profileRoute: '/scout-profile',
         createTiles: [
           CreateTile(id: 'shortlist', label: 'Add to Shortlist', subtitle: 'Track a talent in your pipeline', icon: LucideIcons.listPlus, tintBg: Color(0xFFDBEAFE), tintFg: AppColors.scout, route: '/scout-shortlist'),
-          CreateTile(id: 'observation', label: 'Add Observation', subtitle: 'Quick scouting note', icon: LucideIcons.notebookPen, route: '/observations'),
+          // SC board · scout-create — Create Talent Report tile (route existed
+          // at /talent-report but had no inbound Create row).
+          CreateTile(id: 'talent-report', label: 'Create Talent Report', subtitle: 'Generate a detailed evaluation report', icon: LucideIcons.fileText, tintBg: Color(0xFFDCFCE7), tintFg: Color(0xFF15803D), route: '/talent-report'),
           CreateTile(id: 'opportunity', label: 'Scouting Opportunity', subtitle: 'Post a scouting call', icon: LucideIcons.megaphone, route: '/post-opportunity'),
           CreateTile(id: 'event', label: 'Add Event / Trial', subtitle: 'Post a trial or camp', icon: LucideIcons.calendarPlus, tintBg: Color(0xFFFCE7F3), tintFg: AppColors.organizer, route: '/post-trial', priority: CreatePriority.p1),
           CreateTile(id: 'media', label: 'Upload Photo', subtitle: 'Attach photos to reports', icon: LucideIcons.imagePlus, tintBg: Color(0xFFFEE2E2), tintFg: AppColors.error, route: '/media-gallery'),
+          CreateTile(id: 'observation', label: 'Add Observation', subtitle: 'Quick scouting note', icon: LucideIcons.notebookPen, route: '/observations'),
+          // SC board · scout-create — "Share Opportunity" surfaces the scouting
+          // call the scout already posted (or can post) for forwarding.
+          CreateTile(id: 'share-opportunity', label: 'Share Opportunity', subtitle: 'Share with community or organization', icon: LucideIcons.share2, tintBg: Color(0xFFECE9FF), tintFg: AppColors.coach, route: '/opportunities', priority: CreatePriority.p1),
         ],
         moreRows: [
           MoreRow(label: 'My Profile', icon: LucideIcons.user, route: '/scout-profile'),
@@ -341,6 +352,9 @@ RoleConfig roleConfigFor(SportXRole role) {
           MoreRow(label: 'Scouting Reports', icon: LucideIcons.fileText, route: '/observations'),
           MoreRow(label: 'Discover Talents', icon: LucideIcons.search, route: '/scout-discovery'),
           MoreRow(label: 'My Opportunities', icon: LucideIcons.megaphone, route: '/my-opportunities'),
+          // SC board · scout-more — "My Events / Trials" row (trials worth
+          // attending + events the scout posted).
+          MoreRow(label: 'My Events / Trials', icon: LucideIcons.calendar, route: '/trials'),
           MoreRow(label: 'My Connections', icon: LucideIcons.users, route: '/scout-connections'),
           ..._sharedMoreRows,
           ..._sharedMoreRowsTail,

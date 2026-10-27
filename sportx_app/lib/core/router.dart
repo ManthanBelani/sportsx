@@ -65,6 +65,7 @@ import 'package:sportx_app/features/academy/presentation/screens/academy_profile
 import 'package:sportx_app/features/organizer/presentation/screens/organizer_onboarding_screen.dart';
 import 'package:sportx_app/features/shared/presentation/screens/registrant_detail_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/coach_onboarding_screen.dart';
+import 'package:sportx_app/features/coach/presentation/screens/coach_profile_view_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/coach_enquiry_inbox_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/coach_enquiry_detail_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/coach_profile_edit_screen.dart';
@@ -158,7 +159,8 @@ import 'package:sportx_app/features/talent_scout/presentation/screens/leaderboar
 import 'package:sportx_app/features/talent_scout/presentation/screens/observations_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_connection_screen.dart';
 import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_connections_screen.dart';
-import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_profile_screen.dart';
+import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_profile_edit_screen.dart';
+import 'package:sportx_app/features/talent_scout/presentation/screens/talent_scout_profile_view_screen.dart';
 import 'package:sportx_app/features/social/presentation/screens/create_screen.dart';
 import 'package:sportx_app/features/social/presentation/widgets/create_bottom_sheet.dart';
 import 'package:sportx_app/features/more/presentation/screens/more_screen.dart';
@@ -449,6 +451,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/admin/master-data', builder: (context, state) => const AdminMasterDataScreen()),
       GoRoute(path: '/admin/expiry-rules', builder: (context, state) => const AdminExpiryRulesScreen()),
       GoRoute(path: '/admin/leaderboard-config', builder: (context, state) => const AdminLeaderboardConfigScreen()),
+      // Coach profile split per board screen 6: `/coach-profile` is the view
+      // (cover + About/Posts/Programs/Achievements); the edit form stays at
+      // `/coach-profile-edit`, reached via the view's Edit Profile button.
+      GoRoute(path: '/coach-profile', builder: (context, state) => const CoachProfileViewScreen()),
       GoRoute(path: '/coach-profile-edit', builder: (context, state) => const CoachProfileEditScreen()),
       GoRoute(path: '/coach-enquiry-detail', builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
@@ -682,7 +688,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/scout-discovery', builder: (context, state) => const TalentScoutAthleteDiscoveryScreen()),
           GoRoute(path: '/scout-shortlist', builder: (context, state) => const TalentScoutShortlistScreen()),
           GoRoute(path: '/scout-connections', builder: (context, state) => const TalentScoutConnectionsScreen()),
+          // Scout profile split per board screen 6: `/scout-profile` is the
+          // design-style VIEW (cover hero + About/Shortlisted/Reports/Activity
+          // tabs); the inline edit form moved to `/scout-profile/edit`.
           GoRoute(path: '/scout-profile', builder: (context, state) => const TalentScoutProfileScreen()),
+          GoRoute(path: '/scout-profile/edit', builder: (context, state) => const TalentScoutProfileEditScreen()),
           GoRoute(path: '/scout-athlete/:id', builder: (context, state) => TalentScoutAthleteProfileViewScreen(athleteId: state.pathParameters['id']!)),
           GoRoute(path: '/coach-enquiry-inbox', builder: (context, state) => const CoachEnquiryInboxScreen()),
           GoRoute(path: '/enquiry-inbox', builder: (context, state) => const EnquiryInboxScreen()),

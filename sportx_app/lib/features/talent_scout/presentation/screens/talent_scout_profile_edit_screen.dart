@@ -14,14 +14,19 @@ import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
-class TalentScoutProfileScreen extends ConsumerStatefulWidget {
-  const TalentScoutProfileScreen({super.key});
+/// SC board screen 6 — the *Edit* half of the scout profile split. Shows the
+/// inline profile form (photo, organization, bio, sports, listing status) that
+/// was originally mixed into the profile screen; `/scout-profile` itself is now
+/// the design's profile VIEW ([TalentScoutProfileScreen] in
+/// `talent_scout_profile_view_screen.dart`).
+class TalentScoutProfileEditScreen extends ConsumerStatefulWidget {
+  const TalentScoutProfileEditScreen({super.key});
 
   @override
-  ConsumerState<TalentScoutProfileScreen> createState() => _TalentScoutProfileScreenState();
+  ConsumerState<TalentScoutProfileEditScreen> createState() => _TalentScoutProfileEditScreenState();
 }
 
-class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScreen> {
+class _TalentScoutProfileEditScreenState extends ConsumerState<TalentScoutProfileEditScreen> {
   final _org = TextEditingController();
   final _affiliation = TextEditingController();
   final _bio = TextEditingController();
@@ -136,7 +141,8 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
       if (mounted) {
         if (ok) {
           SnackBarUtils.showSuccess(context, 'Profile updated');
-          setState(() {});
+          // Return to the profile view (board screen 6) after a save.
+          if (context.mounted && context.canPop()) context.pop();
         } else {
           SnackBarUtils.showError(context, ref.read(talentScoutProvider).error ?? 'Failed to update');
         }
@@ -164,7 +170,7 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
     if (_loadError != null) {
       return Scaffold(
         backgroundColor: AppColors.surface,
-        appBar: const SportXTopBar(title: 'Scout Profile', showBack: true),
+        appBar: const SportXTopBar(title: 'Edit Scout Profile', showBack: true),
         body: Center(
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
             const Icon(LucideIcons.alertCircle, size: 48, color: AppColors.border),
@@ -197,7 +203,7 @@ class _TalentScoutProfileScreenState extends ConsumerState<TalentScoutProfileScr
         showBack: true,
         titleWidget: Row(
           children: [
-            Text('Scout Profile',
+            Text('Edit Scout Profile',
                 style: GoogleFonts.sora(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.ink)),
             const SizedBox(width: 8),
             Container(

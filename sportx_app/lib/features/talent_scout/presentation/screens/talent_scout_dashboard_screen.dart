@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/talent_scout/presentation/providers/leaderboard_provider.dart';
+import 'package:sportx_app/features/organizer/presentation/widgets/organizer_kit.dart';
 import 'package:sportx_app/shared/presentation/widgets/home_kit.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/shared/providers/providers.dart';
@@ -57,21 +59,52 @@ class TalentScoutDashboardScreen extends ConsumerWidget {
                     onCta: () => context.push('/scout-discovery'),
                   ),
                   const _PodiumSection(),
-                  SizedBox(
-                    height: 32,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        SportXChip(label: 'Discover', selected: true, onTap: () => context.push('/scout-discovery')),
-                        const SizedBox(width: 7),
-                        SportXChip(label: 'Trials', onTap: () => context.push('/trials')),
-                        const SizedBox(width: 7),
-                        SportXChip(label: 'Top Perf.', onTap: () => context.push('/leaderboard')),
-                        const SizedBox(width: 7),
-                        SportXChip(label: 'Shortlist', onTap: () => context.push('/scout-shortlist')),
-                        const SizedBox(width: 7),
-                      ],
-                    ),
+                  const SizedBox(height: 4),
+                  // SC board · scout-home — the design's 4 quick-action tiles
+                  // (Discover Talents / Attend Trials / Top Performers /
+                  // Shortlisting) instead of the old chip row.
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OrgQuickTile(
+                          icon: LucideIcons.search,
+                          label: 'Discover Talents',
+                          iconBg: AppColors.infoLight,
+                          iconFg: AppColors.info,
+                          onTap: () => context.push('/scout-discovery'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OrgQuickTile(
+                          icon: LucideIcons.calendar,
+                          label: 'Attend Trials',
+                          iconBg: AppColors.yellowTint,
+                          iconFg: AppColors.warnText,
+                          onTap: () => context.push('/trials'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OrgQuickTile(
+                          icon: LucideIcons.trophy,
+                          label: 'Top Performers',
+                          iconBg: AppColors.successLight,
+                          iconFg: const Color(0xFF15803D),
+                          onTap: () => context.push('/leaderboard'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OrgQuickTile(
+                          icon: LucideIcons.bookmark,
+                          label: 'Shortlisting',
+                          iconBg: const Color(0xFFFCE7F3),
+                          iconFg: AppColors.pink,
+                          onTap: () => context.push('/scout-shortlist'),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 6),
                   const _UpcomingTrials(),

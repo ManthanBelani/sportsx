@@ -7,8 +7,10 @@ import 'package:sportx_app/features/academy/presentation/providers/academy_provi
 import 'package:sportx_app/shared/models/academy.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/presentation/widgets/social_links.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/shared/models/trial.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Read-only academy profile view (design: profile-view.html).
@@ -55,14 +57,9 @@ class _AcademyProfileScreenState extends ConsumerState<AcademyProfileScreen> {
         ),
         title: const Text('My Profile',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        // Edit entry lives on the view itself (board screen 6) as the
+        // yellow Edit Profile button — no duplicate pencil here.
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(LucideIcons.pencil, size: 20, color: AppColors.textPrimary),
-            onPressed: _openEdit,
-            tooltip: 'Edit profile',
-          ),
-        ],
       ),
       body: academyAsync.when(
         loading: () => const GenericDetailSkeleton(),
@@ -79,7 +76,11 @@ class _AcademyProfileScreenState extends ConsumerState<AcademyProfileScreen> {
             ),
           ],
         ),
-        data: (academy) => _ProfileBody(academy: academy, trials: trialsState.items),
+        data: (academy) => _ProfileBody(
+          academy: academy,
+          trials: trialsState.items,
+          onEdit: _openEdit,
+        ),
       ),
     );
   }
@@ -88,8 +89,9 @@ class _AcademyProfileScreenState extends ConsumerState<AcademyProfileScreen> {
 class _ProfileBody extends StatelessWidget {
   final Academy academy;
   final List<Trial> trials;
+  final VoidCallback onEdit;
 
-  const _ProfileBody({required this.academy, required this.trials});
+  const _ProfileBody({required this.academy, required this.trials, required this.onEdit});
 
   int get _activeTrials => trials.where((t) => t.status == 'published').length;
   int get _draftTrials => trials.where((t) => t.status == 'draft').length;
@@ -111,6 +113,32 @@ class _ProfileBody extends StatelessWidget {
           _buildProfileHeader(),
           const SizedBox(height: 8),
           _StatsRow(total: trials.length, active: _activeTrials, drafts: _draftTrials),
+          const SizedBox(height: 8),
+          // Board screen 6 · Academy Profile — Programs and Events tabs.
+          // Rendered as section links (nothing here is ever fabricated; the
+          // underlying programs and trials live on their own screens).
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: SecondaryButton(
+                    label: 'Programs',
+                    icon: LucideIcons.dumbbell,
+                    onPressed: () => context.push('/my-programs'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: SecondaryButton(
+                    label: 'Events / Trials',
+                    icon: LucideIcons.calendar,
+                    onPressed: () => context.push('/my-trials'),
+                  ),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 8),
           if (academy.description != null && academy.description!.trim().isNotEmpty) ...[
             _Section(
@@ -190,64 +218,182 @@ class _ProfileBody extends StatelessWidget {
   }
 
   Widget _buildProfileHeader() {
-    return Container(
-      width: double.infinity,
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-      child: Column(
-        children: [
-          Container(
-            width: 84,
-            height: 84,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.academy.withValues(alpha: 0.12),
-              border: Border.all(color: AppColors.border, width: 2),
+    // Board screen 6 · Academy Profile — cover photo with the overlapping
+    // logo avatar, verified name, "{type/sports} · city" meta and location.
+    // Owner actions (Edit Profile / Share) sit where the board's public
+    // Follow / Message buttons are, since this is the academy's own profile.
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          height: 150,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF161C2D), AppColors.academy],
             ),
-            clipBehavior: Clip.antiAlias,
-            child: academy.logoUrl != null
-                ? Image.network(
-                      academy.logoUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => const Icon(
-                          LucideIcons.building2, size: 36, color: AppColors.academy),
-                    )
-                : const Icon(LucideIcons.building2, size: 36, color: AppColors.academy),
           ),
-          const SizedBox(height: 12),
-          Text(
-            academy.name,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            _meta,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14, color: AppColors.academy),
-          ),
-          if (academy.address != null && academy.address!.trim().isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+          alignment: Alignment.center,
+          clipBehavior: Clip.antiAlias,
+          child: academy.coverImageUrl != null
+              ? Image.network(
+                  academy.coverImageUrl!,
+                  width: double.infinity,
+                  height: 150,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => _coverFallback(),
+                )
+              : _coverFallback(),
+        ),
+        Transform.translate(
+          offset: const Offset(0, -34),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(LucideIcons.mapPin, size: 14, color: AppColors.textSecondary),
-                const SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    academy.address!,
-                    textAlign: TextAlign.center,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 78,
+                      height: 78,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.ink,
+                        border: Border.all(color: Colors.white, width: 3),
+                        boxShadow: SportXShadows.e2,
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      alignment: Alignment.center,
+                      child: academy.logoUrl != null
+                          ? Image.network(
+                              academy.logoUrl!,
+                              width: 72,
+                              height: 72,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => const Icon(
+                                  LucideIcons.building2,
+                                  size: 32,
+                                  color: AppColors.yellow),
+                            )
+                          : const Icon(LucideIcons.building2,
+                              size: 32, color: AppColors.yellow),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  academy.name,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.sora(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.ink,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 5),
+                              const Icon(LucideIcons.badgeCheck,
+                                  size: 17, color: AppColors.info),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _meta,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.academy,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          if (academy.address != null &&
+                              academy.address!.trim().isNotEmpty)
+                            Row(
+                              children: [
+                                const Icon(LucideIcons.mapPin,
+                                    size: 12, color: AppColors.textTertiary),
+                                const SizedBox(width: 3),
+                                Expanded(
+                                  child: Text(
+                                    academy.address!,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.inter(
+                                        fontSize: 11.5,
+                                        color: AppColors.textSecondary),
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        Transform.translate(
+          offset: const Offset(0, -22),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: SecondaryButton(
+                    label: 'Edit Profile',
+                    icon: LucideIcons.pencil,
+                    onPressed: onEdit,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: SecondaryButton(
+                    label: 'Share',
+                    icon: LucideIcons.share2,
+                    onPressed: () => Share.share(
+                      'Check out ${academy.name} on SportX — Academy'
+                      '${academy.city?.name != null ? ' in ${academy.city!.name}' : ''}.',
+                    ),
                   ),
                 ),
               ],
             ),
-          ],
-        ],
-      ),
+          ),
+        ),
+      ],
     );
   }
+
+  Widget _coverFallback() => Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(LucideIcons.building2,
+              size: 42, color: Colors.white.withValues(alpha: 0.72)),
+          const SizedBox(width: 14),
+          Text(
+            'ACADEMY',
+            style: GoogleFonts.sora(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 4,
+              color: Colors.white.withValues(alpha: 0.72),
+            ),
+          ),
+        ],
+      );
 }
 
 class _StatsRow extends StatelessWidget {
