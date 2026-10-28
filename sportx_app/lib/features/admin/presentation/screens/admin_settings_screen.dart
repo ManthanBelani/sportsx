@@ -71,7 +71,6 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
       false,
     ),
     ('push_notifications', 'Push notifications', 'Send pushes to users', false),
-    ('email_alerts', 'Email notifications', 'Send emails to users', false),
   ];
 
   @override

@@ -112,15 +112,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                       ),
                       _buildSettingsToggleItem(
-                        icon: LucideIcons.mail,
-                        title: 'Email Alerts',
-                        subtitle: 'Weekly digest, important updates',
-                        value: state.notificationPrefs['email'] ?? false,
-                        onChanged: (v) => ref.read(settingsProvider.notifier).updatePrefs(
-                          {...state.notificationPrefs, 'email': v},
-                        ),
-                      ),
-                      _buildSettingsToggleItem(
                         icon: LucideIcons.messageSquare,
                         title: 'SMS Notifications',
                         subtitle: 'Registration confirmations',
@@ -194,12 +185,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   _buildSectionTitle('Preferences'),
                   _buildSettingsGroup(
                     children: [
-                      _buildSettingsItem(
-                        icon: LucideIcons.globe,
-                        title: 'Language',
-                        subtitle: state.language == 'hi' ? 'हिंदी (Hindi)' : 'English',
-                        onTap: () => _showLanguageDialog(context),
-                      ),
                       _buildSettingsToggleItem(
                         icon: LucideIcons.mapPin,
                         title: 'Location Services',
@@ -520,34 +505,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: const Text('Save'),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showLanguageDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Select Language'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('English'),
-              onTap: () {
-                ref.read(settingsProvider.notifier).updateLanguage('en');
-                Navigator.pop(ctx);
-              },
-            ),
-            ListTile(
-              title: const Text('हिंदी (Hindi)'),
-              onTap: () {
-                ref.read(settingsProvider.notifier).updateLanguage('hi');
-                Navigator.pop(ctx);
-              },
-            ),
-          ],
-        ),
       ),
     );
   }

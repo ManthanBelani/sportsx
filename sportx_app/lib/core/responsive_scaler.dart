@@ -42,8 +42,11 @@ class ResponsiveScaler extends StatelessWidget {
 
   /// Scale bounds. Beyond these the density is kept 1:1 and the canvas just
   /// grows (wider layout), instead of scaling an element absurdly.
+  ///
+  /// Reduced from 1.45 to 1.15 so 6.2"+ phones don't render oversized UI.
+  /// At 1.15 cap, even a 400dp wide phone grows only ~11% (fits more content).
   static const double minScale = 0.85;
-  static const double maxScale = 1.45;
+  static const double maxScale = 1.15;
 
   /// Large form factors (tablet / desktop / web) have their own adaptive
   /// layouts — never density-scale those.
@@ -89,8 +92,16 @@ class ResponsiveScaler extends StatelessWidget {
       viewPadding: _divideEdgeInsets(mq.viewPadding, scale),
       viewInsets: _divideEdgeInsets(mq.viewInsets, scale),
       systemGestureInsets: _divideEdgeInsets(mq.systemGestureInsets, scale),
-      // OS text scaling only grows text, not containers — cap it so the user's
-      // font-size setting can never break layouts on the canvas either.
+      // OS text scaling on top of the *design* canvas — the FittedBox itself
+      // upscales the whole canvas by `scale`, so here we divide it back out.
+      //
+      // Correct math: visual font size = canvasScaler * FittedBox(scale),
+      // and we want the visual result to be fontSize * OS-factor. Therefore
+      // the canvas-level scaler must return OS-factor * fontSize / scale.
+      //
+      // The previous version *multiplied* by scale here, causing fonts to
+      // render at fontSize * scale² — roughly 2x the intended growth — which
+      // made text look oversized on larger phones.
       textScaler: _ScaledTextScaler(
         mq.textScaler.clamp(
           minScaleFactor: 0.8,
@@ -132,8 +143,12 @@ class ResponsiveScaler extends StatelessWidget {
   }
 }
 
-/// Applies the canvas scale on top of the OS-level font scaling while
-/// preserving the (possibly non-linear) accessibility curve.
+/// Applies the canvas scale *inverse* on top of the OS-level font scaling
+/// while preserving the (possibly non-linear) accessibility curve.
+///
+/// The surrounding FittedBox upscales the whole canvas by `scale`.
+/// To keep text at its intended logical size (fontSize * OS-factor),
+/// we must divide by `scale` here so the FittedBox upscale restores it.
 class _ScaledTextScaler implements TextScaler {
   const _ScaledTextScaler(this._inner, this._scale);
 
@@ -141,7 +156,7 @@ class _ScaledTextScaler implements TextScaler {
   final double _scale;
 
   @override
-  double get textScaleFactor => _inner.scale(1.0) * _scale;
+  double get textScaleFactor => _inner.scale(1.0) / _scale;
 
   @override
   TextScaler clamp({
@@ -150,13 +165,13 @@ class _ScaledTextScaler implements TextScaler {
   }) {
     return _ScaledTextScaler(
       _inner.clamp(
-        minScaleFactor: minScaleFactor / _scale,
-        maxScaleFactor: maxScaleFactor / _scale,
+        minScaleFactor: minScaleFactor * _scale,
+        maxScaleFactor: maxScaleFactor * _scale,
       ),
       _scale,
     );
   }
 
   @override
-  double scale(double fontSize) => _inner.scale(fontSize) * _scale;
+  double scale(double fontSize) => _inner.scale(fontSize) / _scale;
 }
