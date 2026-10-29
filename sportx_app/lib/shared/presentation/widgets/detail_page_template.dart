@@ -68,8 +68,7 @@ class DetailPageTemplate extends ConsumerWidget {
   bool get hasSecondaryCta =>
       secondaryCtaText != null && onSecondaryCtaPressed != null;
 
-  bool get showBottomBar =>
-      hasPrimaryCta || hasSecondaryCta || onPhonePressed != null;
+  bool get showBottomBar => hasPrimaryCta || hasSecondaryCta;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -347,6 +346,17 @@ class DetailPageTemplate extends ConsumerWidget {
 
             const SizedBox(height: 16),
 
+            // Contact action — normal in-scroll button instead of the
+            // floating sticky bar (only when a phone handler exists).
+            if (onPhonePressed != null) ...[
+              SecondaryButton(
+                label: 'Call ${details['Contact'] ?? ''}'.trim(),
+                icon: LucideIcons.phone,
+                onPressed: onPhonePressed,
+              ),
+              const SizedBox(height: 16),
+            ],
+
             Center(
               child: GestureDetector(
                 onTap: () {
@@ -381,10 +391,6 @@ class DetailPageTemplate extends ConsumerWidget {
   Widget _buildBottomCTA(BuildContext context) {
     final hasPrimary = hasPrimaryCta;
     final hasSecondary = hasSecondaryCta;
-    final hasPhone = onPhonePressed != null;
-    // No primary/secondary CTA → the phone action stretches full-width
-    // instead of sitting in an awkward half-empty bar.
-    final showPhoneWide = hasPhone && !hasPrimary && !hasSecondary;
 
     // v2 .stickybar — floating rounded bar, blur white, 18px radius, e2 shadow.
     return Container(
@@ -397,41 +403,6 @@ class DetailPageTemplate extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          if (onPhonePressed != null && !hasSecondary && !showPhoneWide) ...[
-            GestureDetector(
-              onTap: onPhonePressed,
-              child: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: AppColors.border),
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: SportXShadows.e1,
-                ),
-                alignment: Alignment.center,
-                child: const Icon(LucideIcons.phone, size: 20, color: AppColors.dark),
-              ),
-            ),
-            const SizedBox(width: 10),
-          ],
-          if (showPhoneWide)
-            Expanded(
-              child: GestureDetector(
-                onTap: onPhonePressed,
-                child: Container(
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: AppColors.border),
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: SportXShadows.e1,
-                  ),
-                  alignment: Alignment.center,
-                  child: const Icon(LucideIcons.phone, size: 20, color: AppColors.dark),
-                ),
-              ),
-            ),
           if (hasSecondary) ...[
             Expanded(
               child: SecondaryButton(

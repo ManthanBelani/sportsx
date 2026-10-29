@@ -191,22 +191,21 @@ class _TalentScoutAthleteDiscoveryScreenState
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: SportXShadows.e1,
               ),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                child:                     Row(
-                children: [
-                  _filterChip('All', _selectedSport == null, () {
-                    setState(() => _selectedSport = null);
-                    _applyFilters();
-                  }),
-                  const SizedBox(width: 8),
-                  ...meta.sports
-                      .take(6)
-                      .map(
-                        (s) => Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: _filterChip(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _filterChip('All', _selectedSport == null, () {
+                      setState(() => _selectedSport = null);
+                      _applyFilters();
+                    }),
+                    ...meta.sports
+                        .take(6)
+                        .map(
+                          (s) => _filterChip(
                             s.name,
                             _selectedSport == s.id,
                             () {
@@ -215,10 +214,9 @@ class _TalentScoutAthleteDiscoveryScreenState
                             },
                           ),
                         ),
-                      ),
-                ],
+                  ],
+                ),
               ),
-            ),
           ),
 
           // Advanced Filters Panel
@@ -568,7 +566,11 @@ class _TalentScoutAthleteDiscoveryScreenState
         ),
         child: Row(
           children: [
-            AthleteAvatar(photoUrl: athlete.photoUrl, radius: 28),
+            AthleteAvatar(
+              photoUrl: athlete.photoUrl,
+              name: athlete.fullName,
+              radius: 28,
+            ),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
@@ -662,11 +664,13 @@ class _TalentScoutAthleteDiscoveryScreenState
                       ? 'Shortlisted — tap to view shortlist'
                       : 'Add to shortlist',
                   icon: Icon(
-                    isShortlisted ? LucideIcons.star : LucideIcons.star,
+                    // Lucide glyphs ignore Icon.fill — use the filled Material
+                    // star so the shortlisted state is clearly visible.
+                    isShortlisted ? Icons.star : LucideIcons.star,
                     size: 20,
                   ),
                   color: isShortlisted
-                      ? Colors.amber
+                      ? AppColors.yellowDeep
                       : AppColors.textSecondary,
                   onPressed: () async {
                     if (isShortlisted) {
