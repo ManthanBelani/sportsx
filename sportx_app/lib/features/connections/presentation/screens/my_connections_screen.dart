@@ -155,26 +155,20 @@ class _MyConnectionsScreenState extends ConsumerState<MyConnectionsScreen> {
   }
 
   void _confirmRemove(ConnectionRecord connection, String currentUserId) {
-    showDialog(
+    showConfirmDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Remove Connection'),
-        content: Text('Remove ${connection.other.name} from your connections?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await removeConnection(ref, connection.id, currentUserId);
-              if (mounted) {
-                ScaffoldMessenger.of(this.context).showSnackBar(const SnackBar(content: Text('Connection removed')));
-              }
-            },
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Remove'),
-          ),
-        ],
-      ),
-    );
+      title: 'Remove Connection',
+      message: 'Remove ${connection.other.name} from your connections?',
+      confirmText: 'Remove',
+      cancelText: 'Cancel',
+      destructive: true,
+    ).then((confirmed) async {
+      if (confirmed) {
+        await removeConnection(ref, connection.id, currentUserId);
+        if (mounted) {
+          ScaffoldMessenger.of(this.context).showSnackBar(const SnackBar(content: Text('Connection removed')));
+        }
+      }
+    });
   }
 }

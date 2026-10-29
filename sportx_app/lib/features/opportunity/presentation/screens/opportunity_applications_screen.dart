@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 /// Provider applications inbox (Phase 4 SP7/SP8/SP9): review applicants,
@@ -51,25 +52,21 @@ class _OpportunityApplicationsScreenState extends ConsumerState<OpportunityAppli
   }
 
   Future<void> _decide(Map<String, dynamic> app, String status) async {
-    final note = TextEditingController();
-    final confirm = await showDialog<String?>(
+    final note = await showTextInputDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(status == 'shortlisted' ? 'Shortlist applicant' : 'Decline applicant'),
-        content: TextField(controller: note, maxLines: 3, decoration: const InputDecoration(hintText: 'Optional note to athlete', border: OutlineInputBorder())),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, note.text.trim()), child: const Text('Confirm')),
-        ],
-      ),
+      title: status == 'shortlisted' ? 'Shortlist applicant' : 'Decline applicant',
+      hintText: 'Optional note to athlete',
+      confirmText: 'Confirm',
+      cancelText: 'Cancel',
+      maxLines: 3,
     );
-    if (confirm == null) return;
+    if (note == null) return;
     final id = (app['id'] ?? '').toString();
     setState(() => _busy.add(id));
     try {
       await ref.read(dioProvider).patch(
         '/opportunities/${widget.opportunityId}/applications/$id',
-        data: {'status': status, if (confirm.isNotEmpty) 'decision_note': confirm},
+        data: {'status': status, if (note.isNotEmpty) 'decision_note': note},
       );
       if (mounted) SnackBarUtils.showSuccess(context, status == 'shortlisted' ? 'Shortlisted' : 'Declined');
       await _load();

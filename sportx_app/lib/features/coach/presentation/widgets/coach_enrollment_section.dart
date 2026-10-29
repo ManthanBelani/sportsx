@@ -5,6 +5,7 @@ import 'package:sportx_app/features/auth/presentation/providers/auth_provider.da
 import 'package:sportx_app/features/coach/presentation/providers/coaching_enrollment_provider.dart';
 import 'package:sportx_app/shared/models/approval.dart';
 import 'package:sportx_app/shared/models/coach.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 /// Enrollment section shown on the coach detail screen when the coach
@@ -25,38 +26,21 @@ class _CoachEnrollmentSectionState extends ConsumerState<CoachEnrollmentSection>
   Future<void> _onEnroll() async {
     final plan = await showModalBottomSheet<PlanType>(
       context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
       builder: (context) => _PlanSelectionSheet(coach: widget.coach),
     );
     if (plan == null || !mounted) return;
 
-    final notesController = TextEditingController();
-    final notes = await showDialog<String>(
+    final notes = await showTextInputDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Enrollment Request'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Add a note to your coach (optional):'),
-            const SizedBox(height: 12),
-            TextField(
-              controller: notesController,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: 'Introduce yourself and your goals...',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, notesController.text.trim()),
-            child: const Text('Submit Request'),
-          ),
-        ],
-      ),
+      title: 'Enrollment Request',
+      hintText: 'Introduce yourself and your goals...',
+      confirmText: 'Submit Request',
+      cancelText: 'Cancel',
+      maxLines: 3,
     );
     if (notes == null || !mounted) return;
 

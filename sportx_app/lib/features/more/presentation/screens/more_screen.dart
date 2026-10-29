@@ -69,21 +69,15 @@ class MoreScreen extends ConsumerWidget {
   }
 
   Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showConfirmDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Log out?', style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700)),
-        content: Text('You will need to sign in again.', style: GoogleFonts.inter(fontSize: 14)),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Log out', style: TextStyle(color: AppColors.error)),
-          ),
-        ],
-      ),
+      title: 'Log out?',
+      message: 'You will need to sign in again.',
+      confirmText: 'Log out',
+      cancelText: 'Cancel',
+      destructive: true,
     );
-    if (confirmed == true) {
+    if (confirmed) {
       await ref.read(authProvider.notifier).logout();
     }
   }

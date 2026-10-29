@@ -180,38 +180,25 @@ class _OnboardingSkillLocationScreenState extends ConsumerState<OnboardingSkillL
                     const SizedBox(height: 12),
                     Builder(builder: (context) {
                       final states = meta.cities.map((c) => c.state).toSet().toList()..sort();
-                      return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.cardBackground,
-                          border: Border.all(color: AppColors.border, width: 1.5),
-                          borderRadius: BorderRadius.circular(13),
-                          boxShadow: SportXShadows.e1,
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            isExpanded: true,
-                            value: _selectedState,
-                            hint: Text('Choose state', style: GoogleFonts.inter(fontSize: 14, color: AppColors.textTertiary)),
-                            icon: const Icon(LucideIcons.chevronDown, color: AppColors.textSecondary, size: 20),
-                            items: states.map((s) {
-                              return DropdownMenuItem<String>(
-                                value: s,
-                                child: Text(s, style: GoogleFonts.inter(fontSize: 14, color: AppColors.textPrimary)),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedState = value;
-                                // Reset city when state changes if city not in state
-                                if (_selectedCityId != null) {
-                                  final city = meta.cities.where((c) => c.id == _selectedCityId).firstOrNull;
-                                  if (city != null && city.state != value) _selectedCityId = null;
-                                }
-                              });
-                            },
-                          ),
-                        ),
+                      return SportXSimpleDropdown<String>(
+                        value: _selectedState,
+                        hint: 'Choose state',
+                        items: states.map((s) {
+                          return DropdownMenuItem<String>(
+                            value: s,
+                            child: Text(s, style: GoogleFonts.inter(fontSize: 14, color: AppColors.textPrimary)),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedState = value;
+                            // Reset city when state changes if city not in state
+                            if (_selectedCityId != null) {
+                              final city = meta.cities.where((c) => c.id == _selectedCityId).firstOrNull;
+                              if (city != null && city.state != value) _selectedCityId = null;
+                            }
+                          });
+                        },
                       );
                     }),
                     const SizedBox(height: 16),
@@ -225,33 +212,20 @@ class _OnboardingSkillLocationScreenState extends ConsumerState<OnboardingSkillL
                         final filteredCities = _selectedState == null
                             ? meta.cities
                             : meta.cities.where((c) => c.state == _selectedState).toList();
-                        return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.cardBackground,
-                            border: Border.all(color: AppColors.border, width: 1.5),
-                            borderRadius: BorderRadius.circular(13),
-                            boxShadow: SportXShadows.e1,
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<int>(
-                              isExpanded: true,
-                              value: _selectedCityId,
-                              hint: Text('Choose city', style: GoogleFonts.inter(fontSize: 14, color: AppColors.textTertiary)),
-                              icon: const Icon(LucideIcons.chevronDown, color: AppColors.textSecondary, size: 20),
-                              items: filteredCities.map((city) {
-                                return DropdownMenuItem<int>(
-                                  value: city.id,
-                                  child: Text('${city.name}, ${city.state}', style: GoogleFonts.inter(fontSize: 14, color: AppColors.textPrimary)),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedCityId = value;
-                                });
-                              },
-                            ),
-                          ),
+                        return SportXSimpleDropdown<int>(
+                          value: _selectedCityId,
+                          hint: 'Choose city',
+                          items: filteredCities.map((city) {
+                            return DropdownMenuItem<int>(
+                              value: city.id,
+                              child: Text('${city.name}, ${city.state}', style: GoogleFonts.inter(fontSize: 14, color: AppColors.textPrimary)),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedCityId = value;
+                            });
+                          },
                         );
                       }),
 

@@ -912,37 +912,14 @@ class _RegistrationCard extends ConsumerWidget {
     WidgetRef ref,
     Map<String, dynamic> r,
   ) async {
-    final controller = TextEditingController();
-    final reason = await showDialog<String>(
+    final reason = await showTextInputDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Reject Registration'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            labelText: 'Reason for rejection',
-            hintText: 'Enter reason...',
-          ),
-          maxLines: 3,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          PrimaryButton(
-            small: true,
-            label: 'Reject',
-            onPressed: () => Navigator.pop(context, controller.text),
-          ),
-        ],
-      ),
+      title: 'Reject Registration',
+      hintText: 'Enter reason...',
+      confirmText: 'Reject',
+      cancelText: 'Cancel',
+      maxLines: 3,
+      validator: (v) => v == null || v.trim().isEmpty ? 'Reason is required' : null,
     );
     if (reason != null && reason.trim().isNotEmpty && context.mounted) {
       final (ok, error) = await ref

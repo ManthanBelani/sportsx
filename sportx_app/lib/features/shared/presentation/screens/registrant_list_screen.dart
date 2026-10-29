@@ -10,6 +10,7 @@ import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/academy/presentation/providers/academy_provider.dart';
 import 'package:sportx_app/features/organizer/presentation/providers/organizer_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/shared/providers/directory_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -224,17 +225,14 @@ class _RegistrantCardWithActions extends ConsumerWidget {
   }
 
   Future<void> _reject(BuildContext context, WidgetRef ref) async {
-    final controller = TextEditingController();
-    final reason = await showDialog<String>(
+    final reason = await showTextInputDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Reject Registration'),
-        content: TextField(controller: controller, decoration: const InputDecoration(labelText: 'Reason for rejection', hintText: 'Enter reason...'), maxLines: 3),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.pop(ctx, controller.text), child: const Text('Reject')),
-        ],
-      ),
+      title: 'Reject Registration',
+      hintText: 'Enter reason...',
+      confirmText: 'Reject',
+      cancelText: 'Cancel',
+      maxLines: 3,
+      validator: (v) => v == null || v.trim().isEmpty ? 'Reason is required' : null,
     );
     if (reason != null && reason.trim().isNotEmpty && context.mounted) {
       final (ok, err) = await ref.read(providerTournamentActionsProvider).rejectTrialRegistration(id, reason.trim());

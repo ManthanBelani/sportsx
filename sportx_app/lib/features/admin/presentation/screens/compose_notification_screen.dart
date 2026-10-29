@@ -88,7 +88,7 @@ class _ComposeNotificationScreenState
                     borderRadius: BorderRadius.circular(14),
                     borderSide: const BorderSide(color: AppColors.border)),
                 filled: true,
-                fillColor: AppColors.surface,
+                fillColor: Colors.white,
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -111,7 +111,7 @@ class _ComposeNotificationScreenState
                     borderRadius: BorderRadius.circular(14),
                     borderSide: const BorderSide(color: AppColors.border)),
                 filled: true,
-                fillColor: AppColors.surface,
+                fillColor: Colors.white,
               ),
               maxLines: 4,
               validator: (value) {

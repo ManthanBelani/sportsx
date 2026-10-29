@@ -133,16 +133,13 @@ class _TalentScoutShortlistScreenState extends ConsumerState<TalentScoutShortlis
         decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(16)),
         child: const Icon(LucideIcons.trash2, color: Colors.white),
       ),
-      confirmDismiss: (_) async => await showDialog<bool>(
+      confirmDismiss: (_) async => await showConfirmDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Remove from Shortlist'),
-          content: Text('Remove ${item.athlete.fullName} from your shortlist?'),
-          actions: [
-            TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancel')),
-            TextButton(onPressed: () => Navigator.of(context).pop(true), style: TextButton.styleFrom(foregroundColor: Colors.red), child: const Text('Remove')),
-          ],
-        ),
+        title: 'Remove from Shortlist',
+        message: 'Remove ${item.athlete.fullName} from your shortlist?',
+        confirmText: 'Remove',
+        cancelText: 'Cancel',
+        destructive: true,
       ),
       onDismissed: (_) async {
         final success = await ref.read(scoutShortlistProvider.notifier).removeFromShortlist(item.athlete.id);
@@ -217,25 +214,18 @@ class _TalentScoutShortlistScreenState extends ConsumerState<TalentScoutShortlis
   }
 
   void _showNotesDialog(BuildContext context, WidgetRef ref, dynamic item) {
-    final ctrl = TextEditingController(text: item.notes ?? '');
-    showDialog(
+    showTextInputDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Notes for ${item.athlete.fullName}'),
-        content: TextField(controller: ctrl, maxLines: 4, decoration: const InputDecoration(hintText: 'e.g. Strong left-footed striker, observed at Junior Nationals...', border: OutlineInputBorder()), autofocus: true, maxLength: 1000),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          PrimaryButton(
-            label: 'Save',
-            small: true,
-            onPressed: () async {
-              Navigator.pop(ctx);
-              final ok = await ref.read(scoutShortlistProvider.notifier).updateNotes(item.athlete.id, ctrl.text.trim());
-              if (context.mounted) SnackBarUtils.showSuccess(context, ok ? 'Notes updated' : ref.read(scoutShortlistProvider).error ?? 'Failed to update notes');
-            },
-          ),
-        ],
-      ),
-    );
+      title: 'Notes for ${item.athlete.fullName}',
+      initialText: item.notes,
+      hintText: 'e.g. Strong left-footed striker, observed at Junior Nationals...',
+      confirmText: 'Save',
+      cancelText: 'Cancel',
+      maxLines: 4,
+    ).then((value) async {
+      if (value == null) return;
+      final ok = await ref.read(scoutShortlistProvider.notifier).updateNotes(item.athlete.id, value.trim());
+      if (context.mounted) SnackBarUtils.showSuccess(context, ok ? 'Notes updated' : ref.read(scoutShortlistProvider).error ?? 'Failed to update notes');
+    });
   }
 }

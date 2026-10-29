@@ -530,7 +530,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       ),
       builder: (context) => SafeArea(
         child: Column(
@@ -598,7 +598,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       ),
       builder: (context) => SafeArea(
         child: Column(
@@ -666,7 +666,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       ),
       builder: (context) => SafeArea(
         child: Column(

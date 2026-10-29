@@ -147,7 +147,7 @@ class OrganizerTeamScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(22),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -224,22 +224,14 @@ class OrganizerTeamScreen extends ConsumerWidget {
   }
 
   Future<void> _remove(BuildContext context, WidgetRef ref, OrganizerTeamMember member) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showConfirmDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Remove member'),
-        content: Text('Remove ${member.name} from your team?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          PrimaryButton(
-            small: true,
-            label: 'Remove',
-            onPressed: () => Navigator.pop(ctx, true),
-          ),
-        ],
-      ),
+      title: 'Remove member',
+      message: 'Remove ${member.name} from your team?',
+      confirmText: 'Remove',
+      cancelText: 'Cancel',
     );
-    if (confirmed != true || !context.mounted) return;
+    if (!confirmed || !context.mounted) return;
 
     final (ok, error) = await ref.read(organizerTeamActionsProvider).remove(member.id);
     if (!context.mounted) return;

@@ -8,6 +8,7 @@ import 'package:sportx_app/features/admin/presentation/screens/admin_web_layout.
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class ManageUsersScreen extends ConsumerStatefulWidget {
   const ManageUsersScreen({super.key});
@@ -58,7 +59,7 @@ class _ManageUsersScreenState extends ConsumerState<ManageUsersScreen> {
                   borderSide: const BorderSide(color: AppColors.border),
                 ),
                 filled: true,
-                fillColor: AppColors.surface,
+                fillColor: Colors.white,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
               onChanged: (value) {
@@ -153,18 +154,11 @@ class _ManageUsersScreenState extends ConsumerState<ManageUsersScreen> {
   }
 
   void _showAddUserDialog(BuildContext context) {
-    showDialog(
+    showInfoDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add User'),
-        content: const Text('This feature allows admins to create new user accounts manually.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
+      title: 'Add User',
+      message: 'This feature allows admins to create new user accounts manually.',
+      okText: 'Close',
     );
   }
 }

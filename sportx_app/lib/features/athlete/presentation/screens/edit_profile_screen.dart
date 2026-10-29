@@ -544,38 +544,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Widget _buildDropdown(String label, String value, List<String> items, ValueChanged<String?> onChanged) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
-          const SizedBox(height: 6),
-          DropdownButtonFormField<String>(
-            initialValue: value,
-            items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-            onChanged: onChanged,
-            icon: const Icon(LucideIcons.chevronDown, size: 20),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(13),
-                borderSide: const BorderSide(color: AppColors.border),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(13),
-                borderSide: const BorderSide(color: AppColors.border),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(13),
-                borderSide: const BorderSide(color: AppColors.primary),
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            ),
-          ),
-        ],
-      ),
+    return SportXDropdownField<String>(
+      label: label,
+      value: value,
+      items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+      onChanged: onChanged,
     );
   }
 
@@ -613,133 +586,52 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Widget _buildCityDropdown(MetaState meta) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('City', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
-          const SizedBox(height: 6),
-          DropdownButtonFormField<int>(
-            initialValue: _cityId,
-            items: meta.cities.map((c) => DropdownMenuItem(value: c.id, child: Text('${c.name}, ${c.state}'))).toList(),
-            onChanged: (v) => setState(() => _cityId = v),
-            hint: const Text('Select City'),
-            icon: const Icon(LucideIcons.chevronDown, size: 20),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(13), borderSide: const BorderSide(color: AppColors.border)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(13), borderSide: const BorderSide(color: AppColors.border)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(13), borderSide: const BorderSide(color: AppColors.primary)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            ),
-            validator: (v) => v == null ? 'Required' : null,
-          ),
-        ],
-      ),
+    return SportXDropdownField<int>(
+      label: 'City',
+      value: _cityId,
+      hint: 'Select City',
+      items: meta.cities.map((c) => DropdownMenuItem(value: c.id, child: Text('${c.name}, ${c.state}'))).toList(),
+      onChanged: (v) => setState(() => _cityId = v),
+      validator: (v) => v == null ? 'Required' : null,
     );
   }
 
   Widget _buildAgeGroupDropdown(MetaState meta) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Age Group', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
-          const SizedBox(height: 6),
-          DropdownButtonFormField<int>(
-            initialValue: _selectedAgeGroupId,
-            items: meta.ageGroups.map((a) => DropdownMenuItem(value: a.id, child: Text(a.label))).toList(),
-            onChanged: (v) => setState(() => _selectedAgeGroupId = v),
-            hint: const Text('Select Age Group'),
-            icon: const Icon(LucideIcons.chevronDown, size: 20),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(13), borderSide: const BorderSide(color: AppColors.border)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(13), borderSide: const BorderSide(color: AppColors.border)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(13), borderSide: const BorderSide(color: AppColors.primary)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            ),
-          ),
-        ],
-      ),
+    return SportXDropdownField<int>(
+      label: 'Age Group',
+      value: _selectedAgeGroupId,
+      hint: 'Select Age Group',
+      items: meta.ageGroups.map((a) => DropdownMenuItem(value: a.id, child: Text(a.label))).toList(),
+      onChanged: (v) => setState(() => _selectedAgeGroupId = v),
     );
   }
 
   Widget _buildSkillLevelDropdown() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Skill Level', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
-          const SizedBox(height: 6),
-          DropdownButtonFormField<String>(
-            initialValue: _skillLevels.contains(_skillLevel) ? _skillLevel : null,
-            items: _skillLevels.map((s) => DropdownMenuItem(value: s, child: Text(s[0].toUpperCase() + s.substring(1)))).toList(),
-            onChanged: (v) => setState(() => _skillLevel = v ?? ''),
-            hint: const Text('Select Skill Level'),
-            icon: const Icon(LucideIcons.chevronDown, size: 20),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(13), borderSide: const BorderSide(color: AppColors.border)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(13), borderSide: const BorderSide(color: AppColors.border)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(13), borderSide: const BorderSide(color: AppColors.primary)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            ),
-          ),
-        ],
-      ),
+    return SportXDropdownField<String>(
+      label: 'Skill Level',
+      value: _skillLevels.contains(_skillLevel) ? _skillLevel : null,
+      hint: 'Select Skill Level',
+      items: _skillLevels.map((s) => DropdownMenuItem(value: s, child: Text(s[0].toUpperCase() + s.substring(1)))).toList(),
+      onChanged: (v) => setState(() => _skillLevel = v ?? ''),
     );
   }
 
   Widget _buildSportDropdown(MetaState meta) {
     final sportList = meta.sports;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Primary Sport', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
-          const SizedBox(height: 6),
-          DropdownButtonFormField<int>(
-            initialValue: _selectedSportId,
-            items: sportList.map((sport) {
-              return DropdownMenuItem(
-                value: sport.id,
-                child: Text(sport.name),
-              );
-            }).toList(),
-            onChanged: (val) => setState(() {
-              _selectedSportId = val;
-              _selectedSportName = sportList.where((s) => s.id == val).firstOrNull?.name;
-            }),
-            hint: Text(_selectedSportName ?? 'Select Sport'),
-            icon: const Icon(LucideIcons.chevronDown, size: 20),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(13),
-                borderSide: const BorderSide(color: AppColors.border),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(13),
-                borderSide: const BorderSide(color: AppColors.border),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(13),
-                borderSide: const BorderSide(color: AppColors.primary),
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            ),
-          ),
-        ],
-      ),
+    return SportXDropdownField<int>(
+      label: 'Primary Sport',
+      value: _selectedSportId,
+      hint: _selectedSportName ?? 'Select Sport',
+      items: sportList.map((sport) {
+        return DropdownMenuItem(
+          value: sport.id,
+          child: Text(sport.name),
+        );
+      }).toList(),
+      onChanged: (val) => setState(() {
+        _selectedSportId = val;
+        _selectedSportName = sportList.where((s) => s.id == val).firstOrNull?.name;
+      }),
     );
   }
 }

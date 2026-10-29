@@ -697,3 +697,396 @@ class SportXIconButton extends StatelessWidget {
     );
   }
 }
+
+/// Reusable dropdown field with consistent styling matching design tokens.
+/// Use this instead of raw DropdownButtonFormField for consistent look across the app.
+class SportXDropdownField<T> extends StatelessWidget {
+  final String? label;
+  final String? hint;
+  final T? value;
+  final List<DropdownMenuItem<T>> items;
+  final ValueChanged<T?>? onChanged;
+  final String? Function(T?)? validator;
+  final bool enabled;
+  final Widget? prefixIcon;
+  final Widget? suffixIcon;
+
+  const SportXDropdownField({
+    super.key,
+    this.label,
+    this.hint,
+    this.value,
+    required this.items,
+    this.onChanged,
+    this.validator,
+    this.enabled = true,
+    this.prefixIcon,
+    this.suffixIcon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (label != null) ...[
+          Text(
+            label!,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 6),
+        ],
+        DropdownButtonFormField<T>(
+          initialValue: value,
+          items: items,
+          onChanged: enabled ? onChanged : null,
+          validator: validator,
+          icon: suffixIcon ?? const Icon(LucideIcons.chevronDown, size: 20, color: AppColors.textSecondary),
+          decoration: InputDecoration(
+            enabled: enabled,
+            hintText: hint,
+            hintStyle: GoogleFonts.inter(fontSize: 14, color: AppColors.textTertiary),
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            prefixIcon: prefixIcon != null ? Padding(padding: const EdgeInsets.only(left: 12, right: 8), child: prefixIcon) : null,
+            prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+              borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+              borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+              borderSide: const BorderSide(color: AppColors.yellowDeep, width: 1.5),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+              borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+              borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+              borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+            ),
+            errorStyle: GoogleFonts.inter(fontSize: 12, color: AppColors.error),
+          ),
+          style: GoogleFonts.inter(fontSize: 14, color: AppColors.textPrimary),
+          dropdownColor: Colors.white,
+          borderRadius: BorderRadius.circular(DesignTokens.radiusMd),
+          menuMaxHeight: 300,
+        ),
+      ],
+    );
+  }
+}
+
+/// Reusable simple dropdown (without label) for inline use.
+class SportXSimpleDropdown<T> extends StatelessWidget {
+  final T? value;
+  final List<DropdownMenuItem<T>> items;
+  final ValueChanged<T?>? onChanged;
+  final String? hint;
+  final bool enabled;
+  final double? width;
+
+  const SportXSimpleDropdown({
+    super.key,
+    this.value,
+    required this.items,
+    this.onChanged,
+    this.hint,
+    this.enabled = true,
+    this.width,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: width != null ? BoxConstraints.tightFor(width: width) : const BoxConstraints(),
+      child: DropdownButtonFormField<T>(
+        initialValue: value,
+        items: items,
+        onChanged: enabled ? onChanged : null,
+        icon: const Icon(LucideIcons.chevronDown, size: 18, color: AppColors.textSecondary),
+        decoration: InputDecoration(
+          enabled: enabled,
+          hintText: hint,
+          hintStyle: GoogleFonts.inter(fontSize: 13, color: AppColors.textTertiary),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          isDense: true,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+            borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+            borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+            borderSide: const BorderSide(color: AppColors.yellowDeep, width: 1.5),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+            borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+            borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+          ),
+        ),
+        style: GoogleFonts.inter(fontSize: 13, color: AppColors.textPrimary),
+        dropdownColor: Colors.white,
+        borderRadius: BorderRadius.circular(DesignTokens.radiusMd),
+        menuMaxHeight: 300,
+      ),
+    );
+  }
+}
+
+/// Reusable dialog with consistent styling.
+/// Use this instead of raw AlertDialog for consistent look across the app.
+class SportXDialog extends StatelessWidget {
+  final String? title;
+  final Widget? titleWidget;
+  final Widget? content;
+  final List<Widget>? actions;
+  final EdgeInsetsGeometry? contentPadding;
+  final EdgeInsetsGeometry? actionsPadding;
+  final double? maxWidth;
+
+  const SportXDialog({
+    super.key,
+    this.title,
+    this.titleWidget,
+    this.content,
+    this.actions,
+    this.contentPadding,
+    this.actionsPadding,
+    this.maxWidth,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(DesignTokens.radiusLg),
+        side: const BorderSide(color: AppColors.border, width: 1),
+      ),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth ?? 400),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (title != null || titleWidget != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                child: titleWidget ??
+                    Text(
+                      title!,
+                      style: GoogleFonts.sora(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+              ),
+            if (content != null)
+              Padding(
+                padding: contentPadding ?? const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                child: content,
+              ),
+            if (actions != null && actions!.isNotEmpty)
+              Padding(
+                padding: actionsPadding ?? const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: actions!,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Convenience function to show a SportXDialog
+Future<T?> showSportXDialog<T>({
+  required BuildContext context,
+  String? title,
+  Widget? titleWidget,
+  Widget? content,
+  List<Widget>? actions,
+  EdgeInsetsGeometry? contentPadding,
+  EdgeInsetsGeometry? actionsPadding,
+  double? maxWidth,
+  bool barrierDismissible = true,
+}) {
+  return showDialog<T>(
+    context: context,
+    barrierDismissible: barrierDismissible,
+    builder: (ctx) => SportXDialog(
+      title: title,
+      titleWidget: titleWidget,
+      content: content,
+      actions: actions,
+      contentPadding: contentPadding,
+      actionsPadding: actionsPadding,
+      maxWidth: maxWidth,
+    ),
+  );
+}
+
+/// Convenience function to show a confirmation dialog
+Future<bool> showConfirmDialog({
+  required BuildContext context,
+  required String title,
+  required String message,
+  String confirmText = 'Confirm',
+  String cancelText = 'Cancel',
+  Color? confirmColor,
+  bool destructive = false,
+}) {
+  return showSportXDialog<bool>(
+    context: context,
+    title: title,
+    content: Text(
+      message,
+      style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary, height: 1.5),
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context, false),
+        child: Text(
+          cancelText,
+          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
+        ),
+      ),
+      const SizedBox(width: 8),
+      PrimaryButton(
+        label: confirmText,
+        small: true,
+        onPressed: () => Navigator.pop(context, true),
+      ),
+    ],
+  ).then((value) => value ?? false);
+}
+
+/// Convenience function to show an info dialog
+Future<void> showInfoDialog({
+  required BuildContext context,
+  required String title,
+  required String message,
+  String okText = 'Got it',
+}) {
+  return showSportXDialog<void>(
+    context: context,
+    title: title,
+    content: Text(
+      message,
+      style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary, height: 1.5),
+    ),
+    actions: [
+      PrimaryButton(
+        label: okText,
+        small: true,
+        onPressed: () => Navigator.pop(context),
+      ),
+    ],
+  );
+}
+
+/// Convenience function to show a text input dialog
+Future<String?> showTextInputDialog({
+  required BuildContext context,
+  required String title,
+  String? initialText,
+  String? hintText,
+  String confirmText = 'Submit',
+  String cancelText = 'Cancel',
+  String? Function(String?)? validator,
+  int maxLines = 1,
+}) async {
+  final controller = TextEditingController(text: initialText);
+  final formKey = GlobalKey<FormState>();
+
+  return showSportXDialog<String>(
+    context: context,
+    title: title,
+    content: Form(
+      key: formKey,
+      child: TextFormField(
+        controller: controller,
+        maxLines: maxLines,
+        style: GoogleFonts.inter(fontSize: 14, color: AppColors.textPrimary),
+        decoration: InputDecoration(
+          hintText: hintText,
+          hintStyle: GoogleFonts.inter(fontSize: 14, color: AppColors.textTertiary),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+            borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+            borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+            borderSide: const BorderSide(color: AppColors.yellowDeep, width: 1.5),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+            borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+            borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+          ),
+          errorStyle: GoogleFonts.inter(fontSize: 12, color: AppColors.error),
+        ),
+        validator: validator,
+      ),
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: Text(
+          cancelText,
+          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
+        ),
+      ),
+      const SizedBox(width: 8),
+      PrimaryButton(
+        label: confirmText,
+        small: true,
+        onPressed: () {
+          if (formKey.currentState?.validate() ?? true) {
+            Navigator.pop(context, controller.text.trim());
+          }
+        },
+      ),
+    ],
+  );
+}

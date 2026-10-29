@@ -73,7 +73,7 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
     final filtered = _selectedState == null ? cities : cities.where((c) => c.state == _selectedState).toList();
     final selected = await showModalBottomSheet<Map<String, dynamic>>(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -102,8 +102,8 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
     if (states.isEmpty) return;
     final selected = await showModalBottomSheet<String>(
       context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
       builder: (context) => SafeArea(
         child: ListView.builder(
           itemCount: states.length,
@@ -131,7 +131,7 @@ class _SearchFilterScreenState extends ConsumerState<SearchFilterScreen> {
     final cityName = _currentFilters.cityId != null ? _cityNameById(meta, _currentFilters.cityId!) : null;
 
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white.withValues(alpha: 0.88),
         elevation: 0,

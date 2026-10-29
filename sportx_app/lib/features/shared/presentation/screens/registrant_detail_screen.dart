@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 
@@ -19,17 +20,14 @@ class RegistrantDetailScreen extends ConsumerWidget {
         await ref.read(dioProvider).patch('/registrations/trials/$registrationId/approve');
       } else if (action == 'reject') {
         // show rejection reason dialog for new flow
-        final controller = TextEditingController();
-        final reason = await showDialog<String>(
+        final reason = await showTextInputDialog(
           context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Reject Registration'),
-            content: TextField(controller: controller, maxLines: 3, decoration: const InputDecoration(labelText: 'Reason', hintText: 'Enter reason...')),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-              ElevatedButton(onPressed: () => Navigator.pop(ctx, controller.text), child: const Text('Reject')),
-            ],
-          ),
+          title: 'Reject Registration',
+          hintText: 'Enter reason...',
+          confirmText: 'Reject',
+          cancelText: 'Cancel',
+          maxLines: 3,
+          validator: (v) => v == null || v.trim().isEmpty ? 'Reason is required' : null,
         );
         if (reason == null || reason.trim().isEmpty) return;
         try {

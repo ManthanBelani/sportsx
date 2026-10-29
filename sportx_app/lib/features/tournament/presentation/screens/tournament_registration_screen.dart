@@ -133,7 +133,7 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
                 decoration: InputDecoration(
                   hintText: 'e.g. Elite Tigers',
                   filled: true,
-                  fillColor: AppColors.surface,
+                  fillColor: Colors.white,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: const BorderSide(color: AppColors.border),
@@ -155,7 +155,7 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
                 decoration: InputDecoration(
                   hintText: 'Manager name (optional)',
                   filled: true,
-                  fillColor: AppColors.surface,
+                  fillColor: Colors.white,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: const BorderSide(color: AppColors.border),
@@ -176,7 +176,7 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
                 initialValue: _numberOfPlayers,
                 decoration: InputDecoration(
                   filled: true,
-                  fillColor: AppColors.surface,
+                  fillColor: Colors.white,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: const BorderSide(color: AppColors.border),
@@ -204,7 +204,7 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
                 decoration: InputDecoration(
                   hintText: 'Captain name',
                   filled: true,
-                  fillColor: AppColors.surface,
+                  fillColor: Colors.white,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: const BorderSide(color: AppColors.border),
@@ -226,7 +226,7 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
                 decoration: InputDecoration(
                   hintText: 'Coach name (optional)',
                   filled: true,
-                  fillColor: AppColors.surface,
+                  fillColor: Colors.white,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: const BorderSide(color: AppColors.border),
@@ -249,7 +249,7 @@ class _TournamentRegistrationScreenState extends ConsumerState<TournamentRegistr
               isExpanded: true,
               decoration: InputDecoration(
                 filled: true,
-                fillColor: AppColors.surface,
+                fillColor: Colors.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: const BorderSide(color: AppColors.border),

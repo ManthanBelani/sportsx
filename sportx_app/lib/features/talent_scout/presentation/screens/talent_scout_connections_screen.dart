@@ -233,15 +233,15 @@ class _TalentScoutConnectionsScreenState extends ConsumerState<TalentScoutConnec
             if (status == 'pending')
               TextButton(
                 onPressed: () async {
-                  final confirm = await showDialog<bool>(
+                  final confirm = await showConfirmDialog(
                     context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: const Text('Cancel request?'),
-                      content: Text('Cancel connection request to $name?'),
-                      actions: [TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Keep')), TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Cancel request', style: TextStyle(color: Colors.red)))],
-                    ),
+                    title: 'Cancel request?',
+                    message: 'Cancel connection request to $name?',
+                    confirmText: 'Cancel request',
+                    cancelText: 'Keep',
+                    destructive: true,
                   );
-                  if (confirm == true) {
+                  if (confirm) {
                     final ok = await ref.read(scoutConnectionProvider.notifier).cancelConnection(connId);
                     if (mounted) SnackBarUtils.showSuccess(context, ok ? 'Request cancelled' : ref.read(scoutConnectionProvider).error ?? 'Failed to cancel');
                   }

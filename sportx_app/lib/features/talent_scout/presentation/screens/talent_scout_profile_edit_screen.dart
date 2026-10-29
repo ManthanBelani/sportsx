@@ -650,27 +650,30 @@ class _TalentScoutProfileEditScreenState extends ConsumerState<TalentScoutProfil
 
   void _confirmDelete(BuildContext context) {
     final pw = TextEditingController();
-    showDialog(
+    showSportXDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Account?'),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [
-          const Text('This action is permanent and cannot be undone. Enter your password to confirm.'),
+      title: 'Delete Account?',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('This action is permanent and cannot be undone. Enter your password to confirm.',
+              style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary, height: 1.5)),
           const SizedBox(height: 16),
-          TextField(controller: pw, obscureText: true, decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder())),
-        ]),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              final ok = await ref.read(settingsProvider.notifier).deleteAccount(pw.text);
-              if (ok && context.mounted) SnackBarUtils.showSuccess(context, 'Account deleted');
-            },
-            child: const Text('Delete', style: TextStyle(color: AppColors.error)),
-          ),
+          TextField(controller: pw, obscureText: true, decoration: const InputDecoration(labelText: 'Password')),
         ],
       ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(
+          onPressed: () async {
+            Navigator.pop(context);
+            final ok = await ref.read(settingsProvider.notifier).deleteAccount(pw.text);
+            if (ok && context.mounted) SnackBarUtils.showSuccess(context, 'Account deleted');
+          },
+          child: const Text('Delete', style: TextStyle(color: AppColors.error)),
+        ),
+      ],
     );
   }
 

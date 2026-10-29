@@ -9,6 +9,7 @@ import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/theme/design_tokens.dart';
 
 /// Athlete Leaderboard Screen - shows rankings with period/category filters
 class AthleteLeaderboardScreen extends ConsumerStatefulWidget {
@@ -237,24 +238,17 @@ class _AthleteLeaderboardScreenState extends ConsumerState<AthleteLeaderboardScr
   }
 
   void _showInfoDialog() {
-    showDialog(
+    showInfoDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Leaderboard Info', style: GoogleFonts.sora(fontWeight: FontWeight.w700)),
-        content: Text(
-          'Rankings update in real-time based on your activity:\n\n'
+      title: 'Leaderboard Info',
+      message: 'Rankings update in real-time based on your activity:\n\n'
           '• XP: Total experience points\n'
           '• Matches: Games played\n'
           '• Wins: Victories earned\n'
           '• Achievements: Medals & certificates\n'
           '• Connections: Network size\n\n'
           'Weekly resets every Monday. Season follows the sports calendar.',
-          style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Got it')),
-        ],
-      ),
+      okText: 'Got it',
     );
   }
 
@@ -301,21 +295,25 @@ class _FilterDropdown<T> extends StatelessWidget {
         labelText: label,
         labelStyle: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+          borderSide: const BorderSide(color: AppColors.border, width: 1.5),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+          borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+          borderSide: const BorderSide(color: AppColors.yellowDeep, width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         filled: true,
-        fillColor: AppColors.surface,
+        fillColor: Colors.white,
       ),
       style: GoogleFonts.inter(fontSize: 13, color: AppColors.ink),
       icon: const Icon(LucideIcons.chevronDown, size: 18, color: AppColors.textSecondary),
       dropdownColor: Colors.white,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(DesignTokens.radiusMd),
     );
   }
 }

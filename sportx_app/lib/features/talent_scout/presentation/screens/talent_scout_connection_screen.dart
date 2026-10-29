@@ -151,7 +151,7 @@ class _TalentScoutConnectionScreenState extends ConsumerState<TalentScoutConnect
                 focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.scout)),
                 contentPadding: const EdgeInsets.all(14),
                 filled: true,
-                fillColor: AppColors.surface,
+                fillColor: Colors.white,
               ),
             ),
             const SizedBox(height: 24),

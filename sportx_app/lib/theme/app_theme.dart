@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/theme/design_tokens.dart';
 
 class AppTheme {
   static ThemeData get lightTheme {
@@ -151,6 +152,81 @@ class AppTheme {
           }
           return GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondary);
         }),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(DesignTokens.radiusLg),
+          side: const BorderSide(color: AppColors.border, width: 1),
+        ),
+        titleTextStyle: GoogleFonts.sora(
+          fontSize: 17,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textPrimary,
+        ),
+        contentTextStyle: GoogleFonts.inter(
+          fontSize: 14,
+          color: AppColors.textSecondary,
+          height: 1.5,
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      ),
+      dropdownMenuTheme: DropdownMenuThemeData(
+        textStyle: GoogleFonts.inter(fontSize: 14, color: AppColors.textPrimary),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+            borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+            borderSide: const BorderSide(color: AppColors.border, width: 1.5),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+            borderSide: const BorderSide(color: AppColors.yellowDeep, width: 1.5),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+            borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(DesignTokens.inputRadius),
+            borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+          ),
+          labelStyle: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary),
+          hintStyle: GoogleFonts.inter(fontSize: 14, color: AppColors.textTertiary),
+          errorStyle: GoogleFonts.inter(fontSize: 12, color: AppColors.error),
+        ),
+        menuStyle: MenuStyle(
+          backgroundColor: WidgetStateProperty.all(Colors.white),
+          surfaceTintColor: WidgetStateProperty.all(Colors.white),
+          elevation: WidgetStateProperty.all(0),
+          shape: WidgetStateProperty.all(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(DesignTokens.radiusMd),
+              side: const BorderSide(color: AppColors.border, width: 1),
+            ),
+          ),
+          padding: WidgetStateProperty.all(const EdgeInsets.symmetric(vertical: 8)),
+        ),
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        color: Colors.white,
+        surfaceTintColor: Colors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(DesignTokens.radiusMd),
+          side: const BorderSide(color: AppColors.border, width: 1),
+        ),
+        textStyle: GoogleFonts.inter(fontSize: 14, color: AppColors.textPrimary),
+        menuPadding: const EdgeInsets.symmetric(vertical: 8),
+        iconColor: AppColors.textSecondary,
       ),
     );
   }

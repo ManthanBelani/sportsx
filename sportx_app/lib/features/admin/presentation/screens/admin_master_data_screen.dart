@@ -25,28 +25,13 @@ class _AdminMasterDataScreenState extends State<AdminMasterDataScreen> {
   };
 
   Future<void> _add() async {
-    final controller = TextEditingController();
-    final value = await showDialog<String>(
+    final value = await showTextInputDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Add to ${_tabs[_tab]}',
-            style: GoogleFonts.sora(
-                fontSize: 16, fontWeight: FontWeight.w700)),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(labelText: 'Name'),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Cancel')),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
-            child: const Text('Add'),
-          ),
-        ],
-      ),
+      title: 'Add to ${_tabs[_tab]}',
+      hintText: 'Name',
+      confirmText: 'Add',
+      cancelText: 'Cancel',
+      validator: (v) => v == null || v.trim().isEmpty ? 'Name is required' : null,
     );
     if (value != null && value.isNotEmpty) {
       setState(() => _data[_tab]!.add(value));

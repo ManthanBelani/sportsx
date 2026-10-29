@@ -154,8 +154,14 @@ class _EnrollmentCard extends ConsumerWidget {
   }
 
   Future<void> _reject(BuildContext context, WidgetRef ref) async {
-    final ctrl = TextEditingController();
-    final reason = await showDialog<String>(context: context, builder: (ctx) => AlertDialog(title: const Text('Reject Enrollment'), content: TextField(controller: ctrl, decoration: const InputDecoration(labelText: 'Reason')), actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')), ElevatedButton(onPressed: () => Navigator.pop(ctx, ctrl.text), child: const Text('Reject'))]));
+    final reason = await showTextInputDialog(
+      context: context,
+      title: 'Reject Enrollment',
+      hintText: 'Reason',
+      confirmText: 'Reject',
+      cancelText: 'Cancel',
+      validator: (v) => v == null || v.trim().isEmpty ? 'Reason is required' : null,
+    );
     if (reason != null && reason.trim().isNotEmpty && context.mounted) {
       final (ok, error) = await ref.read(coachingEnrollmentActionsProvider).reject(enrollment.id.toString(), reason.trim());
       if (context.mounted) {

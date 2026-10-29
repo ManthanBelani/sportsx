@@ -165,7 +165,7 @@ class _TalentScoutAthleteDiscoveryScreenState
                         vertical: 12,
                       ),
                       filled: true,
-                      fillColor: AppColors.surface,
+                      fillColor: Colors.white,
                     ),
                     onSubmitted: (_) => _applyFilters(),
                   ),

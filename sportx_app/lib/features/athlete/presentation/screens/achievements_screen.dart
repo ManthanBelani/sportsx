@@ -25,23 +25,15 @@ class AchievementsScreen extends ConsumerWidget {
   }
 
   Future<void> _delete(BuildContext context, WidgetRef ref, AchievementEntry a) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showConfirmDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Delete Achievement',
-            style: GoogleFonts.sora(fontSize: 17, fontWeight: FontWeight.w700)),
-        content: Text('Remove “${a.title}” from your profile?',
-            style: GoogleFonts.inter(fontSize: 14)),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete', style: TextStyle(color: AppColors.error)),
-          ),
-        ],
-      ),
+      title: 'Delete Achievement',
+      message: 'Remove "${a.title}" from your profile?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      destructive: true,
     );
-    if (confirmed != true) return;
+    if (!confirmed) return;
 
     try {
       await ref.read(dioProvider).delete('/me/achievements/${a.id}');

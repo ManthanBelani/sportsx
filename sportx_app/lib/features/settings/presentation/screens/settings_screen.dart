@@ -8,6 +8,7 @@ import 'package:sportx_app/features/settings/presentation/providers/settings_pro
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -433,37 +434,35 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     required Map<String, String> options,
   }) {
     final current = ref.read(settingsProvider).privacySettings[key];
-    showDialog(
+    showSportXDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: options.entries.map((entry) {
-            return ListTile(
-              title: Text(entry.value),
-              trailing: entry.key == current
-                  ? const Icon(LucideIcons.check, color: AppColors.primary)
-                  : null,
-              onTap: () async {
-                Navigator.pop(ctx);
-                final ok = await ref
-                    .read(settingsProvider.notifier)
-                    .updatePrivacy({key: entry.key});
-                if (context.mounted) {
-                  if (ok) {
-                    SnackBarUtils.showSuccess(context, 'Privacy updated');
-                  } else {
-                    SnackBarUtils.showError(
-                      context,
-                      ref.read(settingsProvider).error ?? 'Update failed',
-                    );
-                  }
+      title: title,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: options.entries.map((entry) {
+          return ListTile(
+            title: Text(entry.value),
+            trailing: entry.key == current
+                ? const Icon(LucideIcons.check, color: AppColors.primary)
+                : null,
+            onTap: () async {
+              Navigator.of(context).pop();
+              final ok = await ref
+                  .read(settingsProvider.notifier)
+                  .updatePrivacy({key: entry.key});
+              if (context.mounted) {
+                if (ok) {
+                  SnackBarUtils.showSuccess(context, 'Privacy updated');
+                } else {
+                  SnackBarUtils.showError(
+                    context,
+                    ref.read(settingsProvider).error ?? 'Update failed',
+                  );
                 }
-              },
-            );
-          }).toList(),
-        ),
+              }
+            },
+          );
+        }).toList(),
       ),
     );
   }
@@ -471,76 +470,74 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _showChangePasswordDialog(BuildContext context) {
     final passwordController = TextEditingController();
     final newPasswordController = TextEditingController();
-    
-    showDialog(
+
+    showSportXDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Change Password'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'Current Password', border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: newPasswordController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'New Password', border: OutlineInputBorder()),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () {
-              ref.read(settingsProvider.notifier).updatePassword(
-                passwordController.text,
-                newPasswordController.text,
-              );
-              Navigator.pop(ctx);
-            },
-            child: const Text('Save'),
+      title: 'Change Password',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: passwordController,
+            obscureText: true,
+            decoration: const InputDecoration(labelText: 'Current Password'),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: newPasswordController,
+            obscureText: true,
+            decoration: const InputDecoration(labelText: 'New Password'),
           ),
         ],
       ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(
+          onPressed: () {
+            ref.read(settingsProvider.notifier).updatePassword(
+              passwordController.text,
+              newPasswordController.text,
+            );
+            Navigator.pop(context);
+          },
+          child: const Text('Save'),
+        ),
+      ],
     );
   }
 
   void _confirmDelete(BuildContext context) {
     final passwordController = TextEditingController();
-    showDialog(
+    showSportXDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Account?'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('This action is permanent and cannot be undone. Enter your password to confirm.'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder()),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              final success = await ref.read(settingsProvider.notifier).deleteAccount(passwordController.text);
-              if (success && context.mounted) {
-                SnackBarUtils.showSuccess(context, 'Account deleted');
-              }
-            },
-            child: const Text('Delete', style: TextStyle(color: AppColors.error)),
+      title: 'Delete Account?',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('This action is permanent and cannot be undone. Enter your password to confirm.',
+              style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary, height: 1.5)),
+          const SizedBox(height: 16),
+          TextField(
+            controller: passwordController,
+            obscureText: true,
+            decoration: const InputDecoration(labelText: 'Password'),
           ),
         ],
       ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(
+          onPressed: () async {
+            Navigator.pop(context);
+            final success = await ref.read(settingsProvider.notifier).deleteAccount(passwordController.text);
+            if (success && context.mounted) {
+              SnackBarUtils.showSuccess(context, 'Account deleted');
+            }
+          },
+          child: const Text('Delete', style: TextStyle(color: AppColors.error)),
+        ),
+      ],
     );
   }
 }

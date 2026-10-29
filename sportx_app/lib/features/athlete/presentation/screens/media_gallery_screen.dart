@@ -196,9 +196,9 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
   void _openItemActions(Map<String, dynamic> item) {
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       ),
       builder: (sheetContext) => SafeArea(
         child: Column(
@@ -263,21 +263,15 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
   }
 
   Future<void> _deleteMedia(int mediaId) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showConfirmDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Media'),
-        content: const Text('Are you sure you want to delete this item?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: AppColors.error)),
-          ),
-        ],
-      ),
+      title: 'Delete Media',
+      message: 'Are you sure you want to delete this item?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      destructive: true,
     );
-    if (confirmed != true) return;
+    if (!confirmed) return;
 
     final (success, error) = await deleteMedia(ref, mediaId);
     if (mounted) {
@@ -291,21 +285,15 @@ class _MediaGalleryScreenState extends ConsumerState<MediaGalleryScreen> {
   }
 
   Future<void> _deleteAchievement(dynamic achievementId) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showConfirmDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Achievement'),
-        content: const Text('Are you sure you want to delete this achievement?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: AppColors.error)),
-          ),
-        ],
-      ),
+      title: 'Delete Achievement',
+      message: 'Are you sure you want to delete this achievement?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      destructive: true,
     );
-    if (confirmed != true) return;
+    if (!confirmed) return;
 
     try {
       // Typed achievements (Phase 2) delete by id; legacy/profile-embedded

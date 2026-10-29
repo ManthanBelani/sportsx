@@ -510,6 +510,8 @@ class _DropdownField extends StatelessWidget {
                   value: value,
                   hint: Text(hint, style: GoogleFonts.inter(color: AppColors.textTertiary, fontSize: 14)),
                   isExpanded: true,
+                  dropdownColor: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
                   icon: const Icon(LucideIcons.chevronDown, size: 20, color: AppColors.textSecondary),
                   items: items
                       .map((i) => DropdownMenuItem<int>(
