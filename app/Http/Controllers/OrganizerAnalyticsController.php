@@ -122,6 +122,60 @@ class OrganizerAnalyticsController extends Controller
             }
         }
 
+        // ── Analytics board extras (organizer analytics screen) ──────────────
+        // Views = in-app registrations + external registration page clicks —
+        // the two signals SportX actually records for an organizer's events.
+        $externalClicks = $tournaments->sum('external_registration_clicks');
+        $views = $totalRegs + (int) $externalClicks;
+
+        // Registrations per day over the requested window (line chart).
+        // The app requests ?days=365 once and slices 7D / 30D / 3M / 1Y
+        // client-side from the same series.
+        $windowDays = min(365, max(7, (int) $request->query('days', 30)));
+        $windowStart = now()->subDays($windowDays - 1)->startOfDay();
+        $createdDates = $tournamentRegs->map(fn ($r) => $r->created_at)
+            ->concat($trialRegs->map(fn ($r) => $r->created_at))
+            ->filter(fn ($d) => $d && $d->gte($windowStart))
+            ->map(fn ($d) => $d->toDateString());
+
+        $createdCounts = $createdDates->countBy();
+
+        $dailySeries = [];
+        for ($i = $windowDays - 1; $i >= 0; $i--) {
+            $day = now()->subDays($i)->toDateString();
+            $dailySeries[] = [
+                'date' => $day,
+                'count' => (int) ($createdCounts[$day] ?? 0),
+            ];
+        }
+
+        // Where the audience came from: registrations made inside SportX vs
+        // clicks on the organizer's own registration page.
+        $internalShare = $views > 0 ? round(($totalRegs / $views) * 100, 1) : 0.0;
+        $externalShare = $views > 0 ? round(((int) $externalClicks / $views) * 100, 1) : 0.0;
+        $topSources = array_values(array_filter([
+            ['name' => 'SportX App', 'percent' => $internalShare, 'count' => $totalRegs],
+            ['name' => 'External link', 'percent' => $externalShare, 'count' => (int) $externalClicks],
+        ], fn ($s) => $s['count'] > 0));
+
+        // Enquiries addressed to this organizer (profile + their opportunities),
+        // mirroring EnquiryController::inbox so the "Inquiries" KPI matches the
+        // inbox count the organizer actually sees.
+        $subjectPairs = [];
+        if ($organizerProfileId) {
+            $subjectPairs[] = ['organizer_profile', $organizerProfileId];
+        }
+        $opportunityIds = \App\Models\Opportunity::where('created_by_user_id', $user->id)->pluck('id');
+        foreach ($opportunityIds as $oppId) {
+            $subjectPairs[] = ['opportunity', $oppId];
+        }
+        $inquiries = 0;
+        foreach ($subjectPairs as [$type, $id]) {
+            $inquiries += \App\Models\Enquiry::where('subject_type', $type)
+                ->where('subject_id', $id)
+                ->count();
+        }
+
         return response()->json([
             'data' => [
                 'tournaments' => [
@@ -146,6 +200,10 @@ class OrganizerAnalyticsController extends Controller
                     'total_estimate' => round($revenue, 2),
                     'currency' => 'INR',
                 ],
+                'views' => $views,
+                'inquiries' => $inquiries,
+                'daily_series' => $dailySeries,
+                'top_sources' => $topSources,
                 'capacity' => [
                     'total_capacity' => $totalCapacity,
                     'total_registered' => $totalRegistered,

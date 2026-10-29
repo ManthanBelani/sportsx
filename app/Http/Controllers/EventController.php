@@ -49,13 +49,13 @@ class EventController extends Controller
         }
         if (in_array($type, ['all', 'tournament'])) {
             $profileId = $user->organizerProfile?->id;
-            $q = Tournament::with(['sport', 'city'])->withRegistrationCounts()->orderBy('start_date', 'desc');
+            $q = Tournament::with(['sport', 'city', 'bannerMedia'])->withRegistrationCounts()->orderBy('start_date', 'desc');
             if ($profileId) {
                 $q->where(fn ($w) => $w->where('organizer_id', $user->id)->orWhere('organizer_id', $profileId));
             } else {
                 $q->where('organizer_id', $user->id);
             }
-            $tournaments = $q->get()->map(fn ($t) => array_merge($t->toArray(), ['event_type' => 'tournament'], $t->registrationStats()));
+            $tournaments = $q->get()->map(fn ($t) => array_merge($t->toArray(), ['event_type' => 'tournament'], $t->registrationStats(), ['banner_url' => $t->bannerUrl()]));
         }
 
         $all = $trials->concat($tournaments);

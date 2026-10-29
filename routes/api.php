@@ -14,6 +14,7 @@ use App\Http\Controllers\ConnectionController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\BlockController;
 use App\Http\Controllers\FollowController;
+use App\Http\Controllers\GroupController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventRegistrationController;
 use App\Http\Controllers\LeaderboardController;
@@ -203,6 +204,7 @@ Route::prefix('v1')->group(function () {
 
     // ── Media ──
     Route::get('/me/media', [MediaController::class, 'index'])->middleware('auth:sanctum');
+    Route::get('/me/media/quota', [MediaController::class, 'quota'])->middleware('auth:sanctum');
     Route::post('/media/upload', [MediaController::class, 'upload'])->middleware('auth:sanctum');
     Route::delete('/media/{id}', [MediaController::class, 'destroy'])->middleware('auth:sanctum');
     Route::put('/media/reorder', [MediaController::class, 'reorder'])->middleware('auth:sanctum');
@@ -513,6 +515,12 @@ Route::prefix('v1')->group(function () {
     Route::get('/posts/{id}/comments', [PostController::class, 'comments'])->middleware('auth:sanctum');
     Route::post('/posts/{id}/comments', [PostController::class, 'comment'])->middleware('auth:sanctum');
     Route::delete('/comments/{id}', [PostController::class, 'deleteComment'])->middleware('auth:sanctum');
+
+    // ── Community Groups ──
+    Route::get('/groups', [GroupController::class, 'index'])->middleware('auth:sanctum');
+    Route::get('/me/groups', [GroupController::class, 'mine'])->middleware('auth:sanctum');
+    Route::post('/groups/{group}/join', [GroupController::class, 'join'])->middleware('auth:sanctum');
+    Route::delete('/groups/{group}/leave', [GroupController::class, 'leave'])->middleware('auth:sanctum');
 
     // ── Onboarding Schema ──
     Route::get('/onboarding/{role}', [OnboardingController::class, 'schema'])->middleware('auth:sanctum');

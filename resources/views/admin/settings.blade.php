@@ -121,6 +121,34 @@
     </div>
 
     <div class="card no-pad">
+      <div class="card-header"><div><div class="card-title">Photo limits</div><div class="card-desc">Gallery photo uploads allowed per role. Cover, profile, post, achievement & document photos are never counted. 0 = upload disabled for that role.</div></div></div>
+      <div class="settings-list">
+        @foreach(['athlete' => 'Athlete', 'coach' => 'Coach', 'academy' => 'Academy', 'organizer' => 'Organizer', 'talent_scout' => 'Talent Scout', 'sponsor' => 'Sponsor'] as $roleKey => $roleLabel)
+        <div class="settings-item">
+          <div class="settings-icon"><i data-lucide="images" style="width:20px;height:20px;color:#6b7280;"></i></div>
+          <div class="settings-info"><div class="settings-label">{{ $roleLabel }}</div><div class="settings-desc">Gallery photo limit (0-10000)</div></div>
+          <input class="input" type="number" name="gallery_photo_limit_{{ $roleKey }}" value="{{ $settings['gallery_photo_limit_'.$roleKey] ?? 100 }}" min="0" max="10000" style="width:90px; text-align:center;">
+        </div>
+        @endforeach
+        <div class="settings-item">
+          <div class="settings-icon"><i data-lucide="layout-grid" style="width:20px;height:20px;color:#6b7280;"></i></div>
+          <div class="settings-info"><div class="settings-label">Photos per post</div><div class="settings-desc">Maximum photos a single post may attach (0-10000)</div></div>
+          <input class="input" type="number" name="post_max_photos" value="{{ $settings['post_max_photos'] ?? 5 }}" min="0" max="10000" style="width:90px; text-align:center;">
+        </div>
+        <div class="settings-item">
+          <div class="settings-icon"><i data-lucide="scan" style="width:20px;height:20px;color:#6b7280;"></i></div>
+          <div class="settings-info"><div class="settings-label">Photo max dimension (px)</div><div class="settings-desc">Largest side after server-side resize (default 1600)</div></div>
+          <input class="input" type="number" name="photo_max_dimension" value="{{ $settings['photo_max_dimension'] ?? 1600 }}" min="0" max="10000" style="width:90px; text-align:center;">
+        </div>
+        <div class="settings-item">
+          <div class="settings-icon"><i data-lucide="sparkles" style="width:20px;height:20px;color:#6b7280;"></i></div>
+          <div class="settings-info"><div class="settings-label">Photo JPEG quality</div><div class="settings-desc">Re-encode quality for compressed photos (default 78)</div></div>
+          <input class="input" type="number" name="photo_jpeg_quality" value="{{ $settings['photo_jpeg_quality'] ?? 78 }}" min="0" max="10000" style="width:90px; text-align:center;">
+        </div>
+      </div>
+    </div>
+
+    <div class="card no-pad">
       <div class="card-header"><div><div class="card-title">Notifications</div><div class="card-desc">Alert and notification preferences</div></div></div>
       <div class="settings-list">
         <div class="settings-item">

@@ -89,6 +89,7 @@ class AllSeeder extends Seeder
             RecentSearchSeeder::class,
             AchievementSeeder::class,
             CoachingEnrollmentSeeder::class,
+            GroupSeeder::class,
 
             // ── Media (last: needs the listings it attaches to) ──────
             MediaItemSeeder::class,

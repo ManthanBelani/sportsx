@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Models\MediaItem;
+use App\Support\PlatformSettings;
 use App\Models\PostComment;
 use App\Models\PostLike;
 use App\Models\Block;
@@ -110,10 +112,17 @@ class PostController extends Controller
 
     public function store(Request $request)
     {
+        // Video posts are no longer supported (photos only). Existing posts
+        // with video_url remain renderable; new posts cannot set it.
+        if ($request->filled('video_url')) {
+            abort(422, 'Video posts are no longer supported. Please upload a photo.');
+        }
+
         $validated = $request->validate([
             'body' => 'nullable|string|max:5000',
             'image_url' => 'nullable|string',
-            'video_url' => 'nullable|string',
+            'image_media_ids' => 'nullable|array|max:'.(int) (PlatformSettings::get('post_max_photos', 5)),
+            'image_media_ids.*' => 'integer|exists:media_items,id',
             'visibility' => 'in:public,followers',
             'audience' => 'in:public,followers',
             'hashtags' => 'nullable|array|max:10',
@@ -121,13 +130,37 @@ class PostController extends Controller
             'sport_id' => 'nullable|integer|exists:sports,id',
         ]);
 
-        abort_if(empty($validated['body']) && empty($validated['image_url']) && empty($validated['video_url']), 422, 'Post cannot be empty');
+        // Multi-photo posts (Step 3G): every media id must belong to the
+        // caller (user row or the caller's own profile rows) and be a photo.
+        $imageMediaIds = null;
+        $imageUrl = $validated['image_url'] ?? null;
+        if (! empty($validated['image_media_ids'])) {
+            $u = $request->user();
+            $ownableIds = collect([$u->id])
+                ->merge([$u->athleteProfile?->id, $u->coachProfile?->id, $u->academies?->id,
+                    $u->organizerProfile?->id, $u->sponsorProfile?->id, $u->talentScoutProfile?->id])
+                ->filter()->map(fn ($i) => (int) $i)->all();
+            $medias = MediaItem::whereIn('id', $validated['image_media_ids'])
+                ->where('media_type', 'photo')
+                ->whereIn('owner_id', $ownableIds)
+                ->get()
+                ->keyBy('id');
+            foreach ($validated['image_media_ids'] as $id) {
+                abort_if(! isset($medias[$id]), 422, 'One of the attached photos does not belong to you.');
+            }
+            $imageMediaIds = $validated['image_media_ids'];
+            // Keep image_url in sync with the first photo so every existing
+            // reader (feed, cards, notifications) keeps rendering.
+            $imageUrl ??= $medias[$imageMediaIds[0]]->url();
+        }
+
+        abort_if(empty($validated['body']) && empty($imageUrl), 422, 'Post cannot be empty');
 
         $post = Post::create([
             'user_id' => $request->user()->id,
             'body' => $validated['body'] ?? null,
-            'image_url' => $validated['image_url'] ?? null,
-            'video_url' => $validated['video_url'] ?? null,
+            'image_url' => $imageUrl,
+            'image_media_ids' => $imageMediaIds,
             'visibility' => $validated['visibility'] ?? $validated['audience'] ?? 'public',
             'audience' => $validated['audience'] ?? $validated['visibility'] ?? 'public',
             'hashtags' => $validated['hashtags'] ?? null,
@@ -143,10 +176,15 @@ class PostController extends Controller
         $post = Post::findOrFail($id);
         abort_unless($post->user_id === $request->user()->id || $request->user()->isAdmin(), 403);
 
+        if ($request->filled('video_url') && $request->input('video_url') !== $post->video_url) {
+            abort(422, 'Video posts are no longer supported. Please upload a photo.');
+        }
+
         $validated = $request->validate([
             'body' => 'nullable|string|max:5000',
             'image_url' => 'nullable|string',
-            'video_url' => 'nullable|string',
+            'image_media_ids' => 'nullable|array|max:'.(int) (PlatformSettings::get('post_max_photos', 5)),
+            'image_media_ids.*' => 'integer|exists:media_items,id',
             'visibility' => 'in:public,followers',
             'audience' => 'in:public,followers',
             'hashtags' => 'nullable|array|max:10',
@@ -154,10 +192,34 @@ class PostController extends Controller
             'sport_id' => 'nullable|integer|exists:sports,id',
         ]);
 
+        $imageMediaIds = $post->image_media_ids;
+        $imageUrl = $validated['image_url'] ?? $post->image_url;
+        if (array_key_exists('image_media_ids', $validated)) {
+            if (! empty($validated['image_media_ids'])) {
+                $u = $request->user();
+                $ownableIds = collect([$u->id])
+                    ->merge([$u->athleteProfile?->id, $u->coachProfile?->id, $u->academies?->id,
+                        $u->organizerProfile?->id, $u->sponsorProfile?->id, $u->talentScoutProfile?->id])
+                    ->filter()->map(fn ($i) => (int) $i)->all();
+                $medias = MediaItem::whereIn('id', $validated['image_media_ids'])
+                    ->where('media_type', 'photo')
+                    ->whereIn('owner_id', $ownableIds)
+                    ->get()->keyBy('id');
+                foreach ($validated['image_media_ids'] as $id) {
+                    abort_if(! isset($medias[$id]), 422, 'One of the attached photos does not belong to you.');
+                }
+                $imageMediaIds = $validated['image_media_ids'];
+                $imageUrl = $medias[$imageMediaIds[0]]->url();
+            } else {
+                $imageMediaIds = null;
+                $imageUrl = null;
+            }
+        }
+
         $post->update(array_filter([
             'body' => $validated['body'] ?? null,
-            'image_url' => $validated['image_url'] ?? null,
-            'video_url' => $validated['video_url'] ?? null,
+            'image_url' => $imageUrl,
+            'image_media_ids' => $imageMediaIds,
             'visibility' => $validated['visibility'] ?? $validated['audience'] ?? null,
             'audience' => $validated['audience'] ?? $validated['visibility'] ?? null,
             'sport_id' => $validated['sport_id'] ?? null,

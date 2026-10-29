@@ -11,7 +11,7 @@ class MediaItem extends Model
     use HasFactory;
 
     protected $fillable = [
-        'owner_type', 'owner_id', 'media_type', 'disk', 'path',
+        'owner_type', 'owner_id', 'media_type', 'context', 'disk', 'path',
         'original_name', 'caption', 'sport_id', 'mime_type', 'size_bytes', 'sort_order',
     ];
 

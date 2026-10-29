@@ -9,7 +9,7 @@ class TournamentController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Tournament::published()->with(['sport', 'city', 'organizer', 'categories.ageGroup'])->withRegistrationCounts();
+        $query = Tournament::published()->with(['sport', 'city', 'organizer', 'bannerMedia', 'categories.ageGroup'])->withRegistrationCounts();
 
         $query->when($request->sport_id, fn ($q) => $q->where('sport_id', $request->sport_id))
             ->when($request->city_id, fn ($q) => $q->where('city_id', $request->city_id))
@@ -30,14 +30,14 @@ class TournamentController extends Controller
         $paginator = $query->paginate($perPage);
 
         return response()->json(
-            $paginator->through(fn ($t) => array_merge($t->toArray(), $t->registrationStats()))
+            $paginator->through(fn ($t) => array_merge($t->toArray(), $t->registrationStats(), ['banner_url' => $t->bannerUrl()]))
                 ->withQueryString()
         );
     }
 
     public function show(Request $request, string $id)
     {
-        $tournament = Tournament::with(['sport', 'city', 'organizer', 'categories.ageGroup', 'results'])
+        $tournament = Tournament::with(['sport', 'city', 'organizer', 'bannerMedia', 'categories.ageGroup', 'results'])
             ->withRegistrationCounts()
             ->findOrFail($id);
 
@@ -59,6 +59,7 @@ class TournamentController extends Controller
 
         $data = $tournament->toArray();
         $data = array_merge($data, $tournament->registrationStats());
+        $data['banner_url'] = $tournament->bannerUrl();
         $data['registration_status'] = $this->registrationStatus($tournament, $viewer);
 
         return response()->json(['data' => $data]);

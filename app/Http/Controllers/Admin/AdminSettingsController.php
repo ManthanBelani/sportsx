@@ -25,8 +25,13 @@ class AdminSettingsController extends Controller
     public function update(Request $request): JsonResponse
     {
         $rules = [];
+        $numericKeys = PlatformSettings::numericKeys();
         foreach (PlatformSettings::writable() as $key) {
-            $rules[$key] = 'sometimes|boolean';
+            // Per-role photo limits and other numeric keys get range checks
+            // (0 blocks uploads for that role; cap keeps limits sane).
+            $rules[$key] = isset($numericKeys[$key])
+                ? 'sometimes|integer|min:0|max:10000'
+                : 'sometimes|boolean';
         }
         $validated = $request->validate($rules);
 
