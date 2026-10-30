@@ -108,6 +108,28 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if the user is a minor (under 18).
+     * Only applies to athletes with a date of birth.
+     */
+    public function isMinor(): bool
+    {
+        if ($this->role !== 'athlete') {
+            return false;
+        }
+
+        $profile = $this->athleteProfile;
+        if (!$profile || !$profile->date_of_birth) {
+            return false;
+        }
+
+        try {
+            return \Carbon\Carbon::parse($profile->date_of_birth)->age < 18;
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    /**
      * Whether the user has completed their role-specific profile.
      * Used to derive `needs_onboarding`. Roles without a profile
      * (e.g. admin) are treated as onboarded.

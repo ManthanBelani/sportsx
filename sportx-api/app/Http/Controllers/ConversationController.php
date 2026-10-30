@@ -6,6 +6,7 @@ use App\Models\Block;
 use App\Models\Conversation;
 use App\Models\GuardianConsent;
 use App\Models\Message;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ConversationController extends Controller
@@ -196,22 +197,24 @@ class ConversationController extends Controller
         }
 
         // who_can_message of the conversation TARGET (the other party) —
-        // defaults to 'everyone' so existing users see no behaviour change.
-        $targetPolicy = data_get($b->privacy_settings, 'who_can_message', 'everyone');
+        // uses PrivacyController::settings() which applies minor-specific defaults.
+        $targetPolicy = \App\Http\Controllers\PrivacyController::settings($b)['who_can_message'];
 
         if ($targetPolicy === 'nobody' && $a->role !== 'admin') {
             return response()->json(['error' => ['code' => 'MESSAGING_DISABLED', 'message' => 'This user does not accept messages.']], 403);
         }
 
-        // B1: every non-scout role pair requires an accepted generic Connection.
-        $connected = \App\Models\Connection::where('status', 'accepted')
-            ->where(fn ($q) => $q
-                ->where(fn ($w) => $w->where('follower_user_id', $a->id)->where('followee_user_id', $b->id))
-                ->orWhere(fn ($w) => $w->where('follower_user_id', $b->id)->where('followee_user_id', $a->id)))
-            ->exists();
+        if ($targetPolicy === 'connections') {
+            // B1: every non-scout role pair requires an accepted generic Connection.
+            $connected = \App\Models\Connection::where('status', 'accepted')
+                ->where(fn ($q) => $q
+                    ->where(fn ($w) => $w->where('follower_user_id', $a->id)->where('followee_user_id', $b->id))
+                    ->orWhere(fn ($w) => $w->where('follower_user_id', $b->id)->where('followee_user_id', $a->id)))
+                ->exists();
 
-        if (!$connected) {
-            return response()->json(['error' => ['code' => 'CONNECTION_REQUIRED', 'message' => 'Connect and get accepted before chatting.']], 403);
+            if (!$connected) {
+                return response()->json(['error' => ['code' => 'CONNECTION_REQUIRED', 'message' => 'Connect and get accepted before chatting.']], 403);
+            }
         }
 
         return null;

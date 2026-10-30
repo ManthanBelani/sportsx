@@ -142,6 +142,8 @@ import 'package:sportx_app/features/admin/presentation/screens/admin_dashboard_s
 import 'package:sportx_app/features/admin/presentation/screens/platform_reports_screen.dart';
 import 'package:sportx_app/features/admin/presentation/screens/manage_users_screen.dart';
 import 'package:sportx_app/features/admin/presentation/screens/user_detail_verify_screen.dart';
+import 'package:sportx_app/features/admin/presentation/screens/verification_queue_screen.dart';
+import 'package:sportx_app/features/admin/presentation/screens/verification_request_docs_screen.dart';
 import 'package:sportx_app/features/admin/presentation/screens/pending_approvals_screen.dart';
 import 'package:sportx_app/features/admin/presentation/screens/moderation_queue_screen.dart';
 import 'package:sportx_app/features/admin/presentation/screens/report_detail_screen.dart';
@@ -617,6 +619,23 @@ final routerProvider = Provider<GoRouter>((ref) {
         return UserDetailVerifyScreen(user: user ?? AdminUser(id: '', name: '', email: '', role: 'athlete'));
       }),
       GoRoute(path: '/admin/approvals', builder: (context, state) => const PendingApprovalsScreen()),
+      GoRoute(path: '/admin/verification', builder: (context, state) => const VerificationQueueScreen()),
+      GoRoute(path: '/admin/verification/:id/docs', builder: (context, state) {
+        final request = state.extra as VerificationRequestItem?;
+        return VerificationRequestDocsScreen(
+          request: request ??
+              VerificationRequestItem(
+                id: int.tryParse(state.pathParameters['id']!) ?? 0,
+                requesterUserId: 0,
+                requesterName: 'Unknown',
+                requesterEmail: '',
+                requesterRole: '',
+                verifiableType: '',
+                verifiableId: 0,
+                status: 'pending',
+              ),
+        );
+      }),
       GoRoute(path: '/admin/moderation', builder: (context, state) => const ModerationQueueScreen()),
       GoRoute(path: '/admin/reports/:id', builder: (context, state) {
         final report = state.extra as Report?;

@@ -1,146 +1,228 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/features/auth/presentation/providers/verification_provider.dart';
+import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_cards.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_sheets.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
 
 /// A.10 Verification Request & Status — apply for the blue check and track it.
-/// States: none → pending → verified / rejected.
-enum _VerifyStatus { none, pending, verified, rejected }
-
-class VerificationScreen extends StatefulWidget {
+/// States: none → pending → verified / rejected. Backed by
+/// POST/GET /me/verification via [verificationProvider].
+class VerificationScreen extends ConsumerStatefulWidget {
   const VerificationScreen({super.key});
 
   @override
-  State<VerificationScreen> createState() => _VerificationScreenState();
+  ConsumerState<VerificationScreen> createState() =>
+      _VerificationScreenState();
 }
 
-class _VerificationScreenState extends State<VerificationScreen> {
-  _VerifyStatus _status = _VerifyStatus.none;
-  final _proof = TextEditingController();
-  bool _idUploaded = false;
-  bool _orgUploaded = false;
+class _VerificationScreenState extends ConsumerState<VerificationScreen> {
+  final _notesController = TextEditingController();
+  bool _idUploading = false;
+  bool _orgUploading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      if (mounted) ref.read(verificationProvider.notifier).load();
+    });
+  }
 
   @override
   void dispose() {
-    _proof.dispose();
+    _notesController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickDoc({required bool isId}) async {
+    setState(
+        () => isId ? _idUploading = true : _orgUploading = true);
+    try {
+      final picked = await pickAndUploadMedia(
+        context,
+        ref,
+        mediaType: 'document',
+        uploadContext: 'credential',
+      );
+      final mediaId = picked?.mediaId;
+      if (mediaId != null) {
+        ref.read(verificationProvider.notifier).addProof(mediaId);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isId ? _idUploading = false : _orgUploading = false);
+      }
+    }
+  }
+
+  Future<void> _submit() async {
+    final ok =
+        await ref.read(verificationProvider.notifier).submit(_notesController.text);
+    if (!mounted) return;
+    if (ok) {
+      SnackBarUtils.showSuccess(
+          context, 'Submitted — review usually takes 24–48 hours.');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(verificationProvider);
+
+    final canSubmitMore = state.status == VerifyBadgeStatus.none ||
+        state.status == VerifyBadgeStatus.rejected;
+    final canOpenDocs = state.proofIds.isNotEmpty;
+
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: const SportXTopBar(title: 'Verification', showBack: true),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-        children: [
-          _statusCard(),
-          const SizedBox(height: 16),
-          if (_status == _VerifyStatus.none ||
-              _status == _VerifyStatus.rejected) ...[
-            _requirements(),
-            const SizedBox(height: 16),
-            SportXCard(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Documents',
-                      style: GoogleFonts.sora(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.ink)),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: SizedBox(
-                          height: 96,
-                          child: MediaUploadTile(
-                            label: 'Government ID',
-                            onTap: () =>
-                                setState(() => _idUploaded = true),
+      body: state.isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.yellowDeep))
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+              children: [
+                _statusCard(state),
+                const SizedBox(height: 16),
+                if (canSubmitMore) ...[
+                  _requirements(),
+                  const SizedBox(height: 16),
+                  SportXCard(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Documents',
+                            style: GoogleFonts.sora(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.ink)),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: SizedBox(
+                                height: 96,
+                                child: MediaUploadTile(
+                                  label: 'Government ID',
+                                  isUploading: _idUploading,
+                                  onTap: () => _pickDoc(isId: true),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: SizedBox(
+                                height: 96,
+                                child: MediaUploadTile(
+                                  label: 'Org proof',
+                                  isUploading: _orgUploading,
+                                  onTap: () => _pickDoc(isId: false),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (state.proofIds.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              for (final id in state.proofIds)
+                                InputChip(
+                                  avatar: const Icon(LucideIcons.fileImage,
+                                      size: 16, color: AppColors.success),
+                                  label: Text('Proof #$id',
+                                      style: GoogleFonts.inter(fontSize: 12)),
+                                  onDeleted: () => ref
+                                      .read(verificationProvider.notifier)
+                                      .removeProof(id),
+                                ),
+                            ],
+                          ),
+                        ],
+                        const SizedBox(height: 14),
+                        TextField(
+                          controller: _notesController,
+                          maxLines: 3,
+                          decoration: const InputDecoration(
+                            labelText:
+                                'Anything else we should know? (optional)',
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: SizedBox(
-                          height: 96,
-                          child: MediaUploadTile(
-                            label: 'Org proof',
-                            onTap: () =>
-                                setState(() => _orgUploaded = true),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  TextField(
-                    controller: _proof,
-                    maxLines: 3,
-                    decoration: const InputDecoration(
-                      labelText: 'Anything else we should know? (optional)',
+                      ],
                     ),
                   ),
+                  if (state.error != null) ...[
+                    const SizedBox(height: 12),
+                    Text(state.error!,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                            fontSize: 12.5, color: AppColors.error)),
+                  ],
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: PrimaryButton(
+                      label: state.submitting
+                          ? 'Submitting…'
+                          : 'Submit for verification',
+                      icon: LucideIcons.send,
+                      onPressed:
+                          (canOpenDocs && !state.submitting) ? _submit : null,
+                    ),
+                  ),
+                  if (!canOpenDocs) ...[
+                    const SizedBox(height: 10),
+                    Text('Upload at least one proof document to continue.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                            fontSize: 12.5,
+                            color: AppColors.textSecondary)),
+                  ],
                 ],
-              ),
+              ],
             ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: PrimaryButton(
-                label: 'Submit for verification',
-                icon: LucideIcons.send,
-                onPressed: (_idUploaded && _orgUploaded)
-                    ? () => setState(() => _status = _VerifyStatus.pending)
-                    : null,
-              ),
-            ),
-            if (!(_idUploaded && _orgUploaded)) ...[
-              const SizedBox(height: 10),
-              Text('Upload both documents to continue.',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                      fontSize: 12.5, color: AppColors.textSecondary)),
-            ],
-          ],
-        ],
-      ),
     );
   }
 
-  Widget _statusCard() {
+  Widget _statusCard(VerificationState state) {
     late StatusPill pill;
     late IconData icon;
     late Color tint;
     late String title;
-    late String message;
+    String message;
 
-    switch (_status) {
-      case _VerifyStatus.verified:
+    switch (state.status) {
+      case VerifyBadgeStatus.verified:
         pill = const StatusPill(label: 'VERIFIED', kind: PillKind.ok);
         icon = LucideIcons.badgeCheck;
         tint = AppColors.success;
         title = 'You\'re verified';
         message = 'Your blue check is live on your profile.';
-      case _VerifyStatus.pending:
+      case VerifyBadgeStatus.pending:
         pill = const StatusPill(label: 'PENDING', kind: PillKind.pending);
         icon = LucideIcons.clock;
         tint = AppColors.warning;
         title = 'Under review';
         message = 'We usually review requests within 24–48 hours.';
-      case _VerifyStatus.rejected:
+      case VerifyBadgeStatus.rejected:
         pill = const StatusPill(label: 'ACTION NEEDED', kind: PillKind.no);
         icon = LucideIcons.x;
         tint = AppColors.error;
         title = 'Couldn\'t verify';
-        message = 'The documents were unclear. Please re-upload.';
-      case _VerifyStatus.none:
+        message = state.decisionReason?.isNotEmpty == true
+            ? state.decisionReason!
+            : 'The documents were unclear. Please re-upload.';
+      case VerifyBadgeStatus.none:
         pill = const StatusPill(label: 'NOT VERIFIED', kind: PillKind.draft);
         icon = LucideIcons.shieldCheck;
         tint = AppColors.textSecondary;
@@ -168,11 +250,13 @@ class _VerificationScreenState extends State<VerificationScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(children: [
-                  Text(title,
-                      style: GoogleFonts.sora(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.ink)),
+                  Flexible(
+                    child: Text(title,
+                        style: GoogleFonts.sora(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.ink)),
+                  ),
                   const SizedBox(width: 8),
                   pill,
                 ]),
@@ -200,9 +284,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
         children: [
           Text('What you\'ll need',
               style: GoogleFonts.sora(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.ink)),
+                  fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink)),
           const SizedBox(height: 12),
           for (final it in items)
             Padding(
@@ -224,8 +306,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                                 color: AppColors.ink)),
                         Text(it.$2,
                             style: GoogleFonts.inter(
-                                fontSize: 12,
-                                color: AppColors.textSecondary)),
+                                fontSize: 12, color: AppColors.textSecondary)),
                       ],
                     ),
                   ),

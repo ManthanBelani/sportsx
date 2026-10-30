@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/shared/presentation/widgets/safety_reminder.dart';
 
 class ConversationItem {
   final String id;
@@ -138,4 +140,27 @@ Future<(String?, String?)> startConversationResult(WidgetRef ref, int participan
     }
     return (null, message ?? 'Could not start chat.');
   }
+}
+
+/// Starts a conversation with safety reminder for minors.
+/// Returns (conversationId, errorMessage) or (null, 'cancelled') if user cancels.
+Future<(String?, String?)> startConversationWithSafetyCheck(
+  BuildContext context,
+  WidgetRef ref,
+  int participantId,
+) async {
+  // Check if user is minor and show safety reminder
+  final isMinor = await ref.read(isMinorProvider.future);
+  if (isMinor && context.mounted) {
+    final confirmed = await showSafetyReminder(
+      context,
+      feature: 'chat',
+      customMessage: 'Remember: only chat with people you know in real life.',
+    );
+    if (!confirmed) {
+      return (null, 'cancelled');
+    }
+  }
+
+  return startConversationResult(ref, participantId);
 }

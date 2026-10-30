@@ -155,6 +155,7 @@ class RoleConfig {
 /// Shared "More" rows appended for every non-admin role (group A/B of the
 /// design board: Saved → Messages).
 const List<MoreRow> _sharedMoreRows = [
+  MoreRow(label: 'Verification badge', icon: LucideIcons.badgeCheck, route: '/verification'),
   MoreRow(label: 'Saved', icon: LucideIcons.bookmark, route: '/saved'),
   MoreRow(label: 'My Activity', icon: LucideIcons.activity, route: '/activity-hub'),
   MoreRow(label: 'Notifications', icon: LucideIcons.bell, route: '/notifications'),
@@ -410,6 +411,7 @@ RoleConfig roleConfigFor(SportXRole role) {
           MoreRow(label: 'Dashboard', icon: LucideIcons.layoutDashboard, route: '/admin/dashboard'),
           MoreRow(label: 'Users', icon: LucideIcons.users, route: '/admin/users'),
           MoreRow(label: 'Approvals', icon: LucideIcons.badgeCheck, route: '/admin/approvals'),
+          MoreRow(label: 'Badge Queue', icon: LucideIcons.shieldCheck, route: '/admin/verification'),
           MoreRow(label: 'Moderation', icon: LucideIcons.shieldAlert, route: '/admin/moderation'),
           MoreRow(label: 'Content Manager', icon: LucideIcons.database, route: '/admin/content'),
           MoreRow(label: 'Master Data', icon: LucideIcons.listTree, route: '/admin/master-data'),

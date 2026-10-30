@@ -7,9 +7,10 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
-import 'package:sportx_app/theme/colors.dart';
-import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/shared/presentation/widgets/safety_reminder.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
+import 'package:sportx_app/theme/colors.dart';
 
 class CreatePostScreen extends ConsumerStatefulWidget {
   const CreatePostScreen({super.key});
@@ -75,6 +76,19 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     if (_captionController.text.trim().isEmpty && _selectedMedia.isEmpty) {
       SnackBarUtils.showError(context, 'Please add a caption or photo to create a post');
       return;
+    }
+
+    // Safety reminder for minors before creating posts
+    final isMinor = await ref.read(isMinorProvider.future);
+    if (isMinor && context.mounted) {
+      final confirmed = await showSafetyReminder(
+        context,
+        feature: 'post',
+        customMessage: 'Posts are visible to others. Never share personal info like address, phone, or school.',
+      );
+      if (!confirmed) {
+        return;
+      }
     }
 
     setState(() => _isPosting = true);

@@ -140,11 +140,11 @@ class _MyConnectionsScreenState extends ConsumerState<MyConnectionsScreen> {
         onPressed: () async {
           final uid = int.tryParse(connection.other.id);
           if (uid == null) return;
-          final (chatId, err) = await startConversationResult(ref, uid);
+          final (chatId, err) = await startConversationWithSafetyCheck(context, ref, uid);
           if (!context.mounted) return;
           if (chatId != null) {
             context.push('/chat-screen', extra: {'id': chatId, 'name': connection.other.name, 'avatar': ''});
-          } else {
+          } else if (err != 'cancelled') {
             SnackBarUtils.showError(context, err ?? 'Could not open chat');
           }
         },

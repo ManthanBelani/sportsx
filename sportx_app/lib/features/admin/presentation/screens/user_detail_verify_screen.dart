@@ -32,7 +32,7 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
             onPressed: () => _verifyUser(user.id),
             icon: const Icon(LucideIcons.circleCheck, color: AppColors.primaryDarker),
             label: Text(
-              'Verify User',
+              'Approve account',
               style: GoogleFonts.inter(
                   color: AppColors.primaryDarker, fontWeight: FontWeight.w700),
             ),
@@ -294,7 +294,7 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
               SizedBox(
                 width: double.infinity,
                 child: PrimaryButton(
-                    label: 'Approve Verification',
+                    label: 'Approve Account',
                     icon: LucideIcons.check,
                     onPressed: () => _verifyUser(user.id)),
               ),
@@ -302,7 +302,7 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
             SizedBox(
               width: double.infinity,
               child: SecondaryButton(
-                  label: 'Reject Verification',
+                  label: 'Reject Account',
                   onPressed: () => _rejectVerification(user.id)),
             ),
           ],
@@ -314,7 +314,7 @@ class _UserDetailVerifyScreenState extends ConsumerState<UserDetailVerifyScreen>
   Future<void> _verifyUser(String userId) async {
     await ref.read(adminProvider.notifier).approveUser(userId);
     if (mounted) {
-      SnackBarUtils.showSuccess(context, 'User verified successfully');
+      SnackBarUtils.showSuccess(context, 'Account approved');
       context.pop();
     }
   }

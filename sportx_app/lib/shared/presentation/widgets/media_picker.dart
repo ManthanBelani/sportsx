@@ -6,8 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
-import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
+import 'package:sportx_app/shared/presentation/widgets/safety_reminder.dart';
+import 'package:sportx_app/theme/colors.dart';
 
 class PickedMedia {
   final File file;
@@ -90,6 +91,19 @@ Future<PickedMedia?> pickAndUploadMedia(
   );
 
   if (source == null || !context.mounted) return null;
+
+  // Safety reminder for minors before sharing media
+  final isMinor = await ref.read(isMinorProvider.future);
+  if (isMinor && context.mounted) {
+    final confirmed = await showSafetyReminder(
+      context,
+      feature: 'media',
+      customMessage: 'Photos shared online can be saved and shared by others. Only share with people you trust.',
+    );
+    if (!confirmed) {
+      return null;
+    }
+  }
 
   final messenger = ScaffoldMessenger.of(context);
 

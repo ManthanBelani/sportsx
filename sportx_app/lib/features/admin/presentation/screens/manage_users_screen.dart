@@ -35,6 +35,11 @@ class _ManageUsersScreenState extends ConsumerState<ManageUsersScreen> {
           icon: const Icon(LucideIcons.userPlus),
           onPressed: () => _showAddUserDialog(context),
         ),
+        IconButton(
+          icon: const Icon(LucideIcons.badgeCheck),
+          tooltip: 'Verification badge queue',
+          onPressed: () => context.push('/admin/verification'),
+        ),
       ],
       child: Column(
         children: [
@@ -94,7 +99,7 @@ class _ManageUsersScreenState extends ConsumerState<ManageUsersScreen> {
                                 if (!user.isVerified)
                                   const PopupMenuItem(
                                     value: 'verify',
-                                    child: Text('Verify'),
+                                    child: Text('Approve account'),
                                   ),
                                 PopupMenuItem(
                                   value: user.isActive ? 'suspend' : 'activate',
@@ -129,7 +134,7 @@ class _ManageUsersScreenState extends ConsumerState<ManageUsersScreen> {
       case 'verify':
         await notifier.approveUser(userId);
         if (mounted) {
-          SnackBarUtils.showSuccess(context, 'User verified');
+          SnackBarUtils.showSuccess(context, 'Account approved');
         }
         break;
       case 'suspend':

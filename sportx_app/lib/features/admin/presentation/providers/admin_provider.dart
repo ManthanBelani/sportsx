@@ -125,6 +125,79 @@ class AdminUser {
   }
 }
 
+/// A blue-check verification request from the admin queue
+/// (GET /admin/verification, docs/Verification-Badge-Implementation-Plan.md §4.1).
+class VerificationRequestItem {
+  final int id;
+  final int requesterUserId;
+  final String requesterName;
+  final String requesterEmail;
+  final String requesterRole;
+  final String verifiableType;
+  final int verifiableId;
+  final String status;
+  final List<int> proofMediaIds;
+  final String? notes;
+  final String? decisionReason;
+  final String? createdAt;
+
+  const VerificationRequestItem({
+    required this.id,
+    required this.requesterUserId,
+    required this.requesterName,
+    required this.requesterEmail,
+    required this.requesterRole,
+    required this.verifiableType,
+    required this.verifiableId,
+    required this.status,
+    this.proofMediaIds = const [],
+    this.notes,
+    this.decisionReason,
+    this.createdAt,
+  });
+
+  factory VerificationRequestItem.fromJson(Map<String, dynamic> json) {
+    final requester = json['requester'] as Map<String, dynamic>?;
+    final proofIds = (json['proof_media_ids'] as List? ?? const [])
+        .map((e) => e is int ? e : int.tryParse('$e') ?? 0)
+        .where((e) => e > 0)
+        .toList();
+    String requesterName = '';
+    String requesterEmail = '';
+    String requesterRole = '';
+    if (requester != null) {
+      requesterName = requester['name'] ?? requester['full_name'] ?? '';
+      requesterEmail = requester['email'] ?? '';
+      requesterRole = requester['role'] ?? '';
+      final profile = requester['profile'] is Map
+          ? (requester['profile'] as Map<String, dynamic>? ?? const {})
+          : const <String, dynamic>{};
+      final profileName = profile['full_name'] ?? profile['name'];
+      if (profileName is String && profileName.isNotEmpty) {
+        requesterName = profileName;
+      }
+    }
+    return VerificationRequestItem(
+      id: json['id'] is int ? json['id'] as int : int.tryParse('${json['id']}') ?? 0,
+      requesterUserId: json['requester_user_id'] is int
+          ? json['requester_user_id'] as int
+          : int.tryParse('${json['requester_user_id']}') ?? 0,
+      requesterName: requesterName.isNotEmpty ? requesterName : requesterEmail,
+      requesterEmail: requesterEmail,
+      requesterRole: requesterRole,
+      verifiableType: json['verifiable_type'] ?? '',
+      verifiableId: json['verifiable_id'] is int
+          ? json['verifiable_id'] as int
+          : int.tryParse('${json['verifiable_id']}') ?? 0,
+      status: json['status'] ?? 'pending',
+      proofMediaIds: proofIds,
+      notes: json['notes'],
+      decisionReason: json['decision_reason'],
+      createdAt: json['created_at'],
+    );
+  }
+}
+
 class Report {
   final String id;
   final String reportedBy;
@@ -232,6 +305,7 @@ class AdminState {
   final List<Report> reports;
   final List<Opportunity> opportunities;
   final List<AdminUser> pendingApprovals;
+  final List<VerificationRequestItem> verificationQueue;
   final bool isLoading;
   final String? error;
   final bool isLoggedIn;
@@ -245,6 +319,7 @@ class AdminState {
     this.reports = const [],
     this.opportunities = const [],
     this.pendingApprovals = const [],
+    this.verificationQueue = const [],
     this.isLoading = false,
     this.error,
     this.isLoggedIn = false,
@@ -259,6 +334,7 @@ class AdminState {
     List<Report>? reports,
     List<Opportunity>? opportunities,
     List<AdminUser>? pendingApprovals,
+    List<VerificationRequestItem>? verificationQueue,
     bool? isLoading,
     String? error,
     bool? isLoggedIn,
@@ -272,6 +348,7 @@ class AdminState {
       reports: reports ?? this.reports,
       opportunities: opportunities ?? this.opportunities,
       pendingApprovals: pendingApprovals ?? this.pendingApprovals,
+      verificationQueue: verificationQueue ?? this.verificationQueue,
       isLoading: isLoading ?? this.isLoading,
       error: error,
       isLoggedIn: isLoggedIn ?? this.isLoggedIn,
@@ -692,6 +769,69 @@ class AdminNotifier extends StateNotifier<AdminState> {
       if (mounted) {
         state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
       }
+    }
+  }
+
+  /// ── Verification-badge queue (docs/Verification-Badge-Implementation-Plan.md §4) ──
+  Future<void> loadVerificationQueue() async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final response =
+          await _dio.get('/admin/verification', queryParameters: {'status': 'pending'});
+      if (!mounted) {
+        return;
+      }
+      final list = (response.data['data'] as List? ?? [])
+          .map(
+              (e) => VerificationRequestItem.fromJson(e as Map<String, dynamic>))
+          .toList();
+      if (mounted) {
+        // isLoading false explicitly = error field cleared.
+        state = state.copyWith(verificationQueue: list, isLoading: false);
+      }
+    } catch (e) {
+      if (mounted) {
+        state = state.copyWith(isLoading: false, error: _getErrorMessage(e));
+      }
+    }
+  }
+
+  /// Approve or reject one verification request. A `reason` is mandatory on
+  /// reject (server 422 otherwise). Returns true on success.
+  Future<bool> reviewVerification(
+    int requestId, {
+    required bool approve,
+    String? reason,
+  }) async {
+    try {
+      await _dio.patch(
+        '/admin/verification/$requestId/${approve ? 'approve' : 'reject'}',
+        data: approve ? const {} : {'reason': reason ?? ''},
+      );
+      if (!mounted) return false;
+      state = state.copyWith(
+        verificationQueue: state.verificationQueue
+            .where((r) => r.id != requestId)
+            .toList(),
+        error: null,
+      );
+      return true;
+    } catch (e) {
+      if (mounted) {
+        state = state.copyWith(error: _getErrorMessage(e));
+      }
+      return false;
+    }
+  }
+
+  /// Resolve a proof document's viewable URL via the signed-url endpoint.
+  Future<String?> proofUrl(int mediaId) async {
+    try {
+      final resp = await _dio.get('/media/$mediaId/signed-url');
+      final data = resp.data['data'] as Map<String, dynamic>?;
+      return data?['url'] as String?;
+    } catch (_) {
+      return null;
     }
   }
 

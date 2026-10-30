@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Models\User;
 
 /**
  * Profile privacy (Phase 2).
@@ -16,11 +17,19 @@ use Illuminate\Http\Request;
  */
 class PrivacyController extends Controller
 {
-    public const DEFAULTS = [
-        'profile_visibility' => 'public',
-        'who_can_message' => 'everyone',
-        'who_can_connect' => 'everyone',
-    ];
+    /**
+     * Get default privacy settings for a user.
+     * Minors default to more restrictive settings.
+     */
+    public function defaultsFor(User $user): array
+    {
+        $isMinor = $user->isMinor();
+        return [
+            'profile_visibility' => $isMinor ? 'followers' : 'public',
+            'who_can_message' => $isMinor ? 'connections' : 'everyone',
+            'who_can_connect' => $isMinor ? 'nobody' : 'everyone',
+        ];
+    }
 
     /**
      * GET /me/privacy
@@ -35,11 +44,27 @@ class PrivacyController extends Controller
      */
     public function update(Request $request): JsonResponse
     {
-        $validated = $request->validate([
+        $user = $request->user();
+        $isMinor = $user->isMinor();
+
+        // Minors cannot override certain settings to less restrictive values
+        $rules = [
             'profile_visibility' => 'sometimes|in:public,followers,private',
             'who_can_message' => 'sometimes|in:everyone,connections,nobody',
             'who_can_connect' => 'sometimes|in:everyone,nobody',
-        ]);
+        ];
+
+        // For minors, restrict the allowed values
+        if ($isMinor) {
+            // Minors can only choose between connections and nobody for messaging
+            $rules['who_can_message'] = 'sometimes|in:connections,nobody';
+            // Minors can only choose between followers and private for profile visibility
+            $rules['profile_visibility'] = 'sometimes|in:followers,private';
+            // Minors cannot set who_can_connect to everyone
+            $rules['who_can_connect'] = 'sometimes|in:nobody';
+        }
+
+        $validated = $request->validate($rules);
 
         if (! \Illuminate\Support\Facades\Schema::hasColumn('users', 'privacy_settings')) {
             return response()->json([
@@ -50,7 +75,6 @@ class PrivacyController extends Controller
             ], 503);
         }
 
-        $user = $request->user();
         $user->forceFill([
             'privacy_settings' => array_merge($this->settings($user), $validated),
         ])->save();
@@ -61,7 +85,7 @@ class PrivacyController extends Controller
     /**
      * @return array{profile_visibility: string, who_can_message: string, who_can_connect: string}
      */
-    public static function settings($user): array
+    public function settings($user): array
     {
         $stored = $user->privacy_settings;
 
@@ -69,6 +93,8 @@ class PrivacyController extends Controller
             $stored = json_decode($stored, true);
         }
 
-        return array_merge(self::DEFAULTS, is_array($stored) ? $stored : []);
+        $defaults = $this->defaultsFor($user);
+
+        return array_merge($defaults, is_array($stored) ? $stored : []);
     }
 }

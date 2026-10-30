@@ -58,6 +58,41 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     _loadProfile();
   }
 
+  /// "Get the blue check" CTA — shown until the verified badge is granted.
+  Widget _verificationCta() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: GestureDetector(
+        onTap: () => context.push('/verification'),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.verifiedBadge.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+                color: AppColors.verifiedBadge.withValues(alpha: 0.35)),
+          ),
+          child: Row(
+            children: [
+              const Icon(LucideIcons.badgeCheck,
+                  size: 20, color: AppColors.verifiedBadge),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text('Get the blue check',
+                    style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.ink)),
+              ),
+              const Icon(LucideIcons.chevronRight,
+                  size: 18, color: AppColors.textSecondary),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _loadProfile() async {
     final authUser = ref.read(authProvider).user;
     if (mounted) {
@@ -166,6 +201,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   _profileHero(),
                   _profileTitle(),
                   _statHead(),
+                  if (!_isVerified) _verificationCta(),
                   const SizedBox(height: 8),
                   if (_bio.trim().isNotEmpty)
                     Padding(
