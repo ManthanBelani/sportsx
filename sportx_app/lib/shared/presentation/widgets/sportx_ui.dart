@@ -33,34 +33,40 @@ class PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final enabled = onPressed != null;
     return GestureDetector(
       onTap: onPressed,
-      child: Container(
-        height: small ? 36 : DesignTokens.btnHeight,
-        padding: EdgeInsets.symmetric(horizontal: small ? 14 : 20),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFFFD54A), Color(0xFFFFC107), Color(0xFFF5B400)],
+      child: Opacity(
+        // Disabled state is visibly dimmed — a null callback must never look
+        // tappable, otherwise the tap "does nothing" from the user's view.
+        opacity: enabled ? 1.0 : 0.45,
+        child: Container(
+          height: small ? 36 : DesignTokens.btnHeight,
+          padding: EdgeInsets.symmetric(horizontal: small ? 14 : 20),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFFFFD54A), Color(0xFFFFC107), Color(0xFFF5B400)],
+            ),
+            borderRadius: BorderRadius.circular(small ? 11 : DesignTokens.btnRadius),
+            border: Border.all(color: const Color(0x2E785000)),
+            boxShadow: enabled ? SportXShadows.btnShadow : null,
           ),
-          borderRadius: BorderRadius.circular(small ? 11 : DesignTokens.btnRadius),
-          border: Border.all(color: const Color(0x2E785000)),
-          boxShadow: SportXShadows.btnShadow,
-        ),
-        alignment: Alignment.center,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: 17, color: AppColors.ink),
-              const SizedBox(width: 8),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 17, color: AppColors.ink),
+                const SizedBox(width: 8),
+              ],
+              Text(label,
+                  style: GoogleFonts.inter(
+                      fontSize: small ? 13 : 14, fontWeight: FontWeight.w700, color: AppColors.ink)),
             ],
-            Text(label,
-                style: GoogleFonts.inter(
-                    fontSize: small ? 13 : 14, fontWeight: FontWeight.w700, color: AppColors.ink)),
-          ],
+          ),
         ),
       ),
     );

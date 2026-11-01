@@ -140,13 +140,29 @@ class _FormPageTemplateState extends State<FormPageTemplate> {
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 480),
-              child: SizedBox(
-                width: double.infinity,
-                child: PrimaryButton(
-                  label: widget.ctaText,
-                  onPressed: _confirmed ? widget.onSubmit : null,
-                ),
+            child: SizedBox(
+              width: double.infinity,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!_confirmed)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        'Tick the confirmation checkbox above the button to continue',
+                        style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.warnText),
+                      ),
+                    ),
+                  PrimaryButton(
+                    label: widget.ctaText,
+                    onPressed: _confirmed ? widget.onSubmit : null,
+                  ),
+                ],
               ),
+            ),
             ),
           ),
         ),
