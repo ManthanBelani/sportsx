@@ -113,6 +113,8 @@ Route::prefix('v1')->group(function () {
         Route::post('/auth/register', [AuthController::class, 'register']);
         Route::post('/auth/verify-email', [AuthController::class, 'verifyEmail']);
         Route::post('/auth/login', [AuthController::class, 'login']);
+        Route::post('/auth/otp-login/request', [AuthController::class, 'otpLoginRequest'])->middleware('throttle:5,1');
+        Route::post('/auth/otp-login/verify', [AuthController::class, 'otpLoginVerify'])->middleware('throttle:10,1');
         Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
         Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
 
@@ -140,6 +142,7 @@ Route::prefix('v1')->group(function () {
     // ── Guardian consent (minors, DOB < 18) ──
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/guardian/consent', [GuardianController::class, 'request'])->middleware('throttle:5,1');
+        Route::post('/guardian/resend', [GuardianController::class, 'resend'])->middleware('throttle:5,1');
         Route::post('/guardian/verify-otp', [GuardianController::class, 'verify'])->middleware('throttle:10,1');
         Route::get('/me/guardian-controls', [GuardianController::class, 'show']);
         Route::put('/me/guardian-controls', [GuardianController::class, 'update']);

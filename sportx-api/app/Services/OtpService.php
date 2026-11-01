@@ -186,8 +186,29 @@ class OtpService
     /**
      * Queue the email through the active SportX provider (SMTP or Gmail).
      */
+    /**
+     * Whether fixed-code test mode is active. Requires both the env flag and
+     * a non-production environment, so a stray flag on the production server
+     * can never weaken OTP verification.
+     */
+    protected function testMode(): bool
+    {
+        return config('sportx.otp.test_mode') && ! app()->isProduction();
+    }
+
     protected function sendEmail(string $destination, string $code, string $purpose): void
     {
+        // Test mode (dev only): the fixed code is already stored on the OTP
+        // row, so verification works without any mail transport.
+        if ($this->testMode()) {
+            Log::info('OTP test mode — code not emailed', [
+                'destination' => $destination,
+                'purpose' => $purpose,
+            ]);
+
+            return;
+        }
+
         // A replayed request must not re-send to an already-cooled destination.
         if (! EmailOtpMail::throttle($destination, $purpose)) {
             Log::info('OTP email suppressed by cooldown', [
@@ -232,6 +253,13 @@ class OtpService
      */
     protected function randomCode(): string
     {
+        // Test mode (dev only): one fixed code for every purpose so test runs
+        // can verify without reading an inbox. verify() is unchanged — the
+        // stored hash is simply the hash of this code.
+        if ($this->testMode()) {
+            return (string) config('sportx.otp.test_code', '123456');
+        }
+
         $length = (int) config('sportx.otp.code_length', 6);
 
         $code = '';

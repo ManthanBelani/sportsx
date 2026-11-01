@@ -9,6 +9,8 @@ import 'package:sportx_app/shared/models/user.dart';
 
 enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
 
+enum LoginResult { authenticated, otpRequired, failed }
+
 class AuthState {
   final AuthStatus status;
   final User? user;
@@ -175,6 +177,23 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<bool> sendSignupOtp({required String email}) async {
+    state = state.copyWith(status: AuthStatus.loading);
+    try {
+      await _dio.post('/auth/send-otp', data: {
+        'channel': 'email',
+        'destination': email,
+        'purpose': 'signup',
+      });
+      if (!mounted) return false;
+      state = state.copyWith(status: AuthStatus.unauthenticated);
+      return true;
+    } on DioException catch (e) {
+      _fail(e);
+      return false;
+    }
+  }
+
   Future<void> sendOtp({required String email, String purpose = 'signup'}) async {
     state = state.copyWith(status: AuthStatus.loading);
     try {
@@ -200,6 +219,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     String purpose = 'signup',
     String? name,
     String? role,
+    String? password,
   }) async {
     state = state.copyWith(status: AuthStatus.loading);
     try {
@@ -211,6 +231,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       };
       if (name != null) data['name'] = name;
       if (role != null) data['role'] = role;
+      if (password != null) data['password'] = password;
       final resp = await _dio.post('/auth/verify-otp', data: data);
       if (!mounted) {
         return;
@@ -247,16 +268,25 @@ class AuthNotifier extends StateNotifier<AuthState> {
   /// (google_sign_in) and hands it to the backend, which verifies it.
   /// On success the same post-login sequence runs as password login:
   /// persist token → refresh user → register the FCM token.
-  Future<void> signInWithGoogle({required String idToken, String? role}) async {
+  Future<void> signInWithGoogle({
+    required String idToken,
+    String? role,
+    String? dateOfBirth,
+  }) async {
     state = state.copyWith(status: AuthStatus.loading);
     try {
       final data = <String, dynamic>{'id_token': idToken};
       if (role != null) data['role'] = role;
+      if (dateOfBirth != null) data['date_of_birth'] = dateOfBirth;
       final resp = await _dio.post('/auth/google', data: data);
       if (!mounted) {
         return;
       }
-      await _persistAuth(resp.data as Map<String, dynamic>);
+      final respData = resp.data as Map<String, dynamic>;
+      if (dateOfBirth != null && respData['user'] is Map) {
+        (respData['user'] as Map<String, dynamic>)['date_of_birth'] ??= dateOfBirth;
+      }
+      await _persistAuth(respData);
       if (!mounted) {
         return;
       }
@@ -285,18 +315,26 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> login({required String email, required String password}) async {
+  Future<LoginResult> login({required String email, required String password}) async {
     state = state.copyWith(status: AuthStatus.loading);
     try {
-      final resp = await _dio.post('/auth/login', data: {'email': email, 'password': password});
+      final resp = await _dio.post('/auth/login', data: {
+        'email': email,
+        'password': password,
+        'require_otp': true,
+      });
       if (!mounted) {
-        return;
+        return LoginResult.failed;
       }
       final data = resp.data;
+      if (data['otp_required'] == true) {
+        state = state.copyWith(status: AuthStatus.unauthenticated);
+        return LoginResult.otpRequired;
+      }
       final token = data['token'] as String;
       await _storage.saveToken(token);
       if (!mounted) {
-        return;
+        return LoginResult.failed;
       }
       final user = User.fromJson(data['user'] as Map<String, dynamic>);
       final needsOnboarding = data['needs_onboarding'] == true;
@@ -304,11 +342,41 @@ class AuthNotifier extends StateNotifier<AuthState> {
         state = AuthState(status: AuthStatus.authenticated, user: user, needsOnboarding: needsOnboarding);
       }
       await _registerFcmToken();
-      if (!mounted) {
-        return;
-      }
+      return LoginResult.authenticated;
     } on DioException catch (e) {
       _fail(e);
+      return LoginResult.failed;
+    }
+  }
+
+  /// Request a passwordless login OTP code sent to [email].
+  Future<bool> otpLoginRequest(String email) async {
+    state = state.copyWith(status: AuthStatus.loading);
+    try {
+      await _dio.post('/auth/otp-login/request', data: {'email': email});
+      if (!mounted) return false;
+      state = state.copyWith(status: AuthStatus.unauthenticated);
+      return true;
+    } on DioException catch (e) {
+      _fail(e);
+      return false;
+    }
+  }
+
+  /// Verify passwordless login code and persist authenticated session.
+  Future<bool> otpLoginVerify({required String email, required String code}) async {
+    state = state.copyWith(status: AuthStatus.loading);
+    try {
+      final resp = await _dio.post('/auth/otp-login/verify', data: {
+        'email': email,
+        'code': code,
+      });
+      if (!mounted) return false;
+      await _persistAuth(resp.data as Map<String, dynamic>);
+      return true;
+    } on DioException catch (e) {
+      _fail(e);
+      return false;
     }
   }
 

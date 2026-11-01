@@ -37,6 +37,7 @@ class GoogleAuthController extends Controller
             // Validated against GOOGLE_ALLOWED_ROLES inside the service — an
             // unvalidated role would be a privilege-escalation hole.
             'role' => ['nullable', 'string'],
+            'date_of_birth' => ['nullable', 'date', 'before:today'],
         ]);
 
         try {
@@ -87,9 +88,14 @@ class GoogleAuthController extends Controller
             Mail::to($user->email)->queue(new WelcomeMail($user));
         }
 
+        $userResource = $this->userResource($user);
+        if (! empty($validated['date_of_birth'])) {
+            $userResource['date_of_birth'] = $validated['date_of_birth'];
+        }
+
         return response()->json([
             'token' => $user->createToken('auth_token')->plainTextToken,
-            'user' => $this->userResource($user),
+            'user' => $userResource,
             'needs_onboarding' => ! $user->hasRoleProfile(),
             'pending_approval' => $user->status === 'pending',
             'linked' => $resolved['linked'],
@@ -173,6 +179,9 @@ class GoogleAuthController extends Controller
             'name' => $user->name,
             'email' => $user->email,
             'phone' => $user->phone,
+            'date_of_birth' => $user->athleteProfile?->date_of_birth?->format('Y-m-d'),
+            'avatar_url' => $user->avatar_url,
+            'profile_photo_url' => $user->avatar_url,
             'email_verified_at' => $user->email_verified_at?->toIso8601String(),
             'status' => $user->status,
             'social_links' => $user->social_links,

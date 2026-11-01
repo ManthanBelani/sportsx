@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/role_config.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/shared/models/user.dart';
 
 /// Progressive onboarding state for all roles
 /// Steps: Core Identity → Role Profile → Media → Verification → Preferences
@@ -49,7 +51,19 @@ class MultiStepOnboardingNotifier extends StateNotifier<OnboardingProgress> {
   final Dio _dio;
   final SportXRole _role;
 
-  MultiStepOnboardingNotifier(this._dio, this._role) : super(OnboardingProgress());
+  MultiStepOnboardingNotifier(this._dio, this._role, {User? initialUser})
+      : super(OnboardingProgress(
+          formData: {
+            if (initialUser != null && initialUser.name.isNotEmpty)
+              'full_name': initialUser.name,
+            if (initialUser?.phone != null && initialUser!.phone!.isNotEmpty)
+              'phone': initialUser.phone,
+            if (initialUser != null && initialUser.email.isNotEmpty)
+              'email': initialUser.email,
+            if (initialUser?.profilePhotoUrl != null && initialUser!.profilePhotoUrl!.isNotEmpty)
+              'profile_photo_url': initialUser.profilePhotoUrl,
+          },
+        ));
 
   /// Returns the list of steps for this role (some roles skip certain steps)
   List<OnboardingStep> get stepsForRole => onboardingStepsForRole(_role);
@@ -203,14 +217,26 @@ class MultiStepOnboardingNotifier extends StateNotifier<OnboardingProgress> {
     }
   }
 
-  void reset() {
-    state = OnboardingProgress();
+  void reset({User? initialUser}) {
+    state = OnboardingProgress(
+      formData: {
+        if (initialUser != null && initialUser.name.isNotEmpty)
+          'full_name': initialUser.name,
+        if (initialUser?.phone != null && initialUser!.phone!.isNotEmpty)
+          'phone': initialUser.phone,
+        if (initialUser != null && initialUser.email.isNotEmpty)
+          'email': initialUser.email,
+        if (initialUser?.profilePhotoUrl != null && initialUser!.profilePhotoUrl!.isNotEmpty)
+          'profile_photo_url': initialUser.profilePhotoUrl,
+      },
+    );
   }
 }
 
 /// Provider factory for role-specific onboarding
 final multiStepOnboardingProvider = StateNotifierProvider.family<MultiStepOnboardingNotifier, OnboardingProgress, SportXRole>((ref, role) {
-  return MultiStepOnboardingNotifier(ref.watch(dioProvider), role);
+  final user = ref.watch(authProvider).user;
+  return MultiStepOnboardingNotifier(ref.watch(dioProvider), role, initialUser: user);
 });
 
 /// Provider to get current role's onboarding steps

@@ -11,7 +11,7 @@ use Carbon\CarbonImmutable;
  * Guardian consent for athletes under 18.
  *
  * The gate is: an athlete whose date of birth puts them under 18 stays
- * `pending` until a guardian has proven control of a phone number and
+ * `pending` until a guardian has proven control of their email address and
  * confirmed consent. Both steps must happen — a guardian name typed by the
  * minor proves nothing.
  *
@@ -53,19 +53,22 @@ class GuardianConsentService
 
         $consent = $athlete->guardianConsents()->create([
             'guardian_name' => $data['guardian_name'],
-            'guardian_phone' => $data['guardian_phone'],
+            'guardian_email' => $data['guardian_email'],
+            'guardian_phone' => $data['guardian_phone'] ?? null,
             'relationship' => $data['relationship'] ?? 'parent',
             'consent_status' => GuardianConsent::STATUS_PENDING,
+            'verification_method' => GuardianConsent::METHOD_OTP,
         ]);
 
-        // The code goes to the *guardian*, not the athlete. With no SMS vendor
-        // selected (AS-60) this throws OtpDeliveryException, which the
-        // controller surfaces as 503 rather than recording a consent nobody can
-        // actually confirm.
+        // The code goes to the *guardian's email*, not the athlete. Phone/SMS
+        // has no transport configured (AS-60), so email is the verification
+        // channel. If mail delivery is unavailable this throws
+        // OtpDeliveryException, which the controller surfaces as 503 rather
+        // than recording a consent nobody can actually confirm.
         $otp->generateAndSend(
             null,
-            'phone',
-            $data['guardian_phone'],
+            'email',
+            $data['guardian_email'],
             OtpCode::PURPOSE_GUARDIAN_CONSENT,
         );
 
@@ -88,8 +91,8 @@ class GuardianConsentService
 
         $verified = $otp->verify(
             null,
-            'phone',
-            $consent->guardian_phone,
+            'email',
+            $consent->guardian_email,
             $code,
             OtpCode::PURPOSE_GUARDIAN_CONSENT,
         );

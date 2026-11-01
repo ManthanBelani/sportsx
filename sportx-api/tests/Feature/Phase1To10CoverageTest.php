@@ -15,6 +15,7 @@ use App\Services\TotpService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 /**
@@ -186,17 +187,19 @@ class Phase1To10CoverageTest extends TestCase
             ->assertJsonStructure(['data']);
     }
 
-    public function test_phase1_guardian_consent_blocked_without_sms_vendor_and_verification_flow(): void
+    public function test_phase1_guardian_consent_email_flow_and_verification_flow(): void
     {
+        Mail::fake();
+
         [$athlete, $profile] = $this->athlete();
         $this->actingAs($athlete, 'sanctum');
 
-        // No SMS vendor selected (AS-60): guardian SMS fails closed with 503.
+        // Guardian consent is emailed (email channel — SMS has no vendor, AS-60).
         $this->postJson('/api/v1/guardian/consent', [
             'guardian_name' => 'Parent',
-            'guardian_phone' => '+919999999999',
+            'guardian_email' => 'parent@sportx.test',
             'relationship' => 'parent',
-        ])->assertStatus(503)->assertJsonPath('error.code', 'CHANNEL_UNAVAILABLE');
+        ])->assertCreated();
 
         $this->getJson('/api/v1/me/guardian-controls')->assertOk();
 

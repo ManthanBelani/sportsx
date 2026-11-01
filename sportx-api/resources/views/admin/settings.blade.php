@@ -1,6 +1,16 @@
 @extends('admin.layouts.app')
 @section('title', 'System Settings')
 
+@push('styles')
+<style>
+  @media (max-width: 560px) {
+    #settingsForm > div:last-of-type { flex-direction: column; align-items: stretch; text-align: center; }
+    #settingsForm > div:last-of-type .btn { width: 100%; justify-content: center; }
+    .settings-item .input, .settings-item .select { max-width: 120px; }
+  }
+</style>
+@endpush
+
 @section('content')
   <form id="settingsForm" method="POST" action="{{ route('admin.settings.update') }}">@csrf
     <div class="card no-pad">

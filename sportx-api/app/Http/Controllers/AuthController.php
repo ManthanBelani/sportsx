@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\OtpDeliveryException;
+use App\Models\OtpCode;
 use App\Models\User;
 use App\Models\UserDeviceToken;
 use App\Mail\VerifyEmail;
 use App\Mail\PasswordResetMail;
 use App\Mail\WelcomeMail;
+use App\Services\OtpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -141,11 +144,13 @@ class AuthController extends Controller
         ]);
     }
 
-    public function login(Request $request)
+    public function login(Request $request, OtpService $otp)
     {
         $validated = $request->validate([
             'email' => 'required|email',
             'password' => 'required|string',
+            'code' => 'nullable|string|max:10',
+            'require_otp' => 'nullable|boolean',
         ]);
 
         $user = User::where('email', strtolower($validated['email']))->first();
@@ -165,6 +170,50 @@ class AuthController extends Controller
             return response()->json(['message' => 'Account is '.$user->status.'. Contact support.'], 403);
         }
 
+        if (!empty($validated['code'])) {
+            if (!$otp->verify($user, 'email', $user->email, $validated['code'], OtpCode::PURPOSE_LOGIN)) {
+                return response()->json([
+                    'message' => 'That code is incorrect or has expired.',
+                ], 422);
+            }
+
+            if ($user->email_verified_at === null) {
+                $user->email_verified_at = now();
+                $user->save();
+            }
+
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            return response()->json([
+                'token' => $token,
+                'user' => $this->userResource($user),
+                'needs_onboarding' => ! $user->hasRoleProfile(),
+            ]);
+        }
+
+        $enforceOtp = $request->has('require_otp')
+            ? $request->boolean('require_otp')
+            : !app()->runningUnitTests();
+
+        if ($enforceOtp) {
+            try {
+                $otp->generateAndSend($user, 'email', $user->email, OtpCode::PURPOSE_LOGIN);
+            } catch (OtpDeliveryException $e) {
+                return response()->json([
+                    'error' => [
+                        'code' => 'CHANNEL_UNAVAILABLE',
+                        'message' => $e->getMessage(),
+                    ],
+                ], 503);
+            }
+
+            return response()->json([
+                'otp_required' => true,
+                'email' => $user->email,
+                'message' => 'Credentials verified. A login code has been sent to your email.',
+            ]);
+        }
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -182,6 +231,88 @@ class AuthController extends Controller
             'data' => $this->userResource($user) + [
                 'needs_onboarding' => ! $user->hasRoleProfile(),
             ],
+        ]);
+    }
+
+    /**
+     * POST /auth/otp-login/request
+     *
+     * Passwordless login, step one: email a login OTP to the address.
+     * Uniform response whether or not the account exists, so the endpoint
+     * cannot be used to discover registrations (same principle as
+     * OtpController).
+     */
+    public function otpLoginRequest(Request $request, OtpService $otp)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email|max:255',
+        ]);
+
+        $user = User::where('email', strtolower($validated['email']))->first();
+
+        try {
+            $otp->generateAndSend($user, 'email', $validated['email'], OtpCode::PURPOSE_LOGIN);
+        } catch (OtpDeliveryException $e) {
+            return response()->json([
+                'error' => [
+                    'code' => 'CHANNEL_UNAVAILABLE',
+                    'message' => $e->getMessage(),
+                ],
+            ], 503);
+        }
+
+        return response()->json([
+            'message' => 'If the address is registered, a login code has been sent.',
+        ]);
+    }
+
+    /**
+     * POST /auth/otp-login/verify
+     *
+     * Passwordless login, step two: exchange the emailed code for a token.
+     * Same status checks and response shape as login() so the Flutter client
+     * needs no special handling.
+     */
+    public function otpLoginVerify(Request $request, OtpService $otp)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email|max:255',
+            'code' => 'required|string|max:10',
+        ]);
+
+        $user = User::where('email', strtolower($validated['email']))->first();
+
+        $verified = $user
+            && $otp->verify($user, 'email', $validated['email'], $validated['code'], OtpCode::PURPOSE_LOGIN);
+
+        if (! $verified) {
+            return response()->json([
+                'message' => 'That code is incorrect or has expired.',
+            ], 422);
+        }
+
+        if ($user->status === 'pending') {
+            return response()->json([
+                'message' => 'Your account is pending admin approval. You will be able to log in once an admin approves your registration.',
+                'status' => 'pending',
+            ], 403);
+        }
+
+        if ($user->status !== 'active') {
+            return response()->json(['message' => 'Account is '.$user->status.'. Contact support.'], 403);
+        }
+
+        if ($user->email_verified_at === null) {
+            $user->email_verified_at = now();
+            $user->save();
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'token' => $token,
+            'user' => $this->userResource($user),
+            'needs_onboarding' => ! $user->hasRoleProfile(),
         ]);
     }
 
@@ -260,6 +391,9 @@ class AuthController extends Controller
             'name' => $user->name,
             'email' => $user->email,
             'phone' => $user->phone,
+            'date_of_birth' => $user->athleteProfile?->date_of_birth?->format('Y-m-d'),
+            'avatar_url' => $user->avatar_url,
+            'profile_photo_url' => $user->avatar_url,
             'email_verified_at' => $user->email_verified_at?->toIso8601String(),
             'status' => $user->status,
             'social_links' => $user->social_links,

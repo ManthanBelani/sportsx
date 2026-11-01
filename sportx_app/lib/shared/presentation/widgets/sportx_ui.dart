@@ -936,19 +936,22 @@ Future<T?> showSportXDialog<T>({
   Widget? titleWidget,
   Widget? content,
   List<Widget>? actions,
+  List<Widget> Function(BuildContext dialogContext)? actionsBuilder,
   EdgeInsetsGeometry? contentPadding,
   EdgeInsetsGeometry? actionsPadding,
   double? maxWidth,
   bool barrierDismissible = true,
+  bool useRootNavigator = true,
 }) {
   return showDialog<T>(
     context: context,
+    useRootNavigator: useRootNavigator,
     barrierDismissible: barrierDismissible,
     builder: (ctx) => SportXDialog(
       title: title,
       titleWidget: titleWidget,
       content: content,
-      actions: actions,
+      actions: actionsBuilder != null ? actionsBuilder(ctx) : actions,
       contentPadding: contentPadding,
       actionsPadding: actionsPadding,
       maxWidth: maxWidth,
@@ -973,9 +976,9 @@ Future<bool> showConfirmDialog({
       message,
       style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary, height: 1.5),
     ),
-    actions: [
+    actionsBuilder: (dialogCtx) => [
       TextButton(
-        onPressed: () => Navigator.pop(context, false),
+        onPressed: () => Navigator.of(dialogCtx).pop(false),
         child: Text(
           cancelText,
           style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
@@ -985,7 +988,7 @@ Future<bool> showConfirmDialog({
       PrimaryButton(
         label: confirmText,
         small: true,
-        onPressed: () => Navigator.pop(context, true),
+        onPressed: () => Navigator.of(dialogCtx).pop(true),
       ),
     ],
   ).then((value) => value ?? false);
@@ -1005,11 +1008,11 @@ Future<void> showInfoDialog({
       message,
       style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary, height: 1.5),
     ),
-    actions: [
+    actionsBuilder: (dialogCtx) => [
       PrimaryButton(
         label: okText,
         small: true,
-        onPressed: () => Navigator.pop(context),
+        onPressed: () => Navigator.of(dialogCtx).pop(),
       ),
     ],
   );
@@ -1069,9 +1072,9 @@ Future<String?> showTextInputDialog({
         validator: validator,
       ),
     ),
-    actions: [
+    actionsBuilder: (dialogCtx) => [
       TextButton(
-        onPressed: () => Navigator.pop(context),
+        onPressed: () => Navigator.of(dialogCtx).pop(),
         child: Text(
           cancelText,
           style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textSecondary),
@@ -1083,7 +1086,7 @@ Future<String?> showTextInputDialog({
         small: true,
         onPressed: () {
           if (formKey.currentState?.validate() ?? true) {
-            Navigator.pop(context, controller.text.trim());
+            Navigator.of(dialogCtx).pop(controller.text.trim());
           }
         },
       ),

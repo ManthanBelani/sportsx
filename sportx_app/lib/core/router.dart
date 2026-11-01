@@ -261,7 +261,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         '/onboarding-1', '/onboarding-2',
         '/coach-onboarding', '/academy-onboarding',
         '/organizer-onboarding', '/sponsor-onboarding',
-        '/scout-onboarding', '/guardian-consent',
+        '/scout-onboarding',
       ];
 
       if (status == AuthStatus.authenticated) {
@@ -271,7 +271,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         // Needs onboarding → force the user through their role onboarding first.
         if (authState.needsOnboarding && onboardingRoute != null) {
           // Allow any onboarding step (including guardian consent) to render.
-          if (onboardingScreens.contains(loc)) {
+          if (onboardingScreens.contains(loc) || loc == '/guardian-consent') {
             return null;
           }
           return onboardingRoute;
@@ -334,6 +334,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         return OtpScreen(
           email: extra?['email'] as String? ?? '',
           role: extra?['role'] as String? ?? 'athlete',
+          isLogin: extra?['isLogin'] as bool? ?? false,
+          password: extra?['password'] as String?,
         );
       }),
       GoRoute(path: '/forgot-password', builder: (context, state) => const ForgotPasswordScreen()),

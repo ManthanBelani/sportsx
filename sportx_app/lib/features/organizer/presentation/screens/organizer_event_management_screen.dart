@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/features/organizer/presentation/widgets/organizer_kit.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
@@ -20,24 +21,10 @@ class OrganizerEventManagementScreen extends ConsumerWidget {
   const OrganizerEventManagementScreen({super.key, required this.tournamentId});
 
   String _dates(DateTime s, DateTime e) {
-    const m = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    if (s.month == e.month && s.year == e.year) {
-      return '${s.day} – ${e.day} ${m[s.month - 1]} ${s.year}';
+    if (s.year == e.year && s.month == e.month && s.day == e.day) {
+      return DateFormatUtils.formatDdMmYyyy(s);
     }
-    return '${s.day} ${m[s.month - 1]} – ${e.day} ${m[e.month - 1]} ${e.year}';
+    return '${DateFormatUtils.formatDdMmYyyy(s)} – ${DateFormatUtils.formatDdMmYyyy(e)}';
   }
 
   @override
@@ -306,7 +293,7 @@ class OrganizerEventManagementScreen extends ConsumerWidget {
                         text: t.startDate != null && t.endDate != null
                             ? _dates(t.startDate!, t.endDate!)
                             : (t.startDate != null
-                                  ? '${t.startDate!.day}/${t.startDate!.month}/${t.startDate!.year}'
+                                  ? DateFormatUtils.formatDdMmYyyy(t.startDate)
                                   : 'Dates TBA'),
                       ),
                       _InfoRow(

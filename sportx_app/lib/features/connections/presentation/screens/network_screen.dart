@@ -87,7 +87,7 @@ class _NetworkScreenState extends ConsumerState<NetworkScreen> {
           'avatar': _photoOf(a) ?? ''
         });
       } else {
-        SnackBarUtils.showError(context, err ?? 'Could not start chat');
+        await handleChatStartError(context, err);
       }
     } finally {
       if (mounted) setState(() => _busy.remove('m$uid'));

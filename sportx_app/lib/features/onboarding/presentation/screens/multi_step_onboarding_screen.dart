@@ -7,6 +7,8 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/role_config.dart';
 import 'package:sportx_app/core/responsive.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
+import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/features/onboarding/presentation/providers/multi_step_onboarding_provider.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
@@ -238,7 +240,29 @@ class _MultiStepOnboardingScreenState extends ConsumerState<MultiStepOnboardingS
       await notifier.submit();
       if (mounted) {
         ref.read(authProvider.notifier).markOnboardingComplete();
-        context.go(ref.read(roleConfigProvider).homeRoute);
+        // Minors must provide and verify guardian consent to unlock messaging and social features
+        final formData = notifier.progress.formData;
+        final dobRaw = formData['date_of_birth'] as String?;
+        bool isMinor = false;
+        if (role == SportXRole.athlete && dobRaw != null && dobRaw.isNotEmpty) {
+          final dob = DateTime.tryParse(dobRaw);
+          if (dob != null) {
+            final now = DateTime.now();
+            int age = now.year - dob.year;
+            if (now.month < dob.month || (now.month == dob.month && now.day < dob.day)) {
+              age--;
+            }
+            if (age < 18) {
+              isMinor = true;
+            }
+          }
+        }
+
+        if (isMinor) {
+          context.go('/guardian-consent');
+        } else {
+          context.go(ref.read(roleConfigProvider).homeRoute);
+        }
       }
     } on DioException catch (e) {
       if (mounted) {
@@ -276,6 +300,7 @@ class _CoreIdentityStep extends StatefulWidget {
 
 class _CoreIdentityStepState extends State<_CoreIdentityStep> {
   late final TextEditingController _nameController;
+  late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
   DateTime? _dob;
   String? _gender;
@@ -286,6 +311,7 @@ class _CoreIdentityStepState extends State<_CoreIdentityStep> {
     // Seed from stored form data so returning to this step restores prior input.
     final data = widget.notifier.progress.formData;
     _nameController = TextEditingController(text: data['full_name'] as String? ?? '');
+    _emailController = TextEditingController(text: data['email'] as String? ?? '');
     _phoneController = TextEditingController(text: data['phone'] as String? ?? '');
     _gender = data['gender'] as String?;
     final dobRaw = data['date_of_birth'] as String?;
@@ -295,11 +321,22 @@ class _CoreIdentityStepState extends State<_CoreIdentityStep> {
   @override
   void dispose() {
     _nameController.dispose();
+    _emailController.dispose();
     _phoneController.dispose();
     super.dispose();
   }
 
   MultiStepOnboardingNotifier get notifier => widget.notifier;
+
+  bool get _isMinor {
+    if (_dob == null) return false;
+    final now = DateTime.now();
+    int age = now.year - _dob!.year;
+    if (now.month < _dob!.month || (now.month == _dob!.month && now.day < _dob!.day)) {
+      age--;
+    }
+    return age < 18;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -329,6 +366,17 @@ class _CoreIdentityStepState extends State<_CoreIdentityStep> {
                 onChanged: (v) => notifier.updateFormData({'full_name': v}),
               ),
               SizedBox(height: r.vs(16)),
+
+              _FormField(
+                label: 'Email Address',
+                hint: 'you@example.com',
+                controller: _emailController,
+                icon: LucideIcons.mail,
+                keyboardType: TextInputType.emailAddress,
+                readOnly: true,
+                onChanged: (v) => notifier.updateFormData({'email': v}),
+              ),
+              SizedBox(height: r.vs(16)),
               
               _FormField(
                 label: 'Phone Number',
@@ -349,6 +397,29 @@ class _CoreIdentityStepState extends State<_CoreIdentityStep> {
                   notifier.updateFormData({'date_of_birth': d.toIso8601String().split('T')[0]});
                 },
               ),
+              if (_isMinor) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFBFDBFE)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(LucideIcons.shieldAlert, size: 16, color: Color(0xFF1D4ED8)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Athletes under 18 will need parental/guardian email verification to unlock chat and social features.',
+                          style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF1E40AF)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               SizedBox(height: r.vs(16)),
               
               _DropdownField<String>(
@@ -597,8 +668,11 @@ class _MediaStep extends StatelessWidget {
           
           _MediaUploadTile(
             title: 'Profile Photo',
-            subtitle: 'Clear face photo for recognition',
+            subtitle: (notifier.fieldValue('profile_photo_url') as String?)?.isNotEmpty == true
+                ? 'Profile picture imported from Google'
+                : 'Clear face photo for recognition',
             icon: LucideIcons.user,
+            imageUrl: notifier.fieldValue('profile_photo_url') as String?,
             onTap: () => notifier.updateFormData({'profile_photo_action': 'pick'}),
           ),
           SizedBox(height: r.vs(16)),
@@ -829,6 +903,7 @@ class _FormField extends StatelessWidget {
   final IconData icon;
   final TextInputType? keyboardType;
   final int maxLines;
+  final bool readOnly;
   final void Function(String) onChanged;
 
   const _FormField({
@@ -838,6 +913,7 @@ class _FormField extends StatelessWidget {
     required this.icon,
     this.keyboardType,
     this.maxLines = 1,
+    this.readOnly = false,
     required this.onChanged,
   });
 
@@ -852,6 +928,7 @@ class _FormField extends StatelessWidget {
           controller: controller,
           keyboardType: keyboardType,
           maxLines: maxLines,
+          readOnly: readOnly,
           onChanged: onChanged,
           decoration: InputDecoration(
             hintText: hint,
@@ -949,8 +1026,8 @@ class _DatePickerFieldState extends State<_DatePickerField> {
                 const SizedBox(width: 12),
                 Text(
                   selectedDate != null
-                      ? '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}'
-                      : widget.hint,
+                      ? DateFormatUtils.formatDdMmYyyy(selectedDate)
+                      : (widget.hint.isEmpty ? 'DD-MM-YYYY' : widget.hint),
                   style: GoogleFonts.inter(
                     fontSize: 15,
                     color: selectedDate != null ? AppColors.ink : AppColors.textTertiary,
@@ -1020,12 +1097,14 @@ class _MediaUploadTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final IconData icon;
+  final String? imageUrl;
   final VoidCallback onTap;
 
   const _MediaUploadTile({
     required this.title,
     required this.subtitle,
     required this.icon,
+    this.imageUrl,
     required this.onTap,
   });
 
@@ -1051,7 +1130,18 @@ class _MediaUploadTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               alignment: Alignment.center,
-              child: Icon(icon, size: 22, color: AppColors.primaryDarker),
+              child: imageUrl != null && imageUrl!.isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        MediaUtils.resolveUrl(imageUrl!),
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => Icon(icon, size: 22, color: AppColors.primaryDarker),
+                      ),
+                    )
+                  : Icon(icon, size: 22, color: AppColors.primaryDarker),
             ),
             const SizedBox(width: 14),
             Expanded(

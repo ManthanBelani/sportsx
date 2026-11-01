@@ -1,6 +1,13 @@
 @extends('admin.layouts.app')
 @section('title', 'Dashboard')
 
+@push('styles')
+<style>
+  .pending-approvals-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  @media(max-width:560px){ .pending-approvals-grid { grid-template-columns:1fr; } }
+</style>
+@endpush
+
 @section('content')
   <div class="stat-grid">
     <div class="stat-card">
@@ -52,7 +59,7 @@
 
     <div class="card">
       <div class="card-header"><span class="card-title"><i data-lucide="check-circle"></i>Pending Approvals</span><a href="{{ route('admin.moderation') }}" class="see-all">Review All</a></div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+      <div class="pending-approvals-grid">
         <a href="{{ route('admin.moderation') }}" class="quick-action" style="text-align:center;">
           <div class="stat-value" style="font-size:22px;">{{ $stats['pending_users'] }}</div>
           <div class="stat-label">Coaches/Sponsors/Scouts</div>

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:sportx_app/core/role_config.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/shared/presentation/widgets/async_state_view.dart';
 import 'package:sportx_app/shared/presentation/widgets/detail_page_template.dart';
@@ -14,7 +15,7 @@ class TrialDetailScreen extends ConsumerWidget {
   final String id;
   const TrialDetailScreen({super.key, required this.id});
 
-  String _fmt(DateTime d) => '${d.day}/${d.month}/${d.year}';
+  String _fmt(DateTime d) => DateFormatUtils.formatDdMmYyyy(d);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

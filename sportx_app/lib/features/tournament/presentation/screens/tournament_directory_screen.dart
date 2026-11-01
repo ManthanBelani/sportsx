@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/shared/presentation/widgets/async_state_view.dart';
 import 'package:sportx_app/shared/presentation/widgets/directory_list_template.dart';
@@ -13,10 +14,13 @@ class TournamentDirectoryScreen extends ConsumerWidget {
   String _meta(Tournament t) {
     if (t.startDate != null && t.endDate != null) {
       final s = t.startDate!, e = t.endDate!;
-      return '${s.day}/${s.month}–${e.day}/${e.month}/${e.year}';
+      if (s.year == e.year && s.month == e.month && s.day == e.day) {
+        return DateFormatUtils.formatDdMmYyyy(s);
+      }
+      return '${DateFormatUtils.formatDdMmYyyy(s)} – ${DateFormatUtils.formatDdMmYyyy(e)}';
     }
     if (t.startDate != null) {
-      return '${t.startDate!.day}/${t.startDate!.month}/${t.startDate!.year}';
+      return DateFormatUtils.formatDdMmYyyy(t.startDate);
     }
     return '';
   }

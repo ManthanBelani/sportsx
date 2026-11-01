@@ -25,6 +25,13 @@
   .danger-zone .settings-item:first-child .settings-label { color: #dc2626; }
   .btn { padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; outline:none; }
   .btn-danger { background: #fee2e2; color: #dc2626; }
+  @media (max-width: 560px) {
+    .settings-item { flex-wrap: wrap; }
+    .settings-info { flex: 1 1 150px; min-width: 0; }
+    .card-header { padding: 14px 16px; }
+    .settings-item { padding: 14px 16px; }
+    .sponsor-actions, .settings-item .btn { width: 100%; justify-content: center; }
+  }
 </style>
 
 <div class="card">

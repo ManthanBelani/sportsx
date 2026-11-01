@@ -32,6 +32,13 @@
   .action-btn.approve { background: #dcfce7; color: #16a34a; }
   .action-btn.reject { background: #fee2e2; color: #dc2626; }
   .action-btn.view { background: #fff; color: #111; border: 1px solid #e5e7eb; }
+  @media (max-width: 860px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    .sponsor-header { flex-wrap: wrap; gap: 10px; }
+    .sponsor-actions { flex-wrap: wrap; }
+  }
 </style>
 
 <div class="grid-2" id="sponsor-list">

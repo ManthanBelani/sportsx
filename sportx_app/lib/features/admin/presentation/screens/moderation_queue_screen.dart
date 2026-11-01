@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sportx_app/features/admin/presentation/providers/admin_provider.dart';
 import 'package:sportx_app/features/admin/presentation/screens/admin_web_layout.dart';
 import 'package:sportx_app/theme/colors.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
@@ -175,7 +176,7 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
                   ),
                   const Spacer(),
                   Text(
-                    report.createdAt,
+                    DateFormatUtils.formatDdMmYyyy(report.createdAt),
                     style: GoogleFonts.inter(
                         fontSize: 12, color: AppColors.textSecondary),
                   ),

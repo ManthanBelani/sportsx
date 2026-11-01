@@ -8,7 +8,6 @@ import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/auth/presentation/widgets/google_sign_in_button.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
-import 'package:sportx_app/shared/providers/role_config_provider.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   final String role;
@@ -34,17 +33,21 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate() || !_agreed) return;
-    await ref.read(authProvider.notifier).register(
-      email: _emailController.text.trim(),
-      password: _passwordController.text,
-      role: widget.role,
-    );
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final success = await ref.read(authProvider.notifier).sendSignupOtp(email: email);
     if (!mounted) return;
-    final state = ref.read(authProvider);
-    if (state.status == AuthStatus.authenticated) {
-      context.go(ref.read(roleConfigProvider).homeRoute);
-    } else if (state.status == AuthStatus.error) {
-      SnackBarUtils.showError(context, state.error ?? 'Error');
+    if (success) {
+      SnackBarUtils.showSuccess(context, 'Verification code sent to your email');
+      context.push('/verify-otp', extra: {
+        'email': email,
+        'role': widget.role,
+        'isLogin': false,
+        'password': password,
+      });
+    } else {
+      final state = ref.read(authProvider);
+      SnackBarUtils.showError(context, state.error ?? 'Failed to send verification code');
     }
   }
 
@@ -205,7 +208,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
                 // Role is captured from the role-selection screen *before* the
                 // Google button, so signup approval routes correctly.
-                GoogleSignInButton(role: widget.role),
+                GoogleSignInButton(role: widget.role, isSignUp: true),
                 const SizedBox(height: 24),
 
                 Row(

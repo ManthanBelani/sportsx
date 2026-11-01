@@ -446,7 +446,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ? const Icon(LucideIcons.check, color: AppColors.primary)
                 : null,
             onTap: () async {
-              Navigator.of(context).pop();
+              Navigator.of(context, rootNavigator: true).pop();
               final ok = await ref
                   .read(settingsProvider.notifier)
                   .updatePrivacy({key: entry.key});
@@ -491,14 +491,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(onPressed: () => Navigator.of(context, rootNavigator: true).pop(), child: const Text('Cancel')),
         TextButton(
           onPressed: () {
             ref.read(settingsProvider.notifier).updatePassword(
               passwordController.text,
               newPasswordController.text,
             );
-            Navigator.pop(context);
+            Navigator.of(context, rootNavigator: true).pop();
           },
           child: const Text('Save'),
         ),
@@ -526,10 +526,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(onPressed: () => Navigator.of(context, rootNavigator: true).pop(), child: const Text('Cancel')),
         TextButton(
           onPressed: () async {
-            Navigator.pop(context);
+            Navigator.of(context, rootNavigator: true).pop();
             final success = await ref.read(settingsProvider.notifier).deleteAccount(passwordController.text);
             if (success && context.mounted) {
               SnackBarUtils.showSuccess(context, 'Account deleted');

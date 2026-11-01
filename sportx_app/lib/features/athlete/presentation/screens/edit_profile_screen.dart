@@ -6,6 +6,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
@@ -564,10 +565,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             onTap: _pickDob,
             child: AbsorbPointer(
               child: TextFormField(
-                controller: TextEditingController(text: _dob.isEmpty ? '' : _dob),
+                controller: TextEditingController(text: _dob.isEmpty ? '' : DateFormatUtils.formatDdMmYyyy(_dob)),
                 readOnly: true,
                 decoration: InputDecoration(
-                  hintText: 'YYYY-MM-DD',
+                  hintText: 'DD-MM-YYYY',
                   filled: true,
                   fillColor: Colors.white,
                   suffixIcon: const Icon(LucideIcons.calendar, size: 18, color: AppColors.textSecondary),

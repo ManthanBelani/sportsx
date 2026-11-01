@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/features/chat/presentation/providers/chat_provider.dart';
 import 'package:sportx_app/shared/models/social_links.dart';
@@ -103,7 +104,7 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
   String? get _dob {
     final raw = _athlete!['date_of_birth']?.toString();
     if (raw == null || raw.isEmpty) return null;
-    return raw.length >= 10 ? raw.substring(0, 10) : raw;
+    return DateFormatUtils.formatDdMmYyyy(raw);
   }
   int get _connectionsCount {
     final v = _athlete!['connections_count'];
@@ -604,7 +605,7 @@ class _TalentScoutAthleteProfileViewScreenState extends ConsumerState<TalentScou
             context.push('/chat-screen',
                 extra: {'id': chatId, 'name': _name, 'avatar': _photoUrl ?? ''});
           } else {
-            SnackBarUtils.showError(context, err ?? 'Could not open chat');
+            await handleChatStartError(context, err);
           }
         },
         icon: const Icon(LucideIcons.messageCircle, size: 18),

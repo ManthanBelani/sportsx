@@ -54,6 +54,17 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
   ];
 
   @override
+  void initState() {
+    super.initState();
+    final user = ref.read(authProvider).user;
+    if (user != null) {
+      if (user.phone != null && user.phone!.isNotEmpty) {
+        _contact.text = user.phone!;
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _name.dispose();
     _description.dispose();
@@ -89,7 +100,7 @@ class _AcademyOnboardingScreenState extends ConsumerState<AcademyOnboardingScree
       await ref.read(authProvider.notifier).refreshUser();
       if (mounted) context.go('/academy-dashboard');
     } catch (e) {
-      if (mounted) SnackBarUtils.showError(context, e is DioException ? ApiException.fromDio(e as DioException) : e);
+      if (mounted) SnackBarUtils.showError(context, e is DioException ? ApiException.fromDio(e) : e);
     } finally {
       if (mounted) setState(() => _saving = false);
     }

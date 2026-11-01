@@ -111,6 +111,14 @@ return [
         'max_attempts' => 5,
         'resend_cooldown_seconds' => 60,
         'channel' => 'email',
+
+        // DEV ONLY. When true, every OTP equals the fixed test code and no
+        // email is queued — so local/test runs can verify with 123456 without
+        // a mail transport. OtpService additionally refuses test mode when the
+        // app is running in production, so a stray env flag on the server can
+        // never weaken verification. Default off.
+        'test_mode' => (bool) env('OTP_TEST_MODE', false),
+        'test_code' => env('OTP_TEST_CODE', '123456'),
     ],
 
     /*

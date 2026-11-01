@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -115,9 +116,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(message.body, style: GoogleFonts.inter(color: isMe ? AppColors.ink : AppColors.textPrimary, fontSize: 14)),
-            if (shortChatTime(message.createdAt).isNotEmpty) ...[
+            if (DateFormatUtils.formatChatTime(message.createdAt).isNotEmpty) ...[
               const SizedBox(height: 4),
-              Text(shortChatTime(message.createdAt),
+              Text(DateFormatUtils.formatChatTime(message.createdAt),
                   style: GoogleFonts.inter(color: isMe ? AppColors.primaryDarker : AppColors.textTertiary, fontSize: 11)),
             ],
           ],

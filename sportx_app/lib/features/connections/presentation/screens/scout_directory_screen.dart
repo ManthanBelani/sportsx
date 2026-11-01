@@ -44,7 +44,7 @@ class _ScoutDirectoryScreenState extends ConsumerState<ScoutDirectoryScreen> {
       if (chatId != null) {
         context.push('/chat-screen', extra: {'id': chatId, 'name': name, 'avatar': photoUrl ?? ''});
       } else {
-        SnackBarUtils.showError(context, err ?? 'Could not open chat');
+        await handleChatStartError(context, err);
       }
     } finally {
       if (mounted) setState(() => _busy.remove('m${scout['id']}'));

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/media_picker.dart';
 import 'package:sportx_app/shared/providers/activity_provider.dart';
@@ -49,7 +50,7 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
     if (picked != null) {
       setState(() {
         _dob = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
-        _dobController.text = _dob;
+        _dobController.text = DateFormatUtils.formatDdMmYyyy(_dob);
       });
     }
   }
@@ -187,7 +188,7 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
                       enabledBorder: InputBorder.none,
                       focusedBorder: InputBorder.none,
                       isDense: true,
-                      hintText: '2012-03-15',
+                      hintText: 'DD-MM-YYYY',
                       hintStyle: TextStyle(color: AppColors.textSecondary),
                       suffixIcon: Icon(LucideIcons.calendar, size: 18, color: AppColors.textSecondary),
                     ),
@@ -328,13 +329,7 @@ class _TrialRegistrationScreenState extends ConsumerState<TrialRegistrationScree
   }
 
   String _formatDate(String dateStr) {
-    try {
-      final date = DateTime.parse(dateStr);
-      final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      return '${date.day} ${months[date.month - 1]} ${date.year}';
-    } catch (_) {
-      return dateStr;
-    }
+    return DateFormatUtils.formatDdMmYyyy(dateStr);
   }
 
   String _formatTime(String dateStr) {

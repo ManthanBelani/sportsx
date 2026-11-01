@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
+import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/onboarding/presentation/providers/onboarding_provider.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
@@ -18,6 +20,7 @@ class OnboardingSportAgeScreen extends ConsumerStatefulWidget {
 
 class _OnboardingSportAgeScreenState extends ConsumerState<OnboardingSportAgeScreen> {
   final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
 
   static const _genders = [
     {'value': 'male', 'label': 'Male'},
@@ -25,8 +28,35 @@ class _OnboardingSportAgeScreenState extends ConsumerState<OnboardingSportAgeScr
   ];
 
   @override
+  void initState() {
+    super.initState();
+    final authUser = ref.read(authProvider).user;
+    final currentName = ref.read(onboardingProvider).fullName;
+    if (currentName.isEmpty && authUser != null && authUser.name.isNotEmpty) {
+      ref.read(onboardingProvider.notifier).setFullName(authUser.name);
+      _nameController.text = authUser.name;
+    } else if (currentName.isNotEmpty) {
+      _nameController.text = currentName;
+    }
+
+    final currentEmail = ref.read(onboardingProvider).email;
+    if (currentEmail.isEmpty && authUser != null && authUser.email.isNotEmpty) {
+      ref.read(onboardingProvider.notifier).setEmail(authUser.email);
+      _emailController.text = authUser.email;
+    } else if (currentEmail.isNotEmpty) {
+      _emailController.text = currentEmail;
+    }
+
+    final currentDob = ref.read(onboardingProvider).dateOfBirth;
+    if (currentDob.isEmpty && authUser != null && authUser.dateOfBirth != null && authUser.dateOfBirth!.isNotEmpty) {
+      ref.read(onboardingProvider.notifier).setDateOfBirth(authUser.dateOfBirth!);
+    }
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
@@ -45,9 +75,17 @@ class _OnboardingSportAgeScreenState extends ConsumerState<OnboardingSportAgeScr
 
   Future<void> _pickDob() async {
     final today = DateTime.now();
+    final onboarding = ref.read(onboardingProvider);
+    DateTime initialDate = DateTime(today.year - 14);
+    if (onboarding.dateOfBirth.isNotEmpty) {
+      final parsed = DateTime.tryParse(onboarding.dateOfBirth);
+      if (parsed != null && parsed.isBefore(today)) {
+        initialDate = parsed;
+      }
+    }
     final picked = await showDatePicker(
       context: context,
-      initialDate: DateTime(today.year - 14),
+      initialDate: initialDate,
       firstDate: DateTime(1950),
       lastDate: today,
     );
@@ -67,6 +105,9 @@ class _OnboardingSportAgeScreenState extends ConsumerState<OnboardingSportAgeScr
     if (_nameController.text != onboarding.fullName) {
       _nameController.text = onboarding.fullName;
       _nameController.selection = TextSelection.fromPosition(TextPosition(offset: _nameController.text.length));
+    }
+    if (_emailController.text != onboarding.email) {
+      _emailController.text = onboarding.email;
     }
 
     final canContinue = onboarding.fullName.trim().isNotEmpty &&
@@ -138,6 +179,30 @@ class _OnboardingSportAgeScreenState extends ConsumerState<OnboardingSportAgeScr
                     ),
                     const SizedBox(height: 20),
 
+                    Text('Email Address', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _emailController,
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        hintText: 'Email address',
+                        prefixIcon: const Icon(LucideIcons.mail, size: 18, color: AppColors.textSecondary),
+                        suffixIcon: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          margin: const EdgeInsets.only(right: 8),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(LucideIcons.checkCircle, size: 16, color: Color(0xFF10B981)),
+                              const SizedBox(width: 4),
+                              Text('Verified', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF10B981))),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
                     Text('Date of Birth', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                     const SizedBox(height: 8),
                     GestureDetector(
@@ -156,7 +221,9 @@ class _OnboardingSportAgeScreenState extends ConsumerState<OnboardingSportAgeScr
                             const Icon(LucideIcons.calendarDays, color: AppColors.textSecondary, size: 18),
                             const SizedBox(width: 10),
                             Text(
-                              onboarding.dateOfBirth.isEmpty ? 'Select date of birth' : onboarding.dateOfBirth,
+                              onboarding.dateOfBirth.isEmpty
+                                  ? 'Select date of birth (DD-MM-YYYY)'
+                                  : DateFormatUtils.formatDdMmYyyy(onboarding.dateOfBirth),
                               style: GoogleFonts.inter(
                                 fontSize: 14,
                                 color: onboarding.dateOfBirth.isEmpty ? AppColors.textTertiary : AppColors.textPrimary,

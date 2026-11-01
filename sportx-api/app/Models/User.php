@@ -102,6 +102,11 @@ class User extends Authenticatable
             ->exists();
     }
 
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return $this->socialAccounts()->whereNotNull('avatar_url')->value('avatar_url');
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';

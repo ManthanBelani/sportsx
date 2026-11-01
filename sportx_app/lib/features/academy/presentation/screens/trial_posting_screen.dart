@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/academy/presentation/providers/academy_provider.dart';
 import 'package:sportx_app/shared/providers/meta_provider.dart';
@@ -56,7 +57,7 @@ class _TrialPostingScreenState extends ConsumerState<TrialPostingScreen> {
   String _two(int n) => n.toString().padLeft(2, '0');
 
   String get _dateLabel =>
-      _eventDate == null ? '' : '${_eventDate!.day}/${_eventDate!.month}/${_eventDate!.year}';
+      _eventDate == null ? '' : DateFormatUtils.formatDdMmYyyy(_eventDate);
 
   String get _timeLabel => _eventTime == null
       ? ''
@@ -237,7 +238,7 @@ class _TrialPostingScreenState extends ConsumerState<TrialPostingScreen> {
                 controller: TextEditingController(
                     text: _deadline == null
                         ? ''
-                        : '${_deadline!.day}/${_deadline!.month}/${_deadline!.year}'),
+                        : DateFormatUtils.formatDdMmYyyy(_deadline)),
                 decoration: _dec('Select deadline date', icon: LucideIcons.calendar),
                 onTap: () => _pickDate(isDeadline: true),
               ),

@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/connections/presentation/providers/connections_provider.dart';
-import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/chat/presentation/providers/chat_provider.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
@@ -145,7 +144,7 @@ class _MyConnectionsScreenState extends ConsumerState<MyConnectionsScreen> {
           if (chatId != null) {
             context.push('/chat-screen', extra: {'id': chatId, 'name': connection.other.name, 'avatar': ''});
           } else if (err != 'cancelled') {
-            SnackBarUtils.showError(context, err ?? 'Could not open chat');
+            await handleChatStartError(context, err);
           }
         },
       ),

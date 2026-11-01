@@ -4,6 +4,18 @@
   <span class="header-badge">Total sent: {{ number_format($sent['_total'] ?? $sent->sum()) }}</span>
 @endsection
 
+@push('styles')
+<style>
+  @media (max-width: 560px) {
+    .card-header { flex-wrap: wrap; gap: 8px; }
+    form .form-row { flex-direction: column; }
+    form .form-row .form-group { width: 100%; }
+    #testNotifyForm > div[style*="flex"] { flex-wrap: wrap; }
+    #testNotifyForm button.btn { width: 100%; justify-content: center; }
+  }
+</style>
+@endpush
+
 @section('content')
   <!-- Test Notification Card -->
   <div class="card" style="border: 1px solid #93c5fd; background: linear-gradient(to bottom, #f8fafc, #ffffff); margin-bottom: 24px;">

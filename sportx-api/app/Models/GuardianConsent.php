@@ -25,10 +25,16 @@ class GuardianConsent extends Model
 
     public const RELATIONSHIPS = ['parent', 'guardian', 'sibling', 'other'];
 
+    public const METHOD_OTP = 'otp';
+
+    public const METHOD_LINK = 'link';
+
     protected $fillable = [
         'athlete_user_id',
         'guardian_name',
         'guardian_phone',
+        'guardian_email',
+        'verification_method',
         'relationship',
         'consent_status',
         'allow_messages',

@@ -60,6 +60,11 @@ Route::prefix('panel')->name('admin.')->group(function () {
         Route::get('/sponsors', [AdminPanelController::class, 'sponsors'])->name('sponsors');
         Route::post('/sponsors/{id}', [AdminPanelController::class, 'sponsorAction'])->name('sponsors.action');
 
+        // Verification Badges (blue-check review queue)
+        Route::get('/verification', [AdminPanelController::class, 'verificationQueue'])->name('verification');
+        Route::post('/verification/{id}/approve', [AdminPanelController::class, 'verificationApprove'])->name('verification.approve');
+        Route::post('/verification/{id}/reject', [AdminPanelController::class, 'verificationReject'])->name('verification.reject');
+
         // Approvals
         Route::get('/approvals', [AdminPanelController::class, 'approvals'])->name('approvals');
         Route::post('/approvals/users/{id}/approve', [AdminPanelController::class, 'approveUser'])->name('approvals.users.approve');

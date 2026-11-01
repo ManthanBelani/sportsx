@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/features/opportunity/presentation/providers/opportunity_provider.dart';
@@ -117,7 +118,7 @@ class _OpportunityDetailScreenState extends ConsumerState<OpportunityDetailScree
                   style: GoogleFonts.sora(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.ink)),
               if (o.deadline != null) ...[
                 const SizedBox(height: 6),
-                Text('Apply by ${o.deadline!.day}/${o.deadline!.month}/${o.deadline!.year}',
+                Text('Apply by ${DateFormatUtils.formatDdMmYyyy(o.deadline)}',
                     style: const TextStyle(fontSize: 13, color: AppColors.error, fontWeight: FontWeight.w600)),
               ],
               if (o.description != null && o.description!.isNotEmpty) ...[

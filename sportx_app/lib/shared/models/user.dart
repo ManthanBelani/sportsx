@@ -15,6 +15,7 @@ class User {
   final String name;
   final String email;
   final String? phone;
+  final String? dateOfBirth;
   final String role;
   final String? profilePhotoUrl;
   final bool isVerified;
@@ -25,11 +26,36 @@ class User {
     required this.name,
     required this.email,
     this.phone,
+    this.dateOfBirth,
     required this.role,
     this.profilePhotoUrl,
     this.isVerified = false,
     this.socialLinks = const {},
   });
+
+  User copyWith({
+    int? id,
+    String? name,
+    String? email,
+    String? phone,
+    String? dateOfBirth,
+    String? role,
+    String? profilePhotoUrl,
+    bool? isVerified,
+    Map<String, String>? socialLinks,
+  }) {
+    return User(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      role: role ?? this.role,
+      profilePhotoUrl: profilePhotoUrl ?? this.profilePhotoUrl,
+      isVerified: isVerified ?? this.isVerified,
+      socialLinks: socialLinks ?? this.socialLinks,
+    );
+  }
 
   factory User.fromJson(Map<String, dynamic> json) {
     final rawLinks = json['social_links'];
@@ -45,8 +71,9 @@ class User {
       name: json['name'] as String? ?? '',
       email: json['email'] as String,
       phone: json['phone'] as String?,
+      dateOfBirth: json['date_of_birth'] as String?,
       role: json['role'] as String? ?? 'athlete',
-      profilePhotoUrl: MediaUtils.resolveNullable(json['profile_photo_url'] as String?),
+      profilePhotoUrl: MediaUtils.resolveNullable((json['profile_photo_url'] ?? json['avatar_url']) as String?),
       isVerified: json['is_verified'] == true || json['is_verified'] == 1,
       socialLinks: links,
     );

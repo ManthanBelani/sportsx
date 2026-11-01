@@ -664,10 +664,10 @@ class _TalentScoutProfileEditScreenState extends ConsumerState<TalentScoutProfil
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(onPressed: () => Navigator.of(context, rootNavigator: true).pop(), child: const Text('Cancel')),
         TextButton(
           onPressed: () async {
-            Navigator.pop(context);
+            Navigator.of(context, rootNavigator: true).pop();
             final ok = await ref.read(settingsProvider.notifier).deleteAccount(pw.text);
             if (ok && context.mounted) SnackBarUtils.showSuccess(context, 'Account deleted');
           },

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:sportx_app/features/onboarding/presentation/providers/onboarding_provider.dart';
 import 'package:sportx_app/shared/providers/role_config_provider.dart';
 import 'package:sportx_app/theme/colors.dart';
 
@@ -43,7 +45,11 @@ class _GoogleSignInButtonState extends ConsumerState<GoogleSignInButton> {
 
       final google = GoogleSignIn(
         serverClientId: serverId,
-        scopes: const ['email', 'profile'],
+        scopes: const [
+          'email',
+          'profile',
+          'https://www.googleapis.com/auth/user.birthday.read',
+        ],
       );
       final account = await google.signIn();
       if (account == null) {
@@ -61,11 +67,45 @@ class _GoogleSignInButtonState extends ConsumerState<GoogleSignInButton> {
         }
         return;
       }
+
+      // Best-effort birthday retrieval from Google People API
+      String? googleDob;
+      try {
+        final authHeaders = await account.authHeaders;
+        final peopleRes = await Dio().get<Map<String, dynamic>>(
+          'https://people.googleapis.com/v1/people/me?personFields=birthdays',
+          options: Options(
+            headers: authHeaders,
+            receiveTimeout: const Duration(seconds: 4),
+            sendTimeout: const Duration(seconds: 4),
+          ),
+        );
+        final birthdays = peopleRes.data?['birthdays'] as List<dynamic>?;
+        if (birthdays != null) {
+          for (final b in birthdays) {
+            final date = (b as Map<String, dynamic>?)?['date'] as Map<String, dynamic>?;
+            if (date != null && date['year'] != null && date['month'] != null && date['day'] != null) {
+              final y = date['year'];
+              final m = date['month'].toString().padLeft(2, '0');
+              final d = date['day'].toString().padLeft(2, '0');
+              googleDob = '$y-$m-$d';
+              break;
+            }
+          }
+        }
+      } catch (_) {
+        // Fallback silently if People API is unconfigured or user hasn't set birthday
+      }
+
+      if (googleDob != null) {
+        ref.read(onboardingProvider.notifier).setDateOfBirth(googleDob);
+      }
+
       // Only send role on sign-up, not on login
-      final roleToSend = widget.isSignUp ? widget.role : null;
+      final roleToSend = (widget.isSignUp || widget.role != null) ? widget.role : null;
       await ref
           .read(authProvider.notifier)
-          .signInWithGoogle(idToken: idToken, role: roleToSend);
+          .signInWithGoogle(idToken: idToken, role: roleToSend, dateOfBirth: googleDob);
       if (!mounted) return;
       final state = ref.read(authProvider);
       if (state.status == AuthStatus.authenticated) {

@@ -33,7 +33,7 @@ class _TalentScoutConnectionsScreenState extends ConsumerState<TalentScoutConnec
     if (chatId != null) {
       context.push('/chat-screen', extra: {'id': chatId, 'name': name, 'avatar': photoUrl});
     } else {
-      SnackBarUtils.showError(context, err ?? 'Could not open chat');
+      await handleChatStartError(context, err);
     }
   }
 

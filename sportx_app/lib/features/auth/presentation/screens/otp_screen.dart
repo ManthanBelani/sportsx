@@ -13,7 +13,15 @@ import 'package:sportx_app/shared/providers/role_config_provider.dart';
 class OtpScreen extends ConsumerStatefulWidget {
   final String email;
   final String role;
-  const OtpScreen({super.key, required this.email, required this.role});
+  final bool isLogin;
+  final String? password;
+  const OtpScreen({
+    super.key,
+    required this.email,
+    this.role = 'athlete',
+    this.isLogin = false,
+    this.password,
+  });
 
   @override
   ConsumerState<OtpScreen> createState() => _OtpScreenState();
@@ -59,6 +67,22 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
 
   Future<void> _verify() async {
     if (_otp.length != 6) return;
+    if (widget.isLogin) {
+      final success = await ref.read(authProvider.notifier).otpLoginVerify(
+            email: widget.email,
+            code: _otp,
+          );
+      final state = ref.read(authProvider);
+      if (mounted) {
+        if (success && state.status == AuthStatus.authenticated) {
+          context.go(ref.read(roleConfigProvider).homeRoute);
+        } else if (state.status == AuthStatus.error) {
+          SnackBarUtils.showError(context, state.error ?? 'Invalid login code');
+        }
+      }
+      return;
+    }
+
     final name = widget.email.split('@').first;
     await ref.read(authProvider.notifier).verifyOtp(
           email: widget.email,
@@ -66,6 +90,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
           purpose: 'signup',
           name: name,
           role: widget.role,
+          password: widget.password,
         );
     final state = ref.read(authProvider);
     if (mounted) {
@@ -79,6 +104,20 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
 
   Future<void> _resend() async {
     if (_secondsLeft > 0) return;
+    if (widget.isLogin) {
+      final success = await ref.read(authProvider.notifier).otpLoginRequest(widget.email);
+      if (mounted) {
+        if (success) {
+          SnackBarUtils.showSuccess(context, 'Login code resent');
+          _startTimer();
+        } else {
+          final state = ref.read(authProvider);
+          SnackBarUtils.showError(context, state.error ?? 'Failed to resend login code');
+        }
+      }
+      return;
+    }
+
     await ref.read(authProvider.notifier).resendOtp(widget.email, purpose: 'signup');
     if (mounted) {
       SnackBarUtils.showSuccess(context, 'OTP resent');
@@ -107,7 +146,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
           },
         ),
         title: Text(
-          'Verify Account',
+          widget.isLogin ? 'Log In with Code' : 'Verify Account',
           style: GoogleFonts.sora(
             fontSize: 17,
             fontWeight: FontWeight.w700,
@@ -148,7 +187,9 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               const SizedBox(height: 8),
               Text.rich(
                 TextSpan(
-                  text: 'We sent a verification code to\n',
+                  text: widget.isLogin
+                      ? 'We sent a 6-digit login code to\n'
+                      : 'We sent a verification code to\n',
                   style: GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary, height: 1.5),
                   children: [
                     TextSpan(
@@ -161,32 +202,45 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               ),
               const SizedBox(height: 32),
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(6, (i) => Padding(
-                  padding: EdgeInsets.only(right: i < 5 ? 12 : 0),
-                  child: SizedBox(
-                    width: 48,
-                    height: 56,
-                    child: TextField(
-                      controller: _controllers[i],
-                      focusNode: _focusNodes[i],
-                      textAlign: TextAlign.center,
-                      keyboardType: TextInputType.number,
-                      maxLength: 1,
-                      style: GoogleFonts.sora(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
-                      decoration: const InputDecoration(
-                        counterText: '',
-                        contentPadding: EdgeInsets.zero,
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final availableWidth = constraints.maxWidth;
+                  final gap = availableWidth < 340 ? 6.0 : 10.0;
+                  final totalGaps = 5 * gap;
+                  final boxWidth = ((availableWidth - totalGaps) / 6).clamp(32.0, 48.0);
+
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(6, (i) => Padding(
+                      padding: EdgeInsets.only(right: i < 5 ? gap : 0),
+                      child: SizedBox(
+                        width: boxWidth,
+                        height: 56,
+                        child: TextField(
+                          controller: _controllers[i],
+                          focusNode: _focusNodes[i],
+                          textAlign: TextAlign.center,
+                          keyboardType: TextInputType.number,
+                          maxLength: 1,
+                          style: GoogleFonts.sora(
+                            fontSize: boxWidth < 42 ? 18 : 22,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                          decoration: const InputDecoration(
+                            counterText: '',
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                          onChanged: (v) {
+                            if (v.isNotEmpty && i < 5) _focusNodes[i + 1].requestFocus();
+                            if (v.isEmpty && i > 0) _focusNodes[i - 1].requestFocus();
+                            setState(() {});
+                          },
+                        ),
                       ),
-                      onChanged: (v) {
-                        if (v.isNotEmpty && i < 5) _focusNodes[i + 1].requestFocus();
-                        if (v.isEmpty && i > 0) _focusNodes[i - 1].requestFocus();
-                        setState(() {});
-                      },
-                    ),
-                  ),
-                )),
+                    )),
+                  );
+                },
               ),
               const SizedBox(height: 24),
 
@@ -225,8 +279,8 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                 Opacity(
                   opacity: canVerify ? 1.0 : 0.5,
                   child: PrimaryButton(
-                    label: 'Verify & Continue',
-                    icon: LucideIcons.shieldCheck,
+                    label: widget.isLogin ? 'Log In' : 'Verify & Continue',
+                    icon: widget.isLogin ? LucideIcons.logIn : LucideIcons.shieldCheck,
                     onPressed: canVerify ? _verify : null,
                   ),
                 ),

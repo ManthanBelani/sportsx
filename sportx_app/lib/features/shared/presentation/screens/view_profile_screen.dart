@@ -299,7 +299,7 @@ class _ViewProfileScreenState extends ConsumerState<ViewProfileScreen> {
           'avatar': _profileData!['profile_photo_url'],
         });
       } else {
-        SnackBarUtils.showError(context, err ?? 'Could not open chat');
+        await handleChatStartError(context, err);
       }
     } finally {
       if (mounted) setState(() => _openingChat = false);

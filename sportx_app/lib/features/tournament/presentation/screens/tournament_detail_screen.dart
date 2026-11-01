@@ -7,6 +7,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/core/role_config.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/shared/presentation/widgets/async_state_view.dart';
 import 'package:sportx_app/shared/presentation/widgets/detail_page_template.dart';
@@ -20,10 +21,10 @@ class TournamentDetailScreen extends ConsumerWidget {
   const TournamentDetailScreen({super.key, required this.id});
 
   String _dates(DateTime s, DateTime e) {
-    if (s.month == e.month && s.year == e.year) {
-      return '${s.day}–${e.day}/${s.month}/${s.year}';
+    if (s.year == e.year && s.month == e.month && s.day == e.day) {
+      return DateFormatUtils.formatDdMmYyyy(s);
     }
-    return '${s.day}/${s.month}–${e.day}/${e.month}/${e.year}';
+    return '${DateFormatUtils.formatDdMmYyyy(s)} – ${DateFormatUtils.formatDdMmYyyy(e)}';
   }
 
   /// Opens the organizer's own registration page and records the click.

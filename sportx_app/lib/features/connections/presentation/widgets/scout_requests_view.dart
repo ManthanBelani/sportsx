@@ -211,7 +211,7 @@ class _ScoutRequestsViewState extends ConsumerState<ScoutRequestsView> {
                     context.push('/chat-screen',
                         extra: {'id': chatId, 'name': name, 'avatar': photoUrl ?? ''});
                   } else {
-                    SnackBarUtils.showError(context, err ?? 'Could not open chat');
+                    await handleChatStartError(context, err);
                   }
                 },
                 icon: const Icon(LucideIcons.messageCircle, size: 16),

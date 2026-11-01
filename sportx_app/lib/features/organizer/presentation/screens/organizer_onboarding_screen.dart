@@ -69,6 +69,15 @@ class _OrganizerOnboardingScreenState extends ConsumerState<OrganizerOnboardingS
   }
 
   @override
+  void initState() {
+    super.initState();
+    final user = ref.read(authProvider).user;
+    if (user != null && user.name.isNotEmpty) {
+      _name.text = user.name;
+    }
+  }
+
+  @override
   void dispose(){ _name.dispose(); _regNo.dispose(); _website.dispose(); _desc.dispose(); super.dispose(); }
 
   Future<void> _pickLogo() async {

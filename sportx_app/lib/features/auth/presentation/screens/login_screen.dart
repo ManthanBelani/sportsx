@@ -46,16 +46,53 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
   Future<void> _login() async {
-    await ref.read(authProvider.notifier).login(
-      email: _emailController.text.trim(),
-      password: _passwordController.text,
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    if (email.isEmpty) {
+      SnackBarUtils.showError(context, 'Please enter your email');
+      return;
+    }
+    if (password.isEmpty) {
+      SnackBarUtils.showError(context, 'Please enter your password');
+      return;
+    }
+
+    final result = await ref.read(authProvider.notifier).login(
+      email: email,
+      password: password,
     );
     if (!mounted) return;
-    final state = ref.read(authProvider);
-    if (state.status == AuthStatus.authenticated) {
+    if (result == LoginResult.otpRequired) {
+      SnackBarUtils.showSuccess(context, 'Login code sent to your email');
+      context.push('/verify-otp', extra: {
+        'email': email,
+        'isLogin': true,
+      });
+    } else if (result == LoginResult.authenticated) {
       context.go(ref.read(roleConfigProvider).homeRoute);
-    } else if (state.status == AuthStatus.error) {
+    } else {
+      final state = ref.read(authProvider);
       SnackBarUtils.showError(context, state.error ?? 'Login failed');
+    }
+  }
+
+  Future<void> _loginWithOtp() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      SnackBarUtils.showError(context, 'Enter your email first to receive a login code');
+      return;
+    }
+    final success = await ref.read(authProvider.notifier).otpLoginRequest(email);
+    if (!mounted) return;
+    if (success) {
+      SnackBarUtils.showSuccess(context, 'Login code sent to your email');
+      context.push('/verify-otp', extra: {
+        'email': email,
+        'isLogin': true,
+      });
+    } else {
+      final state = ref.read(authProvider);
+      SnackBarUtils.showError(context, state.error ?? 'Failed to send login code');
     }
   }
 
@@ -194,6 +231,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       icon: LucideIcons.arrowRight,
                       onPressed: _login,
                     ),
+                  SizedBox(height: r.vs(16)),
+                  Row(
+                    children: [
+                      const Expanded(child: Divider(color: AppColors.border)),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: r.ws(12)),
+                        child: Text(
+                          'OR',
+                          style: GoogleFonts.inter(
+                            fontSize: r.ws(12),
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                      const Expanded(child: Divider(color: AppColors.border)),
+                    ],
+                  ),
+                  SizedBox(height: r.vs(16)),
+                  SecondaryButton(
+                    label: 'Continue with email code',
+                    icon: LucideIcons.mail,
+                    onPressed: isLoading ? null : _loginWithOtp,
+                  ),
                   SizedBox(height: r.vs(24)),
                   const GoogleSignInButton(),
                   SizedBox(height: r.vs(24)),

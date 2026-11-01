@@ -70,7 +70,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '241021895160',
     projectId: 'sportx-8e0ec',
     storageBucket: 'sportx-8e0ec.firebasestorage.app',
-    androidClientId: '241021895160-mo30evraqip8l52407v0bnitdpegeinv.apps.googleusercontent.com',
+    androidClientId: '241021895160-0muppeukp5l4cjftotjf8bnsb70nleii.apps.googleusercontent.com',
     iosClientId: '241021895160-jab1eqggnqgeio3dd66jlmpgnmajb9hi.apps.googleusercontent.com',
     iosBundleId: 'com.sportx.application',
   );

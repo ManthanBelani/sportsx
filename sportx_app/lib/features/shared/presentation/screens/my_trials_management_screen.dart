@@ -6,6 +6,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/academy/presentation/providers/academy_provider.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/core/role_config.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/shared/models/models.dart';
 import 'package:sportx_app/theme/colors.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
@@ -112,7 +113,7 @@ class MyTrialsManagementScreen extends ConsumerWidget {
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary)),
                 const SizedBox(height: 4),
                 if (trial.trialDate != null)
-                  Text('${trial.trialDate!.day}/${trial.trialDate!.month}/${trial.trialDate!.year} • ${trial.filledSpots ?? 0} registrations',
+                  Text('${DateFormatUtils.formatDdMmYyyy(trial.trialDate)} • ${trial.filledSpots ?? 0} registrations',
                       style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                 const SizedBox(height: 6),
                 Container(

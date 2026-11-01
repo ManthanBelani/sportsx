@@ -7,13 +7,15 @@
 @section('content')
 @push('styles')
 <style>
-  .approval-tabs{display:flex;gap:4px;margin-bottom:20px;background:#fff;padding:4px;border-radius:10px;border:1px solid #e5e7eb;width:fit-content;}
-  .approval-tab{padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;color:#6b7280;display:flex;gap:6px;align-items:center;}
+  .approval-tabs{display:flex;gap:4px;margin-bottom:20px;background:#fff;padding:4px;border-radius:10px;border:1px solid #e5e7eb;width:fit-content;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .approval-tabs::-webkit-scrollbar{display:none;}
+  .approval-tab{padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;color:#6b7280;display:flex;gap:6px;align-items:center;white-space:nowrap;}
   .approval-tab.active{background:#111;color:#fff;}
   .approval-tab .cnt{background:rgba(0,0,0,0.08);padding:2px 7px;border-radius:20px;font-size:11px;}
   .approval-tab.active .cnt{background:rgba(255,255,255,0.2);}
   .approval-pane{display:none;}
   .approval-pane.active{display:block;}
+  @media(max-width:560px){ .approval-tabs{width:100%;} }
 </style>
 @endpush
 

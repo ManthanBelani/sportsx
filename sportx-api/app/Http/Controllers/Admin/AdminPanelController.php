@@ -8,6 +8,7 @@ use App\Models\AgeGroup;
 use App\Models\City;
 use App\Models\CoachProfile;
 use App\Models\ListingReport;
+use App\Models\MediaItem;
 use App\Models\Scholarship;
 use App\Models\Sport;
 use App\Models\Sponsorship;
@@ -15,6 +16,8 @@ use App\Models\SportsVenue;
 use App\Models\Tournament;
 use App\Models\Trial;
 use App\Models\User;
+use App\Models\VerificationRequest;
+use App\Services\NotificationService;
 use App\Support\PlatformSettings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -454,6 +457,79 @@ class AdminPanelController extends Controller
         $sponsorship->save();
 
         return back()->with('success', 'Sponsorship '.($data['action'] === 'approve' ? 'approved' : 'rejected').'.');
+    }
+
+    // ── Verification Badges ───────────────────────────────────────────────────
+
+    public function verificationQueue(Request $request)
+    {
+        $status = $request->get('status', 'pending');
+
+        $query = VerificationRequest::query()->with(['requester', 'verifiable', 'reviewer']);
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+        $requests = $query->latest()->paginate(20)->appends(['status' => $status]);
+
+        $counts = [
+            'pending' => VerificationRequest::where('status', 'pending')->count(),
+            'approved' => VerificationRequest::where('status', 'approved')->count(),
+            'rejected' => VerificationRequest::where('status', 'rejected')->count(),
+            'all' => VerificationRequest::count(),
+        ];
+
+        // Resolve the submitted proof documents for the current page in one query.
+        $proofIds = collect($requests->items())->flatMap(fn ($v) => $v->proof_media_ids ?? [])->filter()->unique();
+        $proofDocs = MediaItem::whereIn('id', $proofIds)->get()->keyBy('id');
+
+        return view('admin.verification', compact('requests', 'status', 'counts', 'proofDocs'));
+    }
+
+    public function verificationApprove($id)
+    {
+        $verification = VerificationRequest::findOrFail($id);
+
+        if (! $verification->isPending()) {
+            return back()->with('error', 'This request has already been reviewed.');
+        }
+
+        $verification->approve(Auth::user());
+
+        // Hard override: same notification the API path sends.
+        app(NotificationService::class)->create([
+            'user_id' => $verification->requester_user_id,
+            'type' => 'account_action',
+            'title' => 'Your verification was approved',
+            'body' => 'Your verified badge is now visible on your profile.',
+            'action_url' => '/verification',
+        ]);
+
+        return back()->with('success', 'Verification approved. Badge granted to '.$verification->requester?->name.'.');
+    }
+
+    public function verificationReject(Request $request, $id)
+    {
+        $data = $request->validate([
+            'reason' => 'required|string|max:1000',
+        ]);
+
+        $verification = VerificationRequest::findOrFail($id);
+
+        if (! $verification->isPending()) {
+            return back()->with('error', 'This request has already been reviewed.');
+        }
+
+        $verification->reject(Auth::user(), $data['reason']);
+
+        app(NotificationService::class)->create([
+            'user_id' => $verification->requester_user_id,
+            'type' => 'account_action',
+            'title' => 'Your verification was declined',
+            'body' => $data['reason'],
+            'action_url' => '/verification',
+        ]);
+
+        return back()->with('success', 'Verification rejected. The user has been notified with your reason.');
     }
 
     // ── Analytics ──────────────────────────────────────────────────────────────

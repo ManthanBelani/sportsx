@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_cards.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
@@ -120,8 +121,7 @@ class _CoachGoLiveScreenState extends State<CoachGoLiveScreen> {
                     child: Text(
                       _when == null
                           ? 'Pick date & time'
-                          : '${_when!.day}/${_when!.month}/${_when!.year} · '
-                              '${_when!.hour.toString().padLeft(2, '0')}:${_when!.minute.toString().padLeft(2, '0')}',
+                          : DateFormatUtils.formatDdMmYyyyTime(_when),
                       style: GoogleFonts.inter(
                           fontSize: 13.5, color: AppColors.ink),
                     ),

@@ -279,7 +279,9 @@ String _humanizeTime(String raw) {
   if (diff.inMinutes < 60) return '${diff.inMinutes}m';
   if (diff.inHours < 24) return '${diff.inHours}h';
   if (diff.inDays < 7) return '${diff.inDays}d';
-  return '${dt.day}/${dt.month}';
+  final d = dt.day.toString().padLeft(2, '0');
+  final m = dt.month.toString().padLeft(2, '0');
+  return '$d-$m-${dt.year}';
 }
 
 String _compactNumber(int n) {

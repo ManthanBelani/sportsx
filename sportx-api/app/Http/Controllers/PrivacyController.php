@@ -21,7 +21,7 @@ class PrivacyController extends Controller
      * Get default privacy settings for a user.
      * Minors default to more restrictive settings.
      */
-    public function defaultsFor(User $user): array
+    public static function defaultsFor(User $user): array
     {
         $isMinor = $user->isMinor();
         return [
@@ -85,7 +85,7 @@ class PrivacyController extends Controller
     /**
      * @return array{profile_visibility: string, who_can_message: string, who_can_connect: string}
      */
-    public function settings($user): array
+    public static function settings($user): array
     {
         $stored = $user->privacy_settings;
 
@@ -93,7 +93,7 @@ class PrivacyController extends Controller
             $stored = json_decode($stored, true);
         }
 
-        $defaults = $this->defaultsFor($user);
+        $defaults = self::defaultsFor($user);
 
         return array_merge($defaults, is_array($stored) ? $stored : []);
     }

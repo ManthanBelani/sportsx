@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
@@ -99,7 +100,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         const SizedBox(width: 12),
                         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                           Text(post.authorName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: AppColors.textPrimary)),
-                          if (post.createdAt != null) Text(post.createdAt!, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                          if (post.createdAt != null) Text(DateFormatUtils.formatDdMmYyyyTime(post.createdAt), style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
                         ])),
                       ]),
                     ),

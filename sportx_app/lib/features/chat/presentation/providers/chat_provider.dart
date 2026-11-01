@@ -1,8 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/safety_reminder.dart';
+import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 
 class ConversationItem {
   final String id;
@@ -69,10 +72,6 @@ class ChatMessage {
 }
 
 const _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const _months = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-];
 
 /// Short human time for chat lists/bubbles:
 /// today → 10:42 · yesterday → Yesterday · <7d → Tue · this year → 12 Oct · older → 12/10/25.
@@ -87,11 +86,13 @@ String shortChatTime(String? raw) {
   final diff = today.difference(day).inDays;
   final hh = local.hour.toString().padLeft(2, '0');
   final mm = local.minute.toString().padLeft(2, '0');
+  final d = local.day.toString().padLeft(2, '0');
+  final m = local.month.toString().padLeft(2, '0');
+  final y = local.year.toString();
   if (diff == 0) return '$hh:$mm';
   if (diff == 1) return 'Yesterday';
   if (diff < 7) return _weekdays[local.weekday - 1];
-  if (local.year == now.year) return '${local.day} ${_months[local.month - 1]}';
-  return '${local.day}/${local.month}/${local.year % 100}';
+  return '$d-$m-$y';
 }
 
 final conversationsProvider = FutureProvider<List<ConversationItem>>((ref) async {
@@ -135,11 +136,35 @@ Future<(String?, String?)> startConversationResult(WidgetRef ref, int participan
   } on DioException catch (e) {
     final code = e.response?.data?['error']?['code']?.toString();
     final message = e.response?.data?['error']?['message']?.toString();
+    if (code == 'GUARDIAN_REQUIRED') {
+      return (null, 'GUARDIAN_REQUIRED: ${message ?? 'Minor chat requires guardian consent.'}');
+    }
     if (code == 'CONNECTION_REQUIRED') {
       return (null, message ?? 'Connect and get accepted before chatting.');
     }
     return (null, message ?? 'Could not start chat.');
   }
+}
+
+/// Helper to handle chat initiation errors. If [err] is GUARDIAN_REQUIRED,
+/// displays an explanatory dialog that routes the user to /guardian-consent.
+/// Otherwise displays a snackbar with the error.
+Future<void> handleChatStartError(BuildContext context, String? err) async {
+  if (!context.mounted || err == null) return;
+  if (err.startsWith('GUARDIAN_REQUIRED') || err.contains('guardian consent')) {
+    final proceed = await showConfirmDialog(
+      context: context,
+      title: 'Parental Consent Required',
+      message: 'Athletes under 18 must have verified parental or guardian consent before chatting with other members. Would you like to provide or verify guardian consent now?',
+      confirmText: 'Verify Consent',
+      cancelText: 'Not Now',
+    );
+    if (proceed == true && context.mounted) {
+      context.push('/guardian-consent');
+    }
+    return;
+  }
+  SnackBarUtils.showError(context, err);
 }
 
 /// Starts a conversation with safety reminder for minors.

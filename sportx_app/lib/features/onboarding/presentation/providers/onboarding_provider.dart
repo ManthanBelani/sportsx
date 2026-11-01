@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sportx_app/core/utils/api_client.dart';
+import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 
 class OnboardingState {
   final Set<int> selectedSportIds;
@@ -8,6 +9,7 @@ class OnboardingState {
   final String? selectedSkillLevel;
   final int? selectedCityId;
   final String fullName;
+  final String email;
   final String dateOfBirth; // ISO yyyy-MM-dd
   final String gender; // male | female
   final bool isLoading;
@@ -19,6 +21,7 @@ class OnboardingState {
     this.selectedSkillLevel,
     this.selectedCityId,
     this.fullName = '',
+    this.email = '',
     this.dateOfBirth = '',
     this.gender = '',
     this.isLoading = false,
@@ -31,6 +34,7 @@ class OnboardingState {
     String? selectedSkillLevel,
     int? selectedCityId,
     String? fullName,
+    String? email,
     String? dateOfBirth,
     String? gender,
     bool? isLoading,
@@ -42,6 +46,7 @@ class OnboardingState {
       selectedSkillLevel: selectedSkillLevel ?? this.selectedSkillLevel,
       selectedCityId: selectedCityId ?? this.selectedCityId,
       fullName: fullName ?? this.fullName,
+      email: email ?? this.email,
       dateOfBirth: dateOfBirth ?? this.dateOfBirth,
       gender: gender ?? this.gender,
       isLoading: isLoading ?? this.isLoading,
@@ -52,6 +57,7 @@ class OnboardingState {
   Map<String, dynamic> toAthletePayload() {
     return {
       'full_name': fullName,
+      if (email.isNotEmpty) 'email': email,
       'date_of_birth': dateOfBirth,
       'gender': gender,
       'sports': selectedSportIds.toList(),
@@ -65,7 +71,12 @@ class OnboardingState {
 class OnboardingNotifier extends StateNotifier<OnboardingState> {
   final Dio _dio;
 
-  OnboardingNotifier(this._dio) : super(OnboardingState());
+  OnboardingNotifier(this._dio, {String? initialFullName, String? initialEmail, String? initialDob})
+      : super(OnboardingState(
+          fullName: initialFullName ?? '',
+          email: initialEmail ?? '',
+          dateOfBirth: initialDob ?? '',
+        ));
 
   void setSports(Set<int> ids) {
     state = state.copyWith(selectedSportIds: ids);
@@ -85,6 +96,10 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
 
   void setFullName(String name) {
     state = state.copyWith(fullName: name);
+  }
+
+  void setEmail(String email) {
+    state = state.copyWith(email: email);
   }
 
   void setDateOfBirth(String dob) {
@@ -119,11 +134,21 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
     }
   }
 
-  void reset() {
-    state = OnboardingState();
+  void reset({String? initialFullName, String? initialEmail, String? initialDob}) {
+    state = OnboardingState(
+      fullName: initialFullName ?? '',
+      email: initialEmail ?? '',
+      dateOfBirth: initialDob ?? '',
+    );
   }
 }
 
 final onboardingProvider = StateNotifierProvider<OnboardingNotifier, OnboardingState>((ref) {
-  return OnboardingNotifier(ref.watch(dioProvider));
+  final user = ref.watch(authProvider).user;
+  return OnboardingNotifier(
+    ref.watch(dioProvider),
+    initialFullName: user?.name,
+    initialEmail: user?.email,
+    initialDob: user?.dateOfBirth,
+  );
 });

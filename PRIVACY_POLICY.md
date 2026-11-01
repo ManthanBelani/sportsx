@@ -1,7 +1,7 @@
 # Privacy Policy — SportX India
 
 **Effective date:** 25 October 2026  
-**Last updated:** 25 October 2026
+**Last updated:** 01 November 2026
 
 ---
 
@@ -26,6 +26,7 @@ We collect only the information necessary to provide, secure, and personalize ou
 
 ### 1.1 Account & Authentication Information
 * **Direct Signup & Login:** Mobile phone number or email address, password (stored strictly as a cryptographic **bcrypt** hash; plaintext passwords are never stored or accessible), and 6-digit One-Time Password (OTP) verification codes.
+* **Passwordless Email-Code Login:** At your option, you may log in without a password by requesting a 6-digit One-Time Password (OTP) delivered to your registered email address. The OTP is cryptographically hashed, rate-limited, expires within minutes, and its verification grants the same secure session token as password login.
 * **Google Sign-In ("Continue with Google"):** When you choose to authenticate via Google, we collect and verify your Google ID token server-side against Google's public JSON Web Key Sets (JWKS). We store your verified email address, full name, profile avatar URL, and Google's stable unique identifier (`sub` claim) in our `social_accounts` record. Any OAuth tokens retained are encrypted at rest using AES-256 encryption. We **do not** request or access private Gmail messages, Google Drive files, or contacts.
 
 ### 1.2 Role-Specific Profile Information
@@ -54,7 +55,9 @@ Depending on your onboarding role, you provide structured profile details:
 * **Content Moderation & Reports:** Reason, description, and metadata submitted when reporting an inappropriate listing, post, message, or user profile.
 
 ### 1.6 Guardian Consent & Information for Minors (Under 18 Years)
-* For athletes under the age of 18, we collect the **Parent or Guardian's full name, mobile phone number, relationship to the minor**, and verifiable consent timestamp via One-Time Password (OTP) verification.
+* For athletes under the age of 18, we collect the **Parent or Guardian's full name, email address, mobile phone number (optional), relationship to the minor**, and verifiable consent details.
+* **Consent verification is email-based:** a secure, cryptographically hashed 6-digit One-Time Password (OTP) is emailed to the guardian's address. The consent is marked verified only when the guardian themselves enters that code, generating an auditable consent record (`consent_status`, `verification_method`, `verified_at` timestamp).
+* The guardian's email address must differ from the minor athlete's own account email; the minor cannot self-consent.
 * Guardian control settings (`allow_messages`, `allow_public_profile`, `leaderboard_name_mode`).
 
 ### 1.7 Automatically Collected Technical & Device Data
@@ -110,7 +113,10 @@ SportX is dedicated to fostering grassroots athletic talent across India while m
 ### 5.1 Verifiable Parental / Guardian Consent Gate
 * Any athlete under the age of 18 (determined by the mandatory Date of Birth field upon registration) is classified as a minor.
 * **Mandatory Consent Gate:** A minor athlete's account remains in a pending, unactivated state until verifiable **Parent or Guardian Consent** is completed.
-* The parent or guardian must provide their full name, relationship to the athlete, and mobile phone number, and must authenticate consent via a secure One-Time Password (OTP) sent to the guardian's contact number.
+* The parent or guardian must provide their full name, relationship to the athlete, and a valid **email address** (the guardian's email must not be the minor's own account email). A mobile phone number may optionally be provided as additional contact metadata.
+* **"Adult action required" — consent is verifiable:** a secure 6-digit One-Time Password (OTP) is emailed to the guardian's address. Consent is approved **only when the guardian personally enters that code** on the device (the app prompts: *"Hand the phone to your parent/guardian"*). Possession of the guardian's email inbox therefore proves an adult authorized the account.
+* **Server-side hard gate:** In-app chat and social messaging for a minor are blocked at the API level until consent is verified; disabling or revoking consent re-locks communications immediately, independent of the app interface.
+* A **confirmation email can be re-sent** on request (rate-limited with a cooldown), and all consent records retain an audit trail (consent status, verification method, verification timestamp).
 
 ### 5.2 Guardian-Routed Communications & Shielded Profiles
 * **Hidden Contact Details:** Personal contact details (phone numbers, email addresses) of minor athletes are strictly hidden from public discovery views.

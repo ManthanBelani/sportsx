@@ -21,6 +21,7 @@ class CoachOnboardingScreen extends ConsumerStatefulWidget {
 class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _contactController = TextEditingController();
   String? _experience;
   final _qualificationController = TextEditingController();
@@ -38,8 +39,26 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
   bool _saving = false;
 
   @override
+  void initState() {
+    super.initState();
+    final user = ref.read(authProvider).user;
+    if (user != null) {
+      if (user.name.isNotEmpty) {
+        _nameController.text = user.name;
+      }
+      if (user.email.isNotEmpty) {
+        _emailController.text = user.email;
+      }
+      if (user.phone != null && user.phone!.isNotEmpty) {
+        _contactController.text = user.phone!;
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
+    _emailController.dispose();
     _contactController.dispose();
     _qualificationController.dispose();
     _feeController.dispose();
@@ -90,6 +109,7 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
         'sport_id': _sportId,
         'city_id': _cityId,
         'contact_number': _contactController.text.trim(),
+        if (_emailController.text.trim().isNotEmpty) 'email': _emailController.text.trim(),
         'experience': _experience ?? '',
         if (_qualificationController.text.trim().isNotEmpty)
           'qualification': _qualificationController.text.trim(),
@@ -162,6 +182,15 @@ class _CoachOnboardingScreenState extends ConsumerState<CoachOnboardingScreen> {
                         textCapitalization: TextCapitalization.words,
                         decoration: _inputDecoration('Enter your full name'),
                         validator: _required,
+                      ),
+                      const SizedBox(height: 20),
+                      _buildSectionLabel('Email Address'),
+                      TextFormField(
+                        controller: _emailController,
+                        readOnly: true,
+                        decoration: _inputDecoration('Email address').copyWith(
+                          prefixIcon: const Icon(LucideIcons.mail, size: 18, color: AppColors.textSecondary),
+                        ),
                       ),
                       const SizedBox(height: 20),
                       _buildSectionLabel('Primary Sport'),

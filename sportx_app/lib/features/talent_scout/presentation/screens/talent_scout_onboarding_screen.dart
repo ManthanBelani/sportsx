@@ -32,6 +32,15 @@ class _TalentScoutOnboardingScreenState extends ConsumerState<TalentScoutOnboard
   String? _photoUrl;
 
   @override
+  void initState() {
+    super.initState();
+    final user = ref.read(authProvider).user;
+    if (user != null && user.profilePhotoUrl != null && user.profilePhotoUrl!.isNotEmpty) {
+      _photoUrl = user.profilePhotoUrl;
+    }
+  }
+
+  @override
   void dispose() {
     _organization.dispose();
     _affiliation.dispose();

@@ -50,7 +50,7 @@ class _AthleteDirectoryScreenState extends ConsumerState<AthleteDirectoryScreen>
       if (chatId != null) {
         context.push('/chat-screen', extra: {'id': chatId, 'name': _nameOf(a), 'avatar': _photoOf(a) ?? ''});
       } else {
-        SnackBarUtils.showError(context, err ?? 'Could not open chat');
+        await handleChatStartError(context, err);
       }
     } finally {
       if (mounted) setState(() => _busy.remove('m$uid'));
@@ -102,7 +102,7 @@ class _AthleteDirectoryScreenState extends ConsumerState<AthleteDirectoryScreen>
             textInputAction: TextInputAction.search,
             onSubmitted: (v) => ref.read(athleteDirectoryProvider.notifier).load(query: v.trim()),
             decoration: InputDecoration(
-              hintText: 'Search athletes by name…',
+              hintText: 'Search athletes by nameâ€¦',
               prefixIcon: const Icon(LucideIcons.search, size: 18),
               suffixIcon: IconButton(icon: const Icon(LucideIcons.x, size: 16), onPressed: () {
                 _search.clear();
@@ -146,7 +146,7 @@ class _AthleteDirectoryScreenState extends ConsumerState<AthleteDirectoryScreen>
     final photoUrl = _photoOf(a);
     final sports = (a['sports'] as List?)?.map((s) => (s as Map)['name']?.toString() ?? '').where((s) => s.isNotEmpty).join(', ') ?? '';
     final city = (a['city'] as Map<String, dynamic>?)?['name']?.toString() ?? '';
-    final subtitle = [if (sports.isNotEmpty) sports, if (city.isNotEmpty) city].join(' • ');
+    final subtitle = [if (sports.isNotEmpty) sports, if (city.isNotEmpty) city].join(' â€¢ ');
     final profileId = (a['id'] ?? '').toString();
 
     return Container(
@@ -187,7 +187,7 @@ class _AthleteDirectoryScreenState extends ConsumerState<AthleteDirectoryScreen>
       return SizedBox(
         width: double.infinity,
         child: OutlinedButton.icon(
-          onPressed: busy ? null : () => _message(athlete!),
+          onPressed: busy ? null : () => _message(athlete),
           icon: const Icon(LucideIcons.messageCircle, size: 16),
           label: const Text('Message'),
           style: OutlinedButton.styleFrom(foregroundColor: AppColors.primary, side: const BorderSide(color: AppColors.primary)),
@@ -206,7 +206,7 @@ class _AthleteDirectoryScreenState extends ConsumerState<AthleteDirectoryScreen>
     return SizedBox(
       width: double.infinity,
       child: FilledButton(
-        onPressed: busy ? null : () => _connect(athlete!),
+        onPressed: busy ? null : () => _connect(athlete),
         style: FilledButton.styleFrom(backgroundColor: AppColors.yellow, foregroundColor: AppColors.ink),
         child: busy
             ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))

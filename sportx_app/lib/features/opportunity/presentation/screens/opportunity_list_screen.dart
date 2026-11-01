@@ -6,6 +6,7 @@ import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:sportx_app/features/opportunity/presentation/providers/opportunity_provider.dart';
 import 'package:sportx_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:sportx_app/core/role_config.dart';
+import 'package:sportx_app/core/utils/date_format_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/theme/colors.dart';
@@ -41,10 +42,7 @@ class _OpportunityListScreenState extends ConsumerState<OpportunityListScreen> {
   }
 
   String _shortDate(DateTime d) {
-    const months = [
-      'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'
-    ];
-    return '${d.day} ${months[d.month - 1]} ${d.year}';
+    return DateFormatUtils.formatDdMmYyyy(d);
   }
 
   @override
