@@ -6,6 +6,7 @@ use App\Models\Notification;
 use App\Models\Sponsorship;
 use App\Models\User;
 use App\Services\NotificationService;
+use App\Support\BroadcastTargeting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -200,6 +201,86 @@ class AdminUserController extends Controller
             'push_queued' => $pushed,
             'failed' => $fallback,
             'channels' => $channels,
+        ]], 201);
+    }
+
+    /**
+     * Targeted broadcast (AD.7 notification targeting): audience narrowed by
+     * role + city + sport. Recipient filtering is shared with the admin
+     * panel via App\Support\BroadcastTargeting.
+     */
+    public function broadcastTargeted(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:190',
+            'body' => 'required|string',
+            'roles' => 'nullable|array',
+            'roles.*' => 'string',
+            'city_id' => 'nullable|integer|exists:cities,id',
+            'sport_id' => 'nullable|integer|exists:sports,id',
+            'channels' => 'nullable|array',
+            'channels.*' => 'in:in_app,push',
+        ]);
+
+        $channels = $validated['channels'] ?? ['in_app', 'push'];
+
+        $ids = BroadcastTargeting::apply(
+            User::query(),
+            $validated['roles'] ?? [],
+            isset($validated['city_id']) ? (int) $validated['city_id'] : null,
+            isset($validated['sport_id']) ? (int) $validated['sport_id'] : null,
+        )->pluck('id')->all();
+
+        $created = 0;
+        $pushed = 0;
+        $fallback = 0;
+        $wantsPush = in_array('push', $channels, true);
+        $wantsInApp = in_array('in_app', $channels, true);
+
+        if ($wantsPush) {
+            foreach ($ids as $userId) {
+                try {
+                    NotificationService::createStatic([
+                        'user_id' => $userId,
+                        'type' => 'broadcast',
+                        'title' => $validated['title'],
+                        'body' => $validated['body'],
+                    ]);
+                    $created++;
+                    $pushed++;
+                } catch (\Throwable) {
+                    $fallback++;
+                }
+            }
+        } elseif ($wantsInApp) {
+            foreach (array_chunk($ids, 500) as $chunk) {
+                $now = now();
+                $rows = array_map(fn ($userId) => [
+                    'user_id' => $userId,
+                    'type' => 'broadcast',
+                    'category' => 'broadcasts',
+                    'title' => $validated['title'],
+                    'body' => $validated['body'],
+                    'push_status' => 'suppressed',
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ], $chunk);
+                DB::table('notifications')->insert($rows);
+                $created += count($rows);
+            }
+        }
+
+        return response()->json(['data' => [
+            'recipients' => count($ids),
+            'in_app_rows' => $created,
+            'push_queued' => $pushed,
+            'failed' => $fallback,
+            'channels' => $channels,
+            'targeting' => array_filter([
+                'roles' => $validated['roles'] ?? null,
+                'city_id' => $validated['city_id'] ?? null,
+                'sport_id' => $validated['sport_id'] ?? null,
+            ]),
         ]], 201);
     }
 }

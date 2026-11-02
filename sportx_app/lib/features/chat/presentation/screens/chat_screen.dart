@@ -32,7 +32,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final _scrollController = ScrollController();
 
   @override
+  void initState() {
+    super.initState();
+    // Chat has no socket yet — poll while the thread is open so replies from
+    // the other side actually arrive without leaving the screen.
+    startChatPolling(ref, widget.chatId);
+  }
+
+  @override
   void dispose() {
+    stopChatPolling();
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -41,8 +50,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void _send() async {
     final text = _messageController.text.trim();
     if (text.isEmpty) { SnackBarUtils.showError(context, 'Please enter a message'); return; }
+    final ok = await sendMessage(ref, widget.chatId, text);
+    if (!ok) {
+      // Keep the text in the box — clearing before the server confirms it
+      // used to silently swallow messages on network errors.
+      if (mounted) SnackBarUtils.showError(context, 'Message not sent. Check your connection and try again.');
+      return;
+    }
     _messageController.clear();
-    await sendMessage(ref, widget.chatId, text);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(_scrollController.position.maxScrollExtent,
@@ -68,6 +83,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         children: [
           Expanded(
             child: async.when(
+              skipLoadingOnReload: true, // polling refresh must not flash the skeleton
               loading: () => const GenericListSkeleton(itemCount: 5),
               error: (e, _) => Center(
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -84,6 +100,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       itemCount: messages.length,
                       itemBuilder: (context, index) {
                         final m = messages[index];
+                        if (m.isSystem) {
+                          return Center(
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: AppColors.border),
+                              ),
+                              child: Text(m.body,
+                                  style: GoogleFonts.inter(
+                                      fontSize: 11.5, color: AppColors.textSecondary)),
+                            ),
+                          );
+                        }
                         return _buildMessageBubble(m, m.senderId == currentUserId);
                       },
                     ),

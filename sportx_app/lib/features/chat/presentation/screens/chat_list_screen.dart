@@ -185,9 +185,31 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
               style: GoogleFonts.inter(fontSize: 11, color: AppColors.textTertiary)),
         ],
       ),
-      subtitle: Text(chat.lastMessage ?? 'No messages yet',
-          style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 13),
-          maxLines: 1, overflow: TextOverflow.ellipsis),
+      subtitle: Row(
+        children: [
+          Expanded(
+            child: Text(chat.lastMessage ?? 'No messages yet',
+                style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 13),
+                maxLines: 1, overflow: TextOverflow.ellipsis),
+          ),
+          if (chat.unreadCount > 0)
+            Container(
+              margin: const EdgeInsets.only(left: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.yellow,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              constraints: const BoxConstraints(minWidth: 22),
+              alignment: Alignment.center,
+              child: Text(
+                chat.unreadCount > 99 ? '99+' : '${chat.unreadCount}',
+                style: GoogleFonts.inter(
+                    fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.ink),
+              ),
+            ),
+        ],
+      ),
       onTap: () => context.push('/chat-screen', extra: {'id': chat.id, 'name': chat.title, 'avatar': ''}),
     );
   }

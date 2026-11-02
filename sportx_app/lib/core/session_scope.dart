@@ -110,7 +110,7 @@ void resetUserScopedProviders(Ref ref) {
   ref.invalidate(savedProvider);
   ref.invalidate(searchProvider);
   ref.invalidate(settingsProvider);
-  ref.invalidate(postsFeedProvider);
+  ref.invalidate(paginatedPostsProvider);
   ref.invalidate(postDetailProvider);
   ref.invalidate(postCommentsProvider);
   ref.invalidate(athleteDiscoveryProvider);

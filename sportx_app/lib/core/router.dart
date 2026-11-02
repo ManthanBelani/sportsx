@@ -106,7 +106,6 @@ import 'package:sportx_app/features/athlete/presentation/screens/athlete_leaderb
 import 'package:sportx_app/features/coach/presentation/screens/add_credential_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/edit_facilities_screen.dart';
 import 'package:sportx_app/features/coach/presentation/screens/showcase_athletes_screen.dart';
-import 'package:sportx_app/features/coach/presentation/screens/coach_go_live_screen.dart';
 import 'package:sportx_app/features/academy/presentation/screens/invite_athlete_screen.dart';
 import 'package:sportx_app/features/academy/presentation/screens/academy_staff_screen.dart';
 import 'package:sportx_app/features/academy/presentation/screens/academy_collaborations_screen.dart';
@@ -412,7 +411,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           venue: extra?['venue'] as String?,
         );
       }),
-      GoRoute(path: '/coach-go-live', builder: (context, state) => const CoachGoLiveScreen()),
       GoRoute(path: '/academy-invite-athlete', builder: (context, state) => const InviteAthleteScreen()),
       GoRoute(path: '/academy-staff', builder: (context, state) => const AcademyStaffScreen()),
       GoRoute(path: '/academy-collaborations', builder: (context, state) => const AcademyCollaborationsScreen()),

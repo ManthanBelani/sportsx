@@ -46,6 +46,19 @@ class FollowController extends Controller
             'followee_user_id' => $targetUserId,
         ]);
 
+        // Notify the target on a brand-new follow (not on re-follow no-ops).
+        if ($follow->wasRecentlyCreated) {
+            \App\Services\NotificationService::createStatic([
+                'user_id' => $targetUserId,
+                'type' => 'status_update',
+                'title' => 'New follower',
+                'body' => ($request->user()->name ?? 'Someone').' started following you.',
+                'notifiable_type' => 'user',
+                'notifiable_id' => $me,
+                'action_url' => '/my-connections',
+            ]);
+        }
+
         return response()->json(['data' => $follow], $follow->wasRecentlyCreated ? 201 : 200);
     }
 

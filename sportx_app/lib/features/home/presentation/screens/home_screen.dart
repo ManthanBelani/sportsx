@@ -26,7 +26,7 @@ class HomeScreen extends ConsumerWidget {
     final firstName = (user?.name.split(' ').first ?? 'Athlete');
 
     Future<void> onRefresh() async {
-      ref.invalidate(postsFeedProvider);
+      ref.invalidate(paginatedPostsProvider);
       await Future.wait<dynamic>([
         ref.read(academiesProvider.notifier).refresh(),
         ref.read(coachesProvider.notifier).refresh(),

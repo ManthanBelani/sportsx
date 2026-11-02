@@ -93,6 +93,11 @@ Route::prefix('panel')->name('admin.')->group(function () {
         Route::post('/categories/{type}/{id}/toggle', [AdminPanelController::class, 'categoryToggle'])->name('categories.toggle');
         Route::delete('/categories/{type}/{id}', [AdminPanelController::class, 'categoryDestroy'])->name('categories.destroy');
 
+        // Leaderboard configuration (weights + manual rebuild)
+        Route::get('/leaderboard', [AdminPanelController::class, 'leaderboard'])->name('leaderboard');
+        Route::put('/leaderboard', [AdminPanelController::class, 'leaderboardUpdate'])->name('leaderboard.update');
+        Route::post('/leaderboard/reset', [AdminPanelController::class, 'leaderboardReset'])->name('leaderboard.reset');
+
         // Audit Log
         Route::get('/audit-logs', [\App\Http\Controllers\Admin\AdminAuditController::class, 'index'])->name('audit.logs');
         Route::get('/audit-logs/{id}', [\App\Http\Controllers\Admin\AdminAuditController::class, 'show'])->name('audit.show');

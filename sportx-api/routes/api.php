@@ -64,6 +64,7 @@ use App\Http\Controllers\Admin\AdminContentController;
 use App\Http\Controllers\Admin\AdminModerationController;
 use App\Http\Controllers\Admin\AdminExpiryController;
 use App\Http\Controllers\Admin\AdminCategoryController;
+use App\Http\Controllers\Admin\AdminLeaderboardConfigController;
 use App\Http\Controllers\Admin\AdminSettingsController;
 use App\Http\Controllers\Admin\EmailSettingsController;
 use App\Http\Controllers\Admin\RegistrationAnalyticsController;
@@ -471,7 +472,7 @@ Route::prefix('v1')->group(function () {
     // ── Connections (Phase 6: POST canonical + legacy aliases) ──
     Route::get('/me/connections', [ConnectionController::class, 'index'])->middleware('auth:sanctum');
     Route::post('/connections', [ConnectionController::class, 'request'])->middleware(['auth:sanctum', 'throttle:30,1']);
-    Route::post('/me/connections/request', [ConnectionController::class, 'request'])->middleware('auth:sanctum');
+    Route::post('/me/connections/request', [ConnectionController::class, 'request'])->middleware(['auth:sanctum', 'throttle:10,1']);
     Route::post('/me/connections/{id}/accept', [ConnectionController::class, 'accept'])->middleware('auth:sanctum');
     Route::patch('/connections/{id}', [ConnectionController::class, 'update'])->middleware('auth:sanctum');
     Route::delete('/connections/{id}', [ConnectionController::class, 'destroy'])->middleware('auth:sanctum');
@@ -612,7 +613,13 @@ Route::prefix('v1')->group(function () {
 
         // Admin Notification broadcast + delivery stats (Phase 3E/9)
         Route::post('/notifications/broadcast', [AdminUserController::class, 'broadcast']);
+        Route::post('/notifications/targeted', [AdminUserController::class, 'broadcastTargeted']);
         Route::get('/notifications/stats', [NotificationController::class, 'stats']);
+
+        // Admin leaderboard configuration (weights, season, rebuild)
+        Route::get('/leaderboard-config', [AdminLeaderboardConfigController::class, 'show']);
+        Route::put('/leaderboard-config', [AdminLeaderboardConfigController::class, 'update']);
+        Route::post('/leaderboard-config/reset', [AdminLeaderboardConfigController::class, 'reset']);
 
         // Admin audit trail (Phase 10: moderation/status/override/provider-switch log)
         Route::get('/audit-logs', [AdminAuditController::class, 'apiIndex']);

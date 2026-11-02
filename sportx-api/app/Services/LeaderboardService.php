@@ -8,6 +8,7 @@ use App\Models\LeaderboardScore;
 use App\Models\LeaderboardSeason;
 use App\Models\TrialRegistration;
 use App\Models\TournamentRegistration;
+use App\Support\PlatformSettings;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -27,6 +28,32 @@ class LeaderboardService
     public const POINTS_PARTICIPATION = 10;
 
     public const PARTICIPATION_CAP = 50;
+
+    /** Runtime-tunable weight (admin leaderboard-config screen), falling back to the constant default. */
+    public static function weight(string $key, int $default): int
+    {
+        return (int) PlatformSettings::get($key, $default);
+    }
+
+    public static function pointsPerAchievement(): int
+    {
+        return static::weight('leaderboard_points_achievement', static::POINTS_VERIFIED_ACHIEVEMENT);
+    }
+
+    public static function pointsForCompletion(): int
+    {
+        return static::weight('leaderboard_points_completion', static::POINTS_COMPLETION_MILESTONE);
+    }
+
+    public static function pointsPerParticipation(): int
+    {
+        return static::weight('leaderboard_points_participation', static::POINTS_PARTICIPATION);
+    }
+
+    public static function participationCap(): int
+    {
+        return static::weight('leaderboard_participation_cap', static::PARTICIPATION_CAP);
+    }
 
     public static function activeSeason(): LeaderboardSeason
     {
@@ -60,13 +87,13 @@ class LeaderboardService
             } elseif (Schema::hasColumn('achievements', 'verification_status')) {
                 $achQ->where('verification_status', 'verified');
             }
-            $points += $achQ->count() * static::POINTS_VERIFIED_ACHIEVEMENT;
+            $points += $achQ->count() * static::pointsPerAchievement();
 
             // Completion milestone.
             try {
                 $percent = \App\Http\Controllers\CompletionChecklistController::completionFor($athlete->user);
                 if ($percent >= 80) {
-                    $points += static::POINTS_COMPLETION_MILESTONE;
+                    $points += static::pointsForCompletion();
                 }
             } catch (\Throwable) {
             }
@@ -83,7 +110,7 @@ class LeaderboardService
                     ->whereIn('status', ['approved', 'confirmed'])->count();
             } catch (\Throwable) {
             }
-            $points += min($parts * static::POINTS_PARTICIPATION, static::PARTICIPATION_CAP);
+            $points += min($parts * static::pointsPerParticipation(), static::participationCap());
 
             LeaderboardScore::updateOrCreate(
                 ['athlete_profile_id' => $athlete->id, 'sport_id' => $sportId, 'season_id' => $season->id],

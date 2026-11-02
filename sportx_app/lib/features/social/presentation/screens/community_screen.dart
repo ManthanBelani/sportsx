@@ -731,40 +731,56 @@ class _FeedSectionContent extends StatefulWidget {
 }
 
 class _FeedSectionContentState extends State<_FeedSectionContent> {
-  final _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
   @override
   void dispose() {
-    _scrollController.dispose();
     super.dispose();
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      // Could trigger pagination here
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer(
       builder: (context, WidgetRef ref, _) {
-        // Real feed only — the community used to fall back to mock posts
-        // ("Rohit Sharma", …) when the API had nothing, which showed fake
-        // content to real users.
-        final postsAsync = ref.watch(filteredPostsFeedProvider(''));
+        // Paginated feed: page 1 renders immediately, more pages load on
+        // demand — previously only the first 15 posts were ever reachable.
+        final feed = ref.watch(paginatedPostsProvider(''));
+
+        if (feed.loading && feed.posts.isEmpty) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SectionHeadV3(
+                title: 'Community Feed',
+                actionText: 'Create Post',
+                onActionTap: () => context.push('/create-post'),
+              ),
+              _FeedSkeleton(),
+            ],
+          );
+        }
+
+        if (feed.error != null && feed.posts.isEmpty) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SectionHeadV3(
+                title: 'Community Feed',
+                actionText: 'Create Post',
+                onActionTap: () => context.push('/create-post'),
+              ),
+              emptyHint('Could not load feed.'),
+              const SizedBox(height: 8),
+              OutlinedButton(
+                onPressed: () => ref.read(paginatedPostsProvider('').notifier).refresh(),
+                child: const Text('Retry'),
+              ),
+            ],
+          );
+        }
+
+        final posts = feed.posts;
 
         return RefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(filteredPostsFeedProvider(''));
-          },
+          onRefresh: () => ref.read(paginatedPostsProvider('').notifier).refresh(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -773,59 +789,58 @@ class _FeedSectionContentState extends State<_FeedSectionContent> {
                 actionText: 'Create Post',
                 onActionTap: () => context.push('/create-post'),
               ),
-              postsAsync.when(
-                loading: () => _FeedSkeleton(),
-                error: (e, _) => Column(
+              if (posts.isEmpty)
+                Column(
                   children: [
-                    emptyHint('Could not load feed.'),
                     const SizedBox(height: 8),
-                    OutlinedButton(
-                      onPressed: () {
-                        ref.invalidate(filteredPostsFeedProvider(''));
-                      },
-                      child: const Text('Retry'),
+                    emptyHint('No posts yet. Be the first to share!'),
+                    const SizedBox(height: 16),
+                    PrimaryButton(
+                      label: 'Create Post',
+                      icon: LucideIcons.plus,
+                      onPressed: () => context.push('/create-post'),
                     ),
+                    const SizedBox(height: 100),
                   ],
-                ),
-                data: (posts) {
-                  if (posts.isEmpty) {
-                    return Column(
-                      children: [
-                        emptyHint('No posts yet. Be the first to share!'),
-                        const SizedBox(height: 16),
-                        PrimaryButton(
-                          label: 'Create Post',
-                          icon: LucideIcons.plus,
-                          onPressed: () => context.push('/create-post'),
-                        ),
-                        const SizedBox(height: 100),
-                      ],
+                )
+              else ...[
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: posts.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final post = posts[index];
+                    return CommunityPostCard(
+                      post: post,
+                      onLike: () => togglePostLike(ref, post.id),
+                      onComment: () =>
+                          context.push('/post-detail/${post.id}'),
+                      onOpen: () =>
+                          context.push('/post-detail/${post.id}'),
                     );
-                  }
-                  return Column(
-                    children: [
-                      ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: posts.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final post = posts[index];
-                          return CommunityPostCard(
-                            post: post,
-                            onLike: () => togglePostLike(ref, post.id),
-                            onComment: () =>
-                                context.push('/post-detail/${post.id}'),
-                            onOpen: () =>
-                                context.push('/post-detail/${post.id}'),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 100),
-                    ],
-                  );
-                },
-              ),
+                  },
+                ),
+                if (feed.hasMore)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Center(
+                      child: feed.loadingMore
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2))
+                          : OutlinedButton.icon(
+                              onPressed: () => ref
+                                  .read(paginatedPostsProvider('').notifier)
+                                  .loadMore(),
+                              icon: const Icon(LucideIcons.chevronDown, size: 16),
+                              label: const Text('Load more posts'),
+                            ),
+                    ),
+                  ),
+                const SizedBox(height: 100),
+              ],
             ],
           ),
         );

@@ -11,8 +11,8 @@ use Symfony\Component\HttpFoundation\Response;
  * Protects the server-rendered admin panel (Blade). Requires:
  *   1. An authenticated session (via the `auth` middleware that runs before this).
  *   2. The authenticated user to have the `admin` role.
- * WARNING: 2FA is disabled — must be re-enabled before production
- * (see EnsureAdmin2FAVerified + AdminPanelController@verify2fa).
+ *   3. A completed TOTP challenge for this session (admin_2fa_ok), unless
+ *      ADMIN_2FA_ENFORCE=false (local-dev escape hatch, matches the API).
  */
 class AuthenticateAdminPanel
 {
@@ -24,6 +24,11 @@ class AuthenticateAdminPanel
             Auth::logout();
             $request->session()->invalidate();
             return redirect()->route('admin.login')->with('error', 'Admin access required.');
+        }
+
+        if (! session('admin_2fa_ok')
+            && filter_var(env('ADMIN_2FA_ENFORCE', true), FILTER_VALIDATE_BOOLEAN)) {
+            return redirect()->route('admin.2fa');
         }
 
         return $next($request);

@@ -159,6 +159,27 @@
         <div id="recipientPreview" style="margin-top:8px;font-size:12px;color:#1677ff;"></div>
       </div>
 
+      <div class="form-row">
+        <div class="form-group" style="flex:1;">
+          <label class="form-label">Target city <span style="color:#6b7280;font-weight:400;">— optional</span></label>
+          <select class="select" name="city_id" onchange="updateRecipientPreview()">
+            <option value="">All cities</option>
+            @foreach($cities as $c)
+              <option value="{{ $c->id }}">{{ $c->name }}</option>
+            @endforeach
+          </select>
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label class="form-label">Target sport <span style="color:#6b7280;font-weight:400;">— optional</span></label>
+          <select class="select" name="sport_id" onchange="updateRecipientPreview()">
+            <option value="">All sports</option>
+            @foreach($sports as $s)
+              <option value="{{ $s->id }}">{{ $s->name }}</option>
+            @endforeach
+          </select>
+        </div>
+      </div>
+
       <div class="form-group">
         <label class="form-label">Delivery channels</label>
         <div style="display:flex;gap:12px;flex-wrap:wrap;">
@@ -202,13 +223,17 @@
 
   function updateRecipientPreview(){
     const checked = [...document.querySelectorAll('input[name="roles[]"]:checked')].map(el=>el.value);
+    const citySel = document.querySelector('select[name="city_id"]');
+    const sportSel = document.querySelector('select[name="sport_id"]');
+    const cityText = citySel && citySel.value ? ` in ${citySel.selectedOptions[0].textContent.trim()}` : '';
+    const sportText = sportSel && sportSel.value ? ` · ${sportSel.selectedOptions[0].textContent.trim()}` : '';
     const el = document.getElementById('recipientPreview');
     if(checked.length===0){
-      el.textContent = `→ Will send to all active users (${totalActive})`;
+      el.textContent = `→ Will send to all active users${cityText}${sportText} (${totalActive} before city/sport filters)`;
     } else {
       let sum = 0;
       checked.forEach(r => sum += (roleCounts[r] || 0));
-      el.textContent = `→ Will send to ${sum} users: ${checked.join(', ')}`;
+      el.textContent = `→ Will send to ${sum} users: ${checked.join(', ')}${cityText}${sportText}`;
     }
   }
   function updateChannelHint(){

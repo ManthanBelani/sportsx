@@ -24,7 +24,9 @@ class ConnectionController extends Controller
                     if (!$user) {
                         $fail('The selected user id is invalid or inactive.');
                     }
-                    if ($value === $request->user()->id) {
+                    // Cast: validated input is not cast by Laravel, so a
+                    // string "5" must not bypass the self-request check.
+                    if ((int) $value === (int) $request->user()->id) {
                         $fail('You cannot send a connection request to yourself.');
                     }
                 },
@@ -32,11 +34,18 @@ class ConnectionController extends Controller
         ]);
 
         $userId = $request->user()->id;
-        $targetId = $validated['user_id'];
+        $targetId = (int) $validated['user_id'];
 
         if (Block::hasBlockBetween($userId, $targetId)) {
             return response()->json(['error' => ['code' => 'BLOCKED', 'message' => 'Connection unavailable.']], 403);
         }
+
+        // Anti-harassment: a decline deletes the row, so without this cap a
+        // user could request → decline → request forever, notifying each time.
+        if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts("conn-req:{$userId}:{$targetId}", 3)) {
+            return response()->json(['error' => ['code' => 'RATE_LIMITED', 'message' => 'You have sent too many requests to this user. Try again later.']], 429);
+        }
+        \Illuminate\Support\Facades\RateLimiter::hit("conn-req:{$userId}:{$targetId}", 86400);
 
         // D3: firstOrCreate kills the double-check→create duplicate race.
         $connection = Connection::firstOrCreate(
@@ -207,21 +216,35 @@ class ConnectionController extends Controller
      */
     private function ensurePrivateConversation(int $userId, int $otherUserId): void
     {
-        $exists = Conversation::where('type', 'private')
-            ->whereHas('participants', fn ($q) => $q->where('user_id', $userId))
-            ->whereHas('participants', fn ($q) => $q->where('user_id', $otherUserId))
-            ->exists();
-
-        if ($exists) {
+        // Lock so two concurrent accepts can't both pass the exists-check and
+        // create duplicate private threads for the same pair.
+        $lock = \Illuminate\Support\Facades\Cache::lock("conv:{$userId}:{$otherUserId}", 5);
+        try {
+            $lock->block(3);
+        } catch (\Illuminate\Contracts\Cache\LockTimeoutException) {
+            // Someone else is creating it right now — it will exist after.
             return;
         }
 
-        $conversation = Conversation::create(['type' => 'private']);
-        $conversation->participants()->sync([$userId, $otherUserId]);
-        $conversation->messages()->create([
-            'sender_user_id' => $userId,
-            'body' => 'You are now connected. Say hi!',
-            'type' => 'system',
-        ]);
+        try {
+            $exists = Conversation::where('type', 'private')
+                ->whereHas('participants', fn ($q) => $q->where('user_id', $userId))
+                ->whereHas('participants', fn ($q) => $q->where('user_id', $otherUserId))
+                ->exists();
+
+            if ($exists) {
+                return;
+            }
+
+            $conversation = Conversation::create(['type' => 'private']);
+            $conversation->participants()->sync([$userId, $otherUserId]);
+            $conversation->messages()->create([
+                'sender_user_id' => $userId,
+                'body' => 'You are now connected. Say hi!',
+                'type' => 'system',
+            ]);
+        } finally {
+            $lock->release();
+        }
     }
 }

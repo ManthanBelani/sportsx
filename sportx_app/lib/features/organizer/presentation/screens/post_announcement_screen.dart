@@ -57,7 +57,7 @@ class _PostAnnouncementScreenState extends ConsumerState<PostAnnouncementScreen>
         'audience': 'followers',
       });
 
-      ref.invalidate(filteredPostsFeedProvider(''));
+      ref.invalidate(paginatedPostsProvider);
       if (!mounted) return;
       SnackBarUtils.showSuccess(context, 'Announcement published to your followers');
       context.pop();

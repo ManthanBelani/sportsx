@@ -69,7 +69,11 @@ class CoachProfile extends Model
 
     public function mediaItems(): MorphMany
     {
-        return $this->morphMany(MediaItem::class, 'owner');
+        // Gallery-only: profile photos, covers, logos and credentials
+        // (verification badges) live in their own slots and must not appear
+        // in the coach's media list.
+        return $this->morphMany(MediaItem::class, 'owner')
+            ->where(fn ($q) => $q->where('context', 'gallery')->orWhereNull('context'));
     }
 
     public function getConnectionsCountAttribute(): int

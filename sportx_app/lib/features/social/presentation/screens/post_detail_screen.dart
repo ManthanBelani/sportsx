@@ -11,6 +11,7 @@ import 'package:sportx_app/shared/presentation/widgets/sportx_ui.dart';
 import 'package:sportx_app/core/utils/snackbar_utils.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sportx_app/core/config/api_config.dart';
+import 'package:sportx_app/core/utils/media_utils.dart';
 import 'package:sportx_app/shared/presentation/widgets/skeleton.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
@@ -106,9 +107,33 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     ),
                     if (post.body != null && post.body!.isNotEmpty)
                       Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Text(post.body!, style: const TextStyle(color: AppColors.textPrimary))),
-                    if (post.imageUrl != null) ...[
+                    if (post.images.isNotEmpty) ...[
                       const SizedBox(height: 12),
-                      Image.network(post.imageUrl!, width: double.infinity, height: 300, fit: BoxFit.cover),
+                      SizedBox(
+                        height: 300,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: post.images.length,
+                          separatorBuilder: (_, _) => const SizedBox(width: 8),
+                          itemBuilder: (context, i) => ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.network(
+                              MediaUtils.resolveUrl(post.images[i]),
+                              width: MediaQuery.of(context).size.width - 48,
+                              height: 300,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => Container(
+                                color: AppColors.surface,
+                                child: const Icon(LucideIcons.image, color: AppColors.textTertiary),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ] else if (post.imageUrl != null) ...[
+                      const SizedBox(height: 12),
+                      Image.network(MediaUtils.resolveUrl(post.imageUrl!), width: double.infinity, height: 300, fit: BoxFit.cover),
                     ],
                     Padding(
                       padding: const EdgeInsets.all(16),

@@ -331,6 +331,7 @@
         <a href="{{ route('admin.analytics') }}" class="sidebar-nav-item @if(request()->routeIs('admin.analytics')) active @endif"><i data-lucide="bar-chart-2"></i>Analytics</a>
         <a href="{{ route('admin.notifications') }}" class="sidebar-nav-item @if(request()->routeIs('admin.notifications')) active @endif"><i data-lucide="bell"></i>Notifications</a>
         <a href="{{ route('admin.categories') }}" class="sidebar-nav-item @if(request()->routeIs('admin.categories')) active @endif"><i data-lucide="tag"></i>Categories</a>
+        <a href="{{ route('admin.leaderboard') }}" class="sidebar-nav-item @if(request()->routeIs('admin.leaderboard*')) active @endif"><i data-lucide="trophy"></i>Leaderboard</a>
         <a href="{{ route('admin.audit.logs') }}" class="sidebar-nav-item @if(request()->routeIs('admin.audit.*')) active @endif"><i data-lucide="scroll-text"></i>Audit Log</a>
         <a href="{{ route('admin.settings') }}" class="sidebar-nav-item @if(request()->routeIs('admin.settings')) active @endif"><i data-lucide="settings"></i>Settings</a>
       </div>

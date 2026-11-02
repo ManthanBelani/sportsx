@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,12 +14,14 @@ class ConversationItem {
   final String title;
   final String? lastMessage;
   final String? lastMessageAt;
+  final int unreadCount;
 
   ConversationItem({
     required this.id,
     required this.title,
     this.lastMessage,
     this.lastMessageAt,
+    this.unreadCount = 0,
   });
 
   factory ConversationItem.fromJson(Map<String, dynamic> json) {
@@ -31,6 +35,7 @@ class ConversationItem {
       title: title.isEmpty ? 'Conversation' : title,
       lastMessage: last?['body'] as String?,
       lastMessageAt: last?['created_at'] as String? ?? json['updated_at'] as String?,
+      unreadCount: (json['unread_count'] as num?)?.toInt() ?? 0,
     );
   }
 }
@@ -41,6 +46,7 @@ class ChatMessage {
   final String senderId;
   final String senderName;
   final String? createdAt;
+  final bool isSystem;
 
   ChatMessage({
     required this.id,
@@ -48,6 +54,7 @@ class ChatMessage {
     required this.senderId,
     required this.senderName,
     this.createdAt,
+    this.isSystem = false,
   });
 
   /// Sender ids arrive in mixed shapes ("7", 7, or "users/7") — normalize to
@@ -67,6 +74,7 @@ class ChatMessage {
       senderId: _normalizedId(sender?['id'] ?? json['sender_user_id']),
       senderName: (sender?['name'] ?? 'User').toString(),
       createdAt: json['created_at'] as String?,
+      isSystem: (json['type'] ?? 'text').toString() == 'system',
     );
   }
 }
@@ -106,9 +114,23 @@ final conversationDetailProvider =
   final resp = await ref.watch(dioProvider).get('/conversations/$id');
   final body = resp.data['data'] as Map<String, dynamic>;
   final messages = (body['messages'] as List? ?? []).cast<Map<String, dynamic>>();
+  // Opening the thread clears the server-side unread counter so the chat
+  // list stops showing this conversation as unread.
+  markConversationRead(ref, id);
   // API returns newest first; reverse for chronological display (oldest first)
   return messages.map(ChatMessage.fromJson).toList().reversed.toList();
 });
+
+/// Marks a conversation read on the server (fire-and-forget — failures must
+/// never block rendering the thread) and refreshes the unread badges.
+Future<void> markConversationRead(Ref ref, String conversationId) async {
+  try {
+    await ref.read(dioProvider).post('/conversations/$conversationId/read');
+    ref.invalidate(conversationsProvider);
+  } on DioException {
+    // Best-effort: unread badge stays until the next visit.
+  }
+}
 
 Future<bool> sendMessage(WidgetRef ref, String conversationId, String body) async {
   try {
@@ -119,6 +141,24 @@ Future<bool> sendMessage(WidgetRef ref, String conversationId, String body) asyn
   } on DioException {
     return false;
   }
+}
+
+/// Silently poll for messages typed by the other side (riverpod runs this in
+/// the background). The 4s cadence trades a little latency for battery; the
+/// FCM message push, once wired to a foreground handler, will refresh faster.
+Timer? _chatPollTimer;
+
+void startChatPolling(WidgetRef ref, String conversationId) {
+  stopChatPolling();
+  _chatPollTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+    ref.invalidate(conversationDetailProvider(conversationId));
+    ref.invalidate(conversationsProvider);
+  });
+}
+
+void stopChatPolling() {
+  _chatPollTimer?.cancel();
+  _chatPollTimer = null;
 }
 
 Future<String?> startConversation(WidgetRef ref, int participantId) async {

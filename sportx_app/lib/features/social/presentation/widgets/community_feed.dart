@@ -84,7 +84,11 @@ class CommunityPostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final avatar = post.authorAvatar;
-    final image = post.imageUrl;
+    // Multi-photo posts: backend returns the full resolved URL list; older
+    // payloads fall back to the single image_url.
+    final gallery = post.images.isNotEmpty
+        ? post.images
+        : (post.imageUrl != null && post.imageUrl!.isNotEmpty ? [post.imageUrl!] : <String>[]);
     return GestureDetector(
       onTap: onOpen,
       child: Container(
@@ -175,21 +179,50 @@ class CommunityPostCard extends StatelessWidget {
                   ),
                 ),
               ),
-            if (image != null && image.isNotEmpty)
+            if (gallery.isNotEmpty)
               AspectRatio(
                 aspectRatio: 16 / 9,
-                child: Image.network(
-                  MediaUtils.resolveUrl(image),
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => Container(
-                    color: AppColors.surface,
-                    alignment: Alignment.center,
-                    child: const Icon(
-                      LucideIcons.image,
-                      color: AppColors.textTertiary,
-                      size: 32,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.network(
+                      MediaUtils.resolveUrl(gallery.first),
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Container(
+                        color: AppColors.surface,
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          LucideIcons.image,
+                          color: AppColors.textTertiary,
+                          size: 32,
+                        ),
+                      ),
                     ),
-                  ),
+                    if (gallery.length > 1)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.55),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(LucideIcons.images, size: 12, color: Colors.white),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${gallery.length}',
+                                style: GoogleFonts.inter(
+                                    fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             Container(

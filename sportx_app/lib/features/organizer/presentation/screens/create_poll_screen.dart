@@ -76,8 +76,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
           .read(dioProvider)
           .post('/posts', data: {'body': body.toString()});
       // The poll lands on the feed — refresh every feed surface that shows it.
-      ref.invalidate(postsFeedProvider);
-      ref.invalidate(filteredPostsFeedProvider(''));
+      ref.invalidate(paginatedPostsProvider);
       if (mounted) {
         SnackBarUtils.showSuccess(context, 'Poll published to the feed');
         context.pop();

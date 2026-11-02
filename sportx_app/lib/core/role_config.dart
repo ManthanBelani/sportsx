@@ -224,7 +224,6 @@ RoleConfig roleConfigFor(SportXRole role) {
           CreateTile(id: 'event', label: 'Create Event / Trial', subtitle: 'Post a new trial or tournament', icon: LucideIcons.calendarPlus, tintBg: Color(0xFFFCE7F3), tintFg: AppColors.organizer, route: '/post-trial'),
           CreateTile(id: 'opportunity', label: 'Create Opportunity', subtitle: 'Scholarships & sponsorships', icon: LucideIcons.megaphone, route: '/post-opportunity', priority: CreatePriority.p1),
           CreateTile(id: 'media', label: 'Upload Photo', subtitle: 'Showcase your coaching', icon: LucideIcons.imagePlus, tintBg: Color(0xFFFEE2E2), tintFg: AppColors.error, route: '/media-gallery'),
-          CreateTile(id: 'golive', label: 'Go Live / Webinar', subtitle: 'Host a live session', icon: LucideIcons.radio, tintBg: Color(0xFFFEE2E2), tintFg: AppColors.error, route: '/coach-go-live', priority: CreatePriority.p2),
         ],
         moreRows: [
           MoreRow(label: 'My Profile', icon: LucideIcons.user, route: '/coach-profile'),
