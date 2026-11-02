@@ -88,6 +88,12 @@ class _GuardianConsentScreenState
       } else {
         SnackBarUtils.showError(context, apiEx);
       }
+    } catch (e) {
+      // Non-Dio exception (e.g. a bug in response handling) — never leave the
+      // button stuck, otherwise every later tap is swallowed with no API call.
+      if (!mounted) return;
+      setState(() => _loading = false);
+      SnackBarUtils.showError(context, 'Something went wrong. Please try again.');
     }
   }
 
@@ -148,6 +154,12 @@ class _GuardianConsentScreenState
       } else {
         SnackBarUtils.showError(context, apiEx);
       }
+    } catch (e) {
+      // Non-Dio exception — never leave the button stuck, otherwise every
+      // later tap is swallowed with no API call.
+      if (!mounted) return;
+      setState(() => _loading = false);
+      SnackBarUtils.showError(context, 'Something went wrong. Please try again.');
     }
   }
 
