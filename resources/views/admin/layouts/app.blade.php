@@ -124,6 +124,7 @@
     .btn-ghost { background: #fff; border: 1px solid #e5e7eb; color: #111; }
     .action-btns { display: flex; gap: 8px; flex-wrap: wrap; }
     .action-btn { padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: inherit; }
+    .action-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
     .action-btn.view { background: #f0f7ff; color: #1677ff; } .action-btn.edit { background: #f0f7ff; color: #1677ff; }
     .action-btn.approve, .action-btn.resolve, .action-btn.dismiss { background: #dcfce7; color: #16a34a; }
     .action-btn.reject, .action-btn.remove, .action-btn.delete { background: #fee2e2; color: #dc2626; }
@@ -202,8 +203,13 @@
     .flash { padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 13px; font-weight: 500; }
     .flash-success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
     .flash-error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-    .pager { margin-top: 16px; display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
+    .pager { margin-top: 16px; display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap; }
     .pager a, .pager span { padding: 6px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; }
+    .pager svg { width: 14px; height: 14px; display: block; }
+    .pager .pager-nav { display: inline-flex; align-items: center; justify-content: center; padding: 6px 9px; color: #374151; }
+    .pager .current { background: #111; color: #fff; border-color: #111; font-weight: 600; }
+    .pager .disabled { color: #d1d5db; background: #f9fafb; }
+    .pager .pager-ellipsis { border: none; color: #9ca3af; }
     .empty { text-align: center; padding: 48px 16px; color: #9ca3af; }
     .login-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg,#0d47a1,#1677ff); }
     .login-card { background: #fff; border-radius: 16px; padding: 36px; width: 100%; max-width: 400px; box-shadow: 0 24px 60px rgba(0,0,0,.25); }

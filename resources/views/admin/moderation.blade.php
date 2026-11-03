@@ -45,9 +45,9 @@
           </div>
           <span class="badge pending">Pending</span>
         </div>
-        <div class="listing-body" style="display:flex;gap:8px;">
-          <form method="POST" action="{{ route('admin.approvals.users.approve', $u->id) }}" style="flex:1;">@csrf<button class="action-btn approve" style="width:100%;justify-content:center;"><i data-lucide="check" style="width:14px;height:14px;"></i> Approve</button></form>
-          <form method="POST" action="{{ route('admin.approvals.users.reject', $u->id) }}" style="flex:1;" onsubmit="return confirm('Reject this registration?')">@csrf<button class="action-btn reject" style="width:100%;justify-content:center;"><i data-lucide="x" style="width:14px;height:14px;"></i> Reject</button></form>
+        <div class="listing-actions">
+          <form method="POST" action="{{ route('admin.approvals.users.approve', $u->id) }}">@csrf<button class="action-btn approve"><i data-lucide="check" style="width:14px;height:14px;"></i> Approve</button></form>
+          <form method="POST" action="{{ route('admin.approvals.users.reject', $u->id) }}" onsubmit="return confirm('Reject this registration?')">@csrf<button class="action-btn reject"><i data-lucide="x" style="width:14px;height:14px;"></i> Reject</button></form>
           <a href="{{ route('admin.users.detail', $u->id) }}" class="action-btn view"><i data-lucide="eye" style="width:14px;height:14px;"></i> View</a>
         </div>
       </div>
@@ -136,9 +136,9 @@
           <div class="listing-desc">{{ $r->comment ?: 'No additional detail.' }}</div>
           @if($r->status === 'pending')
           <div class="listing-actions">
-            <a href="{{ route('admin.content') }}" class="action-btn view"><i data-lucide="eye"></i> View</a>
-            <form method="POST" action="{{ route('admin.moderation.action', $r->id) }}">@csrf<input type="hidden" name="action" value="approve"><button class="action-btn approve"><i data-lucide="check"></i> Approve</button></form>
-            <form method="POST" action="{{ route('admin.moderation.action', $r->id) }}">@csrf<input type="hidden" name="action" value="remove"><button class="action-btn reject" onclick="return confirm('Remove this listing?')"><i data-lucide="x"></i> Reject & Remove</button></form>
+            <a href="{{ route('admin.content') }}" class="action-btn view"><i data-lucide="eye" style="width:14px;height:14px;"></i> View</a>
+            <form method="POST" action="{{ route('admin.moderation.action', $r->id) }}">@csrf<input type="hidden" name="action" value="approve"><button class="action-btn approve"><i data-lucide="check" style="width:14px;height:14px;"></i> Approve</button></form>
+            <form method="POST" action="{{ route('admin.moderation.action', $r->id) }}">@csrf<input type="hidden" name="action" value="remove"><button class="action-btn reject" onclick="return confirm('Remove this listing?')"><i data-lucide="x" style="width:14px;height:14px;"></i> Reject & Remove</button></form>
           </div>
           @endif
         </div>
