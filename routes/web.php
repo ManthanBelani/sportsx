@@ -60,6 +60,11 @@ Route::prefix('panel')->name('admin.')->group(function () {
         Route::get('/sponsors', [AdminPanelController::class, 'sponsors'])->name('sponsors');
         Route::post('/sponsors/{id}', [AdminPanelController::class, 'sponsorAction'])->name('sponsors.action');
 
+        // Verification Badges (blue-check review queue)
+        Route::get('/verification', [AdminPanelController::class, 'verificationQueue'])->name('verification');
+        Route::post('/verification/{id}/approve', [AdminPanelController::class, 'verificationApprove'])->name('verification.approve');
+        Route::post('/verification/{id}/reject', [AdminPanelController::class, 'verificationReject'])->name('verification.reject');
+
         // Approvals
         Route::get('/approvals', [AdminPanelController::class, 'approvals'])->name('approvals');
         Route::post('/approvals/users/{id}/approve', [AdminPanelController::class, 'approveUser'])->name('approvals.users.approve');
@@ -87,6 +92,11 @@ Route::prefix('panel')->name('admin.')->group(function () {
         Route::put('/categories/{type}/{id}', [AdminPanelController::class, 'categoryUpdate'])->name('categories.update');
         Route::post('/categories/{type}/{id}/toggle', [AdminPanelController::class, 'categoryToggle'])->name('categories.toggle');
         Route::delete('/categories/{type}/{id}', [AdminPanelController::class, 'categoryDestroy'])->name('categories.destroy');
+
+        // Leaderboard configuration (weights + manual rebuild)
+        Route::get('/leaderboard', [AdminPanelController::class, 'leaderboard'])->name('leaderboard');
+        Route::put('/leaderboard', [AdminPanelController::class, 'leaderboardUpdate'])->name('leaderboard.update');
+        Route::post('/leaderboard/reset', [AdminPanelController::class, 'leaderboardReset'])->name('leaderboard.reset');
 
         // Audit Log
         Route::get('/audit-logs', [\App\Http\Controllers\Admin\AdminAuditController::class, 'index'])->name('audit.logs');

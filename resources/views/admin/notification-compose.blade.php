@@ -24,6 +24,11 @@
   .action-btn.edit { background: #f0f7ff; color: #1677ff; }
   .action-btn.duplicate { background: #f9fafb; color: #6b7280; border: 1px solid #e5e7eb; }
   .action-btn.delete { background: #fee2e2; color: #dc2626; }
+  @media (max-width: 560px) {
+    .template-header { flex-wrap: wrap; gap: 8px; }
+    .template-meta { flex-wrap: wrap; gap: 8px; }
+    .template-actions { flex-wrap: wrap; }
+  }
 </style>
 
 <div id="templates-list">

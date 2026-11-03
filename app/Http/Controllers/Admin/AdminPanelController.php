@@ -8,6 +8,7 @@ use App\Models\AgeGroup;
 use App\Models\City;
 use App\Models\CoachProfile;
 use App\Models\ListingReport;
+use App\Models\MediaItem;
 use App\Models\Scholarship;
 use App\Models\Sport;
 use App\Models\Sponsorship;
@@ -15,6 +16,11 @@ use App\Models\SportsVenue;
 use App\Models\Tournament;
 use App\Models\Trial;
 use App\Models\User;
+use App\Models\VerificationRequest;
+use App\Services\NotificationService;
+use App\Services\LeaderboardService;
+use App\Services\TotpService;
+use App\Support\BroadcastTargeting;
 use App\Support\PlatformSettings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -53,23 +59,62 @@ class AdminPanelController extends Controller
         Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
 
-        return redirect()->route('admin.dashboard');
+        // Always pass through the TOTP challenge before the dashboard.
+        return redirect()->route('admin.2fa');
     }
 
     public function show2fa()
     {
-        // 2FA disabled for MVP — show placeholder instead of silent redirect.
-        // TODO(P0): implement TOTP (pragmarx/google2fa). Do not ship without.
         if (! Auth::check()) {
             return redirect()->route('admin.login');
         }
-        return view('admin.twofa', ['error' => '2FA is not enabled. Contact engineering before production.']);
+
+        $user = Auth::user();
+
+        // Local-dev escape hatch (matches the API admin auth): when 2FA
+        // enforcement is off, the panel skips the TOTP challenge.
+        if (! filter_var(env('ADMIN_2FA_ENFORCE', true), FILTER_VALIDATE_BOOLEAN)) {
+            session(['admin_2fa_ok' => true]);
+
+            return redirect()->route('admin.dashboard')
+                ->with('warning', '2FA enforcement is disabled (ADMIN_2FA_ENFORCE=false). Enable it before production.');
+        }
+
+        $setupUrl = null;
+        $secret = null;
+        if (empty($user->google2fa_secret)) {
+            // First-time enrollment: provision a secret and show it once.
+            $secret = TotpService::generateSecret();
+            $user->forceFill(['google2fa_secret' => $secret])->save();
+            $setupUrl = TotpService::otpauthUrl($secret, $user->email);
+        }
+
+        return view('admin.twofa', [
+            'setup_url' => $setupUrl,
+            'secret' => $secret,
+            'error' => null,
+        ]);
     }
 
     public function verify2fa(Request $request)
     {
-        // 2FA disabled — stub. Replace with real TOTP verification before prod.
-        return redirect()->route('admin.dashboard')->with('error', '2FA verification is disabled in this build — enable TOTP before production.');
+        if (! Auth::check()) {
+            return redirect()->route('admin.login');
+        }
+
+        $user = Auth::user();
+
+        $request->validate(['code' => 'required|string']);
+
+        if (empty($user->google2fa_secret) || ! TotpService::verify((string) $user->google2fa_secret, (string) $request->code)) {
+            return back()->with('error', 'Invalid 2FA code. Check your authenticator app and try again.');
+        }
+
+        $request->session()->regenerate();
+        session(['admin_2fa_ok' => true]);
+        $user->forceFill(['admin_2fa_verified_at' => now()])->save();
+
+        return redirect()->route('admin.dashboard')->with('success', 'Two-factor verification complete.');
     }
 
     public function logout(Request $request)
@@ -456,6 +501,79 @@ class AdminPanelController extends Controller
         return back()->with('success', 'Sponsorship '.($data['action'] === 'approve' ? 'approved' : 'rejected').'.');
     }
 
+    // ── Verification Badges ───────────────────────────────────────────────────
+
+    public function verificationQueue(Request $request)
+    {
+        $status = $request->get('status', 'pending');
+
+        $query = VerificationRequest::query()->with(['requester', 'verifiable', 'reviewer']);
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+        $requests = $query->latest()->paginate(20)->appends(['status' => $status]);
+
+        $counts = [
+            'pending' => VerificationRequest::where('status', 'pending')->count(),
+            'approved' => VerificationRequest::where('status', 'approved')->count(),
+            'rejected' => VerificationRequest::where('status', 'rejected')->count(),
+            'all' => VerificationRequest::count(),
+        ];
+
+        // Resolve the submitted proof documents for the current page in one query.
+        $proofIds = collect($requests->items())->flatMap(fn ($v) => $v->proof_media_ids ?? [])->filter()->unique();
+        $proofDocs = MediaItem::whereIn('id', $proofIds)->get()->keyBy('id');
+
+        return view('admin.verification', compact('requests', 'status', 'counts', 'proofDocs'));
+    }
+
+    public function verificationApprove($id)
+    {
+        $verification = VerificationRequest::findOrFail($id);
+
+        if (! $verification->isPending()) {
+            return back()->with('error', 'This request has already been reviewed.');
+        }
+
+        $verification->approve(Auth::user());
+
+        // Hard override: same notification the API path sends.
+        app(NotificationService::class)->create([
+            'user_id' => $verification->requester_user_id,
+            'type' => 'account_action',
+            'title' => 'Your verification was approved',
+            'body' => 'Your verified badge is now visible on your profile.',
+            'action_url' => '/verification',
+        ]);
+
+        return back()->with('success', 'Verification approved. Badge granted to '.$verification->requester?->name.'.');
+    }
+
+    public function verificationReject(Request $request, $id)
+    {
+        $data = $request->validate([
+            'reason' => 'required|string|max:1000',
+        ]);
+
+        $verification = VerificationRequest::findOrFail($id);
+
+        if (! $verification->isPending()) {
+            return back()->with('error', 'This request has already been reviewed.');
+        }
+
+        $verification->reject(Auth::user(), $data['reason']);
+
+        app(NotificationService::class)->create([
+            'user_id' => $verification->requester_user_id,
+            'type' => 'account_action',
+            'title' => 'Your verification was declined',
+            'body' => $data['reason'],
+            'action_url' => '/verification',
+        ]);
+
+        return back()->with('success', 'Verification rejected. The user has been notified with your reason.');
+    }
+
     // ── Analytics ──────────────────────────────────────────────────────────────
 
     public function analytics()
@@ -526,6 +644,8 @@ class AdminPanelController extends Controller
             'roleCounts' => $roleCounts,
             'totalActive' => $totalActive,
             'fcmEnabled' => $fcmEnabled,
+            'cities' => City::orderBy('name')->get(['id', 'name']),
+            'sports' => Sport::orderBy('name')->get(['id', 'name']),
             'tokenUsers' => $tokenUsers,
             'totalActiveTokens' => $totalActiveTokens,
         ]);
@@ -539,11 +659,15 @@ class AdminPanelController extends Controller
             'type' => 'required|in:info,success,warning',
             'roles' => 'nullable|array',
             'roles.*' => 'in:athlete,coach,academy,organizer,sponsor,talent_scout,admin',
+            'city_id' => 'nullable|integer|exists:cities,id',
+            'sport_id' => 'nullable|integer|exists:sports,id',
             'channels' => 'nullable|array',
             'channels.*' => 'in:in_app,push',
         ]);
 
         $targetRoles = $data['roles'] ?? [];
+        $targetCityId = isset($data['city_id']) ? (int) $data['city_id'] : null;
+        $targetSportId = isset($data['sport_id']) ? (int) $data['sport_id'] : null;
         $channels = $data['channels'] ?? ['in_app']; // default in-app only for backward compat
         // Legacy checkbox support: send_push/send_in_app booleans
         if ($request->has('send_push') || $request->has('send_in_app')) {
@@ -557,11 +681,8 @@ class AdminPanelController extends Controller
         $sendInApp = in_array('in_app', $channels);
         $sendPush  = in_array('push', $channels);
 
-        // Build base query for targeted users
-        $userQuery = User::where('status','active');
-        if (!empty($targetRoles)) {
-            $userQuery->whereIn('role', $targetRoles);
-        }
+        // Audience narrowed by role + city + sport (shared with the API).
+        $userQuery = BroadcastTargeting::apply(User::query(), $targetRoles, $targetCityId, $targetSportId);
 
         $inAppCount = 0;
         $pushCount = 0;
@@ -854,6 +975,44 @@ class AdminPanelController extends Controller
         file_put_contents($this->settingsPath(), json_encode($settings, JSON_PRETTY_PRINT));
 
         return back()->with('success', 'Settings saved.');
+    }
+
+    // ── Leaderboard configuration ──────────────────────────────────────────────
+
+    public function leaderboard()
+    {
+        $season = LeaderboardService::activeSeason();
+
+        return view('admin.leaderboard', [
+            'weights' => [
+                'leaderboard_points_achievement' => LeaderboardService::pointsPerAchievement(),
+                'leaderboard_points_completion' => LeaderboardService::pointsForCompletion(),
+                'leaderboard_points_participation' => LeaderboardService::pointsPerParticipation(),
+                'leaderboard_participation_cap' => LeaderboardService::participationCap(),
+            ],
+            'season' => $season,
+        ]);
+    }
+
+    public function leaderboardUpdate(Request $request)
+    {
+        $validated = $request->validate([
+            'leaderboard_points_achievement' => 'required|integer|min:0|max:500',
+            'leaderboard_points_completion' => 'required|integer|min:0|max:500',
+            'leaderboard_points_participation' => 'required|integer|min:0|max:500',
+            'leaderboard_participation_cap' => 'required|integer|min:0|max:1000',
+        ]);
+
+        PlatformSettings::update($validated);
+
+        return back()->with('success', 'Leaderboard weights saved. They apply from the next recalculation.');
+    }
+
+    public function leaderboardReset()
+    {
+        $rebuilt = LeaderboardService::rebuildAll();
+
+        return back()->with('success', "Leaderboard recalculated for {$rebuilt} athletes.");
     }
 
     // ── Content create / edit (POST + PUT endpoints) ───────────────────────────

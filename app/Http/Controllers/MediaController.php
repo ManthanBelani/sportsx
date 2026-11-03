@@ -50,21 +50,58 @@ class MediaController extends Controller
         return $table ? [$resolved[0], $resolved[1], $table] : null;
     }
 
+    /**
+     * Whether the given user owns media attributed to [ownerType, ownerId].
+     * Shared by upload (client-supplied owner must be verified) and destroy.
+     */
+    private static function ownsOwner($user, string $ownerType, $ownerId): bool
+    {
+        return match ($ownerType) {
+            'athlete_profile' => $user->athleteProfile?->id === (int) $ownerId,
+            'coach_profile' => $user->coachProfile?->id === (int) $ownerId,
+            'academy' => $user->academies?->id === (int) $ownerId,
+            'organizer_profile' => $user->organizerProfile?->id === (int) $ownerId,
+            'sponsor_profile' => $user->sponsorProfile?->id === (int) $ownerId,
+            'talent_scout_profile' => $user->talentScoutProfile?->id === (int) $ownerId,
+            'user' => $user->id === (int) $ownerId,
+            default => false,
+        };
+    }
+
     /** Current gallery-photo usage [used, limit] for the caller's role. */
     private static function galleryQuota($user): array
     {
         $profile = self::resolveProfile($user);
 
-        // Maintained counter when a profile owns the gallery; otherwise (no
-        // profile yet — onboarding fallback) recount the real rows so quota
-        // still holds from day one.
+        // Gallery usage = actual gallery-context photo rows. Profile/cover/
+        // logo/credential/document media never count. When a maintained
+        // counter exists it is trusted for quota enforcement but repaired
+        // in place if it has drifted from the real rows (e.g. legacy rows
+        // uploaded before contexts were tracked).
+        $contextFilter = fn ($q) => Schema::hasColumn('media_items', 'context')
+            ? $q->where(function ($w) {
+                $w->where('context', 'gallery')->orWhereNull('context');
+            })
+            : $q;
+
         if ($profile) {
-            $used = (int) (DB::table($profile[2])->where('id', $profile[1])->value('gallery_photo_count') ?? 0);
+            [$type, $id, $table] = $profile;
+            $used = (int) (DB::table($table)->where('id', $id)->value('gallery_photo_count') ?? 0);
+            $actual = (int) MediaItem::where('owner_type', $type)
+                ->where('owner_id', $id)
+                ->where('media_type', 'photo')
+                ->where($contextFilter)
+                ->count();
+
+            if ($used !== $actual) {
+                DB::table($table)->where('id', $id)->update(['gallery_photo_count' => $actual]);
+                $used = $actual;
+            }
         } else {
             $used = (int) MediaItem::where('owner_type', 'user')
                 ->where('owner_id', $user->id)
                 ->where('media_type', 'photo')
-                ->where('context', 'gallery')
+                ->where($contextFilter)
                 ->count();
         }
 
@@ -98,6 +135,16 @@ class MediaController extends Controller
                 }
             }
         });
+
+        // The gallery lists gallery photos only. Profile photos, covers,
+        // logos, credentials (verification badges) and documents live in
+        // their own screens and must not appear here. Rows uploaded before
+        // contexts existed have NULL context and stay gallery-visible.
+        if (Schema::hasColumn('media_items', 'context')) {
+            $query->where(function ($q) {
+                $q->where('context', 'gallery')->orWhereNull('context');
+            });
+        }
 
         $page = $query->paginate(min((int) ($request->per_page ?? 24), 50));
 
@@ -196,7 +243,15 @@ class MediaController extends Controller
         // the user itself when no profile exists yet (e.g. onboarding).
         $ownerType = $validated['owner_type'] ?? null;
         $ownerId = $validated['owner_id'] ?? null;
-        if (! $ownerType || ! $ownerId) {
+        if ($ownerType && $ownerId) {
+            // Client-supplied owner is only trusted when the caller actually
+            // owns that profile — otherwise the upload could be attributed to
+            // someone else's gallery (and inflate their quota counter).
+            abort_unless(self::ownsOwner($user, $ownerType, (int) $ownerId), 403,
+                'You cannot attach media to this owner.');
+        } else {
+            $ownerType = null;
+            $ownerId = null;
             $profile = self::resolveProfile($user);
             if ($profile) {
                 [$ownerType, $ownerId] = [$profile[0], $profile[1]];
@@ -265,24 +320,16 @@ class MediaController extends Controller
         $media = MediaItem::findOrFail($id);
 
         $user = $request->user();
-        $allowed = match ($media->owner_type) {
-            'athlete_profile' => $user->athleteProfile?->id === $media->owner_id,
-            'coach_profile' => $user->coachProfile?->id === $media->owner_id,
-            'academy' => $user->academies?->id === $media->owner_id,
-            'organizer_profile' => $user->organizerProfile?->id === $media->owner_id,
-            'sponsor_profile' => $user->sponsorProfile?->id === $media->owner_id,
-            'talent_scout_profile' => $user->talentScoutProfile?->id === $media->owner_id,
-            'user' => $user->id === $media->owner_id,
-            default => false,
-        };
+        $allowed = self::ownsOwner($user, $media->owner_type, $media->owner_id);
 
         abort_unless($allowed || $user->isAdmin(), 403);
 
         // Freed quota: deleting a gallery photo releases the counter slot
-        // (Step 3C). Profile/cover etc. photos never consumed quota.
+        // (Step 3C). Profile/cover etc. photos never consumed quota. Legacy
+        // rows with NULL context are gallery photos and count too.
         DB::transaction(function () use ($media) {
             if ($media->media_type === 'photo'
-                && $media->context === 'gallery'
+                && ($media->context === 'gallery' || $media->context === null)
                 && ($table = self::PROFILE_TABLES[$media->owner_type] ?? null)) {
                 DB::table($table)->where('id', $media->owner_id)
                     ->where('gallery_photo_count', '>', 0)

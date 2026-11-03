@@ -29,6 +29,7 @@ class VerificationController extends Controller
         'coach_profile',
         'academy',
         'organizer_profile',
+        'sponsor_profile',
         'talent_scout_profile',
     ];
 
@@ -154,7 +155,7 @@ class VerificationController extends Controller
             'type' => 'account_action',
             'title' => 'Your verification was approved',
             'body' => 'Your verified badge is now visible on your profile.',
-            'action_url' => '/profile',
+            'action_url' => '/verification',
         ]);
 
         return response()->json(['data' => $verification->refresh()]);
@@ -179,7 +180,7 @@ class VerificationController extends Controller
             'type' => 'account_action',
             'title' => 'Your verification was declined',
             'body' => $validated['reason'],
-            'action_url' => '/profile',
+            'action_url' => '/verification',
         ]);
 
         return response()->json(['data' => $verification->refresh()]);
@@ -195,6 +196,7 @@ class VerificationController extends Controller
             'coach_profile' => 'coachProfile',
             'academy' => 'academies',
             'organizer_profile' => 'organizerProfile',
+            'sponsor_profile' => 'sponsorProfile',
             'talent_scout_profile' => 'talentScoutProfile',
         };
     }

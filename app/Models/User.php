@@ -102,9 +102,36 @@ class User extends Authenticatable
             ->exists();
     }
 
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return $this->socialAccounts()->whereNotNull('avatar_url')->value('avatar_url');
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    /**
+     * Check if the user is a minor (under 18).
+     * Only applies to athletes with a date of birth.
+     */
+    public function isMinor(): bool
+    {
+        if ($this->role !== 'athlete') {
+            return false;
+        }
+
+        $profile = $this->athleteProfile;
+        if (!$profile || !$profile->date_of_birth) {
+            return false;
+        }
+
+        try {
+            return \Carbon\Carbon::parse($profile->date_of_birth)->age < 18;
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     /**

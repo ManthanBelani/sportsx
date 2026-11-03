@@ -77,7 +77,9 @@ class Academy extends Model
 
     public function photos(): MorphMany
     {
-        return $this->morphMany(MediaItem::class, 'owner');
+        // Gallery-only: logo/cover media have their own slots on the listing.
+        return $this->morphMany(MediaItem::class, 'owner')
+            ->where(fn ($q) => $q->where('context', 'gallery')->orWhereNull('context'));
     }
 
     public function scopePublished($query)

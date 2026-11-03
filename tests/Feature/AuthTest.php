@@ -97,4 +97,118 @@ class AuthTest extends TestCase
 
         $this->postJson('/api/v1/auth/logout')->assertStatus(200);
     }
+
+    public function test_otp_login_request_queues_email_and_verify_returns_auth_token(): void
+    {
+        \Illuminate\Support\Facades\Mail::fake();
+
+        $user = User::factory()->create([
+            'email' => 'otp-login@example.com',
+            'role' => 'athlete',
+            'status' => 'active',
+        ]);
+
+        $requestResp = $this->postJson('/api/v1/auth/otp-login/request', [
+            'email' => 'otp-login@example.com',
+        ]);
+
+        $requestResp->assertStatus(200)
+            ->assertJson(['message' => 'If the address is registered, a login code has been sent.']);
+
+        \Illuminate\Support\Facades\Mail::assertQueued(\App\Mail\EmailOtpMail::class, function ($mail) {
+            return $mail->hasTo('otp-login@example.com');
+        });
+
+        // Capture code
+        $queued = \Illuminate\Support\Facades\Mail::queued(\App\Mail\EmailOtpMail::class);
+        $this->assertNotEmpty($queued);
+        $code = $queued->first()->code;
+
+        $verifyResp = $this->postJson('/api/v1/auth/otp-login/verify', [
+            'email' => 'otp-login@example.com',
+            'code' => $code,
+        ]);
+
+        $verifyResp->assertStatus(200)
+            ->assertJsonStructure(['token', 'user' => ['id', 'email', 'role'], 'needs_onboarding'])
+            ->assertJsonPath('user.email', 'otp-login@example.com');
+    }
+
+    public function test_otp_login_verify_with_wrong_code_fails(): void
+    {
+        User::factory()->create([
+            'email' => 'wrong-code@example.com',
+            'role' => 'athlete',
+            'status' => 'active',
+        ]);
+
+        $this->postJson('/api/v1/auth/otp-login/request', [
+            'email' => 'wrong-code@example.com',
+        ]);
+
+        $resp = $this->postJson('/api/v1/auth/otp-login/verify', [
+            'email' => 'wrong-code@example.com',
+            'code' => '000000',
+        ]);
+
+        $resp->assertStatus(422)
+            ->assertJson(['message' => 'That code is incorrect or has expired.']);
+    }
+
+    public function test_otp_login_request_uniform_response_for_nonexistent_email(): void
+    {
+        $resp = $this->postJson('/api/v1/auth/otp-login/request', [
+            'email' => 'nonexistent@example.com',
+        ]);
+
+        $resp->assertStatus(200)
+            ->assertJson(['message' => 'If the address is registered, a login code has been sent.']);
+    }
+
+    public function test_password_login_with_require_otp_sends_code_and_requires_otp_verification(): void
+    {
+        \Illuminate\Support\Facades\Mail::fake();
+
+        $user = User::factory()->create([
+            'email' => 'pass-otp@example.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('Secret123!'),
+            'role' => 'athlete',
+            'status' => 'active',
+        ]);
+
+        // Step 1: Login with credentials requesting OTP
+        $resp = $this->postJson('/api/v1/auth/login', [
+            'email' => 'pass-otp@example.com',
+            'password' => 'Secret123!',
+            'require_otp' => true,
+        ]);
+
+        $resp->assertStatus(200)
+            ->assertJson(['otp_required' => true, 'email' => 'pass-otp@example.com']);
+        $this->assertNull($resp->json('token'));
+
+        \Illuminate\Support\Facades\Mail::assertQueued(\App\Mail\EmailOtpMail::class, function ($mail) {
+            return $mail->hasTo('pass-otp@example.com');
+        });
+
+        $code = \Illuminate\Support\Facades\Mail::queued(\App\Mail\EmailOtpMail::class)->first()->code;
+
+        // Step 2: Login with credentials + wrong OTP fails
+        $wrongResp = $this->postJson('/api/v1/auth/login', [
+            'email' => 'pass-otp@example.com',
+            'password' => 'Secret123!',
+            'code' => '999999',
+        ]);
+        $wrongResp->assertStatus(422);
+
+        // Step 3: Login with credentials + valid OTP returns auth token
+        $okResp = $this->postJson('/api/v1/auth/login', [
+            'email' => 'pass-otp@example.com',
+            'password' => 'Secret123!',
+            'code' => $code,
+        ]);
+        $okResp->assertStatus(200)
+            ->assertJsonStructure(['token', 'user' => ['id', 'email', 'role']])
+            ->assertJsonPath('user.email', 'pass-otp@example.com');
+    }
 }

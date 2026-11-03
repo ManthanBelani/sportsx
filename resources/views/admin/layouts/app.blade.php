@@ -212,9 +212,26 @@
     .otp-input { letter-spacing: 8px; font-size: 22px; text-align: center; }
 
     /* ── Responsive ── */
-    .menu-btn { display: none; width: 38px; height: 38px; border: 1px solid #e5e7eb; background: #fff; border-radius: 8px; cursor: pointer; align-items: center; justify-content: center; }
+    .menu-btn { display: none; width: 38px; height: 38px; border: 1px solid #e5e7eb; background: #fff; border-radius: 8px; cursor: pointer; align-items: center; justify-content: center; flex-shrink: 0; }
     .nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 90; }
-    .table-scroll { width: 100%; overflow-x: auto; }
+    .table-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .table-scroll table { min-width: 640px; }
+
+    /* ── Detail pages (report detail, etc.) ── */
+    .back-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; font-weight: 500; color: #111; text-decoration: none; }
+    .back-btn:hover { background: #f9fafb; }
+    .detail-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+    .detail-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid #f0f0f0; margin-bottom: 16px; flex-wrap: wrap; }
+    .detail-id { font-size: 18px; font-weight: 700; }
+    .detail-section { margin-bottom: 20px; }
+    .detail-section h3 { font-size: 14px; font-weight: 600; margin-bottom: 10px; color: #111; }
+    .detail-row { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f9fafb; font-size: 14px; }
+    .detail-row .label { color: #6b7280; min-width: 90px; flex-shrink: 0; }
+    .detail-row .value { color: #111; flex: 1; min-width: 0; word-break: break-word; }
+    .detail-actions { display: flex; gap: 10px; flex-wrap: wrap; padding-top: 8px; border-top: 1px solid #f0f0f0; }
+    .detail-actions button { padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 600; border: none; cursor: pointer; font-family: inherit; }
+    .detail-actions .btn-primary { background: #1677ff; color: #fff; }
+    .detail-actions .btn-secondary { background: #fff; border: 1px solid #e5e7eb; color: #111; }
 
     @media (max-width: 1024px) {
       .sidebar { transform: translateX(-100%); transition: transform .25s ease; box-shadow: 0 0 40px rgba(0,0,0,.3); }
@@ -222,7 +239,9 @@
       body.nav-open .nav-backdrop { display: block; }
       .main { margin-left: 0; }
       .menu-btn { display: inline-flex; }
-      .main-header-left { gap: 10px; }
+      .main-header-left { gap: 10px; min-width: 0; flex: 1; }
+      .main-header-left h1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+      .header-right { flex-shrink: 0; }
     }
     @media (max-width: 860px) {
       .stat-grid { grid-template-columns: repeat(2, 1fr); }
@@ -230,9 +249,24 @@
       .quick-action-grid { grid-template-columns: repeat(2, 1fr); }
       .main-content { padding: 16px; }
       .main-header { padding: 12px 16px; }
+      .tabs { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .tabs::-webkit-scrollbar { display: none; }
+      .form-row { flex-wrap: wrap; }
+      .form-row .form-group { flex: 1 1 220px !important; min-width: 0; }
+      .search-bar { padding: 12px 14px; gap: 8px; }
+      .search-bar .select, .search-bar .input { width: 100% !important; min-width: 0; max-width: none; }
+      .search-input { min-width: 0; }
+      .settings-item { flex-wrap: wrap; }
+      .settings-item .settings-info { flex: 1 1 160px; min-width: 0; }
+      .settings-item .input, .settings-item .select { width: auto !important; min-width: 80px; max-width: 140px; }
+      .detail-card { padding: 16px; }
+      .detail-row { flex-direction: column; gap: 2px; }
+      .detail-row .label { min-width: 0; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
     }
     @media (max-width: 560px) {
       .stat-grid { grid-template-columns: 1fr; }
+      .form-row { flex-direction: column; gap: 0; }
+      .form-row .form-group { flex: none !important; width: 100%; }
       .search-bar { flex-direction: column; align-items: stretch; }
       .search-bar .filter-btn, .search-bar .btn { width: 100%; justify-content: center; }
       .listing-actions, .action-bar, .sponsor-actions, .action-btns { flex-direction: column; }
@@ -240,6 +274,28 @@
       .template-meta { flex-wrap: wrap; gap: 8px; }
       .main-header h1 { font-size: 17px; }
       .admin-meta { display: none; }
+      .main-header .header-badge { display: none; }
+      .card { padding: 14px; }
+      .card.no-pad { padding: 0; }
+      .card-header { flex-wrap: wrap; gap: 8px; }
+      .card.no-pad .card-header { padding: 14px 16px; }
+      .listing-header, .report-row-head, .sponsor-header, .template-header { flex-wrap: wrap; gap: 10px; }
+      .listing-img, .sponsor-logo { width: 44px; height: 44px; }
+      .report-badge, .listing-flagged { white-space: nowrap; }
+      .alert-card { flex-wrap: wrap; }
+      .alert-badge { order: 3; }
+      .settings-item { padding: 14px 16px; gap: 10px; }
+      .settings-item .settings-value, .settings-item .settings-arrow { font-size: 13px; }
+      .chart-stats { flex-wrap: wrap; gap: 12px; }
+      .chart-stat { flex: 1 1 30%; }
+      .quick-action-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .quick-action { padding: 12px 8px; }
+      .table-scroll table { min-width: 560px; }
+      .login-card { padding: 28px 20px; }
+      .detail-actions { flex-direction: column; }
+      .detail-actions form, .detail-actions button { width: 100%; }
+      .pager a, .pager span { padding: 6px 10px; font-size: 12px; }
+      .bar-chart, .chart-area { gap: 6px; }
     }
   </style>
   @stack('styles')
@@ -267,6 +323,7 @@
         <div class="sidebar-nav-label">Management</div>
         <a href="{{ route('admin.content') }}" class="sidebar-nav-item @if(request()->routeIs('admin.content*')) active @endif"><i data-lucide="layers"></i>Content</a>
         <a href="{{ route('admin.sponsors') }}" class="sidebar-nav-item @if(request()->routeIs('admin.sponsors')) active @endif"><i data-lucide="badge-check"></i>Sponsors</a>
+        <a href="{{ route('admin.verification') }}" class="sidebar-nav-item @if(request()->routeIs('admin.verification*')) active @endif"><i data-lucide="shield-check"></i>Verification</a>
         <a href="{{ route('admin.flags') }}" class="sidebar-nav-item @if(request()->routeIs('admin.flags')) active @endif"><i data-lucide="flag"></i>Content Flags</a>
       </div>
       <div class="sidebar-nav-section">
@@ -274,6 +331,7 @@
         <a href="{{ route('admin.analytics') }}" class="sidebar-nav-item @if(request()->routeIs('admin.analytics')) active @endif"><i data-lucide="bar-chart-2"></i>Analytics</a>
         <a href="{{ route('admin.notifications') }}" class="sidebar-nav-item @if(request()->routeIs('admin.notifications')) active @endif"><i data-lucide="bell"></i>Notifications</a>
         <a href="{{ route('admin.categories') }}" class="sidebar-nav-item @if(request()->routeIs('admin.categories')) active @endif"><i data-lucide="tag"></i>Categories</a>
+        <a href="{{ route('admin.leaderboard') }}" class="sidebar-nav-item @if(request()->routeIs('admin.leaderboard*')) active @endif"><i data-lucide="trophy"></i>Leaderboard</a>
         <a href="{{ route('admin.audit.logs') }}" class="sidebar-nav-item @if(request()->routeIs('admin.audit.*')) active @endif"><i data-lucide="scroll-text"></i>Audit Log</a>
         <a href="{{ route('admin.settings') }}" class="sidebar-nav-item @if(request()->routeIs('admin.settings')) active @endif"><i data-lucide="settings"></i>Settings</a>
       </div>
@@ -327,8 +385,8 @@
     el.addEventListener('click', function () { document.body.classList.remove('nav-open'); });
   });
   // Auto-wrap data tables in a horizontal-scroll container for small screens.
-  document.querySelectorAll('table.table, table.data').forEach(function (t) {
-    if (t.parentElement.classList.contains('table-scroll')) return;
+  document.querySelectorAll('table').forEach(function (t) {
+    if (t.closest('.table-scroll')) return;
     var w = document.createElement('div'); w.className = 'table-scroll';
     t.parentNode.insertBefore(w, t); w.appendChild(t);
   });

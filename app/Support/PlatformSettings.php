@@ -142,6 +142,10 @@ final class PlatformSettings
             'post_max_photos',
             'photo_max_dimension',
             'photo_jpeg_quality',
+            'leaderboard_points_achievement',
+            'leaderboard_points_completion',
+            'leaderboard_points_participation',
+            'leaderboard_participation_cap',
         ];
     }
 
@@ -151,7 +155,9 @@ final class PlatformSettings
         return array_fill_keys(
             array_values(array_merge(
                 array_values(static::galleryLimitKeys()),
-                ['post_max_photos', 'photo_max_dimension', 'photo_jpeg_quality'],
+                ['post_max_photos', 'photo_max_dimension', 'photo_jpeg_quality',
+                 'leaderboard_points_achievement', 'leaderboard_points_completion',
+                 'leaderboard_points_participation', 'leaderboard_participation_cap'],
             )),
             true,
         );
@@ -196,6 +202,11 @@ final class PlatformSettings
             'data_retention_days' => 365,
             'allow_user_data_export' => true,
             'allow_user_data_delete' => true,
+            // Leaderboard point weights (admin leaderboard-config screen).
+            'leaderboard_points_achievement' => 50,
+            'leaderboard_points_completion' => 20,
+            'leaderboard_points_participation' => 10,
+            'leaderboard_participation_cap' => 50,
         ];
     }
 }

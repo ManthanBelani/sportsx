@@ -34,6 +34,8 @@ class ProfileController extends Controller
 
         if ($profile) {
             SocialLinksController::attach($profile, $user);
+            // Blue-check flag: drives the badge next to the name in the app.
+            $profile->setAttribute('is_verified', $user->isVerified());
         }
 
         return response()->json(['data' => $profile]);

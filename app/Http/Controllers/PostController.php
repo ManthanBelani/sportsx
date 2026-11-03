@@ -49,7 +49,11 @@ class PostController extends Controller
             $followedIds = array_values(array_unique(array_merge($followedIds, [$userId])));
         }
 
-        $query = Post::with(['user', 'comments.user'])
+        // Feed rows carry counts + first-image URL only. Comments are NOT
+        // hydrated here (they're paginated per post via /posts/{id}/comments)
+        // — loading every comment of every post made the feed payload grow
+        // linearly with engagement.
+        $query = Post::with(['user'])
             ->withCount(['likes', 'comments'])
             ->when($onlyFollowing, fn ($q) => $q->whereIn('user_id', $followedIds))
             ->when(!$onlyFollowing, fn ($q) => $q->whereNotIn('user_id', $blockedIds))
@@ -75,9 +79,19 @@ class PostController extends Controller
         $page = $query->paginate(15);
         // Single-query liked map so feed rows carry correct heart state (G-2).
         $likedIds = PostLike::where('user_id', $userId)->whereIn('post_id', $page->getCollection()->pluck('id'))->pluck('post_id')->flip();
-        $page->getCollection()->transform(function ($post) use ($likedIds) {
+        // One query for every multi-photo post on the page.
+        $pageImageIds = $page->getCollection()
+            ->flatMap(fn ($post) => (array) ($post->image_media_ids ?? []))
+            ->unique()->values()->all();
+        $imageUrls = $pageImageIds
+            ? MediaItem::whereIn('id', $pageImageIds)->get()->mapWithKeys(fn ($m) => [$m->id => $m->url()])
+            : collect();
+        $page->getCollection()->transform(function ($post) use ($likedIds, $imageUrls) {
             $arr = $post->toArray();
             $arr['liked'] = isset($likedIds[$post->id]);
+            $arr['images'] = collect((array) ($post->image_media_ids ?? []))
+                ->map(fn ($id) => $imageUrls[$id] ?? null)
+                ->filter()->values()->all();
 
             return $arr;
         });
@@ -93,21 +107,46 @@ class PostController extends Controller
             ->withCount(['likes', 'comments'])
             ->findOrFail($id);
 
-        if ($post->visibility === 'followers' && $post->user_id !== $userId) {
-            $allowed = Connection::where('status', 'accepted')
-                    ->where(function ($q) use ($userId, $post) {
-                        $q->where(fn ($w) => $w->where('follower_user_id', $userId)->where('followee_user_id', $post->user_id))
-                            ->orWhere(fn ($w) => $w->where('follower_user_id', $post->user_id)->where('followee_user_id', $userId));
-                    })->exists()
-                || Follow::where('follower_user_id', $userId)->where('followee_user_id', $post->user_id)->exists();
+        // Blocks hide the post entirely (404), for any visibility.
+        abort_if(Block::hasBlockBetween($userId, (int) $post->user_id) && $post->user_id !== $userId, 404);
 
-            abort_unless($allowed && !Block::hasBlockBetween($userId, (int) $post->user_id), 404);
+        if ($post->visibility === 'followers' && $post->user_id !== $userId) {
+            $allowed = self::viewerLinkedTo($userId, (int) $post->user_id);
+
+            abort_unless($allowed, 404);
         }
 
-        $postArray = $post->toArray();
+        $postArray = self::withImageUrls($post->toArray());
         $postArray['liked'] = $post->likedBy($request->user());
 
         return response()->json(['data' => $postArray]);
+    }
+
+    /** Whether the viewer follows or is connected with the author (shared by show/comments/comment). */
+    private static function viewerLinkedTo(int $viewerId, int $authorId): bool
+    {
+        return Connection::where('status', 'accepted')
+                ->where(function ($q) use ($viewerId, $authorId) {
+                    $q->where(fn ($w) => $w->where('follower_user_id', $viewerId)->where('followee_user_id', $authorId))
+                        ->orWhere(fn ($w) => $w->where('follower_user_id', $authorId)->where('followee_user_id', $viewerId));
+                })->exists()
+            || Follow::where('follower_user_id', $viewerId)->where('followee_user_id', $authorId)->exists();
+    }
+
+    /** Resolve image_media_ids to absolute URL list for multi-photo rendering. */
+    private static function withImageUrls(array $postArray): array
+    {
+        $ids = $postArray['image_media_ids'] ?? [];
+        $postArray['images'] = [];
+        if (! empty($ids) && is_array($ids)) {
+            $postArray['images'] = MediaItem::whereIn('id', $ids)
+                ->orderByRaw('FIELD(id, '.implode(',', array_map('intval', $ids)).')')
+                ->get()
+                ->map(fn ($m) => $m->url())
+                ->all();
+        }
+
+        return $postArray;
     }
 
     public function store(Request $request)
@@ -120,7 +159,9 @@ class PostController extends Controller
 
         $validated = $request->validate([
             'body' => 'nullable|string|max:5000',
-            'image_url' => 'nullable|string',
+            // Only platform-uploaded media paths — a free-form URL would let a
+            // post embed arbitrary third-party content.
+            'image_url' => 'nullable|string|max:500|starts_with:/storage/',
             'image_media_ids' => 'nullable|array|max:'.(int) (PlatformSettings::get('post_max_photos', 5)),
             'image_media_ids.*' => 'integer|exists:media_items,id',
             'visibility' => 'in:public,followers',
@@ -182,7 +223,8 @@ class PostController extends Controller
 
         $validated = $request->validate([
             'body' => 'nullable|string|max:5000',
-            'image_url' => 'nullable|string',
+            // Only platform-uploaded media paths (see store()).
+            'image_url' => 'nullable|string|max:500|starts_with:/storage/',
             'image_media_ids' => 'nullable|array|max:'.(int) (PlatformSettings::get('post_max_photos', 5)),
             'image_media_ids.*' => 'integer|exists:media_items,id',
             'visibility' => 'in:public,followers',
@@ -242,20 +284,21 @@ class PostController extends Controller
     public function comments(Request $request, string $id)
     {
         $post = Post::findOrFail($id);
+        $userId = $request->user()->id;
+
+        // Blocks: a blocked pair cannot read each other's comment threads.
+        abort_if($post->user_id !== $userId && Block::hasBlockBetween($userId, (int) $post->user_id), 404);
+
         // Comment access mirrors post visibility (see show()).
-        if ($post->visibility === 'followers' && $post->user_id !== $request->user()->id) {
-            $allowed = Connection::where('status', 'accepted')
-                    ->where(function ($q) use ($request, $post) {
-                        $q->where(fn ($w) => $w->where('follower_user_id', $request->user()->id)->where('followee_user_id', $post->user_id))
-                            ->orWhere(fn ($w) => $w->where('follower_user_id', $post->user_id)->where('followee_user_id', $request->user()->id));
-                    })->exists()
-                || Follow::where('follower_user_id', $request->user()->id)->where('followee_user_id', $post->user_id)->exists();
-            if (!$allowed) {
+        if ($post->visibility === 'followers' && $post->user_id !== $userId) {
+            if (! self::viewerLinkedTo($userId, (int) $post->user_id)) {
                 return response()->json(['error' => ['code' => 'FORBIDDEN', 'message' => 'Connect or follow this user first.']], 403);
             }
         }
+        // Top-level comments with their replies threaded (same shape as show()).
         $comments = PostComment::where('post_id', $post->id)
-            ->with('user')
+            ->whereNull('parent_id')
+            ->with(['user', 'replies.user'])
             ->latest()
             ->paginate(20);
 
@@ -290,6 +333,13 @@ class PostController extends Controller
         $post = Post::findOrFail($id);
         $userId = $request->user()->id;
 
+        // Likes respect the same walls as viewing: blocked pairs and
+        // followers-only posts the viewer isn't linked to are off-limits.
+        abort_if($post->user_id !== $userId && Block::hasBlockBetween($userId, (int) $post->user_id), 404);
+        if ($post->visibility === 'followers' && $post->user_id !== $userId) {
+            abort_unless(self::viewerLinkedTo($userId, (int) $post->user_id), 404);
+        }
+
         $like = PostLike::where('post_id', $id)->where('user_id', $userId)->first();
 
         if ($like) {
@@ -323,15 +373,14 @@ class PostController extends Controller
         ]);
 
         $post = Post::findOrFail($id);
+        $userId = $request->user()->id;
+
+        // Blocks: a blocked pair cannot comment on each other's posts.
+        abort_if($post->user_id !== $userId && Block::hasBlockBetween($userId, (int) $post->user_id), 404);
+
         // Commenting on followers-only posts requires follow/connection (like show()).
-        if ($post->visibility === 'followers' && $post->user_id !== $request->user()->id) {
-            $allowed = Connection::where('status', 'accepted')
-                    ->where(function ($q) use ($request, $post) {
-                        $q->where(fn ($w) => $w->where('follower_user_id', $request->user()->id)->where('followee_user_id', $post->user_id))
-                            ->orWhere(fn ($w) => $w->where('follower_user_id', $post->user_id)->where('followee_user_id', $request->user()->id));
-                    })->exists()
-                || Follow::where('follower_user_id', $request->user()->id)->where('followee_user_id', $post->user_id)->exists();
-            if (!$allowed) {
+        if ($post->visibility === 'followers' && $post->user_id !== $userId) {
+            if (! self::viewerLinkedTo($userId, (int) $post->user_id)) {
                 return response()->json(['error' => ['code' => 'FORBIDDEN', 'message' => 'Connect or follow this user first.']], 403);
             }
         }
@@ -343,6 +392,7 @@ class PostController extends Controller
             'parent_id' => $validated['parent_id'] ?? null,
         ]);
 
+        $notified = [];
         if ((int) $post->user_id !== (int) $request->user()->id && !Block::hasBlockBetween((int) $request->user()->id, (int) $post->user_id)) {
             NotificationService::createStatic([
                 'user_id' => $post->user_id,
@@ -353,6 +403,28 @@ class PostController extends Controller
                 'notifiable_id' => $post->id,
                 'action_url' => '/post-detail/'.$post->id,
             ]);
+            $notified[] = (int) $post->user_id;
+        }
+
+        // Replies also notify the parent-comment owner (unless already
+        // notified as the post author, self, or blocked).
+        if (! empty($validated['parent_id'])) {
+            $parent = PostComment::find($validated['parent_id']);
+            $parentId = (int) ($parent->user_id ?? 0);
+            if ($parent
+                && $parentId !== (int) $request->user()->id
+                && ! in_array($parentId, $notified, true)
+                && ! Block::hasBlockBetween((int) $request->user()->id, $parentId)) {
+                NotificationService::createStatic([
+                    'user_id' => $parentId,
+                    'type' => 'comment',
+                    'title' => 'New reply',
+                    'body' => ($request->user()->name ?? 'Someone').' replied to your comment.',
+                    'notifiable_type' => 'post',
+                    'notifiable_id' => $post->id,
+                    'action_url' => '/post-detail/'.$post->id,
+                ]);
+            }
         }
 
         return response()->json(['data' => $comment->load('user')], 201);

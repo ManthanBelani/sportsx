@@ -95,6 +95,115 @@ class MediaUploadTest extends TestCase
         $resp->assertStatus(422);
     }
 
+    public function test_upload_accepts_client_owned_owner(): void
+    {
+        [$sport, $city, $ageGroup] = $this->masterRows();
+
+        $user = User::factory()->create(['role' => 'athlete']);
+        $profile = AthleteProfile::create([
+            'user_id' => $user->id,
+            'full_name' => 'Owner Athlete',
+            'date_of_birth' => '2005-01-01',
+            'gender' => 'male',
+            'sport_id' => $sport->id,
+            'city_id' => $city->id,
+            'age_group_id' => $ageGroup->id,
+            'skill_level' => 'intermediate',
+        ]);
+        Sanctum::actingAs($user);
+
+        $resp = $this->postJson('/api/v1/media/upload', [
+            'media_type' => 'photo',
+            'owner_type' => 'athlete_profile',
+            'owner_id' => $profile->id,
+            'file' => UploadedFile::fake()->image('pic.jpg'),
+        ]);
+
+        $resp->assertStatus(201);
+        $this->assertDatabaseHas('media_items', [
+            'owner_type' => 'athlete_profile',
+            'owner_id' => $profile->id,
+        ]);
+    }
+
+    public function test_upload_rejects_spoofed_owner(): void
+    {
+        [$sport, $city, $ageGroup] = $this->masterRows();
+
+        // Victim: another athlete whose profile the attacker targets.
+        $victim = User::factory()->create(['role' => 'athlete']);
+        $victimProfile = AthleteProfile::create([
+            'user_id' => $victim->id,
+            'full_name' => 'Victim Athlete',
+            'date_of_birth' => '2005-01-01',
+            'gender' => 'male',
+            'sport_id' => $sport->id,
+            'city_id' => $city->id,
+            'age_group_id' => $ageGroup->id,
+            'skill_level' => 'intermediate',
+        ]);
+
+        // Attacker: any other authenticated user.
+        Sanctum::actingAs(User::factory()->create(['role' => 'athlete']));
+
+        $resp = $this->postJson('/api/v1/media/upload', [
+            'media_type' => 'photo',
+            'owner_type' => 'athlete_profile',
+            'owner_id' => $victimProfile->id,
+            'file' => UploadedFile::fake()->image('pic.jpg'),
+        ]);
+
+        $resp->assertStatus(403);
+        $this->assertDatabaseMissing('media_items', [
+            'owner_type' => 'athlete_profile',
+            'owner_id' => $victimProfile->id,
+        ]);
+    }
+
+    public function test_profile_cover_and_credential_media_are_hidden_from_gallery_and_quota(): void
+    {
+        [$sport, $city, $ageGroup] = $this->masterRows();
+
+        $user = User::factory()->create(['role' => 'athlete']);
+        AthleteProfile::create([
+            'user_id' => $user->id,
+            'full_name' => 'Gallery Athlete',
+            'date_of_birth' => '2005-01-01',
+            'gender' => 'male',
+            'sport_id' => $sport->id,
+            'city_id' => $city->id,
+            'age_group_id' => $ageGroup->id,
+            'skill_level' => 'intermediate',
+        ]);
+        Sanctum::actingAs($user);
+
+        foreach (['profile', 'cover', 'credential', 'gallery'] as $context) {
+            $this->postJson('/api/v1/media/upload', [
+                'media_type' => 'photo',
+                'context' => $context,
+                'file' => UploadedFile::fake()->image("$context.jpg"),
+            ])->assertStatus(201);
+        }
+
+        // GET /me/media lists gallery photos only.
+        $list = $this->getJson('/api/v1/me/media')->assertOk()->json('data.data');
+        $this->assertCount(1, $list['data'] ?? $list);
+        $rows = $list['data'] ?? $list;
+        $this->assertSame('gallery', $rows[0]['context']);
+
+        // The profile payload's media_items also excludes profile/cover/credential.
+        $profile = $this->getJson('/api/v1/me/profile')->assertOk()->json('data');
+        $profileMedia = $profile['media_items'] ?? $profile['athlete']['media_items'] ?? null;
+        $this->assertNotNull($profileMedia);
+        $this->assertCount(1, $profileMedia);
+        $this->assertSame('gallery', $profileMedia[0]['context']);
+
+        // Quota counts gallery photos only: used = 1 of 100.
+        $quota = $this->getJson('/api/v1/me/media/quota')->assertOk()->json('data');
+        $this->assertSame(1, $quota['used']);
+        $this->assertSame(99, $quota['remaining']);
+    }
+
     /** @return array{0: Sport, 1: City, 2: AgeGroup} */
     private function masterRows(): array
     {

@@ -5,10 +5,19 @@
   <div class="login-card">
     <div class="login-logo">🔐</div>
     <div class="login-title">Two-Factor Authentication</div>
-    <div class="login-subtitle">Enter the 6-digit code from your authenticator app.<br><span class="muted" style="color:#dc2626;">⚠️ 2FA not yet enforced — must be enabled before production</span></div>
+    <div class="login-subtitle">Enter the 6-digit code from your authenticator app.</div>
 
     @if(session('error')) <div class="flash flash-error">{{ session('error') }}</div> @endif
     @if($errors->any()) <div class="flash flash-error">{{ implode(' ', $errors->all()) }}</div> @endif
+
+    @if(!empty($setup_url))
+      <div class="flash" style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;text-align:left;">
+        <strong>First-time setup:</strong> add SportX to your authenticator app (Google Authenticator, Authy, 1Password…).<br>
+        Scan this link with your app, or enter the secret manually:<br>
+        <code style="word-break:break-all;display:block;margin-top:6px;font-size:12px;">{{ $setup_url }}</code>
+        <code style="word-break:break-all;display:block;margin-top:6px;font-size:14px;font-weight:700;">{{ $secret }}</code>
+      </div>
+    @endif
 
     <form method="POST" action="{{ route('admin.2fa') }}">
       @csrf

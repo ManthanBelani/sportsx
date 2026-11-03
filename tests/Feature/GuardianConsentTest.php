@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Mail\EmailOtpMail;
 use App\Models\AgeGroup;
 use App\Models\AthleteProfile;
 use App\Models\GuardianConsent;
@@ -11,6 +12,7 @@ use App\Services\GuardianConsentService;
 use App\Services\OtpService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 /**
@@ -50,6 +52,24 @@ class GuardianConsentTest extends TestCase
         return $user->refresh();
     }
 
+    /**
+     * Read the plaintext code from the queued mailable — the stored hash is
+     * bcrypt by design, so a round-trip test captures the code where the mailer
+     * receives it (same pattern as OtpTest).
+     */
+    protected function capturedCode(): ?string
+    {
+        $mailable = null;
+
+        Mail::assertQueued(EmailOtpMail::class, function (EmailOtpMail $mail) use (&$mailable) {
+            $mailable = $mail;
+
+            return true;
+        });
+
+        return $mailable?->code;
+    }
+
     /* ---------------------------------------------------------------------
      | age gate
      | ------------------------------------------------------------------ */
@@ -87,20 +107,50 @@ class GuardianConsentTest extends TestCase
      | consent flow
      | ------------------------------------------------------------------ */
 
-    public function test_requesting_consent_reports_channel_unavailable_without_an_sms_vendor(): void
+    public function test_requesting_consent_emails_the_guardian_and_records_a_pending_consent(): void
     {
-        // AS-60: phone OTP has no vendor, so the guardian code cannot be sent.
-        // The endpoint must say so rather than record an unverifiable consent.
+        Mail::fake();
+
+        $athlete = $this->athlete();
+
+        $response = $this->actingAs($athlete, 'sanctum')
+            ->postJson('/api/v1/guardian/consent', [
+                'guardian_name' => 'Suresh Mehta',
+                'guardian_email' => 'guardian@sportx.test',
+                'relationship' => 'parent',
+            ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.consent_status', 'pending')
+            ->assertJsonPath('data.guardian_email', 'guardian@sportx.test');
+
+        $consent = $athlete->guardianConsents()->firstOrFail();
+        $this->assertSame('pending', $consent->consent_status);
+        $this->assertSame('otp', $consent->verification_method);
+
+        // The code is emailed to the guardian, never to the athlete.
+        Mail::assertQueued(EmailOtpMail::class, fn (EmailOtpMail $mail) =>
+            $mail->hasTo('guardian@sportx.test'));
+    }
+
+    public function test_an_athlete_cannot_nominate_their_own_email_as_guardian(): void
+    {
+        Mail::fake();
+
         $athlete = $this->athlete();
 
         $this->actingAs($athlete, 'sanctum')
             ->postJson('/api/v1/guardian/consent', [
                 'guardian_name' => 'Suresh Mehta',
-                'guardian_phone' => '919876543210',
+                'guardian_email' => 'minor@sportx.test',
                 'relationship' => 'parent',
             ])
-            ->assertStatus(503)
-            ->assertJsonPath('error.code', 'CHANNEL_UNAVAILABLE');
+            ->assertStatus(422)
+            ->assertJsonPath('error.code', 'GUARDIAN_EMAIL_INVALID');
+
+        // Fail-closed: no consent row and no email may be recorded.
+        $this->assertSame(0, $athlete->guardianConsents()->count());
+        Mail::assertNothingQueued();
     }
 
     public function test_consent_requires_a_valid_relationship(): void
@@ -110,7 +160,7 @@ class GuardianConsentTest extends TestCase
         $this->actingAs($athlete, 'sanctum')
             ->postJson('/api/v1/guardian/consent', [
                 'guardian_name' => 'Suresh Mehta',
-                'guardian_phone' => '919876543210',
+                'guardian_email' => 'guardian@sportx.test',
                 'relationship' => 'stalker',
             ])
             ->assertStatus(422);
@@ -136,33 +186,27 @@ class GuardianConsentTest extends TestCase
 
     public function test_verifying_the_guardian_code_activates_consent(): void
     {
+        Mail::fake();
+
         $athlete = $this->athlete();
 
-        $consent = GuardianConsent::create([
-            'athlete_user_id' => $athlete->id,
-            'guardian_name' => 'Suresh Mehta',
-            'guardian_phone' => '919876543210',
-            'relationship' => 'parent',
-            'consent_status' => GuardianConsent::STATUS_PENDING,
-        ]);
+        // Request through the endpoint so the code is the one actually emailed.
+        $this->actingAs($athlete, 'sanctum')
+            ->postJson('/api/v1/guardian/consent', [
+                'guardian_name' => 'Suresh Mehta',
+                'guardian_email' => 'guardian@sportx.test',
+                'relationship' => 'parent',
+            ])->assertCreated();
 
-        // Seed a valid code directly, standing in for the SMS that AS-60 blocks.
-        $code = '482913';
-        $otp = OtpCode::create([
-            'user_id' => $athlete->id,
-            'channel' => 'phone',
-            'destination' => '919876543210',
-            'code_hash' => Hash::make($code),
-            'purpose' => OtpCode::PURPOSE_GUARDIAN_CONSENT,
-            'expires_at' => now()->addMinutes(10),
-        ]);
+        $code = $this->capturedCode();
 
         $response = $this->actingAs($athlete, 'sanctum')
             ->postJson('/api/v1/guardian/verify-otp', ['code' => $code]);
 
         $response->assertOk()->assertJsonPath('data.consent_status', 'verified');
 
-        $this->assertSame('verified', $consent->refresh()->consent_status);
+        $consent = $athlete->guardianConsents()->firstOrFail();
+        $this->assertSame('verified', $consent->consent_status);
         $this->assertNotNull($consent->verified_at);
 
         // Consent activates the account.
@@ -176,14 +220,15 @@ class GuardianConsentTest extends TestCase
         GuardianConsent::create([
             'athlete_user_id' => $athlete->id,
             'guardian_name' => 'Suresh Mehta',
-            'guardian_phone' => '919876543210',
+            'guardian_email' => 'guardian@sportx.test',
             'relationship' => 'parent',
+            'consent_status' => GuardianConsent::STATUS_PENDING,
         ]);
 
         OtpCode::create([
             'user_id' => $athlete->id,
-            'channel' => 'phone',
-            'destination' => '919876543210',
+            'channel' => 'email',
+            'destination' => 'guardian@sportx.test',
             'code_hash' => Hash::make('482913'),
             'purpose' => OtpCode::PURPOSE_GUARDIAN_CONSENT,
             'expires_at' => now()->addMinutes(10),
@@ -203,6 +248,71 @@ class GuardianConsentTest extends TestCase
         $this->actingAs($athlete, 'sanctum')
             ->postJson('/api/v1/guardian/verify-otp', ['code' => '482913'])
             ->assertStatus(422);
+    }
+
+    /* ---------------------------------------------------------------------
+     | resend
+     | ------------------------------------------------------------------ */
+
+    public function test_the_confirmation_email_can_be_resent(): void
+    {
+        Mail::fake();
+
+        $athlete = $this->athlete();
+
+        GuardianConsent::create([
+            'athlete_user_id' => $athlete->id,
+            'guardian_name' => 'Suresh Mehta',
+            'guardian_email' => 'guardian@sportx.test',
+            'relationship' => 'parent',
+            'consent_status' => GuardianConsent::STATUS_PENDING,
+        ]);
+
+        $this->actingAs($athlete, 'sanctum')
+            ->postJson('/api/v1/guardian/resend')
+            ->assertOk()
+            ->assertJsonPath('data.message', 'Confirmation email re-sent to the guardian.');
+
+        Mail::assertQueued(EmailOtpMail::class, fn (EmailOtpMail $mail) =>
+            $mail->hasTo('guardian@sportx.test'));
+    }
+
+    public function test_resend_is_rate_limited_by_the_cooldown(): void
+    {
+        Mail::fake();
+
+        $athlete = $this->athlete();
+
+        GuardianConsent::create([
+            'athlete_user_id' => $athlete->id,
+            'guardian_name' => 'Suresh Mehta',
+            'guardian_email' => 'guardian@sportx.test',
+            'relationship' => 'parent',
+            'consent_status' => GuardianConsent::STATUS_PENDING,
+        ]);
+
+        $this->actingAs($athlete, 'sanctum')->postJson('/api/v1/guardian/resend')->assertOk();
+
+        // OtpService::resend() aborts 429 inside the 60s cooldown; the
+        // controller maps it to RESEND_COOLDOWN.
+        $this->actingAs($athlete, 'sanctum')
+            ->postJson('/api/v1/guardian/resend')
+            ->assertStatus(429)
+            ->assertJsonPath('error.code', 'RESEND_COOLDOWN');
+    }
+
+    public function test_resend_requires_a_pending_consent(): void
+    {
+        Mail::fake();
+
+        $athlete = $this->athlete();
+
+        $this->actingAs($athlete, 'sanctum')
+            ->postJson('/api/v1/guardian/resend')
+            ->assertStatus(422)
+            ->assertJsonPath('error.code', 'NO_PENDING_CONSENT');
+
+        Mail::assertNothingQueued();
     }
 
     /* ---------------------------------------------------------------------

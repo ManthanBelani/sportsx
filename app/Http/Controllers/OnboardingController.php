@@ -33,6 +33,7 @@ class OnboardingController extends Controller
             'bio' => 'sometimes|nullable|string|max:500',
             'city_id' => 'required|exists:cities,id',
             'phone' => 'nullable|string|max:20',
+            'email' => 'sometimes|nullable|email',
             'photo_media_id' => 'nullable|exists:media_items,id',
         ]);
 

@@ -122,11 +122,53 @@
     .btn-primary { background: #1677ff; color: #fff; }
     .btn-outline { background: #fff; border: 1px solid #e5e7eb; color: #111; }
     .btn-danger { background: #fee2e2; color: #dc2626; }
-    
-    @stack('styles')
+
+    /* Mobile nav helpers */
+    .menu-btn { display: none; width: 38px; height: 38px; border: 1px solid #e5e7eb; background: #fff; border-radius: 8px; cursor: pointer; align-items: center; justify-content: center; flex-shrink: 0; }
+    .nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 90; }
+    .table-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .table-scroll table { min-width: 640px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 1024px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform .25s ease;
+        box-shadow: 0 0 40px rgba(0,0,0,.3);
+        width: 260px;
+        max-width: 86vw;
+      }
+      body.nav-open .sidebar { transform: translateX(0); }
+      body.nav-open .nav-backdrop { display: block; }
+      .main { margin-left: 0; width: 100%; }
+      .menu-btn { display: inline-flex; }
+      .main-header-left { gap: 10px; min-width: 0; flex: 1; }
+      .main-header-left h1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+      .header-right-slot { flex-shrink: 0; }
+    }
+    @media (max-width: 860px) {
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+      .grid-2 { grid-template-columns: 1fr; }
+      .main-content { padding: 16px; }
+      .main-header { padding: 12px 16px; }
+    }
+    @media (max-width: 560px) {
+      .stat-grid { grid-template-columns: 1fr; }
+      .main-header h1 { font-size: 16px; }
+      .main-header-left { min-width: 0; }
+      .main-header h1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .main-header .header-badge { display: none; }
+      .card { padding: 14px; }
+      .card-header { flex-wrap: wrap; gap: 8px; }
+      th, td { padding: 10px 12px; }
+      .tabs { flex-wrap: wrap; }
+      table { min-width: 560px; }
+    }
   </style>
+  @stack('styles')
 </head>
 <body>
+  <div class="nav-backdrop" onclick="document.body.classList.remove('nav-open')"></div>
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="sidebar-brand-icon"><i data-lucide="shield" style="width:22px;height:22px;color:#fff;"></i></div>
@@ -169,10 +211,13 @@
 
   <main class="main">
     <header class="main-header">
-      <div class="main-header-left">
-        <h1>@yield('title', 'Dashboard')</h1>
+      <div class="main-header-left" style="display:flex;align-items:center;gap:12px;min-width:0;">
+        <button class="menu-btn" onclick="document.body.classList.toggle('nav-open')" aria-label="Menu"><i data-lucide="menu" style="width:20px;height:20px;"></i></button>
+        <h1 style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@yield('title', 'Dashboard')</h1>
       </div>
-      @stack('topbar-actions')
+      <div style="display:flex;align-items:center;gap:10px;min-width:0;overflow:hidden;" class="header-right-slot">
+        @stack('topbar-actions')
+      </div>
     </header>
 
     <div class="main-content">
@@ -182,7 +227,18 @@
   
   <script>
     lucide.createIcons();
-    
+
+    // Close the mobile drawer after navigating.
+    document.querySelectorAll('.sidebar-nav-item').forEach(function (el) {
+      el.addEventListener('click', function () { document.body.classList.remove('nav-open'); });
+    });
+    // Auto-wrap data tables in a horizontal-scroll container for small screens.
+    document.querySelectorAll('table').forEach(function (t) {
+      if (t.closest('.table-scroll')) return;
+      var w = document.createElement('div'); w.className = 'table-scroll';
+      t.parentNode.insertBefore(w, t); w.appendChild(t);
+    });
+
     // Auth helpers for API interactions in blade
     function getAuthToken() {
         return localStorage.getItem('token');

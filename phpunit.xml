@@ -30,6 +30,9 @@
         <env name="DB_DATABASE" value="sportx_testing"/>
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>
+        <!-- Always test the real OTP path: fixed-code dev mode must never
+             leak from a developer's .env into the suite. -->
+        <env name="OTP_TEST_MODE" value="false"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="ADMIN_2FA_ENFORCE" value="false"/>
         <env name="SESSION_DRIVER" value="array"/>

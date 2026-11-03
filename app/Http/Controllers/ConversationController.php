@@ -3,33 +3,58 @@
 namespace App\Http\Controllers;
 
 use App\Models\Block;
+use App\Models\Connection;
 use App\Models\Conversation;
 use App\Models\GuardianConsent;
 use App\Models\Message;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ConversationController extends Controller
 {
-    /** List the authenticated user's conversations with the latest message + counterpart. */
+    /** List the authenticated user's conversations with the latest message + unread count. */
     public function index(Request $request)
     {
         $user = $request->user();
 
         $conversations = Conversation::whereHas('participants', fn ($q) => $q->where('user_id', $user->id))
             ->with(['participants', 'messages' => fn ($m) => $m->latest()->limit(1)])
+            ->withCount(['messages as unread_count' => function ($m) use ($user) {
+                // Messages newer than the caller's last_read_at (NULL read
+                // timestamp = never read → count everything not sent by me).
+                $m->where('sender_user_id', '!=', $user->id)
+                    ->where('created_at', '>', function ($sub) use ($user) {
+                        $sub->selectRaw('COALESCE(last_read_at, ?)', ['1970-01-01 00:00:00'])
+                            ->from('conversation_participants')
+                            ->whereColumn('conversation_participants.conversation_id', 'conversations.id')
+                            ->where('conversation_participants.user_id', $user->id)
+                            ->limit(1);
+                    });
+            }])
             ->latest('updated_at')
             ->paginate(20);
 
         return response()->json($conversations);
     }
 
-    /** Show a conversation with its messages (paginated). */
+    /** Show a conversation with its latest messages (newest page size, chronological order). */
     public function show(Request $request, string $id)
     {
-        $conversation = Conversation::with(['participants', 'messages.sender'])->findOrFail($id);
-        $this->authorizeAccess($request->user(), $conversation);
+        $limit = min(max((int) $request->query('messages_limit', 100), 1), 200);
 
-        return response()->json(['data' => $conversation]);
+        $conversation = Conversation::with(['participants'])->findOrFail($id);
+        $this->authorizeAccess($request->user(), $conversation);
+        // id is the tiebreaker — messages sent in the same second must keep
+        // a deterministic order.
+        $conversation->load(['messages' => fn ($m) => $m->with('sender')->latest()->orderBy('id', 'desc')->limit($limit)]);
+        // Latest N, oldest-first for rendering.
+        $messages = $conversation->messages->reverse()->values();
+
+        return response()->json(['data' => [
+            ...$conversation->toArray(),
+            'messages' => $messages->toArray(),
+            'has_more' => $conversation->messages()->count() > $limit,
+        ]]);
     }
 
     /** Start or resume a 1:1 conversation, or create a group. */
@@ -46,8 +71,9 @@ class ConversationController extends Controller
             ? [$validated['participant_id']]
             : $validated['participant_ids'];
 
-        // Reuse an existing private conversation between these two users.
-        if (count($ids) === 1 && $ids[0] !== $user->id) {
+        $isPrivate = count($ids) === 1 && (int) $ids[0] !== $user->id;
+
+        if ($isPrivate) {
             if (Block::hasBlockBetween($user->id, (int) $ids[0])) {
                 return response()->json(['error' => ['code' => 'BLOCKED', 'message' => 'Chat unavailable.']], 403);
             }
@@ -68,13 +94,38 @@ class ConversationController extends Controller
             if ($existing) {
                 return response()->json(['data' => $existing->load('participants')]);
             }
+        } else {
+            // Group conversations must not become a side door around the
+            // 1:1 safety gates: every participant is block-checked, minor
+            // consent is re-checked, and the creator must share an accepted
+            // connection (or scout connection) with each participant.
+            foreach (array_unique(array_map('intval', $ids)) as $pid) {
+                if ((int) $pid === $user->id) {
+                    continue;
+                }
+                if (Block::hasBlockBetween($user->id, $pid)) {
+                    return response()->json(['error' => ['code' => 'BLOCKED', 'message' => 'Chat unavailable.']], 403);
+                }
+                if ($minorError = $this->minorChatGate($user->id, $pid)) {
+                    return $minorError;
+                }
+                $linked = Connection::where('status', 'accepted')
+                    ->where(fn ($q) => $q
+                        ->where(fn ($w) => $w->where('follower_user_id', $user->id)->where('followee_user_id', $pid))
+                        ->orWhere(fn ($w) => $w->where('follower_user_id', $pid)->where('followee_user_id', $user->id)))
+                    ->exists()
+                    || $this->scoutConnected($user->id, $pid);
+                if (! $linked) {
+                    return response()->json(['error' => ['code' => 'CONNECTION_REQUIRED', 'message' => 'You can only group people you are connected with.']], 403);
+                }
+            }
         }
 
         $conversation = Conversation::create([
             'type' => count($ids) > 1 ? 'group' : 'private',
         ]);
 
-        $conversation->participants()->sync(array_unique([$user->id, ...$ids]));
+        $conversation->participants()->sync(array_unique([$user->id, ...array_map('intval', $ids)]));
 
         return response()->json(['data' => $conversation->load('participants')], 201);
     }
@@ -84,7 +135,9 @@ class ConversationController extends Controller
     {
         $validated = $request->validate([
             'body' => 'required|string|max:5000',
-            'type' => 'in:text,image,system',
+            // 'system' is reserved for platform-generated rows (e.g. the
+            // connection-accepted intro) — clients can never forge it.
+            'type' => 'in:text,image',
         ]);
 
         $conversation = Conversation::findOrFail($id);
@@ -101,6 +154,19 @@ class ConversationController extends Controller
             return $sendGateError;
         }
 
+        // Group sends re-check guardian consent between the sender and every
+        // other participant (creation-time gates can go stale).
+        if ($conversation->type === 'group') {
+            foreach ($conversation->participants as $p) {
+                if ($p->id === $request->user()->id) {
+                    continue;
+                }
+                if ($minorError = $this->minorChatGate($request->user()->id, $p->id)) {
+                    return $minorError;
+                }
+            }
+        }
+
         $message = Message::create([
             'conversation_id' => $conversation->id,
             'sender_user_id' => $request->user()->id,
@@ -109,6 +175,27 @@ class ConversationController extends Controller
         ]);
 
         $conversation->touch();
+
+        // Notify the other participants (in-app row + push fan-out inside the
+        // service). Never let a notification failure fail the message send.
+        foreach ($conversation->participants as $p) {
+            if ($p->id === $request->user()->id || Block::hasBlockBetween($request->user()->id, $p->id)) {
+                continue;
+            }
+            try {
+                \App\Services\NotificationService::createStatic([
+                    'user_id' => $p->id,
+                    'type' => 'message',
+                    'title' => ($request->user()->name ?? 'New message'),
+                    'body' => \Illuminate\Support\Str::limit($validated['body'], 120),
+                    'notifiable_type' => 'conversation',
+                    'notifiable_id' => $conversation->id,
+                    'action_url' => '/chat-screen',
+                ]);
+            } catch (\Throwable) {
+                // Notification is best-effort; the message itself already saved.
+            }
+        }
 
         return response()->json(['data' => $message->load('sender')], 201);
     }
@@ -130,6 +217,18 @@ class ConversationController extends Controller
     {
         $isParticipant = $conversation->participants()->where('user_id', $user->id)->exists();
         abort_unless($isParticipant || $user->isAdmin(), 403);
+    }
+
+    /** Accepted scout connection between two users (either direction). */
+    private function scoutConnected(int $userId, int $otherUserId): bool
+    {
+        return \App\Models\ScoutConnection::where('status', 'accepted')
+            ->where(fn ($q) => $q
+                ->where(fn ($w) => $w->where('talent_scout_profile_id', \App\Models\TalentScoutProfile::where('user_id', $userId)->value('id'))
+                    ->where('athlete_profile_id', \App\Models\AthleteProfile::where('user_id', $otherUserId)->value('id')))
+                ->orWhere(fn ($w) => $w->where('talent_scout_profile_id', \App\Models\TalentScoutProfile::where('user_id', $otherUserId)->value('id'))
+                    ->where('athlete_profile_id', \App\Models\AthleteProfile::where('user_id', $userId)->value('id'))))
+            ->exists();
     }
 
     /**
@@ -196,22 +295,24 @@ class ConversationController extends Controller
         }
 
         // who_can_message of the conversation TARGET (the other party) —
-        // defaults to 'everyone' so existing users see no behaviour change.
-        $targetPolicy = data_get($b->privacy_settings, 'who_can_message', 'everyone');
+        // uses PrivacyController::settings() which applies minor-specific defaults.
+        $targetPolicy = \App\Http\Controllers\PrivacyController::settings($b)['who_can_message'];
 
         if ($targetPolicy === 'nobody' && $a->role !== 'admin') {
             return response()->json(['error' => ['code' => 'MESSAGING_DISABLED', 'message' => 'This user does not accept messages.']], 403);
         }
 
-        // B1: every non-scout role pair requires an accepted generic Connection.
-        $connected = \App\Models\Connection::where('status', 'accepted')
-            ->where(fn ($q) => $q
-                ->where(fn ($w) => $w->where('follower_user_id', $a->id)->where('followee_user_id', $b->id))
-                ->orWhere(fn ($w) => $w->where('follower_user_id', $b->id)->where('followee_user_id', $a->id)))
-            ->exists();
+        if ($targetPolicy === 'connections') {
+            // B1: every non-scout role pair requires an accepted generic Connection.
+            $connected = \App\Models\Connection::where('status', 'accepted')
+                ->where(fn ($q) => $q
+                    ->where(fn ($w) => $w->where('follower_user_id', $a->id)->where('followee_user_id', $b->id))
+                    ->orWhere(fn ($w) => $w->where('follower_user_id', $b->id)->where('followee_user_id', $a->id)))
+                ->exists();
 
-        if (!$connected) {
-            return response()->json(['error' => ['code' => 'CONNECTION_REQUIRED', 'message' => 'Connect and get accepted before chatting.']], 403);
+            if (!$connected) {
+                return response()->json(['error' => ['code' => 'CONNECTION_REQUIRED', 'message' => 'Connect and get accepted before chatting.']], 403);
+            }
         }
 
         return null;

@@ -207,6 +207,15 @@ class OtpController extends Controller
             // Uniform response: do not disclose whether an account exists.
             abort(422, 'That code is incorrect or has expired.');
         }
+
+        if ($user !== null && $purpose === OtpCode::PURPOSE_SIGNUP) {
+            abort(response()->json([
+                'error' => [
+                    'code' => 'EMAIL_TAKEN',
+                    'message' => 'An account with this email already exists. Please log in.',
+                ],
+            ], 422));
+        }
     }
 
     /**
