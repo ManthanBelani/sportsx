@@ -87,8 +87,8 @@
 
           @if($v->status === 'pending')
             <div class="listing-actions">
-              <form method="POST" action="{{ route('admin.verification.approve', $v->id) }}" onsubmit="return confirm('Approve this request and grant the blue-check badge?')">@csrf<button class="action-btn approve"><i data-lucide="check"></i> Approve &amp; Grant Badge</button></form>
-              <button type="button" class="action-btn reject" data-url="{{ route('admin.verification.reject', $v->id) }}" data-name="{{ $v->requester?->name ?? 'the user' }}" onclick="openRejectModal(this)"><i data-lucide="x"></i> Reject</button>
+              <form method="POST" action="{{ route('admin.verification.approve', $v->id) }}" onsubmit="return confirm('Approve this request and grant the blue-check badge?')">@csrf<button class="action-btn approve"><i data-lucide="check" style="width:14px;height:14px;"></i> Approve &amp; Grant Badge</button></form>
+              <button type="button" class="action-btn reject" data-url="{{ route('admin.verification.reject', $v->id) }}" data-name="{{ $v->requester?->name ?? 'the user' }}" onclick="openRejectModal(this)"><i data-lucide="x" style="width:14px;height:14px;"></i> Reject</button>
             </div>
           @else
             <div class="reviewed-line">

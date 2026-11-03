@@ -42,10 +42,10 @@
         </div>
         <span class="badge pending">Pending</span>
       </div>
-      <div class="listing-body" style="display:flex;gap:10px;">
-        <form method="POST" action="{{ route('admin.approvals.users.approve', $u->id) }}" style="flex:1;">@csrf<button class="action-btn approve" style="width:100%;justify-content:center;"><i data-lucide="check" style="width:14px;height:14px;"></i> Approve</button></form>
-        <form method="POST" action="{{ route('admin.approvals.users.reject', $u->id) }}" style="flex:1;" onsubmit="return confirm('Reject this registration?')">@csrf<button class="action-btn reject" style="width:100%;justify-content:center;"><i data-lucide="x" style="width:14px;height:14px;"></i> Reject</button></form>
-        <a href="{{ route('admin.users.detail', $u->id) }}" class="action-btn view" style="flex:0 0 auto;"><i data-lucide="eye" style="width:14px;height:14px;"></i> View</a>
+      <div class="listing-actions">
+        <form method="POST" action="{{ route('admin.approvals.users.approve', $u->id) }}">@csrf<button class="action-btn approve"><i data-lucide="check" style="width:14px;height:14px;"></i> Approve</button></form>
+        <form method="POST" action="{{ route('admin.approvals.users.reject', $u->id) }}" onsubmit="return confirm('Reject this registration?')">@csrf<button class="action-btn reject"><i data-lucide="x" style="width:14px;height:14px;"></i> Reject</button></form>
+        <a href="{{ route('admin.users.detail', $u->id) }}" class="action-btn view"><i data-lucide="eye" style="width:14px;height:14px;"></i> View</a>
       </div>
     </div>
   @empty
