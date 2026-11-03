@@ -1,0 +1,108 @@
+ID,Name,Priority,Screens,Status,Severity,Mobile files,Backend files,DB tables,Evidence,Gaps
+M1.1,Sign up/login (OTP+consent+session),P0,"A.3,A.4,A.5",PARTIAL,HIGH,"sign_up_screen.dart,otp_screen.dart,storage_service.dart:14-31","AuthController.php,OtpController.php,OtpService.php (routes/api.php:113-136)",users;otp_codes,OtpService.php:47-113 bcrypt+expiry+attempts+throttles,T&C consent never captured; email auto-verified at AuthController.php:62; OTP bypass require_otp=false :194-196; token expiry null
+M1.2,Role selection one-role-per-account,P0,A.2,DONE,-,"role_selection_screen.dart,role_config.dart","AuthController.php:42-56,OnboardingController.php:20-130,role middleware",users.role,role set only at creation; no mutation endpoint,
+M1.3,Role onboarding wizards,P0,"AT.2,CO.1,AC.1,OR.1,SC.1",DONE,-,multi_step_onboarding_screen.dart,OnboardingController.php,"athlete_profiles,coach_profiles,academies,organizer_profiles,talent_scout_profiles",all 5 wired,
+M1.4,Guardian consent minors,P0,"A.9,AT.10",PARTIAL,HIGH,guardian_consent_screen.dart,"GuardianController.php,GuardianConsentService.php:57-64",guardian_consents,consent persisted+OTP to guardian email+minorChatGate ConversationController.php:239-264,minor edits own guardian controls GuardianController.php:184-207; scout contact reaches minor not guardian AthleteContactController.php:39-49
+M1.5,Profile completion meter,P0,"AT.6,S.1",DONE,LOW,"home_screen.dart:75,profile_screen.dart:372-383",CompletionChecklistController.php:108-116,-,server-computed with deep links,Flutter deep-link paths mismatch GoRouter
+M1.6,Verification & blue check,P0,"A.10,AD.4",DONE,LOW,verification_screen.dart,"VerificationController.php (admin routes api.php:541-544)",verification_requests,admin-only approve+ownership+hard-override notify,proof docs on public disk (B-6)
+M1.7,Forgot password,P1,A.6,BROKEN,HIGH,forgot_password_screen.dart:29,"AuthController.php:339-375,PasswordResetMail.php:20-30",users,backend emails token link,no /reset-password route; screen expects code never sent
+M1.8,Language selection,P1,A.7,UI-ONLY,MEDIUM,language_screen.dart,SettingsController.php:49,users.settings,not saved in auth flow; en/hi only; no l10n,
+M1.9,Permissions primer,P1,A.8,UI-ONLY,LOW,permissions_screen.dart,-,-,rationale cards only,
+M1.10,Role switching,P2,-,OUT OF SCOPE,-,-,-,-,-,
+M2.1,Athlete profile,P0,"D.1,AT.3",DONE,LOW,view_profile_screen.dart,"ProfileController.php,AthleteDiscoveryController.php:46-78","athlete_profiles,athlete_sports",visibility enforced server-side,public gallery key mismatch view_profile_screen.dart:90
+M2.2,Multi-sport data,P0,AT.4,DONE,-,manage_sports_screen.dart,ProfileController::updateSports,athlete_sports,-,
+M2.3,Achievements & certificates,P0,"S.11,AT.5",PARTIAL,HIGH,add_achievement_screen.dart:59-68,"AchievementController.php,MediaController.php:266-273","achievements,media_items",CRUD wired,certificates on public disk; no admin achievement verification
+M2.4,Media gallery,P0,"S.10,S.28",DONE,MEDIUM,"media_gallery,media_viewer",MediaController.php,media_items,MIME allowlist+10MB+quota,no upload progress/cancel/retry; public disk
+M2.5,Coach profile,P0,"D.2,CO.3",DONE,-,coach_profile_edit_screen.dart,CoachProfileController.php,coach_profiles,-,
+M2.6,Academy profile,P0,"D.3,AC.3",DONE,LOW,edit_academy_profile_screen.dart,AcademyController.php,"academies,academy_sports",-,"Reviews tab impossible (no rating data)"
+M2.7,Organizer profile,P0,"D.4,OR.3",PARTIAL,MEDIUM,organizer_profile_edit_screen.dart,OrganizerProfileController.php:59-70,organizer_profiles,public card+edit,raw toArray leaks registration_number+verification_doc_media_id
+M2.8,Scout profile,P0,"D.5,SC.3",DONE,MEDIUM,scout_profile_screen.dart,TalentScoutController.php,"talent_scout_profiles,scout_shortlists,observations",owner-scoped shortlists (no IDOR),shortlist-add notifies athlete with scout name; dashboard leaks minors full names ScoutDashboardController.php:28-31
+M2.9,Privacy controls,P0,"S.22,AT.10",PARTIAL,HIGH,settings_screen.dart,PrivacyController.php:24-65,users.settings,minor visibility floor enforced,who_can_connect never enforced; provider detail endpoints no visibility checks
+M2.10,View as Public / Share,P1,"AT.7,S.30",BROKEN,HIGH,view_as_public_screen.dart:78-83,-,-,hard-coded stats; share URL 404s,
+M2.11,Social links,P1,AT.3,DONE,-,edit_profile social editor,SocialLinksController.php,users.social_links,-,
+M2.12,Ratings & reviews,P1,"D.14,D.15",NOT STARTED,-,reviews screens (mock avg 4.6 router.dart:364),none,none,no model/table/route,
+M2.13,Team pages,P2,D.17,OUT OF SCOPE,-,-,-,-,-,
+M3.1,Explore all+tabs,P0,"S.2,S.3",DONE,LOW,explore_screen.dart,"HomeController::explore,DirectoryController",various,-,/explore endpoint unused by app
+M3.2,Athlete discovery,P0,"S.3,SC.4",DONE,HIGH,athlete discovery rails,AthleteDiscoveryController.php,athlete_profiles,filters+minor masking,nested user email/phone leak incl minors :60:132
+M3.3,Coach discovery,P0,S.3,DONE,LOW,coach directory,DirectoryController::coaches,coach_profiles,-,avgRating ?? 0 render
+M3.4,Academy discovery,P0,"S.3,D.3",DONE,MEDIUM,academy directory,DirectoryController::academies:17-44,academies,photos/chips/facilities,fee numeric compare vs string columns
+M3.5,Event/trial discovery,P0,"S.3,D.6",DONE,-,"trial_detail,tournament_detail","TrialController,TournamentController","trials,tournaments",published-only filters,
+M3.6,Universal search,P0,S.5,PARTIAL,MEDIUM,universal_search_screen.dart:154,SearchController.php:146-149,various,cross-entity groups+recent searches,pagination broken end-to-end; errors as No-results; 410'd tables queried
+M3.7,Filters & sort,P0,S.4,PARTIAL,MEDIUM,search_filter_sheet,SearchController.php:31,-,sport/state/city/age/level work,sort relevance/distance/rating silently ignored
+M3.8,Distance near-me,P0,S.3,NOT STARTED,HIGH,none,none,no lat/lng columns,no geo anywhere; no geolocator dep,
+M3.9,Saved bookmarks,P0,S.20,PARTIAL,MEDIUM,saved_provider.dart:57-94,SavedItemController.php,saved_items,server solid 10 types+unique idx,client page-1-only truncates at 20; isSaved wrong beyond 20
+M3.10,Venue discovery,P1,D.13,DONE,-,venue screens,SportsVenueController.php,sports_venues,-,
+M3.11,Recommendations,P1,AT.1,PARTIAL,LOW,home rails,HomeController,-,-,first-6 labeled Recommended (not rule-based)
+M3.12,Map view,P2,D.16,OUT OF SCOPE,-,-,-,-,-,
+M4.1,Create/edit event/trial,P0,OR.5,DONE,MEDIUM,"post_trial_screen.dart,post_tournament_screen.dart","ProviderTrialController.php:64,ProviderTournamentController.php:56","trials,tournaments",role-gated draft/publish+expiry armed,no required_documents on tournaments; expiry not rescheduled on date edit
+M4.2,Event detail,P0,D.6,DONE,MEDIUM,"trial_detail,tournament_detail","TrialController::show,Tournament.php:103-144",-,slot math consistent,draft leak EventController::show L93-106 no status filter
+M4.3,Event registration,P0,"D.7,D.8",PARTIAL,BLOCKER,"trial_registration_screen.dart,tournament_registration_screen.dart","RegistrationController::storeTrial L21-94,storeTournament L298-370","trial_registrations,tournament_registrations",dup via DB unique,NO CAPACITY ENFORCEMENT anywhere in store paths; DOB dead field; payment_status client-settable; race=500
+M4.4,Manage registrations,P0,"OR.7,OR.8",PARTIAL,HIGH,registration_management_screen.dart:715,EventRegistrationController.php:190-234,registration tables,per-row approve/reject wired+ownership+notify,bulk UI absent (checkboxes feed nothing); API bulk type-pin broken; bulk reject w/o reason fails
+M4.5,Export registrant list,P0,OR.7,PARTIAL,MEDIUM,registration_management_screen.dart:170,EventRegistrationController::export L237-265,-,ownership-checked real CSV,thin columns; selection ignored
+M4.6,Registration status notifications,P0,"AT.9,S.16",DONE,MEDIUM,push_notification_service.dart:69-158,"RegistrationController,NotificationService.php:14-19",notifications,in-app+FCM+action_url,typed status_update bypasses HARD_OVERRIDE_TYPES; action_urls 404 in-app
+M4.7,Auto-expiry,P0,AD.10,DONE,LOW,admin Blade expiry.blade.php,"SweepExpiredContentJob hourly,ExpiryService","expiry_rules,expiry_events",rule-driven idempotent+override/restore,owners never notified
+M4.8,Schedule & gallery,P1,"OR.9,OR.10",PARTIAL,-,/event-gallery,none for schedule,-,gallery works,no OR.9 route at all
+M4.9,Results publishing,P1,OR.11,PARTIAL,-,results_publishing_screen.dart,ResultsController.php,tournament_results,API+screen exist,-,
+M4.10,Event analytics,P1,OR.12,PARTIAL,-,organizer_analytics_screen,OrganizerAnalyticsController.php,analytics_events,API+screen exist,-,
+M4.11,Announcements,P1,OR.14,UI-ONLY,-,/post-announcement route,no backend endpoint,-,-,
+M4.12,Calendar view,P1,S.3,UNVERIFIED,-,table_calendar dep present,-,-,dep exists no traced integration,
+M4.13,Payments,P2,-,OUT OF SCOPE,-,-,-,-,-,
+M4.14,Promote event,P2,OR.15,OUT OF SCOPE,-,-,-,-,-,
+M5.1,Opportunity listing/detail,P0,D.9,DONE,LOW,opportunity_list_screen.dart,OpportunityController::index/show,opportunities,unified types+legacy 410 clean,no pagination (caps 50)
+M5.2,Create opportunity,P0,"AC.9,SC.12",DONE,MEDIUM,post_opportunity_screen.dart,"OpportunityController::store,resolveProvider :340-351",opportunities,role-gated,deadline free text; missing sport/age/docs fields
+M5.3,Apply with pitch,P0,D.10,PARTIAL,HIGH,apply screen,OpportunityController::apply:204-385,opportunity_applications,pitch+profile snapshot+owner notified+dup 409,doc upload not wired in UI; no unique index (race dup)
+M5.4,My Opportunities,P0,AT.8,DONE,LOW,my_opportunities_screen.dart,OpportunityController::mine,-,Applied/Saved/Created tabs,saved tab hides closed items
+M5.5,Applicant review,P1,AC.9,PARTIAL,-,(no dedicated screen),applications+review:355-358,opportunity_applications,API complete ownership-checked,no provider review UI
+M5.6,Scouting opportunities hub,P0,SC.11,PARTIAL,LOW,/opportunities chips,OpportunityController::index,opportunities,reachable+functional,chips not literal tabs
+M6.1,Training programs,P0,"CO.4,CO.5,D.11",DONE,-,"my_programs_screen.dart,post_program_screen.dart",ProgramController.php,programs,CRUD+tabs+draft saving,
+M6.2,Program/listing enquiry,P0,D.12,PARTIAL,HIGH,enquire_screen.dart,EnquiryController.php:12-48,"enquiries,enquiry_messages",thread+messages created,owner never notified of new enquiry; reply notifies athlete only
+M6.3,Facilities,P0,"AC.7,AC.8,D.13",DONE,LOW,facilities screens,FacilityController.php,facilities,tenant-scoped CRUD,type enum missing classroom/changing-rooms
+M6.4,Our Athletes,P1,"AC.5,AC.10",UI-ONLY,-,invite_athlete_screen.dart:19-33,none,none,hard-coded candidates zero API,
+M6.5,Recruit staff,P2,"AC.11,OR.16",OUT OF SCOPE,-,-,-,-,-,
+M6.6,Collaborations,P2,"AC.12,OR.17",OUT OF SCOPE,-,-,-,-,-,
+M7.1,Create post,P0,S.9,PARTIAL,HIGH,create_post_screen.dart,PostController.php:156-158,posts,text/photo+hashtags+audience,video rejected 422 vs spec; edit/delete API-only (no UI callers)
+M7.2,Feed,P0,S.1,DONE,-,community_feed,PostController.php:23-111,posts,tabs+pagination+blocked filtering+no N+1,
+M7.3,Post interactions,P0,S.27,PARTIAL,MEDIUM,post_detail_screen.dart,like/comment endpoints,"post_likes,post_comments",like+comment wired,save never wired (bookmark just navigates home_kit.dart:788)
+M7.4,Follow/unfollow,P0,"S.3,D.x",DONE,-,follow buttons,FollowController.php,follows unique,FCM on follow,
+M7.5,Connect mutual,P0,S.19,DONE,-,my_connections_screen.dart,ConnectionController.php:45-249,connections unique,state machine+anti-harassment cap+auto-accept,who_can_connect unenforced (M2.9)
+M7.6,1-to-1 messaging,P0,"S.17,S.18",PARTIAL,HIGH,"chat_list_screen.dart,chat_screen.dart",ConversationController.php:239-334,"conversations,conversation_participants,messages",threads+unread+mark-read+gates at create,COLD DMs allowed (everyone default :318); no block/report in chat UI; minor gate not rechecked at send; no badge on message icon
+M7.7,Share post externally,P1,S.30,PARTIAL,-,share_plus,-,-,OS share exists,links 404 (no web routes)
+M7.8,Mentions & hashtags,P1,S.16,NOT STARTED,-,-,hashtags stored only,posts,no mention notifications,
+M7.9,Chat media attachments,P1,S.18,NOT STARTED,-,-,-,-,-,
+M7.10,Community network+events,P1,S.12,DONE,-,community_screen.dart,"/groups routes","groups,group_members",4 real tabs w/ states,
+M7.11,Groups,P2,"S.13,S.14",OUT OF SCOPE,-,groups screens built,GroupController.php built,groups built,P2 built while P0 missing (scope creep),
+M7.12,Polls,P2,S.8,OUT OF SCOPE,-,-,-,-,-,
+M7.13,Live/webinar,P2,CO.8,OUT OF SCOPE,-,-,-,-,-,
+M8.1,Athlete leaderboard,P0,"S.6,AT.1",PARTIAL,HIGH,leaderboard_screen.dart,"LeaderboardController.php:19-56,LeaderboardService.php:81-90,AthleteLeaderboardController.php","leaderboard_scores,leaderboard_seasons",podium+filters+minor masking,verified-only filter dead code (no column); points uncapped +50/POST inflation; /me/leaderboard no filter+name-matching+full table load
+M8.2,Leaderboard strip home,P0,S.1,DONE,LOW,home_kit.dart:413,LeaderboardController::strip:59-68,-,top-5 on 3 role homes,chips decorative
+M8.3,Other leaderboards,P1,S.6,NOT STARTED,-,-,P1 comment LeaderboardController.php:17,-,-,
+M8.4,Points rules & admin config,P1,"S.7,AD.11",PARTIAL,-,"leaderboard_info_screen.dart:55 static,admin Blade+API",AdminLeaderboardConfigController.php,platform_settings,weights+season+rebuild done,mobile rules page hard-coded
+M9.1,In-app notification feed,P0,S.16,DONE,LOW,notifications_provider.dart:108-142,NotificationController.php:16-74,notifications,ownership checks+mark all,-,
+M9.2,Push notifications,P0,S.16,PARTIAL,HIGH,push_notification_service.dart:139-284,NotificationService.php,"device_tokens,user_device_tokens",full FCM lifecycle all 3 app states,registration outcomes typed status_update suppressible; enquiry creation silent; action_urls 404 in-app
+M9.3,Deadline/nearby reminders,P1,S.16,BROKEN,MEDIUM,-,"ReminderService,SendDueRemindersJob",reminder_subscriptions,job correct,arm() zero call sites - never armed; no near-you
+M9.4,Admin broadcast,P1,AD.12,PARTIAL,-,"admin Blade notifications.blade.php","AdminUserController::broadcast,AdminUserController::broadcastTargeted",notifications,broadcast+targeted+stats,
+M9.5,Email/SMS,P2,-,OUT OF SCOPE,-,-,email fallback exists,-,-,
+M10.1,Scout dashboard,P0,SC.2,PARTIAL,MEDIUM,talent_scout_dashboard_screen.dart:172,ScoutDashboardController.php:28-35,-,endpoint+screen live,no minor anonymization in top_talents; upcomingTrials no date filter
+M10.2,Discover talents,P0,SC.4,PARTIAL,MEDIUM,scout discovery screen,AthleteDiscoveryController.php,athlete_profiles,most filters,position filter missing; PII leak
+M10.3,Shortlist,P0,"SC.5,SC.6",DONE,LOW,scout_shortlist screens,ScoutShortlistController.php:15-105,scout_shortlists,owner-scoped no IDOR,add-notification leaks scout name to subject
+M10.4,Add observation,P0,SC.10,DONE,LOW,observation screen,ObservationController.php,observations,owner-scoped+validated,media_id not ownership-checked
+M10.5,Contact athlete/parent,P0,SC.13,PARTIAL,HIGH,scout_connect screens,"AthleteContactController.php:39-49,ScoutConnectionController::store:34-77",scout_connections,two-way connect+chat gate,guardian notification goes to MINOR's own user_id (no guardian account); scout connect no minor handling
+M10.6,Talent report,P1,"SC.8,SC.9",UI-ONLY,-,talent_report screen,none,none,local state zero API,
+M10.7,Compare talents,P1,SC.7,UI-ONLY,-,compare screen,-,-,router-extra+_sample fallback,
+M10.8,Top performers shortcut,P1,S.6,PARTIAL,-,dashboard card,-,-,links leaderboard,mislabeled This Week; no prefilter
+M11.1,Report user/post/listing,P0,S.26,PARTIAL,HIGH,detail_page_template.dart:363 only,ReportController.php:22,listing_reports,API 13 types+admin queue,no report on posts or profiles; no exists-validation; no dedupe
+M11.2,Block user,P0,S.23,PARTIAL,HIGH,blockUser() zero callers,BlockController.php,blocks unique,API complete+chat/feed enforced,no block button anywhere in app; no block checks in discovery/profile/search
+M11.3,Moderation queue & actions,P0,"AD.7,AD.8",BROKEN,HIGH,Blade moderation.blade.php,AdminModerationController.php:141,listing_reports+content tables,approve/warn/suspend work+notify+audit,remove on post/facility = 500 (no status column); Blade remove hard-deletes silently; resolve closes report leaving content live; no repeat-offender tracking
+M11.4,Verification queue,P0,AD.4,DONE,-,"Blade+Flutter admin",VerificationController queue/approve/reject,verification_requests,badge+reason+hard-override+double-review guard,
+M11.5,User management,P0,AD.3,PARTIAL,HIGH,"Blade+Flutter admin","AdminUserController.php:72-79,AuthController.php:169-171",users,search/suspend/approve/reject+login block,no ban; suspend keeps tokens+no status middleware; google2fa_secret serialized in /admin/users
+M11.6,Content manager,P0,"AD.5,AD.6",PARTIAL,MEDIUM,"Blade (7 types)+API (11 types)",AdminContentController.php:183-186,content tables,full CRUD,Post/Program/Facility/Opportunity unaudited; request->all() fallback
+M11.7,Master data,P0,AD.9,DONE,LOW,"Blade+Flutter admin",AdminCategoryController.php,"sports,cities,age_groups,positions",full CRUD+seeders registered,positions no panel tab
+M11.8,Expiry rules,P0,AD.10,PARTIAL,MEDIUM,Blade real / Flutter admin_expiry_rules_screen.dart:34 mock,AdminExpiryController.php:28-53+ExpiryService,expiry_rules,Blade UI<->sweep chain works,API updateRules writes nonexistent columns (500); override/restore wrong column; Flutter screen hard-coded mock
+M11.9,Admin dashboard+2FA,P0,"AD.1,AD.2",PARTIAL,HIGH,"Blade login+Flutter admin","AdminAuthController.php,AuthenticateAdminPanel.php:29",admin_profiles+users.google2fa,2FA flow verified end-to-end; KPI tiles,admin API login unthrottled; TOTP plaintext+seeded secret committed; ADMIN_2FA_ENFORCE=false accepts any code; dashboard missing tiles
+M12.1,Settings & privacy,P0,S.22,DONE,LOW,settings_screen.dart,"SettingsController.php,PrivacyController.php",users.settings,all toggles wired,password change keeps other sessions
+M12.2,Delete account,P0,S.22,PARTIAL,HIGH,settings_screen.dart:509-541,SettingsController::destroy,users,in-app+hard delete cascades,fails for Google-only accounts (401); media files not purged; orphan tokens
+M12.3,Help About legal,P0,"S.24,S.25",DONE,-,"help_support_screen,legal_screen",static,-,screens live+PRIVACY_POLICY.md,
+M12.4,Logout,P0,S.29,PARTIAL,MEDIUM,more_screen.dart:60-81,AuthController.php:325,-,confirm+revoke+FCM unregister+clear,settings-screen logout skips dialog
+M12.5,Empty/loading/error/offline states,P0,all,PARTIAL,MEDIUM,sportx_cards.dart:693+skeleton.dart,-,-,broadly present,no offline detection anywhere; search errors as empty
+M12.6,Analytics & crash reporting,P0,-,NOT STARTED,HIGH,logAnalyticsEvent() zero call sites; Sentry removed pubspec.yaml:36,AnalyticsController.php:14-32 unused,analytics_events,backend endpoint exists unused,no events; no crash reporting
+M12.7,Deep links,P1,S.30,UI-ONLY,MEDIUM,share_plus URLs,-,-,share sheet emits,no app-links/scheme; URLs 404
